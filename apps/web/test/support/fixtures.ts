@@ -32,8 +32,7 @@ export function mapSummary(id: number, title: string, content: string, ownerId =
     cols: parsed.cols,
     goldTotal: info.goldTotal,
     reachableGold: info.reachableGold,
-    likes: 0,
-    likedByMe: false,
+    difficulty: "easy" as "easy" | "medium" | "hard" | null,
     best: null as { gold: number; steps: number } | null,
     stars: (info.reachableGold > 0 ? 0 : null) as number | null,
   };
@@ -44,7 +43,6 @@ type DetailOptions = {
   runCount?: number;
   version?: number;
   parSteps?: number | null;
-  hasPlayed?: boolean;
   isDaily?: boolean;
 };
 
@@ -88,10 +86,8 @@ export function mapDetail(id: number, title: string, content: string, options: D
     player: {
       best: null as { gold: number; steps: number } | null,
       stars: 0 as number | null,
-      likes: 0,
-      likedByMe: false,
-      hasPlayed: options.hasPlayed ?? false,
       isDaily: options.isDaily ?? false,
+      difficulty: "easy" as "easy" | "medium" | "hard" | null,
     },
   };
 }

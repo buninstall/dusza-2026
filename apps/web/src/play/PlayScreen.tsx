@@ -236,8 +236,8 @@ export function PlayScreen(props: PlayScreenProps) {
             />
           </div>
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
-          {props.wellOverlay}
         </div>
+        {props.wellOverlay}
         <ControlDeck
           mode={mode}
           layout="cab"

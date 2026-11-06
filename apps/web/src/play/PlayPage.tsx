@@ -2,7 +2,6 @@ import type { MineMap, RobotState } from "@minescript/engine";
 import { useEffect, useId, useMemo, useRef } from "react";
 import { Link } from "../components/ui/Link.tsx";
 import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
-import { LikeButton } from "../game/LikeButton.tsx";
 import { RunMedal } from "../game/RunMedal.tsx";
 import { StarRow } from "../game/StarRow.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -59,9 +58,7 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
           <span className="play-progress" title={hu.game.starRule(detail.map.parSteps)}>
             <StarRow stars={detail.player.stars} size="sm" />
             {detail.map.parSteps === null ? null : (
-              <span>
-                {hu.game.parLabel}: {hu.game.par(detail.map.parSteps)}
-              </span>
+              <span>{hu.game.parShort(detail.map.parSteps)}</span>
             )}
           </span>
         )
@@ -77,12 +74,6 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
           >
             {hu.play.toLeaderboard}
           </Link>
-          <LikeButton
-            mapId={mapId}
-            likes={detail.player.likes}
-            likedByMe={detail.player.likedByMe}
-            hasPlayed={detail.player.hasPlayed}
-          />
           {detail.canEdit ? (
             <Link
               to="/maps/$mapId/edit"

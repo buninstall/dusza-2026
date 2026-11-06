@@ -8,7 +8,7 @@ import { apiError, messages } from "../lib/errors.ts";
 import { attachmentDisposition } from "../lib/request.ts";
 import { validationHook } from "../lib/validation.ts";
 import { ensureDailyMap } from "../services/daily.ts";
-import { computeParSteps, generateMap } from "../services/generator.ts";
+import { computeParSteps, difficultyOf, generateMap } from "../services/generator.ts";
 import {
   canEdit,
   canView,
@@ -24,13 +24,12 @@ import {
   validateMapContent,
   versionList,
 } from "../services/maps.ts";
-import { bestScore, hasPlayed, likeState, progressOf, setLike } from "../services/progress.ts";
+import { bestScore, progressOf } from "../services/progress.ts";
 import {
   createMapSchema,
   generateMapSchema,
   idParam,
   leaderboardQuery,
-  likeSchema,
   listMapsQuery,
   parSchema,
   updateMapSchema,
@@ -39,16 +38,14 @@ import {
 const invalidMapMessage = "A térkép nem felel meg a szabályoknak.";
 
 const MAX_SEED = 0xffff_ffff;
-const likeNeedsRun = "Előbb futtass egy programot ezen a pályán, utána jelölheted, hogy tetszik.";
 
 export function mapRoutes(deps: Deps) {
   const playerView = async (user: SessionUser, map: MapRow, version: MapVersionRow) => {
     const best = await bestScore(deps.db, user.id, version.id);
     return {
       ...progressOf(best, version.reachableGold, map.parSteps),
-      ...(await likeState(deps.db, user.id, map.id)),
-      hasPlayed: await hasPlayed(deps.db, user.id, map.id),
       isDaily: map.dailyDate !== null,
+      difficulty: difficultyOf(deps.engine, version.content, version.contentHash),
     };
   };
 
@@ -73,11 +70,11 @@ export function mapRoutes(deps: Deps) {
     .use(requireUser(deps))
     .get("/", zValidator("query", listMapsQuery, validationHook), async (c) => {
       const { scope } = c.req.valid("query");
-      return c.json({ maps: await listMaps(deps.db, c.var.user, scope) }, 200);
+      return c.json({ maps: await listMaps(deps.db, deps.engine, c.var.user, scope) }, 200);
     })
     .get("/daily", async (c) => {
       const daily = await ensureDailyMap(deps, c.var.user);
-      const [summary] = await mapSummaries(deps.db, c.var.user, eq(maps.id, daily.id));
+      const [summary] = await mapSummaries(deps.db, deps.engine, c.var.user, eq(maps.id, daily.id));
       if (!summary) {
         return apiError(c, 404, "NOT_FOUND", messages.notFound);
       }
@@ -177,27 +174,6 @@ export function mapRoutes(deps: Deps) {
       await deps.db.delete(maps).where(eq(maps.id, map.id));
       return c.json({ ok: true }, 200);
     })
-    .post(
-      "/:id/like",
-      zValidator("param", idParam, validationHook),
-      zValidator("json", likeSchema, validationHook),
-      async (c) => {
-        const map = await findMap(deps.db, c.req.valid("param").id);
-        if (!map || !canView(c.var.user, map)) {
-          return apiError(c, 404, "NOT_FOUND", messages.notFound);
-        }
-        if (!(await hasPlayed(deps.db, c.var.user.id, map.id))) {
-          return apiError(c, 409, "LIKE_NEEDS_RUN", likeNeedsRun);
-        }
-        await setLike(deps.db, {
-          userId: c.var.user.id,
-          mapId: map.id,
-          liked: c.req.valid("json").liked,
-          now: deps.now(),
-        });
-        return c.json(await likeState(deps.db, c.var.user.id, map.id), 200);
-      },
-    )
     .get("/:id/export", zValidator("param", idParam, validationHook), async (c) => {
       const found = await detail(c.req.valid("param").id);
       if (!found || !canView(c.var.user, found.map)) {

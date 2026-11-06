@@ -153,24 +153,6 @@ function alertBadge(pos: Pos, runId: number): ReactNode {
   );
 }
 
-function trail(input: DressingInput): ReactNode[] {
-  const { frame, robot } = input;
-  if (!frame || frame.walked.size < 2) {
-    return [];
-  }
-  const here = posKey(robot.pos);
-  return [...frame.walked]
-    .filter((key) => key !== here)
-    .map((key) => {
-      const [row = 0, col = 0] = key.split(":").map(Number);
-      return (
-        <Fx key={`trail-${key}`} kind="trail" pos={{ row, col }}>
-          <span className="board-fx-art" />
-        </Fx>
-      );
-    });
-}
-
 function glints(input: DressingInput): ReactNode[] {
   const { frame, phase, runId } = input;
   if (phase !== "finished" || !frame?.atEnd) {
@@ -240,7 +222,6 @@ export function boardDressing(input: DressingInput, mood: RobotMood): Dressing {
   return {
     overlay: (
       <>
-        {trail(dressed)}
         {reveals(dressed)}
         {glints(dressed)}
         {faultNodes(dressed)}

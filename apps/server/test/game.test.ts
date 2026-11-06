@@ -6,7 +6,7 @@ import { dailyPlan, dayKey } from "../src/services/daily.ts";
 import { computeParSteps, generateLayout, generateMap } from "../src/services/generator.ts";
 import { solveRoute } from "../src/services/route-solver.ts";
 import { starsFor } from "../src/services/stars.ts";
-import { createTestContext, type ErrorBody, json } from "./helpers.ts";
+import { createTestContext, json } from "./helpers.ts";
 
 type Summary = {
   id: number;
@@ -14,8 +14,6 @@ type Summary = {
   parSteps: number | null;
   best: { gold: number; steps: number } | null;
   stars: number | null;
-  likes: number;
-  likedByMe: boolean;
 };
 
 type Standing = {
@@ -85,7 +83,7 @@ describe("útvonaltervező és generátor", () => {
   });
 });
 
-describe("haladás, célérték és tetszés", () => {
+describe("haladás és célérték", () => {
   test("a lista a saját legjobbat és a csillagokat mutatja", async () => {
     await using context = await createTestContext();
     const player = context.client();
@@ -99,7 +97,7 @@ describe("haladás, célérték és tetszés", () => {
     const { map } = await json<{ map: { id: number; currentVersionId: number } }>(created);
     const list = async () =>
       (await json<{ maps: Summary[] }>(await player.get("/api/maps"))).maps[0];
-    expect(await list()).toMatchObject({ parSteps: 4, best: null, stars: 0, likes: 0 });
+    expect(await list()).toMatchObject({ parSteps: 4, best: null, stars: 0, difficulty: "easy" });
 
     const run = async (source: string) =>
       json<Standing>(
@@ -131,33 +129,6 @@ describe("haladás, célérték és tetszés", () => {
     expect(await list()).toMatchObject({ parSteps: null, stars: 2 });
     const invalid = await player.put(`/api/maps/${map.id}`, { parSteps: 0 });
     expect(invalid.status).toBe(400);
-  });
-
-  test("tetszést csak az jelölhet, aki már futtatott a pályán", async () => {
-    await using context = await createTestContext();
-    const owner = context.client();
-    await owner.register("gazda");
-    const { map } = await json<{ map: { id: number; currentVersionId: number } }>(
-      await owner.post("/api/maps", { title: "Tetszik", content: CORRIDOR }),
-    );
-    const fan = context.client();
-    await fan.register("rajongo");
-    const early = await fan.post(`/api/maps/${map.id}/like`, { liked: true });
-    expect(early.status).toBe(409);
-    expect((await json<ErrorBody>(early)).error.code).toBe("LIKE_NEEDS_RUN");
-    await fan.post("/api/runs", { mapVersionId: map.currentVersionId, source: "" });
-    const liked = await fan.post(`/api/maps/${map.id}/like`, { liked: true });
-    expect(await json(liked)).toEqual({ likes: 1, likedByMe: true });
-    const again = await fan.post(`/api/maps/${map.id}/like`, { liked: true });
-    expect(await json(again)).toEqual({ likes: 1, likedByMe: true });
-    const detail = await json<{
-      player: { likes: number; likedByMe: boolean; hasPlayed: boolean };
-    }>(await fan.get(`/api/maps/${map.id}`));
-    expect(detail.player).toMatchObject({ likes: 1, likedByMe: true, hasPlayed: true });
-    const ownerView = (await json<{ maps: Summary[] }>(await owner.get("/api/maps"))).maps[0];
-    expect(ownerView).toMatchObject({ likes: 1, likedByMe: false });
-    const unliked = await fan.post(`/api/maps/${map.id}/like`, { liked: false });
-    expect(await json(unliked)).toEqual({ likes: 0, likedByMe: false });
   });
 });
 

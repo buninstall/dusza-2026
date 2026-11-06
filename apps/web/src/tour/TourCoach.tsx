@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { Dialog, Heading, Popover } from "react-aria-components";
+import { Popover } from "react-aria-components";
 import { InlineText } from "../components/InlineText.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -118,11 +118,11 @@ export function TourCoach({ mapId, source, onSourceChange }: TourCoachProps) {
       offset={12}
       className="overlay-popover tour"
     >
-      <Dialog className="overlay-popover-dialog" aria-labelledby="tour-title">
+      <section className="overlay-popover-dialog" aria-labelledby="tour-title">
         <p className="tour-progress">{hu.tour.progress(index + 1, TOUR_STEPS.length)}</p>
-        <Heading id="tour-title" slot="title" className="tour-title">
+        <h2 id="tour-title" className="tour-title">
           {copy.title}
-        </Heading>
+        </h2>
         <p className="tour-body" role="status">
           <InlineText text={copy.body} />
         </p>
@@ -147,7 +147,7 @@ export function TourCoach({ mapId, source, onSourceChange }: TourCoachProps) {
             </Button>
           )}
         </div>
-      </Dialog>
+      </section>
     </Popover>
   );
 }

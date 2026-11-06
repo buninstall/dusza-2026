@@ -14,16 +14,19 @@
   container: stage / size;
   min-height: 36rem;
   grid-template-columns: var(--rail-w) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto var(--log-h);
+  grid-template-rows: auto minmax(0, 1fr) auto auto var(--log-h);
   grid-template-areas:
     "bezel bezel"
     "rail well"
+    "rail medal"
     "deck deck"
     "log log";
 }
 
-.stage[data-layout="cab"]:has(.log[data-report="true"]) {
-  --log-h: clamp(10rem, 25vh, 15rem);
+@media (min-height: 50rem) {
+  .stage[data-layout="cab"]:has(.log[data-report="true"]) {
+    --log-h: clamp(10rem, 25vh, 15rem);
+  }
 }
 
 .stage[data-layout="panes"] {
@@ -33,6 +36,7 @@
     "bezel"
     "rail"
     "well"
+    "medal"
     "deck"
     "log";
 }
@@ -76,14 +80,9 @@
 
 .stage-bezel .plate-actions {
   flex: 0 1 auto;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-wrap: nowrap;
   gap: var(--space-2);
   min-width: 0;
-}
-
-.stage-bezel .plate-actions > * {
-  flex: none;
 }
 
 .stage-well {

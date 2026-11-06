@@ -60,12 +60,6 @@ export function Progress({ map }: { map: MapSummary }) {
         <span className="lv-progress-label">{hu.game.bestLabel}</span>
         {map.best ? hu.game.best(map.best.gold, map.best.steps) : hu.game.notPlayed}
       </span>
-      {map.likes > 0 ? (
-        <span className="lv-progress-likes" data-liked={map.likedByMe}>
-          <PixelIcon name="heart" size="sm" />
-          {hu.game.likes(map.likes)}
-        </span>
-      ) : null}
     </div>
   );
 }

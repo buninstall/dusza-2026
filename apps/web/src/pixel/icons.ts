@@ -576,19 +576,6 @@ const STAR_EMPTY: PixelRows = [
   "..........",
 ];
 
-const HEART: PixelRows = [
-  "..........",
-  ".###..###.",
-  "##########",
-  "##########",
-  "##########",
-  ".########.",
-  "..######..",
-  "...####...",
-  "....##....",
-  "..........",
-];
-
 const SOUND_ON: PixelRows = [
   "...#......",
   "..##...#..",
@@ -706,7 +693,6 @@ const ART = {
   replay: REPLAY,
   starFull: STAR_FULL,
   starEmpty: STAR_EMPTY,
-  heart: HEART,
   soundOn: SOUND_ON,
   soundOff: SOUND_OFF,
   dice: DICE,

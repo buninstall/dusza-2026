@@ -65,22 +65,6 @@ describe("eredmény és tetszés a játék oldalon", () => {
     await user.click(within(medal).getByRole("button", { name: "Bezárás" }));
     expect(screen.queryByRole("region", { name: "Eredmény" })).toBeNull();
   });
-
-  test("a Tetszik futás előtt csak tippet ad, utána menti a jelölést", async () => {
-    const { user } = await openPlay();
-    await user.click(screen.getByRole("button", { name: /Tetszik/ }));
-    expect(await screen.findByText(/Előbb futtass egy programot/)).toBeTruthy();
-    expect(callsTo("POST", "/maps/:id/like")).toHaveLength(0);
-  });
-
-  test("futás után a tetszés elmentődik", async () => {
-    onApi("POST", "/maps/:id/like", () => ({ body: { likes: 1, likedByMe: true } }));
-    const { user } = await openPlay({ hasPlayed: true });
-    await user.click(screen.getByRole("button", { name: /Tetszik/ }));
-    await waitFor(() =>
-      expect(callsTo("POST", `/maps/${MAP_ID}/like`)[0]?.body).toEqual({ liked: true }),
-    );
-  });
 });
 
 describe("bevezető a játék oldalon", () => {

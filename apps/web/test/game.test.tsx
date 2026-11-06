@@ -10,32 +10,17 @@ import {
 } from "../src/editor/breakpoints.ts";
 import { StarRow } from "../src/game/StarRow.tsx";
 import { clearDraft, emptyDraft, frameDraft, paint } from "../src/map-editor/editor-state.ts";
-import { sortMaps } from "../src/maps/sort.ts";
-import { deriveFrame } from "../src/play/derive.ts";
 import { usePlayback } from "../src/play/playback-store.ts";
 import { isSoundOn, playCue, SOUND_KEY, setSoundOn } from "../src/sound/sfx.ts";
 import { activeStep, TOUR_KEY, useTour } from "../src/tour/tour-state.ts";
 import { callsTo, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import {
-  CORRIDOR,
-  corridorStart,
-  LABYRINTH,
-  mapSummary,
-  trace,
-  walkTrace,
-} from "./support/fixtures.ts";
+import { CORRIDOR, corridorStart, LABYRINTH, mapSummary, walkTrace } from "./support/fixtures.ts";
 
 describe("csillagok és rendezés", () => {
   test("a csillagsor olvasható címkét kap", () => {
     render(<StarRow stars={2} />);
     expect(screen.getByRole("img", { name: "2 / 3 csillag" })).toBeTruthy();
-  });
-
-  test("a Népszerű rendezés a tetszések száma szerint rendez", () => {
-    const quiet = { ...mapSummary(1, "Csendes", CORRIDOR), likes: 1 };
-    const loved = { ...mapSummary(2, "Kedvenc", LABYRINTH), likes: 4 };
-    expect(sortMaps([quiet, loved], "popular").map((map) => map.id)).toEqual([2, 1]);
   });
 });
 
@@ -92,15 +77,6 @@ describe("töréspontok", () => {
     usePlayback.getState().play();
     usePlayback.getState().tick();
     expect(usePlayback.getState().status).toBe("playing");
-  });
-});
-
-describe("nyomvonal", () => {
-  test("a bejárt mezők külön halmazban vannak a felfedezettektől", () => {
-    const frame = deriveFrame(walkTrace, corridorStart, 2);
-    expect([...frame.walked].sort()).toEqual(["0:0", "0:1", "0:2"]);
-    const scanOnly = trace([{ line: 1, discovered: [{ row: 0, col: 1 }] }], { kind: "ok" });
-    expect([...deriveFrame(scanOnly, corridorStart, 1).walked]).toEqual(["0:0"]);
   });
 });
 

@@ -405,7 +405,6 @@ const sections: readonly ManualSection[] = [
           "A célérték a pálya adatai között látszik. Ha egy pályának nincs célértéke, ott legfeljebb 2 csillag jár.",
           "A futás végén megjelenő eredménysáv megmutatja a megszerzett csillagokat, azt, hogy mi kell a következőhöz, és innen a következő pályára is továbbléphetsz.",
           "A `Napi kihívás` minden nap új, géppel generált pálya: mindenki ugyanazt kapja, és saját ranglistája van.",
-          "Ha egy pályán már futtattál, a `Tetszik` gombbal jelölheted, hogy tetszett. A `Pályák` oldalon a `Népszerű` rendezés előre sorolja a kedvelt pályákat.",
           "A ranglistán bármelyik futást megnézheted a `Megnézem` gombbal, a programjával együtt. A visszajátszás linkje megosztható.",
         ],
       },

@@ -37,7 +37,3 @@ export const leaderboardQuery = (mapId: number, versionId?: number) =>
 
 export const dailyQuery = () =>
   queryOptions({ queryKey: ["maps", "daily"], queryFn: fetchDaily, staleTime: 60_000 });
-
-export function likeMap(mapId: number, liked: boolean) {
-  return call(api.maps[":id"].like.$post({ param: { id: String(mapId) }, json: { liked } }));
-}

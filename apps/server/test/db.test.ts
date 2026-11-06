@@ -8,16 +8,7 @@ import { DatabaseError, isDuplicateEntry } from "../src/db/errors.ts";
 import { migrate } from "../src/db/migrate.ts";
 import { migrations } from "../src/db/migrations.gen.ts";
 import { firstRow } from "../src/db/rows.ts";
-import {
-  COLLATION,
-  mapLikes,
-  maps,
-  mapVersions,
-  programs,
-  runs,
-  sessions,
-  users,
-} from "../src/db/schema.ts";
+import { COLLATION, maps, mapVersions, programs, runs, sessions, users } from "../src/db/schema.ts";
 import type { DatabaseTarget } from "../src/db/url.ts";
 import {
   createTestContext,
@@ -135,9 +126,7 @@ describe("migrátor", () => {
 
   test("a migráció a séma minden indexét és idegen kulcsát létrehozza", async () => {
     await using database = await createTestDatabase();
-    const tables = [users, sessions, maps, mapVersions, mapLikes, programs, runs].map(
-      getTableConfig,
-    );
+    const tables = [users, sessions, maps, mapVersions, programs, runs].map(getTableConfig);
     const indexes = await query<NameRow>(
       database.target,
       "SELECT DISTINCT INDEX_NAME AS name FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = ?",

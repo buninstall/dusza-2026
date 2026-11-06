@@ -187,16 +187,6 @@
   text-transform: uppercase;
 }
 
-.lv-progress-likes {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.lv-progress-likes[data-liked="true"] .px-icon {
-  color: var(--c-danger-ink);
-}
-
 .lv-progress-note {
   font: var(--type-help);
   color: var(--c-text-faint);

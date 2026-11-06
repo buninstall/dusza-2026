@@ -111,10 +111,6 @@ export const generateMapSchema = z.object({
 
 export const parSchema = z.object({ content });
 
-export const likeSchema = z.object({
-  liked: z.boolean({ error: "A „liked” mező logikai érték kell legyen." }),
-});
-
 export const listMapsQuery = z.object({
   scope: z.enum(["all", "mine"], { error: "A szűrő „all” vagy „mine” lehet." }).default("all"),
 });

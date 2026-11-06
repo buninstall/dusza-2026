@@ -199,3 +199,29 @@ export function generateMap(
   const content = generateLayout(input);
   return { content, parSteps: computeParSteps(engine, content) };
 }
+
+const EASY_MAX_STEPS = 12;
+const MEDIUM_MAX_STEPS = 40;
+const DIFFICULTY_CACHE_LIMIT = 500;
+const difficultyCache = new Map<string, Difficulty | null>();
+
+export function difficultyOf(engine: Engine, content: string, cacheKey: string): Difficulty | null {
+  const cached = difficultyCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const steps = computeParSteps(engine, content);
+  const difficulty =
+    steps === null
+      ? null
+      : steps <= EASY_MAX_STEPS
+        ? "easy"
+        : steps <= MEDIUM_MAX_STEPS
+          ? "medium"
+          : "hard";
+  if (difficultyCache.size >= DIFFICULTY_CACHE_LIMIT) {
+    difficultyCache.clear();
+  }
+  difficultyCache.set(cacheKey, difficulty);
+  return difficulty;
+}

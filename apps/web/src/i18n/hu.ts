@@ -202,7 +202,6 @@ export const hu = {
       size: "Méret",
       gold: "Arany",
       recent: "Legújabb",
-      popular: "Népszerű",
     },
     own: "Saját",
     size: (rows: number, cols: number) => `${rows}×${cols}`,
@@ -735,10 +734,7 @@ export const hu = {
     notPlayed: "még nincs",
     parLabel: "Célérték",
     par: (steps: number) => `${steps} lépés`,
-    likes: (count: number) => `${count} tetszés`,
-    like: "Tetszik",
-    likeHint: "Előbb futtass egy programot ezen a pályán, utána jelölheted, hogy tetszik.",
-    likeFailed: "A tetszést nem sikerült menteni.",
+    parShort: (steps: number) => `Cél: ${steps} lépés`,
     newStar: (count: number) => (count === 1 ? "Új csillag!" : `${count} új csillag!`),
     nextStar: (stars: number, par: number | null, reachable: number) => {
       if (stars === 0) {
@@ -861,7 +857,7 @@ export const hu = {
     copied: "A link a vágólapra került.",
     copyFailed: "A linket nem sikerült másolni. Másold ki a címsorból.",
     runBy: (username: string) => `${username} futása`,
-    watch: (username: string) => `${username} futásának visszajátszása`,
+    watch: (username: string) => `Megnézem: ${username} futása`,
     watchShort: "Megnézem",
   },
   common: {

@@ -8,7 +8,6 @@ import {
   mediumtext,
   mysqlEnum,
   mysqlTable,
-  primaryKey,
   text,
   uniqueIndex,
   varchar,
@@ -81,23 +80,6 @@ export const maps = mysqlTable(
   (table) => [
     index("maps_owner_idx").on(table.ownerId),
     uniqueIndex("maps_daily_date_idx").on(table.dailyDate),
-  ],
-);
-
-export const mapLikes = mysqlTable(
-  "map_likes",
-  {
-    userId: int("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    mapId: int("map_id")
-      .notNull()
-      .references(() => maps.id, { onDelete: "cascade" }),
-    createdAt: millis("created_at").notNull(),
-  },
-  (table) => [
-    primaryKey({ columns: [table.userId, table.mapId] }),
-    index("map_likes_map_idx").on(table.mapId),
   ],
 );
 

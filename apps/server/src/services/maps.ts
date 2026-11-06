@@ -2,18 +2,11 @@ import type { Diagnostic, Engine, MapInfo, MineMap } from "@minescript/engine";
 import { and, asc, count, desc, eq, isNull, max, or, type SQL, sql } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import { firstRow } from "../db/rows.ts";
-import {
-  type MapRow,
-  type MapVersionRow,
-  mapLikes,
-  maps,
-  mapVersions,
-  runs,
-  users,
-} from "../db/schema.ts";
+import { type MapRow, type MapVersionRow, maps, mapVersions, runs, users } from "../db/schema.ts";
 import type { SessionUser } from "../env.ts";
 import { sha256Hex } from "../lib/crypto.ts";
-import { bestRunsOf, likeCounts, progressOf } from "./progress.ts";
+import { difficultyOf } from "./generator.ts";
+import { bestRunsOf, progressOf } from "./progress.ts";
 
 export type ValidMapContent = {
   ok: true;
@@ -108,9 +101,13 @@ export async function runCount(db: Db, mapVersionId: number): Promise<number> {
   return row?.value ?? 0;
 }
 
-export async function mapSummaries(db: Db, user: SessionUser, filter: SQL | undefined) {
+export async function mapSummaries(
+  db: Db,
+  engine: Engine,
+  user: SessionUser,
+  filter: SQL | undefined,
+) {
   const mine = bestRunsOf(db, user.id);
-  const liked = likeCounts(db);
   const rows = await db
     .select({
       id: maps.id,
@@ -125,29 +122,23 @@ export async function mapSummaries(db: Db, user: SessionUser, filter: SQL | unde
       versionId: mapVersions.id,
       version: mapVersions.version,
       content: mapVersions.content,
+      contentHash: mapVersions.contentHash,
       rows: mapVersions.rows,
       cols: mapVersions.cols,
       goldTotal: mapVersions.goldTotal,
       reachableGold: mapVersions.reachableGold,
       bestGold: mine.gold,
       bestSteps: mine.steps,
-      likes: liked.likes,
-      likedByMe: sql<number>`exists(
-        select 1 from ${mapLikes}
-        where ${mapLikes.mapId} = ${maps.id} and ${mapLikes.userId} = ${user.id}
-      )`,
     })
     .from(maps)
     .innerJoin(users, eq(users.id, maps.ownerId))
     .innerJoin(mapVersions, eq(mapVersions.id, maps.currentVersionId))
     .leftJoin(mine, and(eq(mine.mapVersionId, mapVersions.id), eq(mine.position, 1)))
-    .leftJoin(liked, eq(liked.mapId, maps.id))
     .where(filter)
     .orderBy(asc(maps.createdAt), asc(maps.id));
-  return rows.map(({ bestGold, bestSteps, likes, likedByMe, ...row }) => ({
+  return rows.map(({ bestGold, bestSteps, contentHash, ...row }) => ({
     ...row,
-    likes: Number(likes ?? 0),
-    likedByMe: Number(likedByMe) === 1,
+    difficulty: difficultyOf(engine, row.content, contentHash),
     ...progressOf(
       bestGold === null || bestSteps === null ? null : { gold: bestGold, steps: bestSteps },
       row.reachableGold,
@@ -156,8 +147,8 @@ export async function mapSummaries(db: Db, user: SessionUser, filter: SQL | unde
   }));
 }
 
-export function listMaps(db: Db, user: SessionUser, scope: "all" | "mine") {
-  return mapSummaries(db, user, and(isNull(maps.dailyDate), visibleTo(user, scope)));
+export function listMaps(db: Db, engine: Engine, user: SessionUser, scope: "all" | "mine") {
+  return mapSummaries(db, engine, user, and(isNull(maps.dailyDate), visibleTo(user, scope)));
 }
 
 export function createMapWithVersion(

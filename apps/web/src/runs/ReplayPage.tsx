@@ -6,6 +6,7 @@ import { Led } from "../components/Led.tsx";
 import { Notice } from "../components/Notice.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { ModalShell } from "../components/ui/Dialog.tsx";
+import { IconButton } from "../components/ui/IconButton.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
@@ -106,9 +107,7 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
           <Button size="sm" icon="pickaxe" onPress={requestOpen}>
             {hu.replay.openInEditor}
           </Button>
-          <Button size="sm" icon="copy" onPress={() => void copyLink()}>
-            {hu.share.copy}
-          </Button>
+          <IconButton icon="copy" label={hu.share.copy} size="sm" onPress={() => void copyLink()} />
           <Link
             to="/leaderboard/$mapId"
             params={{ mapId: String(run.mapId) }}

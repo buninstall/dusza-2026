@@ -1,70 +1,9 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "7589a5c5-a1c0-4d33-b13a-dc6052c912d2",
+  "id": "bd4d2c92-c9b9-4279-9c92-2e9f3a3e2984",
   "prevId": "7dc34550-f3b1-4286-92b1-7532f750cc62",
   "tables": {
-    "map_likes": {
-      "name": "map_likes",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "map_id": {
-          "name": "map_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "map_likes_map_idx": {
-          "name": "map_likes_map_idx",
-          "columns": ["map_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "map_likes_user_id_users_id_fk": {
-          "name": "map_likes_user_id_users_id_fk",
-          "tableFrom": "map_likes",
-          "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "map_likes_map_id_maps_id_fk": {
-          "name": "map_likes_map_id_maps_id_fk",
-          "tableFrom": "map_likes",
-          "tableTo": "maps",
-          "columnsFrom": ["map_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "map_likes_user_id_map_id_pk": {
-          "name": "map_likes_user_id_map_id_pk",
-          "columns": ["user_id", "map_id"]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
     "map_versions": {
       "name": "map_versions",
       "columns": {
