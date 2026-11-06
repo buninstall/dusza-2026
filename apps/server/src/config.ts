@@ -47,21 +47,30 @@ function resolveDatabase(
   return parseDatabaseUrl(firstSet(flag, env.DATABASE_URL) ?? DEFAULT_DATABASE_URL);
 }
 
+const OPTIONS = {
+  port: { type: "string" },
+  host: { type: "string" },
+  "database-url": { type: "string" },
+  "no-open": { type: "boolean", default: false },
+  "reset-demo": { type: "boolean", default: false },
+  static: { type: "boolean", default: false },
+  "test-mode": { type: "boolean", default: false },
+} as const;
+
+const USAGE =
+  "Használható kapcsolók: --port <szám>, --host <cím>, --database-url <mysql://…>, " +
+  "--no-open, --reset-demo, --static, --test-mode.";
+
+function readArguments(argv: string[]) {
+  try {
+    return parseArgs({ args: argv, options: OPTIONS, strict: true, allowPositionals: false });
+  } catch {
+    throw new Error(`Hibás parancssori kapcsoló: ${argv.join(" ")}. ${USAGE}`);
+  }
+}
+
 export function parseConfig(argv: string[], env: Environment = process.env): ServerConfig {
-  const { values } = parseArgs({
-    args: argv,
-    options: {
-      port: { type: "string" },
-      host: { type: "string" },
-      "database-url": { type: "string" },
-      "no-open": { type: "boolean", default: false },
-      "reset-demo": { type: "boolean", default: false },
-      static: { type: "boolean", default: false },
-      "test-mode": { type: "boolean", default: false },
-    },
-    strict: true,
-    allowPositionals: false,
-  });
+  const { values } = readArguments(argv);
   const compiled = isCompiledBinary();
   const testMode = values["test-mode"];
   const rawPort = values.port ?? env.PORT ?? `${DEFAULT_PORT}`;

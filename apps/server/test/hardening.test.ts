@@ -348,4 +348,13 @@ describe("indítási beállítások és korlátok", () => {
       expect(() => parseDatabaseUrl(url)).toThrow("hibás százalékos kódolást");
     }
   });
+
+  test("az ismeretlen, hiányos vagy fölösleges kapcsoló magyar hibát ad", () => {
+    const env = { DATABASE_URL: "mysql://root@127.0.0.1/minescript" };
+    for (const argv of [["--xyz"], ["--port"], ["extra"], ["--no-open=igen"]]) {
+      expect(() => parseConfig(argv, env)).toThrow(
+        `Hibás parancssori kapcsoló: ${argv.join(" ")}. Használható kapcsolók:`,
+      );
+    }
+  });
 });
