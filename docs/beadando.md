@@ -41,7 +41,22 @@ A program alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` c
 
 ## Mi nem készült el vagy maradt ki
 
-A hátralévő munka szerepenként: [`docs/roadmap.md`](roadmap.md). Beadás előtt itt sorold fel, ami végül kimaradt.
+A kiírás minden kötelező funkciója elkészült: bejelentkezés és felhasználókezelés, térképszerkesztő importtal és exporttal, programszerkesztő importtal és exporttal, szintaktikai ellenőrzés a hibás sorok jelölésével, lassított futtatás az aktuális sorral, konzollal, a felfedezett mezőkkel, arany- és lépésszámlálóval, leállítással, minden futásidejű hibakód és a lépéskorlát, valamint a térképenkénti ranglista.
+
+A kiírás néhány nyitva hagyott pontját írásban rögzített döntés szerint valósítottuk meg ([`docs/dontesek.md`](dontesek.md)). Ezek nem hiányok, hanem értelmezések, például:
+
+- a felhasználó által leállított futás nem kerül a ranglistára, a befejezett futás (hiba nélkül, futásidejű hibával vagy a lépéskorlát miatt) igen (D13);
+- a szintaktikailag hibás programfájl betölthető a szerkesztőbe, hogy javítani lehessen; a felület hibaüzenetben jelzi a hibák számát és az első hibás sort, futtatni pedig csak a hibátlan programot lehet (D23);
+- a ranglistán felhasználónként a legjobb futás látszik, a módosított térkép új verziót és új ranglistát kap (D13, D14).
+
+Az alábbi, tervezett plusz szolgáltatások maradtak ki:
+
+- töréspont a sorszámra kattintva (a lejátszás soronként léptethető és tekerhető, de megállási pontot nem lehet kijelölni);
+- lépésenkénti, interaktív bevezető az első térképhez (helyette a Kézikönyv és a pályánkénti kész receptek segítenek);
+- megosztható visszajátszás-link (a saját futások visszajátszása elkészült, a link más felhasználónak nem küldhető);
+- pályagenerátor;
+- golf-tippek (rövidebb program ugyanannyi aranyra);
+- VS Code-bővítmény és LSP-szerver a motorból.
 
 ## Plusz szolgáltatások
 

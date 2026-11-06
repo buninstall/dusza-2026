@@ -36,7 +36,8 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 
 ### P2
 
-- [ ] Visszaléptetés és tekerés billentyűparancsokkal (például `,`/`.`), breakpoint a sorszámra kattintva.
+- [x] Visszaléptetés és tekerés billentyűparancsokkal (nyilak, Home, End) és az idővonallal.
+- [ ] Töréspont a sorszámra kattintva.
 - [x] Változó-panel típusjelöléssel.
 - [ ] A szerveroldali ellenőrzés UI-ja: eltérés esetén figyelmeztetés a kliens és a szerver eredménye között.
 - [x] Saját futások oldala (`/api/me/runs`).
@@ -45,8 +46,9 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 
 ### P3
 
-- [ ] Saját futások visszajátszása és megosztható visszajátszás-link.
-- [ ] Elérhetőségi vizualizáció (BFS-terület) a szerkesztőben.
+- [x] Saját futások visszajátszása (`/runs`).
+- [ ] Megosztható visszajátszás-link.
+- [x] Elérhetőségi vizualizáció (BFS-terület) a szerkesztőben: „Bejárható rész”, az elérhetetlen arany jelölése.
 - [ ] Pályagenerátor.
 
 ## testing
