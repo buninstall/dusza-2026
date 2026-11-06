@@ -24,4 +24,6 @@ export const messages = {
   validation: "A kérés adatai hibásak.",
   internal: "Váratlan szerverhiba történt. Próbáld újra később.",
   csrf: "A kérés forrása nem engedélyezett.",
+  malformedJson: "A kérés törzse nem érvényes JSON.",
+  payloadTooLarge: "A kérés túl nagy (legfeljebb 1 MiB lehet).",
 } as const;

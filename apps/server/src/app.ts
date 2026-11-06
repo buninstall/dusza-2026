@@ -1,4 +1,6 @@
 import { Hono, type MiddlewareHandler } from "hono";
+import { bodyLimit } from "hono/body-limit";
+import { HTTPException } from "hono/http-exception";
 import type { AppEnv, Deps } from "./env.ts";
 import { apiError, messages } from "./lib/errors.ts";
 import { adminRoutes } from "./routes/admin.ts";
@@ -23,6 +25,13 @@ export function buildApi(deps: Deps) {
 
 export type AppType = ReturnType<typeof buildApi>;
 
+export const MAX_BODY_BYTES = 1024 * 1024;
+
+const requestBodyLimit = bodyLimit({
+  maxSize: MAX_BODY_BYTES,
+  onError: (c) => apiError(c, 413, "PAYLOAD_TOO_LARGE", messages.payloadTooLarge),
+});
+
 export type AppOptions = {
   staticHandler?: MiddlewareHandler<AppEnv>;
   logError?: (error: unknown) => void;
@@ -32,12 +41,16 @@ export function createApp(deps: Deps, options: AppOptions = {}) {
   const app = new Hono<AppEnv>();
   app.use("*", securityHeaders);
   app.use("/api/*", originCheck);
+  app.use("/api/*", requestBodyLimit);
   app.route("/api", buildApi(deps));
   if (options.staticHandler) {
     app.get("*", options.staticHandler);
   }
   app.notFound((c) => apiError(c, 404, "NOT_FOUND", messages.notFound));
   app.onError((error, c) => {
+    if (error instanceof HTTPException && error.status === 400) {
+      return apiError(c, 400, "VALIDATION", messages.malformedJson);
+    }
     (options.logError ?? console.error)(error);
     return apiError(c, 500, "INTERNAL", messages.internal);
   });

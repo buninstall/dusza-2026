@@ -65,7 +65,7 @@ export function parseConfig(argv: string[], env: Environment = process.env): Ser
   const compiled = isCompiledBinary();
   const testMode = values["test-mode"];
   const rawPort = values.port ?? env.PORT ?? `${DEFAULT_PORT}`;
-  const port = Number.parseInt(rawPort, 10);
+  const port = /^[0-9]{1,5}$/.test(rawPort) ? Number(rawPort) : Number.NaN;
   if (!Number.isInteger(port) || port < 1 || port > 65_535) {
     throw new Error(`Érvénytelen port: ${rawPort}`);
   }

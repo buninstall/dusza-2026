@@ -31,6 +31,16 @@ export function quoteIdentifier(name: string): string {
   return `\`${assertDatabaseName(name)}\``;
 }
 
+function decodePart(part: string): string {
+  try {
+    return decodeURIComponent(part);
+  } catch {
+    throw new DatabaseUrlError(
+      `Az adatbázis-URL hibás százalékos kódolást tartalmaz (${URL_FORMAT}).`,
+    );
+  }
+}
+
 function parseUrl(raw: string): URL {
   const url = URL.canParse(raw) ? new URL(raw) : null;
   if (url?.protocol !== "mysql:" || url.hostname === "") {
@@ -50,13 +60,13 @@ export function parseServerUrl(raw: string): MysqlServer {
   return {
     host: url.hostname.replace(/^\[(.*)\]$/, "$1"),
     port,
-    user: decodeURIComponent(url.username),
-    password: decodeURIComponent(url.password),
+    user: decodePart(url.username),
+    password: decodePart(url.password),
   };
 }
 
 export function parseDatabaseUrl(raw: string): DatabaseTarget {
-  const database = decodeURIComponent(parseUrl(raw).pathname.replace(/^\//, ""));
+  const database = decodePart(parseUrl(raw).pathname.replace(/^\//, ""));
   if (database === "") {
     throw new DatabaseUrlError(`Az adatbázis-URL-ből hiányzik az adatbázis neve (${URL_FORMAT}).`);
   }

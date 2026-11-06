@@ -161,23 +161,41 @@ export function createMapWithVersion(
   });
 }
 
-export async function replaceContent(
+export function replaceContent(
   db: Db,
   map: MapRow,
   valid: ValidMapContent,
   now: number,
 ): Promise<{ versionId: number; createdNewVersion: boolean }> {
-  const current = await currentVersion(db, map);
   const values = versionValues(valid);
-  if (current && current.contentHash === values.contentHash) {
-    return { versionId: current.id, createdNewVersion: false };
-  }
-  if (current && (await runCount(db, current.id)) === 0) {
-    await db.update(mapVersions).set(values).where(eq(mapVersions.id, current.id));
-    return { versionId: current.id, createdNewVersion: false };
-  }
   return db.transaction(async (tx) => {
-    await tx.select({ id: maps.id }).from(maps).where(eq(maps.id, map.id)).for("update");
+    const [locked] = await tx
+      .select({ currentVersionId: maps.currentVersionId })
+      .from(maps)
+      .where(eq(maps.id, map.id))
+      .for("update");
+    const [current] =
+      locked?.currentVersionId == null
+        ? []
+        : await tx
+            .select({ id: mapVersions.id, contentHash: mapVersions.contentHash })
+            .from(mapVersions)
+            .where(eq(mapVersions.id, locked.currentVersionId))
+            .for("update");
+    if (current && current.contentHash === values.contentHash) {
+      return { versionId: current.id, createdNewVersion: false };
+    }
+    if (current) {
+      const [recorded] = await tx
+        .select({ value: count() })
+        .from(runs)
+        .where(eq(runs.mapVersionId, current.id))
+        .for("share");
+      if ((recorded?.value ?? 0) === 0) {
+        await tx.update(mapVersions).set(values).where(eq(mapVersions.id, current.id));
+        return { versionId: current.id, createdNewVersion: false };
+      }
+    }
     const [latest] = await tx
       .select({ value: max(mapVersions.version) })
       .from(mapVersions)

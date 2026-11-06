@@ -24,6 +24,9 @@ export function runRoutes(deps: Deps) {
         source,
         now: deps.now(),
       });
+      if (recorded.kind === "missing") {
+        return apiError(c, 404, "NOT_FOUND", messages.notFound);
+      }
       if (recorded.kind === "syntaxError") {
         const diagnostics =
           recorded.result.outcome.kind === "syntaxError" ? recorded.result.outcome.diagnostics : [];
