@@ -78,9 +78,14 @@
 
 .stage-bezel .plate-actions {
   flex: 0 1 auto;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--space-2);
   min-width: 0;
+}
+
+.stage-bezel .plate-actions .seg {
+  flex: none;
 }
 
 .stage-well {
@@ -167,8 +172,32 @@
     flex-wrap: wrap;
   }
 
-  .stage-bezel .plate-actions > .btn-icon-only {
+  .stage-bezel .bezel-keys > .btn-icon-only {
     order: -1;
+  }
+}
+
+.bezel-keys {
+  display: contents;
+}
+
+@container plate (width < 30rem) {
+  .stage-bezel .bezel-keys {
+    display: none;
+  }
+
+  .stage-bezel .seg-segment {
+    min-width: var(--target-min);
+  }
+
+  .stage-bezel .seg-segment-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
@@ -181,10 +210,16 @@
 
 .well-view[data-zoomed="true"] {
   overflow: auto;
+  cursor: grab;
+  overscroll-behavior: contain;
+}
+
+.well-view[data-panning="true"] {
+  cursor: grabbing;
+  user-select: none;
 }
 
 .well-view[data-zoomed="true"] .board-viewport[data-fit="both"] {
-  place-items: start;
   width: max-content;
   min-width: 100%;
   height: max-content;
@@ -194,15 +229,14 @@
 .well-view[data-zoomed="true"] .board {
   --tile: calc(clamp(var(--tile-min), var(--tile-fit), var(--tile-max)) * var(--zoom, 1));
 
-  margin: var(--space-2);
+  margin: auto;
 }
 
 .well-zoom {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 2px;
-  margin-left: auto;
-  padding: var(--space-1) var(--space-2);
 }
 
 .well-zoom-level {

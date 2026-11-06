@@ -419,7 +419,9 @@ export const hu = {
     stepsLimit: (limit: number) => `/ ${limit}`,
     stepsLeft: (count: number) => `${count} maradt`,
     line: "Sor",
-    lineButton: (line: number) => `Sor ${line}, mutasd a programban`,
+    splitLabel: "A szerkesztő és a bánya határa",
+    splitValue: (share: number) => `A szerkesztő a szélesség ${share}%-a`,
+    lineJump: (line: number) => `${lineRef(line)} mutatása a programban:`,
     position: "Pozíció",
     positionValue: (row: number, col: number) => `${row}:${col}`,
     robotAt: (row: number, col: number, dir: string) =>
@@ -517,6 +519,10 @@ export const hu = {
       { keys: ["←", "→"], action: "Egy sor vissza, előre (a bánya területén)" },
       { keys: ["Home", "End"], action: "Elejére, a végére (a bánya területén)" },
       { keys: ["L"], action: "Lámpafény és teljes térkép váltása" },
+      {
+        keys: ["Görgő", "Csippentés"],
+        action: "Térkép nagyítása a kurzor körül, nagyítva húzással mozgatás",
+      },
       { keys: ["+", "−"], action: "Gyorsabb, lassabb lejátszás" },
       { keys: ["Ctrl+S"], action: "Mentés" },
       { keys: ["Ctrl+O"], action: "Programtár" },

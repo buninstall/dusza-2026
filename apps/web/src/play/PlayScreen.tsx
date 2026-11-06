@@ -11,7 +11,7 @@ import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
 import { type Blocked, moodFor } from "./phase.ts";
 import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
-import { WellZoom } from "./stage/WellZoom.tsx";
+import { SplitHandle } from "./SplitHandle.tsx";
 import { useBreakpointNotice } from "./useBreakpointNotice.ts";
 import { useWellZoom } from "./useWellZoom.ts";
 import "./PlayScreen.css";
@@ -20,12 +20,20 @@ import { ControlDeck } from "./stage/ControlDeck.tsx";
 import { HudRail } from "./stage/HudRail.tsx";
 import { ConsoleTape, LOG_ID, LogToggle, MemoryTable } from "./stage/LogStrip.tsx";
 import { ShiftReport } from "./stage/ShiftReport.tsx";
-import { isTurbo, segmentDuration, stepDuration, usePrevious } from "./step-animation.ts";
+import {
+  isTurbo,
+  segmentDuration,
+  stepDuration,
+  usePrevious,
+  useStepWindow,
+} from "./step-animation.ts";
 import "./stage/Stage.css";
 import { usePlaybackTimer } from "./usePlaybackTimer.ts";
 import { usePlayLayout } from "./usePlayLayout.ts";
 import { type PlayCommands, usePlayShortcuts } from "./usePlayShortcuts.ts";
 import { lineTextOf, type PlayView } from "./usePlayView.ts";
+
+export const SHEET_ID = "program";
 
 export type MapFacts = {
   title: string;
@@ -80,8 +88,8 @@ function useStageMotion(map: MineMap, view: PlayView, start: RobotState) {
   const fogMode = usePlayUi((state) => state.fogMode);
   const previousIndex = usePrevious(index);
   const isReduced = usePrefersReducedMotion();
-  const stepMs = isReduced ? 0 : stepDuration(previousIndex, index, speed);
-  const isAdvancing = index === previousIndex + 1;
+  const isAdvancing = useStepWindow(`${runId}:${index}`, index === previousIndex + 1);
+  const stepMs = isReduced || !isAdvancing ? 0 : stepDuration(previousIndex, index, speed);
   const turbo = isTurbo(speed);
   const frame = view.frame;
   const robot = frame?.robot ?? start;
@@ -103,7 +111,8 @@ function useStageMotion(map: MineMap, view: PlayView, start: RobotState) {
     moodFor(view.phase),
   );
   const isFlying = isAdvancing && !turbo && !isReduced && frame?.event?.mined != null;
-  const flight = isFlying && frame?.event?.mined ? { key: index, from: frame.event.mined } : null;
+  const flight =
+    isFlying && frame?.event?.mined ? { key: `${runId}:${index}`, from: frame.event.mined } : null;
   const sparkle =
     frame?.lastMined && isAdvancing && !turbo ? { pos: frame.lastMined, key: index } : null;
   return {
@@ -133,7 +142,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const motion = useStageMotion(map, view, start);
   usePlaybackTimer();
   usePlaybackSounds();
-  useWellZoom(wellRef, motion.robot.pos);
+  useWellZoom(wellRef, motion.robot.pos, layout === "cab");
   useBreakpointNotice();
 
   useEffect(() => () => usePlayback.getState().clear(), []);
@@ -181,7 +190,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const consoleCount = frame?.console.length ?? 0;
 
   const stage = (
-    <RegionBoundary message={hu.play.stageFailed}>
+    <RegionBoundary key="stage" message={hu.play.stageFailed}>
       <section
         ref={stageRef}
         aria-label={hu.play.paneStage}
@@ -269,19 +278,33 @@ export function PlayScreen(props: PlayScreenProps) {
     </RegionBoundary>
   );
 
-  const sheet = <RegionBoundary message={hu.play.sheetFailed}>{props.sheet}</RegionBoundary>;
+  const sheet = (
+    <RegionBoundary key="sheet" message={hu.play.sheetFailed}>
+      {props.sheet}
+    </RegionBoundary>
+  );
+  const skip = (
+    <button
+      key="skip"
+      type="button"
+      className="play-skip"
+      onClick={() => requestAnimationFrame(props.focusEditor)}
+    >
+      {hu.play.toProgram}
+    </button>
+  );
+  const panes =
+    layout === "cab"
+      ? [sheet, <SplitHandle key="split" containerRef={rootRef} controls={SHEET_ID} />, stage]
+      : [skip, stage, sheet];
+  const share =
+    layout === "cab" && ui.sheetShare !== null
+      ? ({ "--sheet-share": `${ui.sheetShare}%` } as CSSProperties)
+      : undefined;
 
   return (
-    <div ref={rootRef} className="play" data-layout={layout} data-mode={mode}>
-      <button
-        type="button"
-        className="play-skip"
-        onClick={() => requestAnimationFrame(props.focusEditor)}
-      >
-        {hu.play.toProgram}
-      </button>
-      {stage}
-      {sheet}
+    <div ref={rootRef} className="play" data-layout={layout} data-mode={mode} style={share}>
+      {panes}
       <GoldFlight flight={motion.flight} rootRef={rootRef} />
       <LiveAnnouncer frame={frame} final={finalAnnouncement(view)} urgent={urgent} />
     </div>

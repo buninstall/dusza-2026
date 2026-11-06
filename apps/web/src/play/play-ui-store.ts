@@ -21,11 +21,19 @@ export type Pane = "stage" | "sheet";
 
 const STORAGE_KEY = "minescript.play-ui";
 
+export const SHEET_SHARE = { min: 24, max: 64, initial: 36 } as const;
+
+export const ZOOM_LEVELS = [1, 1.25, 1.5, 2, 2.5, 3, 4] as const;
+export const ZOOM_MIN = 1;
+export const ZOOM_MAX = 4;
+const ZOOM_EPSILON = 0.01;
+
 const persistedSchema = z.object({
   fogMode: z.enum(["lamp", "full"]).catch("lamp"),
   dismissedTips: z.array(z.enum(TIP_IDS)).catch([]),
   hasRunOnce: z.boolean().catch(false),
   isLogOpen: z.boolean().catch(false),
+  sheetShare: z.number().min(SHEET_SHARE.min).max(SHEET_SHARE.max).nullable().catch(null),
 });
 
 type Persisted = z.infer<typeof persistedSchema>;
@@ -35,9 +43,20 @@ const DEFAULTS: Persisted = {
   dismissedTips: [],
   hasRunOnce: false,
   isLogOpen: false,
+  sheetShare: null,
 };
 
-export const ZOOM_LEVELS = [1, 1.5, 2, 3] as const;
+export function clampZoom(zoom: number): number {
+  return Math.min(Math.max(zoom, ZOOM_MIN), ZOOM_MAX);
+}
+
+export function nextZoomLevel(zoom: number, direction: 1 | -1): number {
+  const levels = direction > 0 ? ZOOM_LEVELS : [...ZOOM_LEVELS].reverse();
+  const next = levels.find((level) =>
+    direction > 0 ? level > zoom + ZOOM_EPSILON : level < zoom - ZOOM_EPSILON,
+  );
+  return next ?? (direction > 0 ? ZOOM_MAX : ZOOM_MIN);
+}
 
 function readPersisted(): Persisted {
   const stored = readStorage(STORAGE_KEY);
@@ -59,7 +78,9 @@ type PlayUiState = Persisted & {
   zoom: number;
   setFogMode: (mode: FogMode) => void;
   toggleLog: () => void;
-  shiftZoom: (delta: number) => void;
+  setZoom: (zoom: number) => void;
+  shiftZoom: (direction: 1 | -1) => void;
+  setSheetShare: (share: number | null) => void;
   toggleFog: () => void;
   dismissTip: (id: TipId) => void;
   markRun: () => void;
@@ -83,11 +104,13 @@ export const usePlayUi = create<PlayUiState>()((set, get) => {
     zoom: 1,
     setFogMode: (fogMode) => persist({ fogMode }),
     toggleLog: () => persist({ isLogOpen: !get().isLogOpen }),
-    shiftZoom: (delta) => {
-      const current = ZOOM_LEVELS.findIndex((level) => level >= get().zoom);
-      const next = Math.min(Math.max(current + delta, 0), ZOOM_LEVELS.length - 1);
-      set({ zoom: ZOOM_LEVELS[next] ?? 1 });
-    },
+    setZoom: (zoom) => set({ zoom: clampZoom(zoom) }),
+    shiftZoom: (direction) => set({ zoom: nextZoomLevel(get().zoom, direction) }),
+    setSheetShare: (share) =>
+      persist({
+        sheetShare:
+          share === null ? null : Math.min(Math.max(share, SHEET_SHARE.min), SHEET_SHARE.max),
+      }),
     toggleFog: () => persist({ fogMode: get().fogMode === "lamp" ? "full" : "lamp" }),
     dismissTip: (id) => {
       if (id !== "blocked" && !get().dismissedTips.includes(id)) {
@@ -113,5 +136,6 @@ function pick(state: Persisted): Persisted {
     dismissedTips: state.dismissedTips,
     hasRunOnce: state.hasRunOnce,
     isLogOpen: state.isLogOpen,
+    sheetShare: state.sheetShare,
   };
 }

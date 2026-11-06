@@ -1,22 +1,20 @@
 import { Toolbar } from "react-aria-components";
 import { IconButton } from "../../components/ui/IconButton.tsx";
 import { hu } from "../../i18n/hu.ts";
-import { usePlayUi, ZOOM_LEVELS } from "../play-ui-store.ts";
+import { usePlayUi, ZOOM_MAX, ZOOM_MIN } from "../play-ui-store.ts";
 
 const PERCENT = 100;
 
 export function WellZoom() {
   const zoom = usePlayUi((state) => state.zoom);
   const shiftZoom = usePlayUi((state) => state.shiftZoom);
-  const min = ZOOM_LEVELS[0];
-  const max = ZOOM_LEVELS[ZOOM_LEVELS.length - 1] ?? min;
   return (
     <Toolbar className="well-zoom" aria-label={hu.play.zoomGroup}>
       <IconButton
         icon="minus"
         label={hu.play.zoomOut}
         size="sm"
-        isDisabled={zoom <= min}
+        isDisabled={zoom <= ZOOM_MIN}
         onPress={() => shiftZoom(-1)}
       />
       <output className="well-zoom-level" aria-live="polite">
@@ -26,7 +24,7 @@ export function WellZoom() {
         icon="plus"
         label={hu.play.zoomIn}
         size="sm"
-        isDisabled={zoom >= max}
+        isDisabled={zoom >= ZOOM_MAX}
         onPress={() => shiftZoom(1)}
       />
     </Toolbar>

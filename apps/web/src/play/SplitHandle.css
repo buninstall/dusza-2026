@@ -1,0 +1,54 @@
+.split-handle {
+  position: relative;
+  align-self: stretch;
+  width: var(--split-w);
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.split-handle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--border-thin);
+  background: var(--c-line);
+  translate: -50% 0;
+}
+
+.split-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 48px;
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+  box-shadow:
+    inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-hi),
+    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-bevel-lo);
+  translate: -50% -50%;
+}
+
+.split-handle:hover::after,
+.split-handle:active::after {
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+}
+
+.split-handle:hover::before,
+.split-handle:active::before {
+  background: var(--c-accent);
+}
+
+.split-handle:focus-visible {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: calc(var(--focus-width) * -1);
+}

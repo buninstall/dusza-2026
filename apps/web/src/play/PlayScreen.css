@@ -6,10 +6,20 @@
 }
 
 .play[data-layout="cab"] {
+  --split-w: calc(var(--space-3) + var(--space-2));
+
   flex: 1;
   min-height: 0;
-  grid-template-columns: minmax(0, 1fr) clamp(26rem, 34vw, 34rem);
-  grid-template-areas: "stage sheet";
+  grid-template-columns:
+    clamp(20rem, var(--sheet-share, min(36%, 28rem)), calc(100% - 36rem - var(--split-w)))
+    var(--split-w)
+    minmax(0, 1fr);
+  grid-template-areas: "sheet split stage";
+  column-gap: 0;
+}
+
+.play[data-layout="cab"] > .split-handle {
+  grid-area: split;
 }
 
 .play[data-layout="cab"] > .stage {

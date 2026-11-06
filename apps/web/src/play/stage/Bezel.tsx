@@ -4,6 +4,7 @@ import { Segmented } from "../../components/ui/Segmented.tsx";
 import { hu } from "../../i18n/hu.ts";
 import { usePlayUi } from "../play-ui-store.ts";
 import { KeysPopover } from "./KeysPopover.tsx";
+import { WellZoom } from "./WellZoom.tsx";
 
 type BezelProps = {
   name: string;
@@ -43,7 +44,10 @@ export function Bezel({ name, title, meta, documentTitle, actions }: BezelProps)
         <>
           {actions}
           <ViewSwitch />
-          <KeysPopover rows={hu.play.shortcuts} />
+          <WellZoom />
+          <span className="bezel-keys">
+            <KeysPopover rows={hu.play.shortcuts} />
+          </span>
         </>
       }
     />
