@@ -43,7 +43,7 @@ A hátralévő munka szerepenként: [`docs/roadmap.md`](roadmap.md). Beadás el�
 
 ## Plusz szolgáltatások
 
-- Egyetlen, offline futó bináris beágyazott webbel, motorral és adatbázissal.
+- Egyetlen futtatható bináris beágyazott webbel és motorral; az adatokat MySQL-adatbázisban tárolja, a sémát és a demó-adatokat első indításkor maga hozza létre.
 - Ugyanaz a Rust-motor fut a böngészőben, a szerveren és a parancssorban; a ranglista eredményét a szerver számolja újra.
 - Visszaléptethető, tekerhető lejátszás, változó-panel.
 - Térképverziók: a módosított térkép új verzió, a régi ranglista megmarad.
@@ -52,12 +52,12 @@ A hátralévő munka szerepenként: [`docs/roadmap.md`](roadmap.md). Beadás el�
 
 ## Felmerült problémák és megoldásuk
 
-| Probléma                                                                                           | Megoldás                                                                                                                        |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| A spec több ponton nyitva hagyja a pontos viselkedést (lépésszámlálás, hibaelsőbbség, felfedezés). | Írásban rögzített értelmezési döntések ([`docs/dontesek.md`](dontesek.md)), és ezekre épülő, kézzel számolt conformance-esetek. |
-| A kliens által beküldött eredmény hamisítható.                                                     | A szerver ugyanazzal a WASM-motorral újrafuttatja a programot.                                                                  |
-| Ugyanazt a nyelvi logikát három helyen kell futtatni.                                              | Rust-mag, WASM-kötés, a TypeScript-típusok a Rustból generálva.                                                                 |
-| Offline futás és egyszerű telepítés.                                                               | `bun build --compile` beágyazott fájlokkal, betűtípusok csomagból, nincs CDN.                                                   |
+| Probléma                                                                                           | Megoldás                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A spec több ponton nyitva hagyja a pontos viselkedést (lépésszámlálás, hibaelsőbbség, felfedezés). | Írásban rögzített értelmezési döntések ([`docs/dontesek.md`](dontesek.md)), és ezekre épülő, kézzel számolt conformance-esetek.                   |
+| A kliens által beküldött eredmény hamisítható.                                                     | A szerver ugyanazzal a WASM-motorral újrafuttatja a programot.                                                                                    |
+| Ugyanazt a nyelvi logikát három helyen kell futtatni.                                              | Rust-mag, WASM-kötés, a TypeScript-típusok a Rustból generálva.                                                                                   |
+| Egyszerű telepítés internetkapcsolat nélkül.                                                       | `bun build --compile` beágyazott fájlokkal, betűtípusok csomagból, nincs CDN; a MySQL-hez helyi telepítés vagy `docker compose up -d mysql` elég. |
 
 ## Továbbfejlesztési javaslatok
 
