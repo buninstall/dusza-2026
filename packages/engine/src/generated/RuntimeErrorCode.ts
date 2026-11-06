@@ -1,0 +1,10 @@
+export type RuntimeErrorCode =
+  | "E_TYPE_MISMATCH"
+  | "E_UNINITIALIZED"
+  | "E_NON_BOOL_CONDITION"
+  | "E_BAD_OPERAND"
+  | "E_BEDROCK_HIT"
+  | "E_NO_GOLD"
+  | "E_BAD_ARG"
+  | "E_INT_OVERFLOW"
+  | "INSTRUCTION_COUNT_LIMIT_EXCEEDED";
