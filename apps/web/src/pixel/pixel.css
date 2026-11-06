@@ -1,0 +1,97 @@
+.px-sheet {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.px-icon {
+  flex: none;
+  width: var(--icon-size, 20px);
+  height: var(--icon-size, 20px);
+}
+
+.px-icon[data-size="sm"] {
+  --icon-size: 10px;
+}
+
+.px-icon[data-size="lg"] {
+  --icon-size: 30px;
+}
+
+.px-glint {
+  animation: glint 2.4s steps(1, end) infinite;
+}
+
+@keyframes glint {
+  0%,
+  70% {
+    opacity: 1;
+  }
+
+  71%,
+  85% {
+    opacity: 0;
+  }
+
+  86%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-glint {
+    animation: none;
+  }
+}
+
+.px-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--c-text);
+  --mark-size: 32px;
+  --wordmark-size: var(--text-xl);
+}
+
+.px-logo[data-size="xl"] {
+  gap: var(--space-4);
+  --mark-size: 64px;
+  --wordmark-size: var(--text-4xl);
+}
+
+.px-logo-mark {
+  display: grid;
+  place-items: center;
+  width: calc(var(--mark-size) + var(--space-2));
+  height: calc(var(--mark-size) + var(--space-2));
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+  box-shadow: var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow);
+}
+
+.px-logo-mark svg {
+  width: var(--mark-size);
+  height: var(--mark-size);
+}
+
+.px-wordmark {
+  font-family: var(--font-display);
+  font-size: var(--wordmark-size);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.px-wordmark-accent {
+  color: var(--c-gold);
+}
+
+.px-hazard {
+  display: block;
+  height: var(--hazard-height, 8px);
+  background: var(--c-hazard) var(--hazard-pattern) repeat-x;
+  background-size: var(--hazard-size) var(--hazard-size);
+  image-rendering: pixelated;
+}

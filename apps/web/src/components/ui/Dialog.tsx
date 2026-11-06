@@ -7,11 +7,53 @@ import {
   ModalOverlay,
 } from "react-aria-components";
 import { hu } from "../../i18n/hu.ts";
-import { Button, type ButtonVariant } from "./Button.tsx";
+import { HazardStripe } from "../../pixel/HazardStripe.tsx";
+import type { IconName } from "../../pixel/icons.ts";
+import { Button, type ButtonSize, type ButtonVariant } from "./Button.tsx";
+import "./Overlay.css";
+
+type ModalShellProps = {
+  title: string;
+  role?: "dialog" | "alertdialog";
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+  children: (close: () => void) => ReactNode;
+};
+
+export function ModalShell({
+  title,
+  role = "dialog",
+  isOpen,
+  onOpenChange,
+  children,
+}: ModalShellProps) {
+  const control = isOpen === undefined ? {} : { isOpen };
+  const listener = onOpenChange === undefined ? {} : { onOpenChange };
+  return (
+    <ModalOverlay isDismissable {...control} {...listener} className="overlay-backdrop">
+      <Modal className="overlay-modal" data-tone={role === "alertdialog" ? "danger" : "neutral"}>
+        {role === "alertdialog" ? <HazardStripe /> : null}
+        <AriaDialog role={role} className="overlay-dialog">
+          {({ close }) => (
+            <>
+              <Heading slot="title" className="overlay-title">
+                {title}
+              </Heading>
+              {children(close)}
+            </>
+          )}
+        </AriaDialog>
+      </Modal>
+    </ModalOverlay>
+  );
+}
 
 type ConfirmDialogProps = {
-  triggerLabel: ReactNode;
+  triggerLabel: string;
+  triggerAriaLabel?: string;
+  triggerIcon?: IconName;
   triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
   title: string;
   body: string;
   confirmLabel: string;
@@ -20,7 +62,10 @@ type ConfirmDialogProps = {
 
 export function ConfirmDialog({
   triggerLabel,
+  triggerAriaLabel,
+  triggerIcon,
   triggerVariant = "danger",
+  triggerSize = "sm",
   title,
   body,
   confirmLabel,
@@ -28,40 +73,36 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <DialogTrigger>
-      <Button variant={triggerVariant} size="sm">
+      <Button
+        variant={triggerVariant}
+        size={triggerSize}
+        icon={triggerIcon}
+        {...(triggerAriaLabel ? { "aria-label": triggerAriaLabel } : {})}
+      >
         {triggerLabel}
       </Button>
-      <ModalOverlay
-        isDismissable
-        className="fixed inset-0 z-40 flex items-center justify-center bg-[oklch(15%_0.02_60/0.45)] p-4 backdrop-blur-[2px]"
-      >
-        <Modal className="plate w-full max-w-md p-6">
-          <AriaDialog role="alertdialog" className="outline-none">
-            {({ close }) => (
-              <>
-                <Heading slot="title" className="text-lg font-bold">
-                  {title}
-                </Heading>
-                <p className="mt-2 text-ink-muted">{body}</p>
-                <div className="mt-6 flex justify-end gap-2">
-                  <Button variant="secondary" onPress={close} autoFocus>
-                    {hu.editor.cancel}
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onPress={() => {
-                      onConfirm();
-                      close();
-                    }}
-                  >
-                    {confirmLabel}
-                  </Button>
-                </div>
-              </>
-            )}
-          </AriaDialog>
-        </Modal>
-      </ModalOverlay>
+      <ModalShell title={title} role="alertdialog">
+        {(close) => (
+          <>
+            <p className="overlay-body">{body}</p>
+            <div className="overlay-actions">
+              <Button onPress={close} autoFocus>
+                {hu.common.cancel}
+              </Button>
+              <Button
+                variant="danger"
+                icon="trash"
+                onPress={() => {
+                  onConfirm();
+                  close();
+                }}
+              >
+                {confirmLabel}
+              </Button>
+            </div>
+          </>
+        )}
+      </ModalShell>
     </DialogTrigger>
   );
 }

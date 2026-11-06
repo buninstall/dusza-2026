@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { AppShell } from "../app/AppShell.tsx";
 import { sessionQuery } from "../auth/session.ts";
-import { AppShell } from "../components/AppShell.tsx";
 
 function ProtectedLayout() {
   const { user } = Route.useRouteContext();

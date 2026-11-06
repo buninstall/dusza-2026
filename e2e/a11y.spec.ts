@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
-import { login } from "./helpers.ts";
+import { login, openPlay, type Theme, useTheme } from "./helpers.ts";
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const BLOCKING = new Set(["serious", "critical"]);
@@ -20,13 +20,21 @@ async function blockingViolations(page: Page) {
     }));
 }
 
-for (const scheme of ["light", "dark"] as const) {
-  test.describe(`akadálymentesség (${scheme} téma)`, () => {
-    test.use({ colorScheme: scheme });
+const THEMES: readonly Theme[] = ["tarna", "felszin"];
 
-    test("bejelentkezés", async ({ page }) => {
+for (const theme of THEMES) {
+  test.describe(`akadálymentesség (${theme} téma)`, () => {
+    test.beforeEach(async ({ page }) => {
+      await useTheme(page, theme);
+    });
+
+    test("bejelentkezés és regisztráció", async ({ page }) => {
       await page.goto("/login");
       await expect(page.getByRole("heading", { name: "Bejelentkezés" })).toBeVisible();
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      expect(await blockingViolations(page)).toEqual([]);
+      await page.goto("/register");
+      await expect(page.getByRole("heading", { name: "Regisztráció" })).toBeVisible();
       expect(await blockingViolations(page)).toEqual([]);
     });
 
@@ -37,8 +45,33 @@ for (const scheme of ["light", "dark"] as const) {
 
     test("játék oldal", async ({ page }) => {
       await login(page);
-      await page.getByRole("link", { name: "Játék: 3. Kis labirintus" }).click();
-      await expect(page.getByRole("grid", { name: /térképe$/ })).toBeVisible();
+      await openPlay(page, "3. Kis labirintus");
+      expect(await blockingViolations(page)).toEqual([]);
+    });
+
+    test("térképszerkesztő", async ({ page }) => {
+      await login(page);
+      await page.getByRole("link", { name: "Új térkép" }).first().click();
+      await expect(page.getByRole("grid", { name: "Térképrács" })).toBeVisible();
+      expect(await blockingViolations(page)).toEqual([]);
+    });
+
+    test("ranglista", async ({ page }) => {
+      await login(page);
+      await page.getByRole("link", { name: "Ranglista: 1. Egyenes folyosó" }).click();
+      await expect(page.getByRole("heading", { level: 1, name: /Ranglista/ })).toBeVisible();
+      expect(await blockingViolations(page)).toEqual([]);
+    });
+
+    test("kézikönyv és futásnapló", async ({ page }) => {
+      await login(page);
+      await page.getByRole("link", { name: "Kézikönyv" }).click();
+      await expect(
+        page.getByRole("heading", { level: 1, name: "A MineScript kézikönyve" }),
+      ).toBeVisible();
+      expect(await blockingViolations(page)).toEqual([]);
+      await page.getByRole("link", { name: "Futásaim" }).click();
+      await expect(page.getByRole("heading", { level: 1, name: "Futásaim" })).toBeVisible();
       expect(await blockingViolations(page)).toEqual([]);
     });
   });

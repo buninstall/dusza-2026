@@ -1,25 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { Loading } from "../../app/StatusScreens.tsx";
 import { Notice } from "../../components/Notice.tsx";
 import { useEngine } from "../../engine/useEngine.ts";
 import { hu } from "../../i18n/hu.ts";
 import { errorMessage } from "../../lib/api.ts";
-import { mapQuery } from "../../map/queries.ts";
-import { PlayPage } from "../../runner/PlayPage.tsx";
+import { mapQuery } from "../../maps/queries.ts";
+import { PlayPage } from "../../play/PlayPage.tsx";
 
 function PlayRoute() {
   const { mapId } = Route.useParams();
   const engine = useEngine();
   const { data, error } = useQuery(mapQuery(Number(mapId)));
   if (error) {
-    return <Notice tone="error" title={errorMessage(error, hu.play.loadFailed)} />;
+    return <Notice tone="error" title={errorMessage(error, hu.play.loadFailed)} live="alert" />;
   }
   if (!data) {
-    return <p className="pt-6 text-ink-muted">{hu.common.loading}</p>;
+    return <Loading />;
   }
   const map = engine.parseMap(data.version.content).map;
   if (!map) {
-    return <Notice tone="error" title={hu.play.loadFailed} />;
+    return <Notice tone="error" title={hu.play.loadFailed} live="alert" />;
   }
   return <PlayPage key={data.version.id} detail={data} map={map} />;
 }

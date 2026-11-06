@@ -1,4 +1,3 @@
-import { clsx } from "clsx";
 import {
   Tab as AriaTab,
   TabList as AriaTabList,
@@ -9,37 +8,20 @@ import {
   type TabProps,
   type TabsProps,
 } from "react-aria-components";
+import "./Tabs.css";
 
-export function Tabs(props: TabsProps) {
-  return <AriaTabs {...props} />;
+export function Tabs(props: Omit<TabsProps, "className">) {
+  return <AriaTabs {...props} className="tabs" />;
 }
 
-export function TabList<T extends object>({ className, ...props }: TabListProps<T>) {
-  return (
-    <AriaTabList
-      {...props}
-      className={clsx(
-        "inline-flex gap-1 rounded-[12px] border border-line bg-paper-sunken p-1",
-        typeof className === "string" ? className : null,
-      )}
-    />
-  );
+export function TabList<T extends object>(props: Omit<TabListProps<T>, "className">) {
+  return <AriaTabList {...props} className="tabs-list" />;
 }
 
-export function Tab(props: TabProps) {
-  return (
-    <AriaTab
-      {...props}
-      className="cursor-default rounded-[9px] px-3 py-1.5 text-sm font-semibold text-ink-muted outline-none transition-colors data-[hovered]:text-ink data-[selected]:bg-paper-raised data-[selected]:text-ink data-[selected]:shadow-plate data-[focus-visible]:outline-3 data-[focus-visible]:outline-lamp"
-    />
-  );
+export function Tab(props: Omit<TabProps, "className">) {
+  return <AriaTab {...props} className="tabs-tab" />;
 }
 
-export function TabPanel({ className, ...props }: TabPanelProps) {
-  return (
-    <AriaTabPanel
-      {...props}
-      className={clsx("outline-none", typeof className === "string" ? className : null)}
-    />
-  );
+export function TabPanel(props: Omit<TabPanelProps, "className">) {
+  return <AriaTabPanel {...props} className="tabs-panel" />;
 }

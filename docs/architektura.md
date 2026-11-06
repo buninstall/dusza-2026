@@ -135,7 +135,7 @@ A függőségek `cargo add`/`bun add` segítségével, a legfrissebb stabil verz
 | React                 | 19.3                          |
 | TanStack Router       | 1.170                         |
 | React Aria Components | 1.22                          |
-| Tailwind CSS          | 4.3                           |
+| Fontsource            | 5.3                           |
 | Hono                  | 4.13                          |
 | Drizzle ORM           | 0.45                          |
 | mysql2                | 3.24                          |
@@ -155,3 +155,6 @@ Eltérések a kiinduló tervtől:
 - **MySQL-meghajtó**: a Drizzle 0.45 `bun-sql` adaptere csak PostgreSQL-t kezel (`PgDatabase`), MySQL-hez nincs Bun-natív Drizzle-adapter. Ezért a `drizzle-orm/mysql2` és a `mysql2` került be: kiforrott, poolt és tranzakciót ad, tisztán JavaScript, így a `bun build --compile` a binárisba csomagolja.
 - **`.returning()`**: MySQL-ben nincs `RETURNING`, ezért a beszúrás `$returningId()`-t használ, és utána olvas; a módosítások után újraolvasás következik.
 - **Bejelentkezés**: a `username` oszlop kollációja miatt a belépésnél is kis- és nagybetűtől független a név, összhangban az egyediséggel.
+- **Web-stílus**: Tailwind és CSS-modulok helyett komponensenkénti sima CSS-fájl, előtagos kebab-case osztálynevekkel (`play-gauge`, `board-cell`). A CSS-modulok osztálytípusa a `noUncheckedIndexedAccess` miatt `string | undefined`, ami a React Aria `className` propjával az `exactOptionalPropertyTypes` mellett nem fér össze. A design tokenek egy helyen vannak: `apps/web/src/styles/tokens.css`.
+- **Pixel art**: a csempék, a robot, az ikonok és a logó ASCII-rácsként szerepelnek a forrásban (`apps/web/src/pixel`), és futásidőben `shape-rendering="crispEdges"` SVG-útvonalakká fordulnak; a térkép `<use>` hivatkozásokkal egyetlen közös sprite-lapot használ. Canvas nincs.
+- **Fejlesztői API-cél**: a Vite proxy célja a `MINESCRIPT_API_URL` környezeti változóval felülírható (alapból `http://127.0.0.1:8080`).

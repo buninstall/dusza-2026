@@ -1,0 +1,182 @@
+:root {
+  --font-display: "Pixelify Sans Variable", "Atkinson Hyperlegible Mono Variable", monospace;
+  --font-text: "Atkinson Hyperlegible Next Variable", "Trebuchet MS", sans-serif;
+  --font-code: "Atkinson Hyperlegible Mono Variable", "Courier New", monospace;
+
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  --text-4xl: clamp(2.5rem, 1.6rem + 3.6vw, 4rem);
+  --leading-tight: 1.1;
+  --leading-body: 1.55;
+  --tracking-stencil: 0.12em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  --border-thin: 2px;
+  --border-thick: 3px;
+  --shadow-offset: 4px;
+  --shadow-offset-sm: 2px;
+  --rivet: 4px;
+  --focus-width: 3px;
+  --focus-offset: 2px;
+  --control-height: 44px;
+  --control-height-sm: 36px;
+  --target-min: 24px;
+  --page-max: 1440px;
+  --prose-max: 68ch;
+
+  --duration-press: 80ms;
+  --duration-fast: 140ms;
+  --duration-blink: 1s;
+  --ease-mech: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --hazard-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23f2c21b'/%3E%3Cpath d='M0 8L8 0h8L0 16zM8 16L16 8v8z' fill='%2315120f'/%3E%3C/svg%3E");
+  --hazard-size: 16px;
+}
+
+:root,
+[data-theme="tarna"] {
+  color-scheme: dark;
+
+  --c-bg: #110f0d;
+  --c-surface: #1b1714;
+  --c-surface-raised: #252019;
+  --c-screen: #0a0908;
+  --c-line: #3b332b;
+  --c-line-strong: #6e6052;
+  --c-bevel-hi: #3d342b;
+  --c-bevel-lo: #070605;
+  --c-shadow: #000000;
+
+  --c-text: #f1e7d3;
+  --c-text-muted: #bcae98;
+  --c-text-faint: #988a76;
+
+  --c-gold: #f2b53a;
+  --c-accent: #f2b53a;
+  --c-accent-hover: #ffcd5c;
+  --c-on-accent: #1b1206;
+  --c-rust: #ef7f52;
+  --c-danger: #d9532b;
+  --c-on-danger: #160904;
+  --c-ok: #97cc6e;
+  --c-warn: #f2c94c;
+  --c-signal: #63d8df;
+  --c-focus: #63d8df;
+  --c-selection: #5a4314;
+  --c-exec-line: #3b2d0e;
+  --c-error-line: #3a1a10;
+
+  --c-hazard: #f2c21b;
+  --c-hazard-ink: #15120f;
+  --c-led-off: #3a322a;
+
+  --px-void: #070605;
+  --px-fog-edge: #30271f;
+  --px-floor: #4d4135;
+  --px-floor-lo: #3e342a;
+  --px-floor-hi: #63544a;
+  --px-seam: #362d25;
+  --px-dug: #241d17;
+  --px-wall: #9d8d7a;
+  --px-wall-hi: #c4b49f;
+  --px-wall-lo: #706253;
+  --px-mortar: #2b241e;
+  --px-ore: #f0b232;
+  --px-ore-hi: #ffe58a;
+  --px-ore-lo: #b8741b;
+  --px-ore-edge: #4a2c08;
+  --px-glint: #fffbe6;
+  --px-steel-hi: #dfe5e9;
+  --px-steel: #a3adb5;
+  --px-steel-lo: #6b7681;
+  --px-steel-edge: #15181b;
+  --px-tread: #2c3034;
+  --px-tread-hi: #59616a;
+  --px-visor: #52d6de;
+  --px-lamp: #fff7cf;
+  --px-beam: #ffe17a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-press: 0s;
+    --duration-fast: 0s;
+  }
+}
+
+[data-theme="felszin"] {
+  color-scheme: light;
+
+  --c-bg: #e6d9c0;
+  --c-surface: #f4ecdb;
+  --c-surface-raised: #fcf7ec;
+  --c-screen: #fffcf5;
+  --c-line: #c0ad8c;
+  --c-line-strong: #2b241e;
+  --c-bevel-hi: #ffffff;
+  --c-bevel-lo: #cbb893;
+  --c-shadow: #2b241e;
+
+  --c-text: #1e1a16;
+  --c-text-muted: #574a3d;
+  --c-text-faint: #6b5c4c;
+
+  --c-gold: #7a4c00;
+  --c-accent: #e9a821;
+  --c-accent-hover: #f5bd45;
+  --c-on-accent: #1b1206;
+  --c-rust: #a3371a;
+  --c-danger: #b23b18;
+  --c-on-danger: #ffffff;
+  --c-ok: #2f6a1f;
+  --c-warn: #7a5600;
+  --c-signal: #0a6a73;
+  --c-focus: #0a6a73;
+  --c-selection: #f3d58f;
+  --c-exec-line: #f8e2a6;
+  --c-error-line: #f6d2c4;
+
+  --c-hazard: #f2c21b;
+  --c-hazard-ink: #15120f;
+  --c-led-off: #cdbd9e;
+
+  --px-void: #211b16;
+  --px-fog-edge: #4d4034;
+  --px-floor: #d3be97;
+  --px-floor-lo: #c0a77d;
+  --px-floor-hi: #e4d4b3;
+  --px-seam: #b69d73;
+  --px-dug: #9e875f;
+  --px-wall: #6e5f50;
+  --px-wall-hi: #8f7e6b;
+  --px-wall-lo: #4f4338;
+  --px-mortar: #2e2620;
+  --px-ore: #f0b232;
+  --px-ore-hi: #ffe58a;
+  --px-ore-lo: #b8741b;
+  --px-ore-edge: #5a3600;
+  --px-glint: #fffbe6;
+  --px-steel-hi: #eef2f4;
+  --px-steel: #a3adb5;
+  --px-steel-lo: #66717c;
+  --px-steel-edge: #15181b;
+  --px-tread: #2c3034;
+  --px-tread-hi: #59616a;
+  --px-visor: #1fb6c0;
+  --px-lamp: #fff7cf;
+  --px-beam: #ffd54a;
+}

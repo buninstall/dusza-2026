@@ -1,15 +1,16 @@
-import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
+const apiTarget = process.env.MINESCRIPT_API_URL ?? "http://127.0.0.1:8080";
+
 export default defineConfig({
-  plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react(), tailwindcss()],
+  plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react()],
   server: {
     port: 5173,
     strictPort: true,
     proxy: {
-      "/api": { target: "http://127.0.0.1:8080", changeOrigin: false },
+      "/api": { target: apiTarget, changeOrigin: false },
     },
     fs: { allow: ["../.."] },
   },

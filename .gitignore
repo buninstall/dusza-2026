@@ -337,6 +337,7 @@ docs/*
 !docs/tesztterv.md
 !docs/a11y.md
 !docs/beadando.md
+!docs/receptek/
 
 !.env.example
 !.env.sample

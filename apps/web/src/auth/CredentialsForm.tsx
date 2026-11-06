@@ -1,55 +1,54 @@
 import { type FormEvent, useState } from "react";
+import { Form } from "react-aria-components";
 import { Notice } from "../components/Notice.tsx";
 import { Button } from "../components/ui/Button.tsx";
-import { Form } from "../components/ui/Form.tsx";
 import { TextField } from "../components/ui/TextField.tsx";
 import { hu } from "../i18n/hu.ts";
+import { errorMessage } from "../lib/api.ts";
+import "./AuthScreen.css";
+import { type Credentials, passwordProblem, usernameProblem } from "./credentials.ts";
 
-export type Credentials = { username: string; password: string };
-
-const USERNAME = /^[A-Za-z0-9_]{3,24}$/;
-const MIN_PASSWORD = 8;
-
-export function CredentialsForm({
-  submitLabel,
-  onSubmit,
-  isNewAccount,
-}: {
+type CredentialsFormProps = {
+  isNewAccount: boolean;
   submitLabel: string;
   onSubmit: (credentials: Credentials) => Promise<void>;
-  isNewAccount: boolean;
-}) {
+};
+
+function readCredentials(form: HTMLFormElement): Credentials {
+  const data = new FormData(form);
+  return {
+    username: String(data.get("username") ?? ""),
+    password: String(data.get("password") ?? ""),
+  };
+}
+
+export function CredentialsForm({ isNewAccount, submitLabel, onSubmit }: CredentialsFormProps) {
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [isPending, setPending] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const credentials = {
-      username: String(data.get("username") ?? ""),
-      password: String(data.get("password") ?? ""),
-    };
     setPending(true);
     setError(null);
     try {
-      await onSubmit(credentials);
+      await onSubmit(readCredentials(event.currentTarget));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : hu.app.unexpected);
+      setError(errorMessage(caught, hu.app.unexpected));
     } finally {
       setPending(false);
     }
   };
 
   return (
-    <Form onSubmit={(event) => void handleSubmit(event)}>
-      {error ? <Notice tone="error" title={error} /> : null}
+    <Form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
+      {error ? <Notice tone="error" title={error} live="alert" /> : null}
       <TextField
         name="username"
         label={hu.auth.username}
         autoComplete="username"
         isRequired
-        validate={(value) => (USERNAME.test(value) ? null : hu.auth.usernameInvalid)}
-        {...(isNewAccount ? { description: hu.auth.usernameHelp } : {})}
+        validate={usernameProblem}
+        description={isNewAccount ? hu.auth.usernameHelp : undefined}
       />
       <TextField
         name="password"
@@ -57,10 +56,10 @@ export function CredentialsForm({
         label={hu.auth.password}
         autoComplete={isNewAccount ? "new-password" : "current-password"}
         isRequired
-        validate={(value) => (value.length >= MIN_PASSWORD ? null : hu.auth.passwordInvalid)}
-        {...(isNewAccount ? { description: hu.auth.passwordHelp } : {})}
+        validate={passwordProblem}
+        description={isNewAccount ? hu.auth.passwordHelp : undefined}
       />
-      <Button type="submit" variant="primary" isPending={pending} className="mt-2">
+      <Button type="submit" variant="primary" isPending={isPending} icon="play">
         {submitLabel}
       </Button>
     </Form>

@@ -15,8 +15,8 @@ const completionType: Record<CompletionKind, string> = {
   value: "constant",
 };
 
-export function mineScriptCompletion(engine: Engine): Extension {
-  const source = (context: CompletionContext): CompletionResult | null => {
+export function completionSource(engine: Engine) {
+  return (context: CompletionContext): CompletionResult | null => {
     const word = context.matchBefore(/[A-Za-z]*/);
     if (!word || (word.from === word.to && !context.explicit)) {
       return null;
@@ -35,5 +35,8 @@ export function mineScriptCompletion(engine: Engine): Extension {
     );
     return { from: word.from, options };
   };
-  return autocompletion({ override: [source], icons: false });
+}
+
+export function mineScriptCompletion(engine: Engine): Extension {
+  return autocompletion({ override: [completionSource(engine)], icons: false });
 }

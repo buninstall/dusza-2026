@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AuthLayout } from "../auth/AuthLayout.tsx";
+import { AuthScreen } from "../auth/AuthScreen.tsx";
 import { CredentialsForm } from "../auth/CredentialsForm.tsx";
 import { sessionQuery } from "../auth/session.ts";
 import { Link } from "../components/ui/Link.tsx";
@@ -11,7 +11,12 @@ function RegisterPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   return (
-    <AuthLayout title={hu.auth.registerTitle} lead={hu.auth.registerLead}>
+    <AuthScreen
+      eyebrow={hu.auth.registerEyebrow}
+      title={hu.auth.registerTitle}
+      lead={hu.auth.registerLead}
+      footer={<Link to="/login">{hu.auth.toLogin}</Link>}
+    >
       <CredentialsForm
         isNewAccount
         submitLabel={hu.auth.submitRegister}
@@ -21,10 +26,7 @@ function RegisterPage() {
           await navigate({ to: "/maps" });
         }}
       />
-      <p className="mt-6 text-sm">
-        <Link to="/login">{hu.auth.toLogin}</Link>
-      </p>
-    </AuthLayout>
+    </AuthScreen>
   );
 }
 

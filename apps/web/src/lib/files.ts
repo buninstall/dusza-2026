@@ -10,17 +10,32 @@ export function downloadText(filename: string, text: string): void {
   URL.revokeObjectURL(url);
 }
 
-export async function readFirstFile(files: FileList | null): Promise<string | null> {
-  const file = files?.item(0);
-  return file ? file.text() : null;
+export function firstFile(files: FileList | null): File | null {
+  return files?.item(0) ?? null;
+}
+
+export type DecodeResult = { ok: true; text: string } | { ok: false; reason: "encoding" };
+
+const BYTE_ORDER_MARK = "﻿";
+
+export function decodeUtf8(bytes: ArrayBuffer): DecodeResult {
+  try {
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    return { ok: true, text: text.startsWith(BYTE_ORDER_MARK) ? text.slice(1) : text };
+  } catch {
+    return { ok: false, reason: "encoding" };
+  }
+}
+
+export function normalizeNewlines(text: string): string {
+  return text.replaceAll("\r\n", "\n");
 }
 
 export function safeFilename(title: string): string {
-  return (
-    title
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^A-Za-z0-9_-]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "minescript"
-  );
+  const ascii = title
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^A-Za-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return ascii || "minescript";
 }

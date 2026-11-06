@@ -1,0 +1,56 @@
+.led {
+  --led-color: var(--c-led-off);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-stencil);
+  text-transform: uppercase;
+}
+
+.led[data-state="ok"] {
+  --led-color: var(--c-ok);
+}
+
+.led[data-state="busy"] {
+  --led-color: var(--c-signal);
+}
+
+.led[data-state="warn"] {
+  --led-color: var(--c-warn);
+}
+
+.led[data-state="error"] {
+  --led-color: var(--c-rust);
+}
+
+.led-lamp {
+  width: 12px;
+  height: 12px;
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--led-color);
+  box-shadow: inset 2px 2px 0 rgb(255 255 255 / 0.35);
+}
+
+.led-lamp[data-blink="true"] {
+  animation: blink var(--duration-blink) steps(1, end) infinite;
+}
+
+.led-label {
+  color: var(--c-text);
+}
+
+@keyframes blink {
+  50% {
+    background: var(--c-led-off);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led-lamp[data-blink="true"] {
+    animation: none;
+  }
+}

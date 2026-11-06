@@ -1,30 +1,37 @@
-import { clsx } from "clsx";
 import type { ReactNode } from "react";
+import type { IconName } from "../pixel/icons.ts";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
+import "./Notice.css";
 
-type NoticeTone = "error" | "success" | "info";
+export type NoticeTone = "error" | "success" | "info" | "warning";
 
-const toneClass: Record<NoticeTone, string> = {
-  error: "border-rust bg-rust-soft text-ink",
-  success: "border-moss bg-moss-soft text-ink",
-  info: "border-line-strong bg-paper-sunken text-ink",
+const TONE_ICON: Record<NoticeTone, IconName> = {
+  error: "error",
+  success: "check",
+  info: "book",
+  warning: "warning",
 };
 
-export function Notice({
-  tone,
-  title,
-  children,
-}: {
+type NoticeProps = {
   tone: NoticeTone;
-  title?: string;
+  title: string;
   children?: ReactNode;
-}) {
+  actions?: ReactNode;
+  live?: "alert" | "status" | "none";
+};
+
+export function Notice({ tone, title, children, actions, live = "none" }: NoticeProps) {
+  const role = live === "none" ? undefined : live;
   return (
-    <div
-      role={tone === "error" ? "alert" : undefined}
-      className={clsx("rounded-[12px] border-l-4 px-4 py-3 text-sm", toneClass[tone])}
-    >
-      {title ? <p className="font-semibold">{title}</p> : null}
-      {children ? <div className={clsx(title && "mt-1")}>{children}</div> : null}
+    <div role={role} className="notice" data-tone={tone}>
+      <span className="notice-icon">
+        <PixelIcon name={TONE_ICON[tone]} />
+      </span>
+      <div className="notice-content">
+        <p className="notice-title">{title}</p>
+        {children ? <div className="notice-body">{children}</div> : null}
+        {actions ? <div className="notice-actions">{actions}</div> : null}
+      </div>
     </div>
   );
 }

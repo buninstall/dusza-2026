@@ -6,33 +6,31 @@ import {
   SliderThumb,
   SliderTrack,
 } from "react-aria-components";
+import "./Slider.css";
 
-type SliderProps = AriaSliderProps<number> & {
+type SliderProps = Omit<AriaSliderProps<number>, "className" | "children"> & {
   label: string;
   format: (value: number) => string;
 };
 
 export function Slider({ label, format, ...props }: SliderProps) {
   return (
-    <AriaSlider {...props} className="flex w-44 flex-col gap-1">
-      <div className="flex items-baseline justify-between gap-2">
-        <Label className="eyebrow">{label}</Label>
-        <SliderOutput className="font-mono text-xs text-ink">
+    <AriaSlider {...props} className="slider">
+      <div className="slider-header">
+        <Label className="slider-label">{label}</Label>
+        <SliderOutput className="slider-output">
           {({ state }) => format(state.getThumbValue(0))}
         </SliderOutput>
       </div>
-      <SliderTrack className="relative h-6 w-full">
+      <SliderTrack className="slider-track">
         {({ state }) => (
           <>
-            <div className="absolute top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-line" />
-            <div
-              className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-ore"
-              style={{ width: `${state.getThumbPercent(0) * 100}%` }}
+            <span className="slider-rail" />
+            <span
+              className="slider-fill"
+              style={{ inlineSize: `${state.getThumbPercent(0) * 100}%` }}
             />
-            <SliderThumb
-              aria-label={label}
-              className="top-1/2 size-5 rounded-full border-2 border-ink bg-paper-raised shadow outline-none data-[dragging]:bg-ore data-[focus-visible]:outline-3 data-[focus-visible]:outline-lamp"
-            />
+            <SliderThumb className="slider-thumb" aria-valuetext={format(state.getThumbValue(0))} />
           </>
         )}
       </SliderTrack>

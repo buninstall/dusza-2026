@@ -1,7 +1,9 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 import { ApiError, api, call } from "../lib/api.ts";
 
-async function fetchSession() {
+const SESSION_STALE_MS = 60_000;
+
+export async function fetchSession() {
   try {
     const { user } = await call(api.auth.me.$get());
     return user;
@@ -18,9 +20,9 @@ export type SessionUser = NonNullable<Awaited<ReturnType<typeof fetchSession>>>;
 export const sessionQuery = queryOptions({
   queryKey: ["session"],
   queryFn: fetchSession,
-  staleTime: 60_000,
+  staleTime: SESSION_STALE_MS,
 });
 
-export function useSession() {
-  return useQuery(sessionQuery);
+export function safeRedirect(target: string | undefined): string {
+  return target?.startsWith("/") && !target.startsWith("//") ? target : "/maps";
 }
