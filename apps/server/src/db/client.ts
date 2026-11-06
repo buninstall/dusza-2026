@@ -5,6 +5,7 @@ import { mysqlErrorCode, toDatabaseError } from "./errors.ts";
 import type { DatabaseTarget } from "./url.ts";
 
 const POOL_SIZE = 10;
+const KEEP_ALIVE_DELAY_MS = 10_000;
 
 export type Db = MySql2Database;
 
@@ -28,6 +29,8 @@ export async function openDatabase(target: DatabaseTarget): Promise<Database> {
   const pool = mysql.createPool({
     ...connectionOptions(target, target.database),
     connectionLimit: POOL_SIZE,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: KEEP_ALIVE_DELAY_MS,
   });
   try {
     await pool.query("SELECT 1");

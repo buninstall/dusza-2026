@@ -23,6 +23,7 @@ export const messages = {
   notFound: "A keresett erőforrás nem található.",
   validation: "A kérés adatai hibásak.",
   internal: "Váratlan szerverhiba történt. Próbáld újra később.",
+  unavailable: "Az adatbázis pillanatnyilag nem érhető el. Próbáld újra egy pillanat múlva.",
   csrf: "A kérés forrása nem engedélyezett.",
   malformedJson: "A kérés törzse nem érvényes JSON.",
   payloadTooLarge: "A kérés túl nagy (legfeljebb 1 MiB lehet).",

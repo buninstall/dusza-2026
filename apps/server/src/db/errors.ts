@@ -44,6 +44,24 @@ export function mysqlErrorCode(error: unknown): string | undefined {
   return undefined;
 }
 
+const TRANSIENT_CODES = new Set([
+  ...UNREACHABLE_CODES,
+  "EPIPE",
+  "PROTOCOL_CONNECTION_LOST",
+  "PROTOCOL_SEQUENCE_TIMEOUT",
+  "ER_CON_COUNT_ERROR",
+  "ER_LOCK_DEADLOCK",
+  "ER_LOCK_WAIT_TIMEOUT",
+  "ER_SERVER_SHUTDOWN",
+  "ER_QUERY_INTERRUPTED",
+  "ER_CLIENT_INTERACTION_TIMEOUT",
+]);
+
+export function isTransientDbError(error: unknown): boolean {
+  const code = mysqlErrorCode(error);
+  return code !== undefined && TRANSIENT_CODES.has(code);
+}
+
 export function isDuplicateEntry(error: unknown): boolean {
   return mysqlErrorCode(error) === "ER_DUP_ENTRY";
 }

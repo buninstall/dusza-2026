@@ -1,6 +1,7 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { HTTPException } from "hono/http-exception";
+import { isTransientDbError } from "./db/errors.ts";
 import type { AppEnv, Deps } from "./env.ts";
 import { apiError, messages } from "./lib/errors.ts";
 import { adminRoutes } from "./routes/admin.ts";
@@ -26,6 +27,7 @@ export function buildApi(deps: Deps) {
 export type AppType = ReturnType<typeof buildApi>;
 
 export const MAX_BODY_BYTES = 1024 * 1024;
+export const RETRY_AFTER_SECONDS = "1";
 
 const requestBodyLimit = bodyLimit({
   maxSize: MAX_BODY_BYTES,
@@ -55,6 +57,10 @@ export function createApp(deps: Deps, options: AppOptions = {}) {
       return apiError(c, 400, "VALIDATION", messages.malformedJson);
     }
     (options.logError ?? console.error)(error);
+    if (isTransientDbError(error)) {
+      c.header("Retry-After", RETRY_AFTER_SECONDS);
+      return apiError(c, 503, "UNAVAILABLE", messages.unavailable);
+    }
     return apiError(c, 500, "INTERNAL", messages.internal);
   });
   return app;
