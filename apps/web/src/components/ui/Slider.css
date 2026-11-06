@@ -75,10 +75,15 @@
   outline-offset: var(--focus-offset);
 }
 
-.slider[data-disabled] {
-  opacity: 0.6;
-}
-
 .slider[data-disabled] .slider-track {
   cursor: not-allowed;
+}
+
+.slider[data-disabled] .slider-rail {
+  border-style: dashed;
+}
+
+.slider[data-disabled] .slider-thumb {
+  background: var(--c-surface);
+  box-shadow: none;
 }
