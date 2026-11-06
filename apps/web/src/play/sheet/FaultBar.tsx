@@ -114,7 +114,7 @@ export function FaultBar({
             <span className="faults-where">
               {hu.play.diagnosticAt(first.span.line, first.span.colStart)}
             </span>
-            {diagnosticTitles[first.code]}
+            <span className="faults-preview-text">{diagnosticTitles[first.code]}</span>
           </button>
         ) : null}
         <Button

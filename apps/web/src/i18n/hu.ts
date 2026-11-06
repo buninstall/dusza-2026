@@ -434,7 +434,9 @@ export const hu = {
     diagnosticsHeading: "Hibalista",
     diagnosticsEmpty: "Nincs szintaktikai hiba.",
     diagnosticsCount: (errors: number, warnings: number) =>
-      `${errors} hiba · ${warnings} figyelmeztetés`,
+      [errors > 0 ? `${errors} hiba` : "", warnings > 0 ? `${warnings} figyelmeztetés` : ""]
+        .filter((part) => part !== "")
+        .join(" · "),
     diagnosticAt: (line: number, col: number) => `${line}:${col}`,
     diagnosticsMore: (count: number) => `+${count} további`,
     fix: (title: string) => `Javítás: ${title}`,

@@ -217,6 +217,12 @@
   cursor: pointer;
 }
 
+.faults-preview-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .faults-preview:hover {
   color: var(--c-text);
   text-decoration: underline;
