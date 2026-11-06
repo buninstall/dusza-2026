@@ -30,12 +30,6 @@ function DemoAccounts({ onFill }: { onFill: (credentials: Credentials) => void }
             >
               {hu.auth.demoFill(account.username)}
             </Button>
-            <span className="auth-demo-pair">
-              <code>
-                {account.username} / {account.password}
-              </code>
-              <span className="auth-demo-role">{account.role}</span>
-            </span>
           </li>
         ))}
       </ul>
