@@ -1,19 +1,15 @@
-import { rmSync } from "node:fs";
 import { createApp } from "./app.ts";
 import { createLoginLimiter, LOGIN_LIMIT } from "./auth/rate-limit.ts";
 import { DEFAULT_PORT, PORT_ATTEMPTS, parseConfig, type ServerConfig } from "./config.ts";
-import { openDatabase } from "./db/client.ts";
+import { dropDatabase } from "./db/admin.ts";
+import { type Database, openDatabase } from "./db/client.ts";
+import { DatabaseError } from "./db/errors.ts";
 import { migrate } from "./db/migrate.ts";
+import { describeTarget } from "./db/url.ts";
 import { loadEngine } from "./engine.ts";
 import type { Deps } from "./env.ts";
-import { DEMO_ACCOUNTS, seedDemo } from "./seed/index.ts";
+import { DEMO_ACCOUNTS, type SeedReport, seedDemo } from "./seed/index.ts";
 import { loadStaticHandler } from "./static.ts";
-
-function removeDatabaseFiles(path: string): void {
-  for (const file of [path, `${path}-wal`, `${path}-shm`]) {
-    rmSync(file, { force: true });
-  }
-}
 
 function isAddressInUse(error: unknown): boolean {
   return error instanceof Error && /EADDRINUSE|in use/i.test(`${error.message} ${String(error)}`);
@@ -55,7 +51,9 @@ function printWelcome(url: string, config: ServerConfig): void {
   console.log("");
   console.log("  MineScript – kincskereső robot");
   console.log(`  Az alkalmazás fut: ${url}`);
-  console.log(`  Adatbázis: ${config.dbPath}`);
+  console.log(
+    `  Adatbázis: ${describeTarget(config.database)}${config.testMode ? " (ideiglenes)" : ""}`,
+  );
   console.log("");
   console.log("  Demó belépési adatok:");
   for (const account of DEMO_ACCOUNTS) {
@@ -66,49 +64,74 @@ function printWelcome(url: string, config: ServerConfig): void {
   console.log("  Leállítás: Ctrl+C");
 }
 
-async function main(): Promise<void> {
-  const config = parseConfig(Bun.argv.slice(2));
-  const { sqlite, db } = openDatabase(config.dbPath);
-  migrate(sqlite);
-  const engine = await loadEngine();
+function printSeedReport(report: SeedReport): void {
+  if (!report.seeded) {
+    return;
+  }
+  const skipped =
+    report.skippedRuns > 0 ? ` (${report.skippedRuns} futás kihagyva: a motor még nem futtat)` : "";
+  console.log(
+    `Demó-adatok létrehozva: ${report.users} felhasználó, ${report.maps} térkép, ${report.runs} futás${skipped}`,
+  );
+}
+
+function describeError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return error instanceof DatabaseError && error.hint ? `${message}\n${error.hint}` : message;
+}
+
+async function start(config: ServerConfig, database: Database) {
+  await migrate(config.database);
   const deps: Deps = {
-    db,
-    engine,
+    db: database.db,
+    engine: await loadEngine(),
     limiter: createLoginLimiter({ ...LOGIN_LIMIT, now: Date.now }),
     now: Date.now,
   };
-  const report = await seedDemo(deps, { reset: config.resetDemo });
-  if (report.seeded) {
-    console.log(
-      `Demó-adatok létrehozva: ${report.users} felhasználó, ${report.maps} térkép, ${report.runs} futás` +
-        (report.skippedRuns > 0
-          ? ` (${report.skippedRuns} futás kihagyva: a motor még nem futtat)`
-          : ""),
-    );
-  }
+  printSeedReport(await seedDemo(deps, { reset: config.resetDemo }));
   const app = createApp(
     deps,
     config.serveStatic ? { staticHandler: await loadStaticHandler() } : {},
   );
-  const server = serve(config, (request, bunServer) => app.fetch(request, bunServer));
+  return serve(config, (request, bunServer) => app.fetch(request, bunServer));
+}
+
+async function main(): Promise<void> {
+  const config = parseConfig(Bun.argv.slice(2));
+  const database = await openDatabase(config.database);
+  const release = async () => {
+    await database.close();
+    if (config.testMode) {
+      await dropDatabase(config.database);
+    }
+  };
+  const server = await start(config, database).catch(async (error: unknown) => {
+    await release();
+    throw error;
+  });
   const url = `http://${config.host === "0.0.0.0" ? "127.0.0.1" : config.host}:${server.port ?? DEFAULT_PORT}`;
   printWelcome(url, config);
   if (config.openBrowser) {
     openInBrowser(url);
   }
-  const shutdown = () => {
-    server.stop();
-    sqlite.close();
-    if (config.testMode) {
-      removeDatabaseFiles(config.dbPath);
+  let stopping = false;
+  const shutdown = async () => {
+    if (stopping) {
+      return;
     }
-    process.exit(0);
+    stopping = true;
+    await server.stop();
+    await release().catch((error: unknown) => {
+      console.error(`Leállítási hiba: ${describeError(error)}`);
+      process.exitCode = 1;
+    });
+    process.exit();
   };
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", () => void shutdown());
+  process.on("SIGTERM", () => void shutdown());
 }
 
 main().catch((error: unknown) => {
-  console.error("A szerver nem indult el:", error instanceof Error ? error.message : error);
+  console.error(`A szerver nem indult el: ${describeError(error)}`);
   process.exit(1);
 });

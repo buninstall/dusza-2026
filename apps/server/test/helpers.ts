@@ -1,20 +1,53 @@
+import { randomBytes } from "node:crypto";
 import { createApp } from "../src/app.ts";
 import { createLoginLimiter, LOGIN_LIMIT } from "../src/auth/rate-limit.ts";
-import { openDatabase } from "../src/db/client.ts";
+import { dropDatabase } from "../src/db/admin.ts";
+import { type Db, openDatabase } from "../src/db/client.ts";
 import { migrate } from "../src/db/migrate.ts";
+import {
+  type DatabaseTarget,
+  DEFAULT_TEST_DATABASE_URL,
+  parseServerUrl,
+  temporaryDatabaseName,
+} from "../src/db/url.ts";
 import { loadEngine } from "../src/engine.ts";
 import type { Deps } from "../src/env.ts";
 
 export const ORIGIN = "http://localhost";
 export const SPEC_MAP = "3 15\n....@..........\n.#############.\n.......@...>...\n";
 
+export const testServer = parseServerUrl(
+  process.env.TEST_DATABASE_URL || DEFAULT_TEST_DATABASE_URL,
+);
+
+export function testTarget(): DatabaseTarget {
+  return { ...testServer, database: temporaryDatabaseName("test", randomBytes(6).toString("hex")) };
+}
+
+export type TestDatabase = AsyncDisposable & { target: DatabaseTarget; db: Db };
+
+export async function createTestDatabase(): Promise<TestDatabase> {
+  const target = testTarget();
+  const database = await openDatabase(target);
+  const dispose = async () => {
+    await database.close();
+    await dropDatabase(target);
+  };
+  try {
+    await migrate(target);
+  } catch (error) {
+    await dispose();
+    throw error;
+  }
+  return { target, db: database.db, [Symbol.asyncDispose]: dispose };
+}
+
 export async function createTestContext() {
-  const { sqlite, db } = openDatabase(":memory:");
-  migrate(sqlite);
+  const database = await createTestDatabase();
   let clock = 1_700_000_000_000;
   const now = () => clock;
   const deps: Deps = {
-    db,
+    db: database.db,
     engine: await loadEngine(),
     limiter: createLoginLimiter({ ...LOGIN_LIMIT, now }),
     now,
@@ -23,11 +56,12 @@ export async function createTestContext() {
   return {
     deps,
     app,
-    sqlite,
+    target: database.target,
     advance(ms: number) {
       clock += ms;
     },
     client: () => new TestClient(app),
+    [Symbol.asyncDispose]: () => database[Symbol.asyncDispose](),
   };
 }
 

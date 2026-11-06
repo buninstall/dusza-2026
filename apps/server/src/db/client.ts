@@ -1,14 +1,39 @@
-import { Database } from "bun:sqlite";
-import { drizzle } from "drizzle-orm/bun-sqlite";
-import * as schema from "./schema.ts";
+import { drizzle, type MySql2Database } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
+import { connectionOptions, createDatabase } from "./admin.ts";
+import { mysqlErrorCode, toDatabaseError } from "./errors.ts";
+import type { DatabaseTarget } from "./url.ts";
 
-export function openDatabase(path: string) {
-  const sqlite = new Database(path, { create: true, strict: true });
-  sqlite.exec("PRAGMA journal_mode = WAL;");
-  sqlite.exec("PRAGMA foreign_keys = ON;");
-  sqlite.exec("PRAGMA busy_timeout = 5000;");
-  const db = drizzle(sqlite, { schema });
-  return { sqlite, db };
+const POOL_SIZE = 10;
+
+export type Db = MySql2Database;
+
+export type Database = {
+  readonly db: Db;
+  close(): Promise<void>;
+};
+
+async function ensureDatabase(target: DatabaseTarget): Promise<void> {
+  try {
+    await createDatabase(target);
+  } catch (error) {
+    if (mysqlErrorCode(error) !== "ER_DBACCESS_DENIED_ERROR") {
+      throw toDatabaseError(error, target);
+    }
+  }
 }
 
-export type Db = ReturnType<typeof openDatabase>["db"];
+export async function openDatabase(target: DatabaseTarget): Promise<Database> {
+  await ensureDatabase(target);
+  const pool = mysql.createPool({
+    ...connectionOptions(target, target.database),
+    connectionLimit: POOL_SIZE,
+  });
+  try {
+    await pool.query("SELECT 1");
+  } catch (error) {
+    await pool.end();
+    throw toDatabaseError(error, target);
+  }
+  return { db: drizzle({ client: pool }), close: () => pool.end() };
+}

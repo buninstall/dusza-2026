@@ -72,4 +72,9 @@ if (withE2e) {
   });
 }
 
+info("MySQL ellenőrzése (DATABASE_URL)");
+if ((await run(["bun", join(root, "scripts", "db-setup.ts"), "--check"])) !== 0) {
+  warn("A szerver indítása előtt készítsd elő a MySQL-t a fenti módok egyikével.");
+}
+
 info("Kész. Indítás: just dev → http://localhost:5173 (demo1 / demo2026)");

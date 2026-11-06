@@ -17,7 +17,8 @@ function file(name: string, content: string): string {
 
 describe("statikus kiszolgálás", () => {
   test("MIME-típusok, cache és SPA-fallback", async () => {
-    const { deps } = await createTestContext();
+    await using context = await createTestContext();
+    const { deps } = context;
     const handler = createStaticHandler({
       "/index.html": file("index.html", "<!doctype html><title>MineScript</title>"),
       "/assets/engine-abc123.wasm": file("engine.wasm", "wasm"),
@@ -36,6 +37,14 @@ describe("statikus kiszolgálás", () => {
     const api = await app.request("http://localhost/api/nincs");
     expect(api.status).toBe(404);
     expect(api.headers.get("content-type")).toContain("application/json");
+  });
+
+  test("index.html nélkül az ismeretlen útvonal egységes 404", async () => {
+    await using context = await createTestContext();
+    const app = createApp(context.deps, { staticHandler: createStaticHandler({}) });
+    const response = await app.request("http://localhost/play/3");
+    expect(response.status).toBe(404);
+    expect(response.headers.get("content-type")).toContain("application/json");
   });
 
   test("ismeretlen kiterjesztés bináris", () => {

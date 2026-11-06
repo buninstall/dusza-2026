@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm";
 import { hashPassword } from "../auth/password.ts";
+import { firstRow } from "../db/rows.ts";
 import { type MapRow, maps, mapVersions, programs, runs, sessions, users } from "../db/schema.ts";
 import type { Deps } from "../env.ts";
 import { createMapWithVersion, currentVersion, validateMapContent } from "../services/maps.ts";
@@ -23,64 +23,66 @@ export type SeedReport = {
   skippedRuns: number;
 };
 
-function wipe(deps: Deps): void {
-  deps.db.transaction((tx) => {
-    tx.delete(runs).run();
-    tx.delete(programs).run();
-    tx.delete(mapVersions).run();
-    tx.delete(maps).run();
-    tx.delete(sessions).run();
-    tx.delete(users).run();
+async function wipe(deps: Deps): Promise<void> {
+  await deps.db.transaction(async (tx) => {
+    for (const table of [runs, programs, mapVersions, maps, sessions, users]) {
+      await tx.delete(table);
+    }
   });
 }
 
 async function createUsers(deps: Deps, now: number): Promise<Map<string, number>> {
   const ids = new Map<string, number>();
   for (const [index, account] of DEMO_ACCOUNTS.entries()) {
-    const created = deps.db
-      .insert(users)
-      .values({
-        username: account.username,
-        passwordHash: await hashPassword(account.password),
-        role: account.role,
-        createdAt: now + index,
-      })
-      .returning({ id: users.id })
-      .get();
+    const created = firstRow(
+      await deps.db
+        .insert(users)
+        .values({
+          username: account.username,
+          passwordHash: await hashPassword(account.password),
+          role: account.role,
+          createdAt: now + index,
+        })
+        .$returningId(),
+    );
     ids.set(account.username, created.id);
   }
   return ids;
 }
 
-function createMaps(deps: Deps, ownerId: number, now: number): MapRow[] {
-  return TUTORIAL_MAPS.map((tutorial, index) => {
+async function createMaps(deps: Deps, ownerId: number, now: number): Promise<MapRow[]> {
+  const created: MapRow[] = [];
+  for (const [index, tutorial] of TUTORIAL_MAPS.entries()) {
     const valid = validateMapContent(deps.engine, tutorial.content);
     if (!valid.ok) {
       throw new Error(`Hibás oktató térkép a seedben: ${tutorial.title}`);
     }
-    return createMapWithVersion(deps.db, {
-      ownerId,
-      title: tutorial.title,
-      description: tutorial.description,
-      visibility: "public",
-      valid,
-      now: now + index,
-    });
-  });
+    created.push(
+      await createMapWithVersion(deps.db, {
+        ownerId,
+        title: tutorial.title,
+        description: tutorial.description,
+        visibility: "public",
+        valid,
+        now: now + index,
+      }),
+    );
+  }
+  return created;
 }
 
 export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise<SeedReport> {
   if (options.reset) {
-    wipe(deps);
+    await wipe(deps);
   }
-  const existing = deps.db.select({ id: users.id }).from(users).limit(1).get();
+  const [existing] = await deps.db.select({ id: users.id }).from(users).limit(1);
   if (existing) {
     return { seeded: false, users: 0, maps: 0, programs: 0, runs: 0, skippedRuns: 0 };
   }
   const now = deps.now();
   const userIds = await createUsers(deps, now);
   const adminId = userIds.get("admin") ?? 0;
-  const createdMaps = createMaps(deps, adminId, now);
+  const createdMaps = await createMaps(deps, adminId, now);
   let recordedRuns = 0;
   let skippedRuns = 0;
   for (const [index, sample] of SAMPLE_PROGRAMS.entries()) {
@@ -89,16 +91,14 @@ export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise
     if (ownerId === undefined || !map) {
       throw new Error(`Hibás mintaprogram a seedben: ${sample.title}`);
     }
-    deps.db
+    await deps.db
       .insert(programs)
-      .values({ ownerId, title: sample.title, source: sample.source, updatedAt: now + index })
-      .run();
-    const freshMap = deps.db.select().from(maps).where(eq(maps.id, map.id)).get();
-    const version = freshMap ? currentVersion(deps.db, freshMap) : undefined;
+      .values({ ownerId, title: sample.title, source: sample.source, updatedAt: now + index });
+    const version = await currentVersion(deps.db, map);
     if (!version) {
       continue;
     }
-    const recorded = executeAndRecord(deps.db, deps.engine, {
+    const recorded = await executeAndRecord(deps.db, deps.engine, {
       userId: ownerId,
       version,
       source: sample.source,

@@ -6,7 +6,7 @@ import { findSessionUser, readSessionToken } from "./session.ts";
 export function requireUser(deps: Deps) {
   return createMiddleware<AppEnv>(async (c, next) => {
     const token = readSessionToken(c);
-    const user = token ? findSessionUser(deps, token) : null;
+    const user = token ? await findSessionUser(deps, token) : null;
     if (!user) {
       return apiError(c, 401, "UNAUTHENTICATED", messages.unauthenticated);
     }

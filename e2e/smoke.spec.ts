@@ -13,9 +13,8 @@ test("bejelentkezés → térképlista → játék → kijelentkezés", async ({
   await expect(page.getByRole("grid", { name: /térképe$/ })).toBeVisible();
 
   await page.getByRole("button", { name: "Futtatás" }).click();
-  await expect(
-    page.getByText("A program szintaktikailag hibás, ezért nem futtatható."),
-  ).toBeVisible();
+  await expect(page.locator("p", { hasText: "A program hiba nélkül lefutott." })).toBeVisible();
+  await expect(page.getByText("Az eredmény rögzítve: 0 arany, 2 lépés.")).toBeVisible();
 
   await page.getByRole("button", { name: /^Felhasználói menü/ }).click();
   await page.getByRole("menuitem", { name: "Kijelentkezés" }).click();

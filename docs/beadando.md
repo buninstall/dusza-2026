@@ -4,18 +4,21 @@ Dusza Árpád Országos Programozói Emlékverseny 2026/27, I. forduló (web).
 
 ## Indítás
 
-A kész alkalmazás egyetlen futtatható fájl, telepítés és internetkapcsolat nélkül működik:
+A kész alkalmazás egyetlen futtatható fájl, amely egy MySQL-szerverben tárolja az adatokat; internetkapcsolat nem kell hozzá.
 
-1. Indítsd el a platformodnak megfelelő binárist (`minescript-windows-x64.exe`, `minescript-linux-x64` vagy `minescript-macos-arm64`).
-2. A böngésző automatikusan megnyílik (`http://127.0.0.1:8080`, foglalt port esetén a következő szabad).
-3. Lépj be egy demó-fiókkal:
+1. Indíts egy MySQL-szervert (8.0 vagy újabb) az alábbiak egyikével:
+   - Docker: `docker compose up -d mysql` a repó gyökerében; a `minescript` adatbázist és fiókot is létrehozza.
+   - Helyi telepítés: macOS-en `brew install mysql && brew services start mysql`, Windows-on a MySQL Installer. A fejlesztői fiókot a `just db-setup` hozza létre; csak a binárissal a root fiók is megadható, például `--database-url mysql://root@127.0.0.1:3306/minescript`, ilyenkor az adatbázist a program maga hozza létre.
+2. Indítsd el a platformodnak megfelelő binárist (`minescript-windows-x64.exe`, `minescript-linux-x64` vagy `minescript-macos-arm64`).
+3. A böngésző automatikusan megnyílik (`http://127.0.0.1:8080`, foglalt port esetén a következő szabad).
+4. Lépj be egy demó-fiókkal:
 
 | Felhasználó               | Jelszó      | Szerep         |
 | ------------------------- | ----------- | -------------- |
 | `admin`                   | `dusza2026` | adminisztrátor |
 | `demo1`, `demo2`, `demo3` | `demo2026`  | játékos        |
 
-Első indításkor a bináris mellett létrejön a `minescript.db`, benne 8 oktató térképpel és mintaprogramokkal. A demó-adatok a `--reset-demo` kapcsolóval állíthatók vissza.
+A program alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` címre kapcsolódik; más szerver a `DATABASE_URL` környezeti változóval vagy a `--database-url` kapcsolóval adható meg. Első indításkor létrehozza a táblákat, és feltölti az adatbázist 8 oktató térképpel és mintaprogramokkal. Ha a MySQL nem érhető el, vagy a belépési adatok hibásak, a program magyarul kiírja a teendőt. A demó-adatok a `--reset-demo` kapcsolóval állíthatók vissza.
 
 ## Melyik funkció hogyan érhető el
 
@@ -40,7 +43,7 @@ A hátralévő munka szerepenként: [`docs/roadmap.md`](roadmap.md). Beadás el�
 
 ## Plusz szolgáltatások
 
-- Egyetlen, offline futó bináris beágyazott webbel, motorral és adatbázissal.
+- Egyetlen futtatható bináris beágyazott webbel és motorral; az adatokat MySQL-adatbázisban tárolja, a sémát és a demó-adatokat első indításkor maga hozza létre.
 - Ugyanaz a Rust-motor fut a böngészőben, a szerveren és a parancssorban; a ranglista eredményét a szerver számolja újra.
 - Visszaléptethető, tekerhető lejátszás, változó-panel.
 - Térképverziók: a módosított térkép új verzió, a régi ranglista megmarad.
@@ -49,12 +52,12 @@ A hátralévő munka szerepenként: [`docs/roadmap.md`](roadmap.md). Beadás el�
 
 ## Felmerült problémák és megoldásuk
 
-| Probléma                                                                                           | Megoldás                                                                                                                        |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| A spec több ponton nyitva hagyja a pontos viselkedést (lépésszámlálás, hibaelsőbbség, felfedezés). | Írásban rögzített értelmezési döntések ([`docs/dontesek.md`](dontesek.md)), és ezekre épülő, kézzel számolt conformance-esetek. |
-| A kliens által beküldött eredmény hamisítható.                                                     | A szerver ugyanazzal a WASM-motorral újrafuttatja a programot.                                                                  |
-| Ugyanazt a nyelvi logikát három helyen kell futtatni.                                              | Rust-mag, WASM-kötés, a TypeScript-típusok a Rustból generálva.                                                                 |
-| Offline futás és egyszerű telepítés.                                                               | `bun build --compile` beágyazott fájlokkal, betűtípusok csomagból, nincs CDN.                                                   |
+| Probléma                                                                                           | Megoldás                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A spec több ponton nyitva hagyja a pontos viselkedést (lépésszámlálás, hibaelsőbbség, felfedezés). | Írásban rögzített értelmezési döntések ([`docs/dontesek.md`](dontesek.md)), és ezekre épülő, kézzel számolt conformance-esetek.                   |
+| A kliens által beküldött eredmény hamisítható.                                                     | A szerver ugyanazzal a WASM-motorral újrafuttatja a programot.                                                                                    |
+| Ugyanazt a nyelvi logikát három helyen kell futtatni.                                              | Rust-mag, WASM-kötés, a TypeScript-típusok a Rustból generálva.                                                                                   |
+| Egyszerű telepítés internetkapcsolat nélkül.                                                       | `bun build --compile` beágyazott fájlokkal, betűtípusok csomagból, nincs CDN; a MySQL-hez helyi telepítés vagy `docker compose up -d mysql` elég. |
 
 ## Továbbfejlesztési javaslatok
 

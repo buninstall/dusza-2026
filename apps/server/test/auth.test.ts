@@ -3,7 +3,8 @@ import { createTestContext, type ErrorBody, json } from "./helpers.ts";
 
 describe("hitelesítés", () => {
   test("regisztráció, me, kijelentkezés", async () => {
-    const { client } = await createTestContext();
+    await using context = await createTestContext();
+    const { client } = context;
     const user = client();
     const registered = await user.register("banyasz");
     expect(registered.user.username).toBe("banyasz");
@@ -19,7 +20,8 @@ describe("hitelesítés", () => {
   });
 
   test("a session cookie HttpOnly és SameSite=Lax", async () => {
-    const { client } = await createTestContext();
+    await using context = await createTestContext();
+    const { client } = context;
     const response = await client().post("/api/auth/register", {
       username: "cookie_teszt",
       password: "jelszo1234",
@@ -32,7 +34,8 @@ describe("hitelesítés", () => {
   });
 
   test("login helyes és hibás jelszóval", async () => {
-    const { client } = await createTestContext();
+    await using context = await createTestContext();
+    const { client } = context;
     await client().register("robot");
     const user = client();
     const wrong = await user.post("/api/auth/login", {
@@ -47,7 +50,8 @@ describe("hitelesítés", () => {
   });
 
   test("a foglalt név kis- és nagybetűtől függetlenül foglalt", async () => {
-    const { client } = await createTestContext();
+    await using context = await createTestContext();
+    const { client } = context;
     await client().register("Kincs");
     const response = await client().post("/api/auth/register", {
       username: "kincs",
@@ -57,7 +61,8 @@ describe("hitelesítés", () => {
   });
 
   test("a hibás felhasználónév és a rövid jelszó 400", async () => {
-    const { client } = await createTestContext();
+    await using context = await createTestContext();
+    const { client } = context;
     const badName = await client().post("/api/auth/register", {
       username: "a-b",
       password: "jelszo1234",
@@ -73,7 +78,7 @@ describe("hitelesítés", () => {
   });
 
   test("percenként legfeljebb 5 bejelentkezési kísérlet", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     await context.client().register("celpont");
     const attacker = context.client();
     for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -97,7 +102,7 @@ describe("hitelesítés", () => {
   });
 
   test("lejárt session nem érvényes", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const user = context.client();
     await user.register("lejaro");
     context.advance(31 * 24 * 60 * 60 * 1000);

@@ -343,9 +343,7 @@ docs/*
 !.env.template
 
 packages/engine/pkg/
-apps/server/data/
 release/
-*.db-*
 *.gen.ts
 *.gen.js
 !apps/server/src/db/migrations.gen.ts

@@ -11,14 +11,14 @@ import { runSchema } from "./schemas.ts";
 export function runRoutes(deps: Deps) {
   return new Hono<AppEnv>()
     .use(requireUser(deps))
-    .post("/", zValidator("json", runSchema, validationHook), (c) => {
+    .post("/", zValidator("json", runSchema, validationHook), async (c) => {
       const { mapVersionId, source } = c.req.valid("json");
-      const version = findVersion(deps.db, mapVersionId);
-      const map = version ? findMap(deps.db, version.mapId) : undefined;
+      const version = await findVersion(deps.db, mapVersionId);
+      const map = version ? await findMap(deps.db, version.mapId) : undefined;
       if (!version || !map || !canView(c.var.user, map)) {
         return apiError(c, 404, "NOT_FOUND", messages.notFound);
       }
-      const recorded = executeAndRecord(deps.db, deps.engine, {
+      const recorded = await executeAndRecord(deps.db, deps.engine, {
         userId: c.var.user.id,
         version,
         source,
