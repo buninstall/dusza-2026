@@ -1,6 +1,6 @@
 import { statSync } from "node:fs";
 import { join } from "node:path";
-import { capture, fail, info, paths, runOrFail, warn } from "./lib.ts";
+import { capture, fail, info, paths, runOrFail, warn, which } from "./lib.ts";
 
 const WASM_OPT_FEATURES = [
   "--enable-bulk-memory",
@@ -11,7 +11,7 @@ const WASM_OPT_FEATURES = [
   "--enable-multivalue",
 ];
 
-if (!Bun.which("wasm-bindgen")) {
+if (!which("wasm-bindgen")) {
   fail("Hiányzik a wasm-bindgen. Futtasd: just setup");
 }
 

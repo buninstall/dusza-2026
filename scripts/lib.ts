@@ -73,8 +73,12 @@ export async function runOrFail(command: string[], options: RunOptions = {}): Pr
   }
 }
 
+export function which(name: string): string | null {
+  return Bun.which(name, { PATH: process.env.PATH ?? "" });
+}
+
 export async function capture(command: string[], cwd: string = root): Promise<string | null> {
-  if (!Bun.which(command[0] ?? "")) {
+  if (!which(command[0] ?? "")) {
     return null;
   }
   const child = Bun.spawn(command, { cwd, stdout: "pipe", stderr: "pipe" });
