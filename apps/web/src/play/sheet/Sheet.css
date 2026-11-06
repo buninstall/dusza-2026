@@ -233,7 +233,7 @@
 .faults-list {
   display: flex;
   flex-direction: column;
-  max-height: min(40cqh, 16rem);
+  max-height: 20rem;
   overflow-y: auto;
   list-style: none;
   border-bottom: var(--border-thin) dashed var(--c-line);
@@ -242,7 +242,6 @@
 
 .faults-item {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1);
   padding: 0 var(--space-2);
@@ -262,8 +261,8 @@
 
 .faults-jump {
   display: grid;
-  flex: 1 1 16rem;
-  grid-template-columns: 4.5ch minmax(0, 1fr) auto;
+  flex: 1 1 auto;
+  grid-template-columns: 4.5ch minmax(0, 1fr);
   gap: var(--space-2);
   align-items: baseline;
   min-width: 0;
@@ -285,21 +284,8 @@
 }
 
 .faults-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
   min-width: 0;
   font: var(--type-help);
-}
-
-.faults-help {
-  color: var(--c-text-muted);
-}
-
-.faults-code {
-  font: var(--type-micro);
-  color: var(--c-text-faint);
-  overflow-wrap: anywhere;
 }
 
 .faults-more {

@@ -40,15 +40,18 @@ function FaultItem({
           {hu.play.diagnosticAt(diagnostic.span.line, diagnostic.span.colStart)}
         </span>
         <span className="faults-text">
-          <strong>{diagnosticTitles[diagnostic.code]}</strong>
-          <span>{diagnostic.message}</span>
-          {diagnostic.help ? <span className="faults-help">{diagnostic.help}</span> : null}
+          <strong>{diagnosticTitles[diagnostic.code]}.</strong> {diagnostic.message}
         </span>
-        <code className="faults-code">{diagnostic.code}</code>
       </button>
       {fix ? (
-        <Button size="sm" variant="ghost" icon="check" onPress={() => onFix(diagnostic)}>
-          {hu.play.fix(fix.title)}
+        <Button
+          size="sm"
+          variant="ghost"
+          icon="check"
+          aria-label={hu.play.fix(fix.title)}
+          onPress={() => onFix(diagnostic)}
+        >
+          {hu.play.fixShort}
         </Button>
       ) : null}
     </li>

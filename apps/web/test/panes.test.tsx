@@ -42,24 +42,18 @@ async function openPlay(source: string) {
 }
 
 describe("keskeny képernyő", () => {
-  test("a bánya és a program külön fülön, futtatáskor a bánya kerül elő", async () => {
+  test("a bánya és a program egymás alatt van, fülváltás nélkül fut", async () => {
     const { user } = await openPlay("step forward 3\nmine here\n");
-    const stage = screen.getByRole("tab", { name: "Bánya" });
-    expect(stage.getAttribute("aria-selected")).toBe("true");
-    await user.click(screen.getByRole("tab", { name: "Program" }));
-    expect(usePlayUi.getState().pane).toBe("sheet");
+    expect(screen.queryByRole("tab", { name: "Bánya" })).toBeNull();
+    expect(screen.getByRole("textbox", { name: "MineScript program" })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Futtatás" }));
-    await waitFor(() => expect(usePlayUi.getState().pane).toBe("stage"));
-    expect(stage.getAttribute("aria-selected")).toBe("true");
+    await waitFor(() => expect(usePlayback.getState().result).not.toBeNull());
   });
 
-  test("szintaktikai hibánál a program fül nyílik meg, az ugrólink is oda visz", async () => {
+  test("szintaktikai hibánál a hibalista kinyílik", async () => {
     const { user } = await openPlay("step  forward 1\n");
     await user.click(screen.getByRole("button", { name: "Futtatás" }));
-    await waitFor(() => expect(usePlayUi.getState().pane).toBe("sheet"));
-    act(() => usePlayUi.getState().setPane("stage"));
-    await user.click(screen.getByRole("button", { name: "Ugrás a programhoz" }));
-    expect(usePlayUi.getState().pane).toBe("sheet");
+    await waitFor(() => expect(usePlayUi.getState().isFaultBarOpen).toBe(true));
   });
 });
 

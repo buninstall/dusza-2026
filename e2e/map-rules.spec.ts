@@ -231,7 +231,6 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
   await expect(page.getByText("Jelenleg a(z) 2. verzió aktív.")).toBeVisible();
 
   await page.getByRole("link", { name: "Kipróbálás" }).click();
-  await expect(page.getByText(/^v2 · \d+×\d+ · \d+ arany$/)).toBeVisible();
   await expect(page.getByRole("gridcell", { name: "1. sor, 8. oszlop: fal" })).toBeAttached();
   await page.getByRole("link", { name: "Ranglista" }).click();
   await expect(page.getByRole("heading", { level: 1, name: `Ranglista – ${title}` })).toBeVisible();

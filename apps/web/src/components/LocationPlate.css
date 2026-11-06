@@ -125,3 +125,9 @@
     animation: none;
   }
 }
+
+@container plate (width < 24rem) {
+  .plate-actions .seg-segment {
+    padding-inline: var(--space-2);
+  }
+}
