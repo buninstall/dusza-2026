@@ -1,0 +1,9 @@
+{
+  "description": "A JavaScript-objektumok beépített neveivel (constructor, toString, valueOf, prototype) is közönséges változók; a be nem állított hasOwnProperty inicializálatlan.",
+  "specRefs": ["2", "2.2.2", "2.2.4"],
+  "decisions": ["D21"],
+  "outcome": { "kind": "runtimeError", "code": "E_UNINITIALIZED", "line": 8 },
+  "gold": 0,
+  "steps": 8,
+  "console": ["2", "true", "6"]
+}

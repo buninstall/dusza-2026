@@ -1,0 +1,9 @@
+{
+  "description": "false and c esetén a c is beolvasódik, és inicializálatlan: nincs rövidzár az and-nél sem.",
+  "specRefs": ["2.2.1", "2.2.4"],
+  "decisions": ["D10", "D21"],
+  "outcome": { "kind": "runtimeError", "code": "E_UNINITIALIZED", "line": 1 },
+  "gold": 0,
+  "steps": 1,
+  "console": []
+}

@@ -7,13 +7,14 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 - `rNNN` = `conformance/runtime/NNN-*`, `sNNN` = `conformance/syntax/NNN-*`, `mNNN` = `conformance/maps/NNN-*`.
 - `ref:…` = a referencia-interpreter unit-tesztje (`tools/reference-interpreter/test`), `gen:…` = a generátor tesztje, `diff` = a differenciális teszt (minden conformance-eset és 2000-2000 generált helyes program, hibás program és térkép; a `DIFF_SEEDS` környezeti változóval növelhető, egyszeri próbán 30 000 seeden is eltérés nélkül).
 - `core:…` Rust unit-teszt, `server:…` bun-teszt, `web:…` Vitest, `e2e:…` Playwright.
+- `mut` = a mutációs ellenőrzés (`tools/reference-interpreter/test/mutation.test.ts`), `prop` = az invariáns- és metamorf tesztek (`properties.test.ts`, a `PROPERTY_SEEDS` változóval növelhető), `rob` = a robusztussági tesztek (`robustness.test.ts`).
 
 Állapotok:
 
 - **zöld (Rust, WASM, referencia)**: a kézzel levezetett elvárást a Rust-motor (`crates/minescript-core/tests/conformance.rs`), a WASM-build (`packages/engine/test/conformance.test.ts`) és a független referencia-interpreter is teljesíti, és a két interpreter eseménysora mezőről mezőre egyezik.
 - **zöld**: nem conformance-teszt, és átmegy.
 
-Összesen 293 conformance-eset: 110 runtime, 129 syntax, 54 maps. Minden `SYN_*` kód (a `SYN_NOT_IMPLEMENTED` kivételével), minden `MAP_*` kód és minden `RuntimeErrorCode` legalább egy esetben szerepel. A referencia-interpreter `src/` sorlefedettsége 100%.
+Összesen 301 conformance-eset: 116 runtime, 131 syntax, 54 maps. Minden `SYN_*` kód (a `SYN_NOT_IMPLEMENTED` kivételével), minden `MAP_*` kód és minden `RuntimeErrorCode` legalább egy esetben szerepel. A referencia-interpreter `src/` sorlefedettsége 100%.
 
 ## 1. A térkép és a program formátuma (spec 1)
 
@@ -94,25 +95,26 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 
 ## 4. Szemantika (spec 2.2.1, 2.2.2)
 
-| ID    | Spec       | Szabály                                                                        | Teszteset(ek)                   | Állapot                       |
-| ----- | ---------- | ------------------------------------------------------------------------------ | ------------------------------- | ----------------------------- |
-| T4.1  | 2.2.1      | Aritmetika: egész operandus, egész eredmény                                    | r018, r022, r055, r064, r065    | zöld (Rust, WASM, referencia) |
-| T4.2  | 2.2.1      | Összehasonlítás: egész operandus, logikai eredmény, határértékek               | r068, r063                      | zöld (Rust, WASM, referencia) |
-| T4.3  | 2.2.1      | `=`/`<>` egészre és logikaira, azonos típussal                                 | r056, r013, r066, r067          | zöld (Rust, WASM, referencia) |
-| T4.4  | 2.2.1      | `and`/`or`/`not` logikai operandussal                                          | r057, r012, r060–r062, r059     | zöld (Rust, WASM, referencia) |
-| T4.5  | 2.2.1, D21 | `set`: előbb kiértékel, siker esetén ír; az első értékadás hozza létre         | r077, r072, r009, r101          | zöld (Rust, WASM, referencia) |
-| T4.6  | 2.2.1, D21 | Balról jobbra, minden operandus azonnali típusellenőrzése, első hibánál megáll | r012, r059, r063–r065           | zöld (Rust, WASM, referencia) |
-| T4.7  | 2.2.1, D10 | Nincs rövidzár: `true or c` a c-t is beolvassa                                 | r011, r058                      | zöld (Rust, WASM, referencia) |
-| T4.8  | 2.2.1, D21 | `=`/`<>` első operandusa bármi, az egyezés a második után                      | r013, r066, r067                | zöld (Rust, WASM, referencia) |
-| T4.9  | 2.2.1      | `if`: then- vagy else-ág                                                       | r016, r017, r093                | zöld (Rust, WASM, referencia) |
-| T4.10 | 2.2.1      | `while`: a törzs ismétlődik, amíg a feltétel igaz                              | r018, r035, r094                | zöld (Rust, WASM, referencia) |
-| T4.11 | 2.2.2      | Két típus, nincs implicit konverzió                                            | r013, r048, r053, r064          | zöld (Rust, WASM, referencia) |
-| T4.12 | 2.2.2      | Nincs deklaráció, a változó a program végéig él                                | r097, r098                      | zöld (Rust, WASM, referencia) |
-| T4.13 | 2.2.2      | A típus az első értékadáskor véglegesen rögzül                                 | r009, r099, r100                | zöld (Rust, WASM, referencia) |
-| T4.14 | 2.2.2      | Az if és a while feltétele logikai                                             | r010, r084–r086                 | zöld (Rust, WASM, referencia) |
-| T4.15 | 2.2.2      | Minden típusellenőrzés futásidőben, szintaktikailag helyes                     | s126, r010                      | zöld (Rust, WASM, referencia) |
-| T4.16 | 2.2.2      | Fentről lefelé, szekvenciálisan; a blokk az azonos mélységű sorok              | r036, r088                      | zöld (Rust, WASM, referencia) |
-| T4.17 | D6         | Ellenőrzött egész a ±(2^53 − 1) határon, `E_INT_OVERFLOW`                      | r019, r069–r072, `ref:evaluate` | zöld (Rust, WASM, referencia) |
+| ID    | Spec       | Szabály                                                                         | Teszteset(ek)                   | Állapot                       |
+| ----- | ---------- | ------------------------------------------------------------------------------- | ------------------------------- | ----------------------------- |
+| T4.1  | 2.2.1      | Aritmetika: egész operandus, egész eredmény                                     | r018, r022, r055, r064, r065    | zöld (Rust, WASM, referencia) |
+| T4.2  | 2.2.1      | Összehasonlítás: egész operandus, logikai eredmény, határértékek                | r068, r063                      | zöld (Rust, WASM, referencia) |
+| T4.3  | 2.2.1      | `=`/`<>` egészre és logikaira, azonos típussal                                  | r056, r013, r066, r067          | zöld (Rust, WASM, referencia) |
+| T4.4  | 2.2.1      | `and`/`or`/`not` logikai operandussal                                           | r057, r012, r060–r062, r059     | zöld (Rust, WASM, referencia) |
+| T4.5  | 2.2.1, D21 | `set`: előbb kiértékel, siker esetén ír; az első értékadás hozza létre          | r077, r072, r009, r101          | zöld (Rust, WASM, referencia) |
+| T4.6  | 2.2.1, D21 | Balról jobbra, minden operandus azonnali típusellenőrzése, első hibánál megáll  | r012, r059, r063–r065           | zöld (Rust, WASM, referencia) |
+| T4.7  | 2.2.1, D10 | Nincs rövidzár: `true or c` és `false and c` a c-t is beolvassa                 | r011, r058, r113, `mut`         | zöld (Rust, WASM, referencia) |
+| T4.8  | 2.2.1, D21 | `=`/`<>` első operandusa bármi, az egyezés a második után                       | r013, r066, r067                | zöld (Rust, WASM, referencia) |
+| T4.9  | 2.2.1      | `if`: then- vagy else-ág                                                        | r016, r017, r093                | zöld (Rust, WASM, referencia) |
+| T4.10 | 2.2.1      | `while`: a törzs ismétlődik, amíg a feltétel igaz                               | r018, r035, r094                | zöld (Rust, WASM, referencia) |
+| T4.11 | 2.2.2      | Két típus, nincs implicit konverzió                                             | r013, r048, r053, r064          | zöld (Rust, WASM, referencia) |
+| T4.12 | 2.2.2      | Nincs deklaráció, a változó a program végéig él                                 | r097, r098                      | zöld (Rust, WASM, referencia) |
+| T4.13 | 2.2.2      | A típus az első értékadáskor véglegesen rögzül                                  | r009, r099, r100                | zöld (Rust, WASM, referencia) |
+| T4.14 | 2.2.2      | Az if és a while feltétele logikai                                              | r010, r084–r086                 | zöld (Rust, WASM, referencia) |
+| T4.15 | 2.2.2      | Minden típusellenőrzés futásidőben, szintaktikailag helyes                      | s126, r010                      | zöld (Rust, WASM, referencia) |
+| T4.16 | 2.2.2      | Fentről lefelé, szekvenciálisan; a blokk az azonos mélységű sorok               | r036, r088                      | zöld (Rust, WASM, referencia) |
+| T4.17 | D6         | Ellenőrzött egész a ±(2^53 − 1) határon, `E_INT_OVERFLOW`                       | r019, r069–r072, `ref:evaluate` | zöld (Rust, WASM, referencia) |
+| T4.18 | 2, 2.2.2   | A JavaScript beépített nevei (`constructor`, `toString`, …) közönséges változók | r114, r115, s131                | zöld (Rust, WASM, referencia) |
 
 ## 5. Robot API és futásidejű hibák (spec 2.2.3, 2.2.4)
 
@@ -158,6 +160,11 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 | T6.15 | 3.4      | A futás leállítható                                                           | `web:playback-store.test` (stop), `e2e:run` (leállítás, nem kerül a ranglistára)                                     | zöld                          |
 | T6.16 | 3.4      | Felfedezett és felderítetlen mezők megkülönböztetve a felületen               | `web:MapGrid.test` (köd mód), `e2e:run` (lámpafény és teljes térkép cellacímkéi)                                     | zöld                          |
 | T6.17 | D20      | A referencia és a motor eseménysora mezőről mezőre egyezik                    | `diff`                                                                                                               | zöld (Rust, WASM, referencia) |
+| T6.18 | 2, 3.4   | A spec 2. fejezetének programja a `>.@.@#` térképen: 35 lépés, 2 arany             | r116                                                          | zöld (Rust, WASM, referencia) |
+| T6.19 | 3.4      | Invariánsok minden generált futásra (lépés ≤ 1000, robot a pályán, arany ≤ térkép) | `prop`                                                        | zöld                          |
+| T6.20 | 3.4, D9  | `turn by n` ≡ `turn by (n mod 4)`; `step a` + `step b` ≡ `step a+b`; determinizmus | `prop`                                                        | zöld                          |
+| T6.21 | 3.4      | Óriási, mélyen beágyazott és szokatlan karakteres bemenetre sincs összeomlás       | `rob`                                                         | zöld                          |
+| T6.22 | 3.4      | A felület minden kulcsszélességen (320, 768, 1024, 1440) túlcsordulás nélkül       | `e2e:responsive`                                              | zöld                          |
 
 ## 7. D-döntések
 
@@ -215,6 +222,12 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 | T9.7 | 4             | 320–1440 px, mindkét téma: nincs kilógás, takarás, 24 px-es célok | `e2e:responsive`                                         | zöld    |
 | T9.8 | 4             | `prefers-reduced-motion`: nincs futó animáció                     | `e2e:a11y` (csökkentett mozgás)                          | zöld    |
 | T9.9 | 4             | Látható fókusz minden tabulátor-megállón                          | `e2e:keyboard`                                           | zöld    |
+| ----- | ------------- | ---------------------------------------------------------- | ------------------------------------------------ | ------- |
+| T9.10 | –             | A süti HttpOnly és SameSite=Lax, kilépés után érvénytelen  | `e2e:security`                                   | zöld    |
+| T9.11 | –             | Jelszó és hash sehol a válaszban és a böngészőtárolóban    | `e2e:security`                                   | zöld    |
+| T9.12 | –             | Injektálás-jellegű bemenet 400, stack trace nélkül         | `e2e:security`                                   | zöld    |
+| T9.13 | –             | HTML a címben és a leírásban szövegként jelenik meg        | `e2e:security` (XSS)                             | zöld    |
+| T9.14 | –             | Biztonsági fejlécek (CSP, X-Frame-Options, nosniff)        | `e2e:security`                                   | zöld    |
 
 ## Futtatás
 
@@ -223,4 +236,113 @@ bun test --cwd tools/reference-interpreter
 bun test --cwd packages/engine
 just conformance
 DIFF_SEEDS=30000 bun test --timeout 600000 --cwd tools/reference-interpreter test/diff.test.ts
+PROPERTY_SEEDS=5000 bun test --cwd tools/reference-interpreter test/properties.test.ts
+just e2e
 ```
+
+## QA-jelentés (2026. november 6.)
+
+Minden szám ebben a munkamenetben, Windows 11-en, ténylegesen lefuttatott parancsból származik.
+
+### Eredmények
+
+| Parancs                                                 | Terület                                                        | Eredmény                             |
+| ------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------ |
+| `just conformance`                                      | 301 eset Rustban, WASM-on és a referencián                     | zöld (WASM-csomag: 610 teszt)        |
+| `bun test --coverage --cwd tools/reference-interpreter` | referencia, differenciális, mutációs, invariáns, robusztussági | 148/148 zöld                         |
+| `just test`                                             | Rust, engine, referencia, szerver, web                         | egy piros: BUG-1 (Rust CLI, Windows) |
+| `just e2e`                                              | Playwright, chromium                                           | 83/83 zöld                           |
+| `just lint`                                             | rustfmt, clippy, Biome, typecheck                              | zöld                                 |
+
+### Lefedettség
+
+A referencia-interpreter `src/` mappája: 100% függvény, 100% sor. Ágra csak a `machine.ts` 152. sora hiányzik, ez a nem `Fault` kivétel továbbdobása, normál futásban nem érhető el.
+
+### Mutációs ellenőrzés
+
+`mut`: 15 szándékosan elrontott referencia-változat, ideiglenes másolatban. Mindegyiknél elvárás, hogy a conformance-csomag legalább egy esete elbukjon, a változatlan másolatnál pedig egy se.
+
+- Az első futáson a „rövidzáras `and`” mutáns túlélt: a csomagban nem volt `false and c` eset. Ezt pótolja az r113, azóta mind a 15 mutánst megfogja a csomag.
+- A mutánsok: `or`/`and` rövidzár, `=`/`<>` típusegyezés nélkül, jobbra forgás, mod 3, falon átlépés, újrabányászás, a pályán kívüli `isThere` üres kamrát lát, `isThere` felfedezés nélkül, típusrögzítés nélkül, 1002-es limit, nem számoló `else`, nem számoló utolsó `while`, 101-es literál, 16-os térkép.
+
+### Fuzz és differenciális futások
+
+| Teszt                                            | Seedek | Találat   |
+| ------------------------------------------------ | ------ | --------- |
+| `diff`, helyes programok                         | 1–2000 | 0 eltérés |
+| `diff`, hibás programok                          | 1–2000 | 0 eltérés |
+| `diff`, térképek                                 | 1–2000 | 0 eltérés |
+| `prop`, invariánsok (referencia és WASM)         | 1–500  | 0 sértés  |
+| `prop`, determinizmus, formázás-invariancia      | 1–200  | 0 eltérés |
+| `prop`, térkép-körút (parse → serialize → parse) | 1–500  | 0 eltérés |
+
+Az 500 generált futás kimenetele: 156 `E_BEDROCK_HIT`, 142 `ok`, 83 `E_UNINITIALIZED`, 70 `E_NO_GOLD`, 24 limit, 10 `E_BAD_ARG`, 8 `E_TYPE_MISMATCH`, 4 `E_BAD_OPERAND`, 2 `E_INT_OVERFLOW`, 1 `E_NON_BOOL_CONDITION`. Aranyat csak 2 futás bányászik ki, ezért az arany-invariánsokat a generátor gyengén terheli (lásd a fennmaradó feladatokat).
+
+### Sérülékenység és robusztusság
+
+| Pont                                                                                              | Állapot                                                    | Bizonyíték                      |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------- |
+| B3 JavaScript-nevek (`constructor`, `toString`, `valueOf`, `prototype`, `hasOwnProperty`)         | megvizsgálva, nincs hiba                                   | r114, r115                      |
+| B3 `__proto__`                                                                                    | megvizsgálva, `SYN_INVALID_IDENT`                          | s131, `rob`                     |
+| B3 nagy számok                                                                                    | megvizsgálva, `E_INT_OVERFLOW` (D6)                        | r019, r069–r072                 |
+| B4 100 000 soros program, 100 000 karakteres azonosító, 2000 szint mély beágyazás, 1 MB-os térkép | megvizsgálva, nincs hiba                                   | `rob`                           |
+| B4 BOM, NBSP, teljes szélességű szóköz, NUL, `\r`, RTL, emoji, ékezet, helyettesítő kód           | megvizsgálva, mindkét motor azonos hibát ad                | `rob`                           |
+| B4 bináris programfájl importja                                                                   | megvizsgálva, nincs hiba                                   | `e2e:play`                      |
+| B4 túl nagy kéréstörzs                                                                            | megvizsgálva, 413 és kapcsolatzárás, a szerver utána is él | `e2e:security`                  |
+| B5 XSS (cím, leírás)                                                                              | megvizsgálva, nincs hiba                                   | `e2e:security`                  |
+| B5 injektálás a belépésnél                                                                        | megvizsgálva, nincs hiba (400)                             | `e2e:security`                  |
+| B5 hitelesítés, IDOR, admin                                                                       | megvizsgálva, nincs hiba                                   | `e2e:security`                  |
+| B5 ranglista-hamisítás                                                                            | megvizsgálva, nincs hiba (a szerver újraszámol)            | `e2e:security`                  |
+| B5 süti, jelszó, brute force                                                                      | megvizsgálva, nincs hiba                                   | `e2e:security`                  |
+| B5 hibaüzenetek és fejlécek, CORS                                                                 | megvizsgálva, nincs hiba                                   | `e2e:security`                  |
+| B5 titkok a repóban                                                                               | nem vizsgált                                               | csak kézi átnézéssel lehetséges |
+| B5 függőség-audit                                                                                 | nem vizsgált                                               | a `bun audit` hálózatot igényel |
+| B5 versenyhelyzetek (dupla kattintás, két lap)                                                    | nem vizsgált                                               | későbbi e2e feladat             |
+
+### A prompt nyitott kérdései és a csapat döntései
+
+| #      | Kérdés                             | Döntés                                                                           |
+| ------ | ---------------------------------- | -------------------------------------------------------------------------------- |
+| T1, T2 | Üres blokk                         | D1: szabályos, `LINT_EMPTY_BLOCK` figyelmeztetéssel                              |
+| T3     | Futásidejű hiba sora               | D7, D20: a hibát okozó sor, `while` feltételnél a `while` sora                   |
+| T4     | A limit hibasora                   | D7: az 1001.-ként feldolgozandó sor, a lépésszám 1000                            |
+| T5, T6 | Holtverseny, több futás            | D13: felhasználónként a legjobb futás, azonos eredménynél a korábbi időpont nyer |
+| T7     | `\r\n`                             | D2: elfogadott                                                                   |
+| T8     | A kezdőmező felfedezett            | D11: igen                                                                        |
+| T9     | A robot helye `E_BEDROCK_HIT` után | D8: az utolsó érvényes mezőn                                                     |
+| T10    | Hibás futás mentése                | D13: igen, a leállított és a szintaktikailag hibás futás nem                     |
+
+### Hibajelentések
+
+```text
+ID:            BUG-1
+Felelős:       gergogyulai
+Terület:       import/export (CLI)
+Fájl és sor:   crates/minescript-cli/tests/cli.rs:64 (a hibás üzenet a CLI fájlolvasásából jön)
+Súlyosság:     alacsony
+Követelmény:   1 „érthető hibaüzenettel kell jeleznie a hibát”
+Reprodukció:   Windowson: minescript check <egy mappa útvonala>
+Elvárt:        „… ez egy mappa, nem fájl”
+Tényleges:     „Nem olvasható a fájl (…): nincs jogosultság a fájl olvasásához”
+Teszt:         cargo test -p minescript-cli --test cli unreadable_inputs_are_reported_in_hungarian
+```
+
+```text
+ID:            BUG-2
+Felelős:       futozs
+Terület:       felhasználó (szerver-tesztek környezete)
+Fájl és sor:   apps/server (a tesztek a saját mappájukból futnak)
+Súlyosság:     közepes
+Követelmény:   README: „a Bun a futtatás könyvtárából a .env-et magától betölti”
+Reprodukció:   a gyökérben .env a .env.example alapján, Docker-MySQL, majd just test
+Elvárt:        a szerver-tesztek a .env TEST_DATABASE_URL értékével csatlakoznak
+Tényleges:     41 szerver-teszt ER_ACCESS_DENIED_ERROR-ral bukik (root jelszó nélkül); környezeti változóval megadva mind zöld
+Teszt:         just test (apps/server)
+```
+
+### Fennmaradó feladatok
+
+- A generátor ritkán bányászik aranyat: kell egy arany felé tartó programminta, hogy az arany-invariánsok érdemben terhelődjenek.
+- B5 versenyhelyzetek: dupla kattintás a futtatáson, két böngészőlap, térképváltás futás közben.
+- B5 függőség-audit és titokkeresés.
+- A futásidejű hiba a felületen `status` szerepű elemben jelenik meg, nem `alert`-ben. Ez nem hiba, de érdemes megbeszélni a webes szereppel.

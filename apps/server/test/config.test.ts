@@ -62,6 +62,15 @@ describe("konfiguráció", () => {
     });
   });
 
+  test("proxy mögött a --trust-proxy vagy a TRUST_PROXY kapcsolja be a továbbított címet", () => {
+    expect(parseConfig([], NO_ENV).trustProxy).toBe(false);
+    expect(parseConfig(["--trust-proxy"], NO_ENV).trustProxy).toBe(true);
+    expect(parseConfig([], { TRUST_PROXY: "1" }).trustProxy).toBe(true);
+    expect(parseConfig([], { TRUST_PROXY: " True " }).trustProxy).toBe(true);
+    expect(parseConfig([], { TRUST_PROXY: "0" }).trustProxy).toBe(false);
+    expect(parseConfig([], { TRUST_PROXY: "" }).trustProxy).toBe(false);
+  });
+
   test("teszt módban friss, ideiglenes adatbázis a teszt-szerveren", () => {
     const config = parseConfig(["--test-mode"], {
       DATABASE_URL: "mysql://minescript:minescript@127.0.0.1:3306/minescript",

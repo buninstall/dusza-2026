@@ -55,6 +55,12 @@ start:
 smoke:
     bun scripts/smoke.ts
 
+deploy *flags:
+    bun scripts/remote.ts deploy {{flags}}
+
+remote +args:
+    bun scripts/remote.ts {{args}}
+
 e2e: build
     bun run --filter '@minescript/e2e' e2e
 
