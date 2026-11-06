@@ -1,0 +1,17 @@
+{
+  "description": "Magányos \\r egy térképsorban: ismeretlen jel.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2",
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_BAD_SYMBOL",
+      "line": 2
+    }
+  ]
+}

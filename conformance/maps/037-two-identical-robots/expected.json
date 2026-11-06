@@ -1,0 +1,16 @@
+{
+  "description": "Két azonos irányú robot.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_MULTIPLE_ROBOTS",
+      "line": 2
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "description": "Kevesebb sor, mint a fejlécben.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_ROW_COUNT"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "description": "Tab a fejlécben a szóköz helyett.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_HEADER",
+      "line": 1
+    }
+  ]
+}

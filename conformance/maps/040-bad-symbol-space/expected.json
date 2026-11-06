@@ -1,0 +1,16 @@
+{
+  "description": "Szóköz a térképsorban: ismeretlen jel.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_BAD_SYMBOL",
+      "line": 2
+    }
+  ]
+}

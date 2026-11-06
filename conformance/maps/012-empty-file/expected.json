@@ -1,0 +1,16 @@
+{
+  "description": "Üres térképfájl: MAP_EMPTY.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2",
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_EMPTY"
+    }
+  ]
+}

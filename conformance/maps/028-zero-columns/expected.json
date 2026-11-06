@@ -1,0 +1,16 @@
+{
+  "description": "0 oszlop: MAP_DIM_RANGE.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_DIM_RANGE",
+      "line": 1
+    }
+  ]
+}

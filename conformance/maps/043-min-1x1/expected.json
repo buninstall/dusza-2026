@@ -1,0 +1,21 @@
+{
+  "description": "A legkisebb, 1×1-es térkép: csak a robot, arany nélkül.",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": true,
+  "goldTotal": 0,
+  "reachableGold": 0,
+  "warnings": [
+    "MAP_NO_GOLD"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  }
+}

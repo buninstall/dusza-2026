@@ -1,0 +1,16 @@
+{
+  "description": "Negatív méret: nem két számjegysorozat, MAP_HEADER.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_HEADER",
+      "line": 1
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "description": "Nincs robot, csak arany.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_NO_ROBOT"
+    }
+  ]
+}

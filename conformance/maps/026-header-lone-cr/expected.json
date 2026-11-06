@@ -1,0 +1,17 @@
+{
+  "description": "Magányos \\r a fejlécben: MAP_HEADER.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2",
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_HEADER",
+      "line": 1
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "description": "A legnagyobb, 15×15-ös térkép négy sarokaranyal.",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": true,
+  "goldTotal": 4,
+  "reachableGold": 4,
+  "warnings": [],
+  "robot": {
+    "row": 7,
+    "col": 7,
+    "dir": "north"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "description": "16 sor: MAP_DIM_RANGE, a sorokat már nem vizsgálja.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_DIM_RANGE",
+      "line": 1
+    }
+  ]
+}

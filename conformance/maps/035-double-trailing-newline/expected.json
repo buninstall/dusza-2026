@@ -1,0 +1,16 @@
+{
+  "description": "Két záró újsor: a második egy üres, fölösleges sor.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2",
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_ROW_COUNT"
+    }
+  ]
+}

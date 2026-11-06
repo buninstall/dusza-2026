@@ -1,0 +1,16 @@
+{
+  "description": "3  15: két szóköz a fejlécben.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_HEADER",
+      "line": 1
+    }
+  ]
+}

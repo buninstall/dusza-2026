@@ -1,0 +1,27 @@
+{
+  "description": "Csak átlósan szomszédos arany nem érhető el (4-szomszédság).",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": true,
+  "goldTotal": 1,
+  "reachableGold": 0,
+  "warnings": [
+    "MAP_UNREACHABLE_GOLD"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  },
+  "unreachable": [
+    {
+      "row": 1,
+      "col": 1
+    }
+  ]
+}

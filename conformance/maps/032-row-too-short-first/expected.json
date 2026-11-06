@@ -1,0 +1,16 @@
+{
+  "description": "Az első sor rövidebb a fejlécben megadottnál.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_ROW_LENGTH",
+      "line": 2
+    }
+  ]
+}

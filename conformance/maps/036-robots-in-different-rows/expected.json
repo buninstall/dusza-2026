@@ -1,0 +1,16 @@
+{
+  "description": "Két robot különböző sorokban: a második robot sorában a hiba.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_MULTIPLE_ROBOTS",
+      "line": 3
+    }
+  ]
+}

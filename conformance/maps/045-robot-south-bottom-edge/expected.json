@@ -1,0 +1,21 @@
+{
+  "description": "Dél felé néző robot az alsó szélen.",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": true,
+  "goldTotal": 0,
+  "reachableGold": 0,
+  "warnings": [
+    "MAP_NO_GOLD"
+  ],
+  "robot": {
+    "row": 1,
+    "col": 1,
+    "dir": "south"
+  }
+}
