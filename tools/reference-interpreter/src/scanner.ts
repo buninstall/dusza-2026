@@ -20,7 +20,7 @@ const RESERVED_SET = new Set(KEYWORDS.map((keyword) => keyword.toLowerCase()));
 const OPERATOR_SET = new Set(OPERATORS);
 const NUMBER_PATTERN = /^[0-9]+$/;
 const IDENT_PATTERN = /^[A-Za-z][A-Za-z0-9]*$/;
-const IDENT_LIKE_PATTERN = /^[\p{L}_]/u;
+const IDENT_LIKE_PATTERN = /^[\p{Alphabetic}_]/u;
 
 export function classify(text: string, col: number): ScannedToken {
   const base = { text, col, reserved: false, error: null };

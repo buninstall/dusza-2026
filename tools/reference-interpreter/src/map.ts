@@ -127,7 +127,10 @@ export function parseMapText(text: string): MapCheck {
   if (!inRange(rows) || !inRange(cols)) return invalid([mapDiagnostic("MAP_DIM_RANGE", header)]);
   const diagnostics: Diagnostic[] = [];
   const rowLines = lines.slice(1);
-  if (rowLines.length !== rows) diagnostics.push(mapDiagnostic("MAP_ROW_COUNT", header));
+  if (rowLines.length !== rows) {
+    const firstExtraRow = rowLines.length > rows ? lines[rows + 1] : undefined;
+    diagnostics.push(mapDiagnostic("MAP_ROW_COUNT", firstExtraRow ?? header));
+  }
   const robots: Robot[] = [];
   const cells = rowLines
     .slice(0, rows)

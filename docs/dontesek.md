@@ -198,16 +198,16 @@ A sorrend: ha több is igaz, az elsőként felsorolt nyer.
 
 **Tokenek.** A behúzás (vezető szóközök) után a sort szóközök mentén daraboljuk. Egy token osztálya:
 
-| Minta | Osztály / hiba |
-| --- | --- |
-| a 18 kulcsszó egyike pontosan (`true`, `false` logikai literál) | kulcsszó / logikai |
-| `+ - * = <> < <= > >=` | operátor |
-| `[0-9]+` | szám; ha az értéke > 100: `SYN_NUMBER_RANGE` (D5) |
-| `[A-Za-z][A-Za-z0-9]*` | azonosító; ha kis-/nagybetűtől függetlenül kulcsszó: azonosító helyén `SYN_RESERVED_IDENT` |
-| egyéb, és az első karakter Unicode-betű vagy `_` | `SYN_INVALID_IDENT` (például `a_b`, `árany`) |
-| minden más | `SYN_INVALID_TOKEN` (például `1+2`, `-5`, `1a`, `(`) |
+| Minta                                                           | Osztály / hiba                                                                             |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| a 18 kulcsszó egyike pontosan (`true`, `false` logikai literál) | kulcsszó / logikai                                                                         |
+| `+ - * = <> < <= > >=`                                          | operátor                                                                                   |
+| `[0-9]+`                                                        | szám; ha az értéke > 100: `SYN_NUMBER_RANGE` (D5)                                          |
+| `[A-Za-z][A-Za-z0-9]*`                                          | azonosító; ha kis-/nagybetűtől függetlenül kulcsszó: azonosító helyén `SYN_RESERVED_IDENT` |
+| egyéb, és az első karakter Unicode-betű vagy `_`                | `SYN_INVALID_IDENT` (például `a_b`, `árany`)                                               |
+| minden más                                                      | `SYN_INVALID_TOKEN` (például `1+2`, `-5`, `1a`, `(`)                                       |
 
-**Tokenszintű hibák egy soron belül.** Balról jobbra haladunk; a sor *első* tokenszintű hibája jelenik meg (D17), oszlop szerint. Ide tartozik: `SYN_DOUBLE_SPACE` (két vagy több szóköz két token között; a pozíció a második szóköz), `SYN_TRAILING_SPACE` (szóköz a sor végén), a fenti token-osztályhibák, és a nyelvtani hibák:
+**Tokenszintű hibák egy soron belül.** Balról jobbra haladunk; a sor _első_ tokenszintű hibája jelenik meg (D17), oszlop szerint. Ide tartozik: `SYN_DOUBLE_SPACE` (két vagy több szóköz két token között; a pozíció a második szóköz), `SYN_TRAILING_SPACE` (szóköz a sor végén), a fenti token-osztályhibák, és a nyelvtani hibák:
 
 - `SYN_UNKNOWN_COMMAND`: az első token nem a 8 utasítás egyike (`step`, `turn`, `mine`, `print`, `set`, `if`, `else`, `while`). A súgó a kis-/nagybetűtől független egyezést javasolja (`Step` → `step`).
 - `SYN_MISSING_TOKEN`: a sor véget ér, mielőtt az utasítás teljes lenne (`step forward`, `set x to`, `set x to 1 +`, `if`, `mine`).
@@ -234,12 +234,12 @@ Soronként legfeljebb egy behúzáshiba és egy tokenszintű hiba jelenik meg; a
 
 Spec: 3.4. A Rust-motor és a referencia-interpreter eseménysorának mezőről mezőre egyeznie kell.
 
-- Minden *feldolgozott* sorhoz pontosan egy `Event` tartozik, a feldolgozás sorrendjében: a `while` sorához feltétel-kiértékelésenként egy, az `else` sorához csak akkor, ha az else-ág fut (közvetlenül az `if` eseménye után).
+- Minden _feldolgozott_ sorhoz pontosan egy `Event` tartozik, a feldolgozás sorrendjében: a `while` sorához feltétel-kiértékelésenként egy, az `else` sorához csak akkor, ha az else-ág fut (közvetlenül az `if` eseménye után).
 - A futásidejű hibát okozó sornak is van eseménye (a hibáig bekövetkezett hatásokkal, például a részleges `path`-szal), és utána a futás véget ér. A limit miatt fel nem dolgozott sornak nincs eseménye (D7).
 - `index`: 0-tól számozott; `steps`: `index + 1`; `line`: a sor 1-alapú száma.
-- `robot`: a robot állapota a sor *után*.
+- `robot`: a robot állapota a sor _után_.
 - `path`: a sor alatt sorban belépett mezők (csak `step forward`; a kezdőmező nem).
-- `discovered`: a sor által *újonnan* felfedezett mezők a felfedezés sorrendjében (a `path` mezői, illetve az `isThere` célmezője, D11); a már felfedezett mező nem kerül bele újra.
+- `discovered`: a sor által _újonnan_ felfedezett mezők a felfedezés sorrendjében (a `path` mezői, illetve az `isThere` célmezője, D11); a már felfedezett mező nem kerül bele újra.
 - `mined`: a kibányászott mező, ha a `mine here` sikeres; különben `null`.
 - `gold`: a sor utáni összes kibányászott arany.
 - `print`: a kiírt szöveg (D12), ha a `print` sikeres; különben `null`.
@@ -277,3 +277,24 @@ A formázott program futtatásának eredménye megegyezik az eredetiével.
 ## D23 – Programfájl importja
 
 Spec: 1, 3.3. A program szerkesztés közben lehet hibás, ezért a szintaktikailag hibás programfájl betölthető a szerkesztőbe (a hibák azonnal látszanak). Nem tölthető be és érthető hibaüzenetet kap a fájl, ha nem érvényes UTF-8 szöveg, ha NUL karaktert tartalmaz, vagy ha nagyobb 100 000 karakternél. A térképfájl csak teljesen érvényes formában tölthető be (D15).
+
+## D24 – Pontosítások a referencia-interpreter alapján
+
+A független referencia-interpreter írásakor felmerült, a D15 és a D19 által nyitva hagyott pontok. A Rust-motor és a referencia is ezeket követi.
+
+**Szintaxis**
+
+1. Ha ugyanazon a tokenen token-osztályhiba (`SYN_INVALID_TOKEN`, `SYN_INVALID_IDENT`, `SYN_NUMBER_RANGE`) és nyelvtani hiba is van, az osztályhiba nyer: `# x` → `SYN_INVALID_TOKEN`, `step 101` → `SYN_NUMBER_RANGE`.
+2. A `SYN_MISSING_TOKEN` pozíciója a sor vége, ezért egy korábbi sorvégi szóköz megelőzi: `print ` → `SYN_TRAILING_SPACE`. A `SYN_TRAILING_SPACE` az első sorvégi szóközre mutat; több sorvégi szóköz egyetlen `SYN_TRAILING_SPACE`, nem `SYN_DOUBLE_SPACE`.
+3. `SYN_RESERVED_IDENT` csak azonosítóhelyen (a `set` neve és a simpleval-helyek) jöhet, olyan tokenre, amely kis-/nagybetűtől függetlenül kulcsszó, de nem pontosan az. Pontos kulcsszó azonosítóhelyen `SYN_UNEXPECTED_TOKEN` (`set and to 1`, `set true to 1`). Rossz írásmódú kulcsszó rögzített kulcsszóhelyen `SYN_UNEXPECTED_TOKEN` (`step Forward 1`), utasításhelyen `SYN_UNKNOWN_COMMAND` (`If x`).
+4. Egy sor csak akkor blokkfejléc, ha az első tokenje pontosan `if`, `while` vagy `else`. A `WHILE true` nem fejléc, így a mélyebbre húzott következő sor `SYN_UNEXPECTED_INDENT`.
+5. A `SYN_ELSE_WITHOUT_IF` a sor egyetlen behúzás-jellegű hibájának számít: a gazdátlan `else x` `SYN_ELSE_WITHOUT_IF` és `SYN_EXTRA_TOKEN`; a gazdátlan és rosszul behúzott `else` csak a behúzáshibát kapja.
+6. Oszlopok (1-alapú, UTF-16 egységben, a normalizált szövegen; a `from`/`to` is a normalizált szövegre vonatkozik): a behúzáshibák az 1. oszlopon, a `SYN_ELSE_WITHOUT_IF` az `else` tokenen, a `SYN_LONE_CR` és a `SYN_TAB` az első hibás karakteren, a `SYN_DOUBLE_SPACE` a második szóközön, a `SYN_EMPTY_LINE` az 1. oszlopon.
+7. A D19 táblázatában a „Unicode-betű” a Unicode `Alphabetic` tulajdonság.
+8. A `\r\r\n`-ben a CRLF-csere egyszeri, az első `\r` magányos marad. A `\n\n` két üres sor (pontosan egy záró `\n` hagyható el). A csak BOM-ból álló fájl üres program. A NUL karakter `SYN_INVALID_TOKEN`.
+
+**Térkép**
+
+9. Soronként legfeljebb egy hiba: ha a sorban ismeretlen jel van, csak `MAP_BAD_SYMBOL` az első ismeretlen jelnél; különben `MAP_ROW_LENGTH`, ha a hossz hibás.
+10. A `MAP_MULTIPLE_ROBOTS` egyszer jelenik meg, a második robotnál; a `MAP_DIM_RANGE` egyszer, akkor is, ha mindkét méret hibás; a `MAP_UNREACHABLE_GOLD` cellánként egy figyelmeztetés.
+11. Sorszámok: a `MAP_EMPTY` és a `MAP_NO_ROBOT` az 1. soron; a `MAP_ROW_COUNT` túl sok sornál az első fölösleges soron, hiányzó soroknál az 1. soron. Fejléchiba után nincs további ellenőrzés. A fejléc számjegyei vezető nullát is tartalmazhatnak (`03 15` érvényes); a `+1 1` és a `-1 1` `MAP_HEADER`; a túl nagy szám `MAP_DIM_RANGE`.

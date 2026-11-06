@@ -9,8 +9,6 @@ const root = join(import.meta.dir, "..", "..", "..");
 const conformance = join(root, "conformance");
 const GENERATED_SEEDS = 2000;
 const MAX_REPORTS = Number(process.env.DIFF_REPORTS ?? "5");
-const UNPINNED_MAP_LINES = new Set(["MAP_EMPTY", "MAP_ROW_COUNT", "MAP_NO_ROBOT"]);
-
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type Difference = { path: string; reference: Json | undefined; engine: Json | undefined };
 type Subject = { label: string; program: string; map?: string };
@@ -48,9 +46,9 @@ function comparableMap(valid: boolean, diagnostics: readonly Diagnostic[], gold:
     .filter((diagnostic) => diagnostic.severity === "error")
     .map((diagnostic) => ({
       code: diagnostic.code,
-      line: UNPINNED_MAP_LINES.has(diagnostic.code) ? null : diagnostic.span.line,
+      line: diagnostic.span.line,
     }))
-    .sort((a, b) => a.code.localeCompare(b.code) || (a.line ?? 0) - (b.line ?? 0));
+    .sort((a, b) => a.code.localeCompare(b.code) || a.line - b.line);
   return { valid, errors, gold };
 }
 

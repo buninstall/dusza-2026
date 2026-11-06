@@ -24,6 +24,7 @@ describe("parseMapText", () => {
 
   test("sorhibák, jelek és robotok", () => {
     expect(codes("2 1\n>")).toEqual(["1:error:MAP_ROW_COUNT"]);
+    expect(codes("1 1\n>\n.\n.")).toEqual(["3:error:MAP_ROW_COUNT"]);
     expect(codes("1 2\n>")).toEqual(["2:error:MAP_ROW_LENGTH"]);
     expect(codes("1 2\n>x")).toEqual(["2:error:MAP_BAD_SYMBOL"]);
     expect(codes("1 1\nx")).toEqual(["2:error:MAP_BAD_SYMBOL", "1:error:MAP_NO_ROBOT"]);
