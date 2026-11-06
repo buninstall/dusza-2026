@@ -745,7 +745,7 @@ export const hu = {
         return "Az első csillaghoz bányássz ki legalább egy aranyat.";
       }
       if (stars === 1) {
-        return `A második csillaghoz mind a(z) ${reachable} elérhető aranyat ki kell bányászni.`;
+        return `A második csillaghoz mind ${articleFor(reachable)} ${reachable} elérhető aranyat ki kell bányászni.`;
       }
       return par === null
         ? "Ennek a pályának nincs célértéke, 2 csillag a maximum."

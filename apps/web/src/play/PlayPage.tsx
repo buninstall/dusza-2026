@@ -7,6 +7,7 @@ import { RunMedal } from "../game/RunMedal.tsx";
 import { StarRow } from "../game/StarRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import type { MapDetail } from "../maps/queries.ts";
+import { TourCoach } from "../tour/TourCoach.tsx";
 import { PlayScreen } from "./PlayScreen.tsx";
 import { type ProgramDraft, useProgramDraft } from "./program-draft.ts";
 import { GUARD_BLOCK } from "./sheet/blocks.ts";
@@ -101,53 +102,60 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
   const run = () => engineRun.run(draft.source);
 
   return (
-    <PlayScreen
-      mode="play"
-      map={map}
-      start={start}
-      facts={{
-        title: detail.map.title,
-        goldTotal,
-        reachableGold,
-        description: detail.map.description || undefined,
-        descriptionId,
-      }}
-      view={view}
-      blocked={engineRun.blocked}
-      attempt={engineRun.attempt}
-      editorSource={draft.source}
-      bezel={bezel}
-      sheet={
-        <ProgramSheet
-          draft={draft}
-          onDraftChange={onDraftChange}
-          persistence={persistence}
-          mapTitle={detail.map.title}
-          editorRef={editorRef}
-          isLocked={view.isLocked}
-          execLine={view.execLine}
-          errorLines={view.errorLines}
-          runtimeMark={view.runtimeMark}
-        />
-      }
-      reportFooter={<SubmissionLine submission={submission} onRetry={retrySubmit} />}
-      wellOverlay={
-        <RunMedal
-          mapId={mapId}
-          submission={submission}
-          reachableGold={reachableGold}
-          isDaily={detail.player.isDaily}
-        />
-      }
-      onRun={run}
-      onInsertGuard={(line) => editorRef.current?.insertBeforeLine(line, GUARD_BLOCK)}
-      revealLine={(line) => editorRef.current?.revealLine(line)}
-      focusEditor={() => editorRef.current?.focus()}
-      commands={{
-        save: persistence.saveCurrent,
-        saveAs: () => persistence.setPanel("saveAs"),
-        library: () => persistence.setPanel("library"),
-      }}
-    />
+    <>
+      <PlayScreen
+        mode="play"
+        map={map}
+        start={start}
+        facts={{
+          title: detail.map.title,
+          goldTotal,
+          reachableGold,
+          description: detail.map.description || undefined,
+          descriptionId,
+        }}
+        view={view}
+        blocked={engineRun.blocked}
+        attempt={engineRun.attempt}
+        editorSource={draft.source}
+        bezel={bezel}
+        sheet={
+          <ProgramSheet
+            draft={draft}
+            onDraftChange={onDraftChange}
+            persistence={persistence}
+            mapTitle={detail.map.title}
+            editorRef={editorRef}
+            isLocked={view.isLocked}
+            execLine={view.execLine}
+            errorLines={view.errorLines}
+            runtimeMark={view.runtimeMark}
+          />
+        }
+        reportFooter={<SubmissionLine submission={submission} onRetry={retrySubmit} />}
+        wellOverlay={
+          <RunMedal
+            mapId={mapId}
+            submission={submission}
+            reachableGold={reachableGold}
+            isDaily={detail.player.isDaily}
+          />
+        }
+        onRun={run}
+        onInsertGuard={(line) => editorRef.current?.insertBeforeLine(line, GUARD_BLOCK)}
+        revealLine={(line) => editorRef.current?.revealLine(line)}
+        focusEditor={() => editorRef.current?.focus()}
+        commands={{
+          save: persistence.saveCurrent,
+          saveAs: () => persistence.setPanel("saveAs"),
+          library: () => persistence.setPanel("library"),
+        }}
+      />
+      <TourCoach
+        mapId={mapId}
+        source={draft.source}
+        onSourceChange={(source) => onDraftChange({ ...draft, source })}
+      />
+    </>
   );
 }

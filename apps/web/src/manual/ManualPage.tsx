@@ -1,10 +1,12 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Tab, TabList, TabPanel, Tabs } from "react-aria-components";
 import { LocationPlate } from "../components/LocationPlate.tsx";
+import { Button } from "../components/ui/Button.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { TILE_SPRITES } from "../pixel/tiles.ts";
+import { useStartTour } from "../tour/TourPrompt.tsx";
 import { Section } from "./ManualBlocks.tsx";
 import "./ManualPage.css";
 
@@ -27,6 +29,21 @@ function RecipesEntry() {
       </span>
       <span className="manual-recipes-text">{hu.recipes.entry}</span>
     </Link>
+  );
+}
+
+function TourRestart() {
+  const startTour = useStartTour();
+  if (!startTour) {
+    return null;
+  }
+  return (
+    <div className="manual-tour">
+      <Button size="sm" icon="play" onPress={startTour}>
+        {hu.tour.restart}
+      </Button>
+      <p className="manual-tour-hint">{hu.tour.restartHint}</p>
+    </div>
   );
 }
 
@@ -61,6 +78,7 @@ export function ManualPage() {
             ))}
           </TabList>
           <RecipesEntry />
+          <TourRestart />
         </div>
         {hu.manual.sections.map((section, index) => (
           <TabPanel key={section.id} id={section.id} className="manual-article">

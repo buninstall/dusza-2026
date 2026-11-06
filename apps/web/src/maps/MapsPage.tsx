@@ -12,6 +12,7 @@ import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
 import { useMediaQuery } from "../lib/useMediaQuery.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
+import { TourPrompt } from "../tour/TourPrompt.tsx";
 import { DailyCard } from "./DailyCard.tsx";
 import { LevelTile } from "./LevelTile.tsx";
 import "./MapsPage.css";
@@ -125,6 +126,7 @@ export function MapsPage({ scope, sort, user, onScopeChange, onSortChange }: Map
         <TabPanel id="all">
           {scope === "all" ? (
             <div className="maps-panel">
+              <TourPrompt />
               <DailyCard />
               <LevelGrid scope="all" sort={sort} user={user} />
             </div>
