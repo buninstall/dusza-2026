@@ -10,6 +10,7 @@ import { hu } from "../../i18n/hu.ts";
 import { HazardStripe } from "../../pixel/HazardStripe.tsx";
 import type { IconName } from "../../pixel/icons.ts";
 import { Button, type ButtonSize, type ButtonVariant } from "./Button.tsx";
+import { IconButton } from "./IconButton.tsx";
 import "./Overlay.css";
 
 type ModalShellProps = {
@@ -42,9 +43,20 @@ export function ModalShell({
         <AriaDialog role={role} className="overlay-dialog">
           {({ close }) => (
             <>
-              <Heading slot="title" className="overlay-title">
-                {title}
-              </Heading>
+              <div className="overlay-head">
+                <Heading slot="title" className="overlay-title">
+                  {title}
+                </Heading>
+                {role === "dialog" ? (
+                  <IconButton
+                    icon="close"
+                    label={hu.common.close}
+                    variant="ghost"
+                    size="sm"
+                    onPress={close}
+                  />
+                ) : null}
+              </div>
               {children(close)}
             </>
           )}

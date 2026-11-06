@@ -37,6 +37,14 @@
   outline: none;
 }
 
+.overlay-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: calc(var(--space-2) * -1);
+}
+
 .overlay-title {
   font: var(--type-h3);
 }
