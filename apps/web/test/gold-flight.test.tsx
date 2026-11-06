@@ -45,7 +45,7 @@ describe("aranyrög röppályája", () => {
     HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
     const rootRef = scene(64);
     const { rerender, unmount } = render(
-      <GoldFlight flight={{ key: 1, from: { row: 0, col: 1 } }} rootRef={rootRef} />,
+      <GoldFlight flight={{ key: "1:1", from: { row: 0, col: 1 } }} rootRef={rootRef} />,
     );
     expect(animate).toHaveBeenCalledWith(
       [
@@ -59,11 +59,25 @@ describe("aranyrög röppályája", () => {
     unmount();
   });
 
+  test("más állapot miatti újrarajzolás nem indítja újra ugyanazt a röppályát", () => {
+    const animate = vi.fn(() => ({ finished: Promise.resolve(), cancel: vi.fn() }));
+    HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
+    const rootRef = scene(64);
+    const { rerender } = render(
+      <GoldFlight flight={{ key: "1:3", from: { row: 0, col: 1 } }} rootRef={rootRef} />,
+    );
+    rerender(<GoldFlight flight={{ key: "1:3", from: { row: 0, col: 1 } }} rootRef={rootRef} />);
+    rerender(<GoldFlight flight={{ key: "1:3", from: { row: 0, col: 1 } }} rootRef={rootRef} />);
+    expect(animate).toHaveBeenCalledOnce();
+    rerender(<GoldFlight flight={{ key: "2:3", from: { row: 0, col: 1 } }} rootRef={rootRef} />);
+    expect(animate).toHaveBeenCalledTimes(2);
+  });
+
   test("láthatatlan mezőnél nem indul", () => {
     const animate = vi.fn();
     HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
     const rootRef = scene(0);
-    render(<GoldFlight flight={{ key: 2, from: { row: 0, col: 1 } }} rootRef={rootRef} />);
+    render(<GoldFlight flight={{ key: "1:2", from: { row: 0, col: 1 } }} rootRef={rootRef} />);
     expect(animate).not.toHaveBeenCalled();
   });
 });

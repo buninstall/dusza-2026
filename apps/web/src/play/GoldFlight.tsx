@@ -8,7 +8,7 @@ const FLIGHT_MS = 480;
 const NUGGET_PX = 32;
 
 type GoldFlightProps = {
-  flight: { key: number; from: Pos } | null;
+  flight: { key: string; from: Pos } | null;
   rootRef: RefObject<HTMLElement | null>;
 };
 
@@ -22,16 +22,16 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
   const nuggetRef = useRef<HTMLDivElement>(null);
   const isReduced = usePrefersReducedMotion();
   const key = flight?.key ?? null;
+  const row = flight?.from.row ?? null;
+  const col = flight?.from.col ?? null;
 
   useLayoutEffect(() => {
     const root = rootRef.current;
     const nugget = nuggetRef.current;
-    if (key === null || !flight || isReduced || !root || !nugget) {
+    if (key === null || row === null || col === null || isReduced || !root || !nugget) {
       return;
     }
-    const cell = root.querySelector(
-      `[data-row="${flight.from.row}"][data-col="${flight.from.col}"]`,
-    );
+    const cell = root.querySelector(`[data-row="${row}"][data-col="${col}"]`);
     const target = root.querySelector("[data-gold-target] .hud-cart-art");
     const from = cell?.getBoundingClientRect();
     const to = target?.getBoundingClientRect();
@@ -46,7 +46,7 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
       ],
       { duration: FLIGHT_MS, easing: "steps(8, end)" },
     );
-  }, [key, flight, isReduced, rootRef]);
+  }, [key, row, col, isReduced, rootRef]);
 
   return (
     <div ref={nuggetRef} aria-hidden="true" className="gold-flight">

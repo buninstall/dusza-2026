@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { tickInterval } from "./usePlaybackTimer.ts";
 
 export const STEP_ANIMATION_MS = 220;
 const ANIMATION_SHARE = 0.85;
 const TURBO_TICK_MS = 60;
 const MIN_SEGMENT_MS = 40;
+export const STEP_SETTLE_MS = 700;
 
 export function stepDuration(previous: number, index: number, speed: number): number {
   if (index !== previous + 1) {
@@ -31,4 +32,16 @@ export function usePrevious<T>(value: T): T {
     return memory.current;
   }
   return memory.previous;
+}
+
+export function useStepWindow(key: string, isActive: boolean): boolean {
+  const [settled, setSettled] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+    const timer = window.setTimeout(() => setSettled(key), STEP_SETTLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [key, isActive]);
+  return isActive && settled !== key;
 }
