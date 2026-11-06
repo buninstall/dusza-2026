@@ -1,0 +1,431 @@
+---
+source: crates/minescript-core/src/syntax/parser/tests.rs
+expression: parse(SPEC_PROGRAM)
+---
+{
+  "program": {
+    "body": [
+      {
+        "line": 1,
+        "span": {
+          "line": 1,
+          "colStart": 1,
+          "colEnd": 15,
+          "from": 0,
+          "to": 14
+        },
+        "kind": {
+          "kind": "set",
+          "name": {
+            "name": "count",
+            "span": {
+              "line": 1,
+              "colStart": 5,
+              "colEnd": 10,
+              "from": 4,
+              "to": 9
+            }
+          },
+          "value": {
+            "kind": "simple",
+            "value": {
+              "kind": "int",
+              "value": 0,
+              "span": {
+                "line": 1,
+                "colStart": 14,
+                "colEnd": 15,
+                "from": 13,
+                "to": 14
+              }
+            }
+          }
+        }
+      },
+      {
+        "line": 2,
+        "span": {
+          "line": 2,
+          "colStart": 1,
+          "colEnd": 21,
+          "from": 15,
+          "to": 35
+        },
+        "kind": {
+          "kind": "set",
+          "name": {
+            "name": "fal",
+            "span": {
+              "line": 2,
+              "colStart": 5,
+              "colEnd": 8,
+              "from": 19,
+              "to": 22
+            }
+          },
+          "value": {
+            "kind": "isThere",
+            "arg": {
+              "kind": "int",
+              "value": 1,
+              "span": {
+                "line": 2,
+                "colStart": 20,
+                "colEnd": 21,
+                "from": 34,
+                "to": 35
+              }
+            }
+          }
+        }
+      },
+      {
+        "line": 3,
+        "span": {
+          "line": 3,
+          "colStart": 1,
+          "colEnd": 20,
+          "from": 36,
+          "to": 55
+        },
+        "kind": {
+          "kind": "set",
+          "name": {
+            "name": "megy",
+            "span": {
+              "line": 3,
+              "colStart": 5,
+              "colEnd": 9,
+              "from": 40,
+              "to": 44
+            }
+          },
+          "value": {
+            "kind": "not",
+            "operand": {
+              "kind": "ident",
+              "name": "fal",
+              "span": {
+                "line": 3,
+                "colStart": 17,
+                "colEnd": 20,
+                "from": 52,
+                "to": 55
+              }
+            }
+          }
+        }
+      },
+      {
+        "line": 4,
+        "span": {
+          "line": 4,
+          "colStart": 1,
+          "colEnd": 11,
+          "from": 56,
+          "to": 66
+        },
+        "kind": {
+          "kind": "while",
+          "cond": {
+            "kind": "ident",
+            "name": "megy",
+            "span": {
+              "line": 4,
+              "colStart": 7,
+              "colEnd": 11,
+              "from": 62,
+              "to": 66
+            }
+          },
+          "body": [
+            {
+              "line": 5,
+              "span": {
+                "line": 5,
+                "colStart": 5,
+                "colEnd": 27,
+                "from": 71,
+                "to": 93
+              },
+              "kind": {
+                "kind": "set",
+                "name": {
+                  "name": "arany",
+                  "span": {
+                    "line": 5,
+                    "colStart": 9,
+                    "colEnd": 14,
+                    "from": 75,
+                    "to": 80
+                  }
+                },
+                "value": {
+                  "kind": "isThere",
+                  "arg": {
+                    "kind": "int",
+                    "value": 2,
+                    "span": {
+                      "line": 5,
+                      "colStart": 26,
+                      "colEnd": 27,
+                      "from": 92,
+                      "to": 93
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "line": 6,
+              "span": {
+                "line": 6,
+                "colStart": 5,
+                "colEnd": 13,
+                "from": 98,
+                "to": 106
+              },
+              "kind": {
+                "kind": "if",
+                "cond": {
+                  "kind": "ident",
+                  "name": "arany",
+                  "span": {
+                    "line": 6,
+                    "colStart": 8,
+                    "colEnd": 13,
+                    "from": 101,
+                    "to": 106
+                  }
+                },
+                "thenBody": [
+                  {
+                    "line": 7,
+                    "span": {
+                      "line": 7,
+                      "colStart": 9,
+                      "colEnd": 23,
+                      "from": 115,
+                      "to": 129
+                    },
+                    "kind": {
+                      "kind": "step",
+                      "count": {
+                        "kind": "int",
+                        "value": 1,
+                        "span": {
+                          "line": 7,
+                          "colStart": 22,
+                          "colEnd": 23,
+                          "from": 128,
+                          "to": 129
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "line": 8,
+                    "span": {
+                      "line": 8,
+                      "colStart": 9,
+                      "colEnd": 18,
+                      "from": 138,
+                      "to": 147
+                    },
+                    "kind": {
+                      "kind": "mine"
+                    }
+                  },
+                  {
+                    "line": 9,
+                    "span": {
+                      "line": 9,
+                      "colStart": 9,
+                      "colEnd": 31,
+                      "from": 156,
+                      "to": 178
+                    },
+                    "kind": {
+                      "kind": "set",
+                      "name": {
+                        "name": "count",
+                        "span": {
+                          "line": 9,
+                          "colStart": 13,
+                          "colEnd": 18,
+                          "from": 160,
+                          "to": 165
+                        }
+                      },
+                      "value": {
+                        "kind": "binary",
+                        "op": "add",
+                        "lhs": {
+                          "kind": "ident",
+                          "name": "count",
+                          "span": {
+                            "line": 9,
+                            "colStart": 22,
+                            "colEnd": 27,
+                            "from": 169,
+                            "to": 174
+                          }
+                        },
+                        "rhs": {
+                          "kind": "int",
+                          "value": 1,
+                          "span": {
+                            "line": 9,
+                            "colStart": 30,
+                            "colEnd": 31,
+                            "from": 177,
+                            "to": 178
+                          }
+                        }
+                      }
+                    }
+                  }
+                ],
+                "elseBranch": {
+                  "line": 10,
+                  "span": {
+                    "line": 10,
+                    "colStart": 5,
+                    "colEnd": 9,
+                    "from": 183,
+                    "to": 187
+                  },
+                  "body": [
+                    {
+                      "line": 11,
+                      "span": {
+                        "line": 11,
+                        "colStart": 9,
+                        "colEnd": 23,
+                        "from": 196,
+                        "to": 210
+                      },
+                      "kind": {
+                        "kind": "step",
+                        "count": {
+                          "kind": "int",
+                          "value": 1,
+                          "span": {
+                            "line": 11,
+                            "colStart": 22,
+                            "colEnd": 23,
+                            "from": 209,
+                            "to": 210
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "line": 12,
+              "span": {
+                "line": 12,
+                "colStart": 5,
+                "colEnd": 25,
+                "from": 215,
+                "to": 235
+              },
+              "kind": {
+                "kind": "set",
+                "name": {
+                  "name": "fal",
+                  "span": {
+                    "line": 12,
+                    "colStart": 9,
+                    "colEnd": 12,
+                    "from": 219,
+                    "to": 222
+                  }
+                },
+                "value": {
+                  "kind": "isThere",
+                  "arg": {
+                    "kind": "int",
+                    "value": 1,
+                    "span": {
+                      "line": 12,
+                      "colStart": 24,
+                      "colEnd": 25,
+                      "from": 234,
+                      "to": 235
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "line": 13,
+              "span": {
+                "line": 13,
+                "colStart": 5,
+                "colEnd": 24,
+                "from": 240,
+                "to": 259
+              },
+              "kind": {
+                "kind": "set",
+                "name": {
+                  "name": "megy",
+                  "span": {
+                    "line": 13,
+                    "colStart": 9,
+                    "colEnd": 13,
+                    "from": 244,
+                    "to": 248
+                  }
+                },
+                "value": {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "ident",
+                    "name": "fal",
+                    "span": {
+                      "line": 13,
+                      "colStart": 21,
+                      "colEnd": 24,
+                      "from": 256,
+                      "to": 259
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "line": 14,
+        "span": {
+          "line": 14,
+          "colStart": 1,
+          "colEnd": 12,
+          "from": 260,
+          "to": 271
+        },
+        "kind": {
+          "kind": "print",
+          "value": {
+            "kind": "ident",
+            "name": "count",
+            "span": {
+              "line": 14,
+              "colStart": 7,
+              "colEnd": 12,
+              "from": 266,
+              "to": 271
+            }
+          }
+        }
+      }
+    ]
+  },
+  "diagnostics": []
+}

@@ -3,6 +3,7 @@ pub mod messages;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::source::LineIndex;
 use crate::span::Span;
 
 pub use messages::{help, message};
@@ -24,11 +25,48 @@ pub struct TextEdit {
     pub insert: String,
 }
 
+impl TextEdit {
+    pub fn new(from: u32, to: u32, insert: impl Into<String>) -> Self {
+        Self {
+            from,
+            to,
+            insert: insert.into(),
+        }
+    }
+
+    pub fn delete(from: u32, to: u32) -> Self {
+        Self::new(from, to, String::new())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct Fix {
     pub title: String,
     pub edits: Vec<TextEdit>,
+}
+
+impl Fix {
+    pub fn new(title: impl Into<String>, edits: Vec<TextEdit>) -> Self {
+        Self {
+            title: title.into(),
+            edits,
+        }
+    }
+
+    pub fn single(title: impl Into<String>, edit: TextEdit) -> Self {
+        Self::new(title, vec![edit])
+    }
+
+    pub fn removing_lines(index: &LineIndex<'_>, first: u32, last: u32) -> Option<Self> {
+        let (from, to) = index.removal_range(first, last)?;
+        let title = if first == last {
+            messages::FIX_DELETE_LINE
+        } else {
+            messages::FIX_DELETE_LINES
+        };
+        Some(Self::single(title, TextEdit::delete(from, to)))
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, TS)]
@@ -177,11 +215,12 @@ impl DiagCode {
 
     pub fn default_severity(self) -> Severity {
         match (self.category(), self) {
-            (DiagCategory::Syntax, _) => Severity::Error,
+            (DiagCategory::Lint, Self::LintLeadingZero | Self::LintTurnMod4) => Severity::Info,
+            (DiagCategory::Lint, Self::LintMergeSteps | Self::LintMergeTurns) => Severity::Hint,
             (DiagCategory::Lint, _) | (_, Self::MapNoGold | Self::MapUnreachableGold) => {
                 Severity::Warning
             }
-            (DiagCategory::Map, _) => Severity::Error,
+            (DiagCategory::Syntax | DiagCategory::Map, _) => Severity::Error,
         }
     }
 }
@@ -227,6 +266,12 @@ impl Diagnostic {
         self
     }
 
+    #[must_use]
+    pub fn with_fixes(mut self, fixes: impl IntoIterator<Item = Fix>) -> Self {
+        self.fixes.extend(fixes);
+        self
+    }
+
     pub fn is_error(&self) -> bool {
         self.severity == Severity::Error
     }
@@ -261,6 +306,38 @@ mod tests {
         assert_eq!(DiagCode::LintNoop.default_severity(), Severity::Warning);
         assert_eq!(DiagCode::MapNoGold.default_severity(), Severity::Warning);
         assert_eq!(DiagCode::MapHeader.default_severity(), Severity::Error);
+        assert_eq!(DiagCode::LintLeadingZero.default_severity(), Severity::Info);
+        assert_eq!(DiagCode::LintTurnMod4.default_severity(), Severity::Info);
+        assert_eq!(DiagCode::LintMergeSteps.default_severity(), Severity::Hint);
+        assert_eq!(DiagCode::LintMergeTurns.default_severity(), Severity::Hint);
+    }
+
+    #[test]
+    fn builders_attach_messages_help_and_fixes() {
+        let fix = Fix::single("Törlés", TextEdit::delete(1, 2));
+        let diagnostic = Diagnostic::new(DiagCode::SynTab, Span::default())
+            .with_message("üzenet")
+            .with_help("súgó")
+            .with_fix(fix.clone())
+            .with_fixes(None)
+            .with_fixes(Some(Fix::new("Csere", vec![TextEdit::new(0, 1, "x")])));
+        assert_eq!(diagnostic.message, "üzenet");
+        assert_eq!(diagnostic.help.as_deref(), Some("súgó"));
+        assert_eq!(diagnostic.fixes.len(), 2);
+        assert_eq!(diagnostic.fixes[0], fix);
+        assert_eq!(diagnostic.fixes[1].edits[0].insert, "x");
+    }
+
+    #[test]
+    fn removing_lines_names_the_amount() {
+        let index = LineIndex::new("a\nb\nc\n");
+        let one = Fix::removing_lines(&index, 2, 2).unwrap();
+        assert_eq!(one.title, messages::FIX_DELETE_LINE);
+        assert_eq!(one.edits, vec![TextEdit::delete(2, 4)]);
+        let two = Fix::removing_lines(&index, 2, 3).unwrap();
+        assert_eq!(two.title, messages::FIX_DELETE_LINES);
+        assert_eq!(two.edits, vec![TextEdit::delete(2, 6)]);
+        assert_eq!(Fix::removing_lines(&index, 9, 9), None);
     }
 
     #[test]

@@ -1,0 +1,162 @@
+---
+source: crates/minescript-core/src/syntax/parser/tests.rs
+expression: parse(src).diagnostics
+---
+[
+  {
+    "code": "SYN_RESERVED_IDENT",
+    "severity": "error",
+    "span": {
+      "line": 1,
+      "colStart": 5,
+      "colEnd": 7,
+      "from": 4,
+      "to": 6
+    },
+    "message": "„If” nem lehet változónév, mert az „if” kulcsszó más írásmódja.",
+    "help": "Válassz másik nevet; a kulcsszavak semmilyen kis- és nagybetűs alakban nem lehetnek változónevek.",
+    "fixes": []
+  },
+  {
+    "code": "SYN_UNEXPECTED_INDENT",
+    "severity": "error",
+    "span": {
+      "line": 2,
+      "colStart": 1,
+      "colEnd": 3,
+      "from": 12,
+      "to": 14
+    },
+    "message": "Váratlan behúzás (2 szóköz): az előző sor nem if, else vagy while, ezért itt nem kezdődhet blokk.",
+    "help": null,
+    "fixes": [
+      {
+        "title": "Sor eleji szóközök törlése",
+        "edits": [
+          {
+            "from": 12,
+            "to": 14,
+            "insert": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "SYN_MISSING_TOKEN",
+    "severity": "error",
+    "span": {
+      "line": 2,
+      "colStart": 15,
+      "colEnd": 15,
+      "from": 26,
+      "to": 26
+    },
+    "message": "A sor véget ér, pedig még egy egyszerű érték (szám, true, false vagy változónév) kellene.",
+    "help": "Az utasítás alakja: step forward n",
+    "fixes": []
+  },
+  {
+    "code": "SYN_DOUBLE_SPACE",
+    "severity": "error",
+    "span": {
+      "line": 3,
+      "colStart": 7,
+      "colEnd": 8,
+      "from": 33,
+      "to": 34
+    },
+    "message": "A tokenek között pontosan egy szóköz állhat, itt 2 áll.",
+    "help": "Hagyj pontosan egy szóközt a tokenek között.",
+    "fixes": [
+      {
+        "title": "Fölösleges szóközök törlése",
+        "edits": [
+          {
+            "from": 33,
+            "to": 34,
+            "insert": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "SYN_ELSE_WITHOUT_IF",
+    "severity": "error",
+    "span": {
+      "line": 4,
+      "colStart": 1,
+      "colEnd": 5,
+      "from": 36,
+      "to": 40
+    },
+    "message": "Az else előtt ugyanazon a szinten egy if blokknak kell állnia.",
+    "help": null,
+    "fixes": []
+  },
+  {
+    "code": "SYN_TAB",
+    "severity": "error",
+    "span": {
+      "line": 5,
+      "colStart": 1,
+      "colEnd": 2,
+      "from": 41,
+      "to": 42
+    },
+    "message": "Tabulátor nem használható, a behúzás csak szóközből állhat.",
+    "help": "Cseréld a tabulátort szóközökre.",
+    "fixes": [
+      {
+        "title": "Tabulátorok cseréje szóközökre",
+        "edits": [
+          {
+            "from": 41,
+            "to": 42,
+            "insert": "    "
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "SYN_INVALID_TOKEN",
+    "severity": "error",
+    "span": {
+      "line": 6,
+      "colStart": 10,
+      "colEnd": 13,
+      "from": 59,
+      "to": 62
+    },
+    "message": "Érvénytelen token: „1+2”.",
+    "help": "A tokeneket egy szóköz választja el (például „1 + 2”). Negatív szám helyett írd: „0 - 5”.",
+    "fixes": [
+      {
+        "title": "Csere erre: „1 + 2”",
+        "edits": [
+          {
+            "from": 59,
+            "to": 62,
+            "insert": "1 + 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "SYN_INVALID_TOKEN",
+    "severity": "error",
+    "span": {
+      "line": 7,
+      "colStart": 7,
+      "colEnd": 9,
+      "from": 70,
+      "to": 72
+    },
+    "message": "Érvénytelen token: „-5”.",
+    "help": "A tokeneket egy szóköz választja el (például „1 + 2”). Negatív szám helyett írd: „0 - 5”.",
+    "fixes": []
+  }
+]

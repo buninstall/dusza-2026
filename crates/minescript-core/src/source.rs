@@ -17,6 +17,31 @@ pub fn utf16_len(text: &str) -> u32 {
     u32::try_from(text.encode_utf16().count()).unwrap_or(u32::MAX)
 }
 
+pub struct Utf16Cursor<'a> {
+    text: &'a str,
+    byte: usize,
+    utf16: u32,
+}
+
+impl<'a> Utf16Cursor<'a> {
+    pub fn new(text: &'a str) -> Self {
+        Self {
+            text,
+            byte: 0,
+            utf16: 0,
+        }
+    }
+
+    pub fn advance_to(&mut self, byte: usize) -> u32 {
+        if byte > self.byte {
+            let passed = self.text.get(self.byte..byte).unwrap_or_default();
+            self.utf16 = self.utf16.saturating_add(utf16_len(passed));
+            self.byte = byte;
+        }
+        self.utf16
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct LineIndex<'a> {
     text: &'a str,
@@ -68,6 +93,21 @@ impl<'a> LineIndex<'a> {
         let line_text = self.line_text(line)?;
         let prefix = line_text.get(..byte_col.min(line_text.len()))?;
         Some(line_utf16_start.saturating_add(utf16_len(prefix)))
+    }
+
+    pub fn line_end_utf16(&self, line: u32) -> Option<u32> {
+        self.utf16_offset(line, self.line_text(line)?.len())
+    }
+
+    pub fn removal_range(&self, first: u32, last: u32) -> Option<(u32, u32)> {
+        let start = self.utf16_offset(first, 0)?;
+        let next_line_index = usize::try_from(last).ok()?;
+        if let Some(next_start) = self.utf16_line_starts.get(next_line_index) {
+            return Some((start, *next_start));
+        }
+        let end = self.line_end_utf16(last)?;
+        let preceding_newline = u32::from(first > 1);
+        Some((start.saturating_sub(preceding_newline), end))
     }
 
     pub fn position_of_utf16(&self, offset: u32) -> Option<(u32, usize)> {
@@ -131,6 +171,28 @@ mod tests {
         assert_eq!(index.utf16_offset(2, 1), Some(4));
         assert_eq!(index.position_of_utf16(4), Some((2, 1)));
         assert_eq!(index.line_text(9), None);
+    }
+
+    #[test]
+    fn removal_range_takes_the_line_break_with_it() {
+        let terminated = LineIndex::new("a\nb\n");
+        assert_eq!(terminated.removal_range(2, 2), Some((2, 4)));
+        assert_eq!(terminated.removal_range(1, 2), Some((0, 4)));
+        let unterminated = LineIndex::new("a\nbc");
+        assert_eq!(unterminated.removal_range(2, 2), Some((1, 4)));
+        assert_eq!(unterminated.removal_range(1, 1), Some((0, 2)));
+        let single = LineIndex::new("abc");
+        assert_eq!(single.removal_range(1, 1), Some((0, 3)));
+        assert_eq!(single.removal_range(3, 3), None);
+        assert_eq!(single.line_end_utf16(1), Some(3));
+    }
+
+    #[test]
+    fn utf16_cursor_never_moves_backwards() {
+        let mut cursor = Utf16Cursor::new("éab");
+        assert_eq!(cursor.advance_to(3), 2);
+        assert_eq!(cursor.advance_to(1), 2);
+        assert_eq!(cursor.advance_to(4), 3);
     }
 
     #[test]
