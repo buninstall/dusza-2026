@@ -1,0 +1,423 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+shopt -s inherit_errexit
+
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+readonly SELF
+
+readonly ROOT="${MINESCRIPT_ROOT:-/srv/minescript}"
+readonly REPO="$ROOT/repo"
+readonly RELEASES="$ROOT/releases"
+readonly CURRENT="$ROOT/current"
+readonly BACKUPS="$ROOT/backups"
+readonly LOCK="$ROOT/.deploy.lock"
+readonly FAILED="$ROOT/.failed-revision"
+readonly SERVICE="minescript"
+readonly TIMER="minescript-autodeploy.timer"
+readonly APP_URL="http://127.0.0.1:8080"
+readonly GATE_DIR="/etc/apache2/minescript"
+readonly GATE_FILE="$GATE_DIR/gate.conf"
+readonly HTPASSWD="$GATE_DIR/htpasswd"
+readonly DATABASE="minescript"
+readonly KEEP_RELEASES=5
+readonly KEEP_BACKUPS=20
+readonly BINARY_TARGET="bun-linux-x64"
+readonly BINARY_NAME="minescript-linux-x64"
+
+export PATH="$HOME/.cargo/bin:$HOME/.bun/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+if [[ -t 1 ]]; then
+  C_INFO=$'\033[36m' C_OK=$'\033[32m' C_WARN=$'\033[33m' C_ERR=$'\033[31m' C_DIM=$'\033[2m' C_OFF=$'\033[0m'
+else
+  C_INFO="" C_OK="" C_WARN="" C_ERR="" C_DIM="" C_OFF=""
+fi
+
+log() { printf '%s› %s%s\n' "$C_INFO" "$*" "$C_OFF"; }
+ok() { printf '%s✓ %s%s\n' "$C_OK" "$*" "$C_OFF"; }
+warn() { printf '%s! %s%s\n' "$C_WARN" "$*" "$C_OFF" >&2; }
+die() {
+  printf '%s✗ %s%s\n' "$C_ERR" "$*" "$C_OFF" >&2
+  exit 1
+}
+
+usage() {
+  cat <<EOF
+MineScript szerver-vezérlő
+
+Használat: minescriptctl <parancs> [kapcsolók]
+
+  deploy [--ref <ág|commit>] [--force]   frissítés, build, atomi csere, health check, hibánál visszaállás
+  rollback                               visszaváltás az előző kiadásra
+  status                                 élő verzió, szolgáltatás, kapu, kiadások
+  health                                 az alkalmazás health végpontja
+  logs [-f] [--deploy] [--apache]        naplók (alkalmazás, automatikus telepítés, Apache)
+  restart                                az alkalmazás újraindítása
+  backup                                 MySQL-mentés a $BACKUPS mappába
+  gate on|off|status                     jelszavas kapu (Apache Basic Auth) be- és kikapcsolása
+  gate passwd <felhasználó>              kapu-felhasználó felvétele vagy új jelszava (véletlen, egyszer kiírva)
+  gate remove <felhasználó>              kapu-felhasználó törlése
+  autodeploy on|off|status               automatikus telepítés az origin/main-ről kétpercenként
+  tools                                  fordítóeszközök igazítása a repóhoz (Rust, Bun, wasm-bindgen)
+  self-update                            ez a parancs frissül a repóban lévő változatra
+EOF
+}
+
+require_user() {
+  [[ "$(id -u)" -ne 0 ]] || die "Ne rootként futtasd, hanem a telepítő felhasználóval (sudo-t a szkript kér, ahol kell)."
+}
+
+live_release() {
+  readlink -f "$CURRENT" 2>/dev/null || true
+}
+
+revision_of() {
+  local dir="$1"
+  [[ -n "$dir" && -f "$dir/REVISION" ]] && sed -n '1p' "$dir/REVISION" || true
+}
+
+healthy() {
+  curl -fsS --max-time 2 "$APP_URL/api/health" 2>/dev/null
+}
+
+wait_healthy() {
+  local attempt
+  for attempt in $(seq 1 60); do
+    if healthy >/dev/null; then
+      return 0
+    fi
+    sleep 0.5
+  done
+  return 1
+}
+
+point_current_to() {
+  local target="$1"
+  ln -sfn "$target" "$ROOT/.current.next"
+  mv -Tf "$ROOT/.current.next" "$CURRENT"
+}
+
+activate() {
+  local target="$1"
+  point_current_to "$target"
+  sudo systemctl restart "$SERVICE"
+  wait_healthy
+}
+
+locked_crate_version() {
+  awk -v name="$1" '$0 == "name = \"" name "\"" { getline; gsub(/version = |"/, ""); print; exit }' "$REPO/Cargo.lock"
+}
+
+sync_rust() {
+  (cd "$REPO" && rustup toolchain install >/dev/null 2>&1 || rustup show active-toolchain >/dev/null)
+}
+
+sync_bun() {
+  local want have
+  want="$(sed -n 's/.*"packageManager": *"bun@\([^"]*\)".*/\1/p' "$REPO/package.json")"
+  have="$(bun --version 2>/dev/null || true)"
+  if [[ -n "$want" && "$want" != "$have" ]]; then
+    log "Bun $have → $want"
+    curl -fsSL https://bun.sh/install | bash -s "bun-v$want" >/dev/null
+  fi
+}
+
+sync_wasm_bindgen() {
+  local want have tmp asset base
+  want="$(locked_crate_version wasm-bindgen)"
+  [[ -n "$want" ]] || die "A Cargo.lock nem tartalmaz wasm-bindgen verziót."
+  have="$(wasm-bindgen --version 2>/dev/null | awk '{print $2}' || true)"
+  [[ "$want" == "$have" ]] && return 0
+  log "wasm-bindgen ${have:-hiányzik} → $want"
+  tmp="$(mktemp -d)"
+  asset="wasm-bindgen-$want-x86_64-unknown-linux-musl"
+  for base in https://github.com/wasm-bindgen/wasm-bindgen https://github.com/rustwasm/wasm-bindgen; do
+    if curl -fsSL "$base/releases/download/$want/$asset.tar.gz" -o "$tmp/wb.tgz"; then
+      tar -xzf "$tmp/wb.tgz" -C "$tmp"
+      install -D -m 755 "$tmp/$asset/wasm-bindgen" "$HOME/.local/bin/wasm-bindgen"
+      rm -rf "$tmp"
+      return 0
+    fi
+  done
+  rm -rf "$tmp"
+  cargo install wasm-bindgen-cli --locked --version "$want"
+}
+
+cmd_tools() {
+  require_user
+  sync_rust
+  sync_bun
+  sync_wasm_bindgen
+  command -v just >/dev/null || die "Hiányzik a just (lásd provision.sh)."
+  ok "Eszközök: $(rustc --version | awk '{print $1, $2}'), bun $(bun --version), $(wasm-bindgen --version), $(just --version)$(command -v wasm-opt >/dev/null && printf ', wasm-opt %s' "$(wasm-opt --version | awk '{print $3}')")"
+}
+
+checkout() {
+  local ref="$1" target
+  git -C "$REPO" fetch --prune --quiet origin
+  if target="$(git -C "$REPO" rev-parse --verify --quiet "refs/remotes/origin/$ref^{commit}")"; then
+    git -C "$REPO" checkout --quiet --force -B "$ref" "$target"
+  elif target="$(git -C "$REPO" rev-parse --verify --quiet "$ref^{commit}")"; then
+    git -C "$REPO" checkout --quiet --force --detach "$target"
+  else
+    die "Ismeretlen ág vagy commit: $ref"
+  fi
+  git -C "$REPO" clean -ffdq
+  printf '%s' "$target"
+}
+
+build() {
+  cd "$REPO"
+  sync_rust
+  sync_bun
+  sync_wasm_bindgen
+  log "bun install --frozen-lockfile"
+  nice -n 10 bun install --frozen-lockfile --silent
+  log "just build (wasm, web, manifest, migrációk)"
+  nice -n 10 just build
+  log "Linux bináris ($BINARY_TARGET)"
+  nice -n 10 bun scripts/release.ts "$BINARY_TARGET"
+}
+
+stage_release() {
+  local revision="$1" ref="$2" dir
+  dir="$RELEASES/$(date -u +%Y%m%d-%H%M%S)-${revision:0:12}"
+  install -d -m 755 "$dir"
+  install -m 755 "$REPO/release/$BINARY_NAME" "$dir/minescript"
+  {
+    printf '%s\n' "$revision"
+    printf 'ref: %s\n' "$ref"
+    printf 'commit: %s\n' "$(git -C "$REPO" log -1 --format='%h %s' "$revision")"
+    printf 'built: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  } >"$dir/REVISION"
+  chmod 644 "$dir/REVISION"
+  printf '%s' "$dir"
+}
+
+prune_releases() {
+  local live previous dir count=0
+  live="$(live_release)"
+  previous="${1:-}"
+  while IFS= read -r dir; do
+    count=$((count + 1))
+    if ((count > KEEP_RELEASES)) && [[ "$dir" != "$live" && "$dir" != "$previous" ]]; then
+      rm -rf -- "$dir"
+    fi
+  done < <(find "$RELEASES" -mindepth 1 -maxdepth 1 -type d | sort -r)
+}
+
+cmd_backup() {
+  require_user
+  local file
+  install -d -m 700 "$BACKUPS"
+  file="$BACKUPS/$DATABASE-$(date -u +%Y%m%d-%H%M%S).sql.gz"
+  if ! sudo mysql -N -e "SHOW DATABASES LIKE '$DATABASE'" | grep -qx "$DATABASE"; then
+    warn "A(z) $DATABASE adatbázis még nem létezik, nincs mit menteni."
+    return 0
+  fi
+  sudo mysqldump --single-transaction --quick --routines --triggers --no-tablespaces --databases "$DATABASE" | gzip -9 >"$file"
+  chmod 600 "$file"
+  find "$BACKUPS" -maxdepth 1 -name "$DATABASE-*.sql.gz" | sort -r | tail -n +$((KEEP_BACKUPS + 1)) | xargs -r rm -f --
+  ok "Mentés: $file ($(du -h "$file" | cut -f1))"
+}
+
+cmd_deploy() {
+  require_user
+  local ref="main" force=0 started revision live previous dir
+  while (($#)); do
+    case "$1" in
+      --ref) ref="${2:?A --ref után ág vagy commit kell}"; shift 2 ;;
+      --force) force=1; shift ;;
+      *) die "Ismeretlen kapcsoló: $1" ;;
+    esac
+  done
+  exec 9>"$LOCK"
+  flock -n 9 || die "Már fut egy telepítés."
+  started="$(date +%s)"
+  log "Frissítés: origin/$ref"
+  revision="$(checkout "$ref")"
+  previous="$(live_release)"
+  live="$(revision_of "$previous")"
+  if [[ "$revision" == "$live" && "$force" -eq 0 ]]; then
+    ok "Már ez fut élesben: ${revision:0:12} (újraépítés: --force)"
+    return 0
+  fi
+  if [[ "$force" -eq 0 && -f "$FAILED" && "$(cat "$FAILED")" == "$revision" ]]; then
+    warn "A(z) ${revision:0:12} telepítése korábban már elbukott; kihagyom (újrapróbálás: --force)."
+    return 1
+  fi
+  log "Revízió: $(git -C "$REPO" log -1 --format='%h %s (%an)' "$revision")"
+  if ! "$SELF" __build; then
+    printf '%s' "$revision" >"$FAILED"
+    die "A build elbukott; az élő verzió változatlan (${live:0:12})."
+  fi
+  dir="$(stage_release "$revision" "$ref")"
+  cmd_backup
+  log "Átváltás: $(basename "$dir")"
+  if ! activate "$dir"; then
+    warn "Az új verzió nem lett egészséges. Napló:"
+    sudo journalctl -u "$SERVICE" -n 30 --no-pager -o cat >&2 || true
+    printf '%s' "$revision" >"$FAILED"
+    if [[ -n "$previous" && -d "$previous" ]]; then
+      warn "Visszaállás: $(basename "$previous")"
+      activate "$previous" || die "A visszaállás sem sikerült! Nézd meg: minescriptctl logs"
+    fi
+    die "A telepítés elbukott, a korábbi verzió fut."
+  fi
+  rm -f "$FAILED"
+  prune_releases "$previous"
+  ok "Élesben: ${revision:0:12} ($(($(date +%s) - started)) mp) — $(healthy)"
+}
+
+cmd_rollback() {
+  require_user
+  local live target
+  exec 9>"$LOCK"
+  flock -n 9 || die "Épp fut egy telepítés."
+  live="$(live_release)"
+  target="$(find "$RELEASES" -mindepth 1 -maxdepth 1 -type d | sort -r | awk -v live="$live" 'found { print; exit } $0 == live { found = 1 }')"
+  [[ -n "$target" ]] || die "Nincs korábbi kiadás, amire vissza lehetne váltani."
+  log "Visszaváltás: $(basename "$live") → $(basename "$target")"
+  activate "$target" || die "Az előző kiadás sem indult el. Nézd meg: minescriptctl logs"
+  ok "Élesben: $(revision_of "$target" | cut -c1-12)"
+}
+
+gate_state() {
+  [[ -f "$GATE_FILE" ]] && printf 'be' || printf 'KI (nyilvános)'
+}
+
+reload_apache() {
+  sudo apachectl configtest >/dev/null 2>&1 || {
+    sudo apachectl configtest
+    die "Hibás Apache-konfiguráció, nem töltöm újra."
+  }
+  if systemctl is-active --quiet apache2; then
+    sudo systemctl reload apache2
+  else
+    sudo systemctl start apache2
+  fi
+}
+
+write_gate_conf() {
+  sudo tee "$GATE_FILE" >/dev/null <<EOF
+<Location "/">
+    AuthType Basic
+    AuthName "MineScript - csapat13"
+    AuthBasicProvider file
+    AuthUserFile $HTPASSWD
+    Require valid-user
+</Location>
+EOF
+  sudo chmod 644 "$GATE_FILE"
+}
+
+cmd_self_update() {
+  require_user
+  local source="$REPO/scripts/deploy/minescriptctl"
+  [[ -f "$source" ]] || die "Nincs $source a repóban."
+  bash -n "$source" || die "A repóbeli minescriptctl szintaktikailag hibás, nem frissítem."
+  sudo install -m 755 "$source" /usr/local/bin/minescriptctl
+  ok "minescriptctl frissítve a repóból ($(git -C "$REPO" log -1 --format=%h))."
+}
+
+cmd_gate() {
+  require_user
+  local action="${1:-status}" user password
+  case "$action" in
+    on)
+      sudo test -s "$HTPASSWD" || die "Még nincs kapu-felhasználó. Előbb: minescriptctl gate passwd <név>"
+      write_gate_conf
+      reload_apache
+      ok "A kapu bekapcsolva: az oldal csak felhasználónévvel és jelszóval érhető el."
+      ;;
+    off)
+      sudo rm -f "$GATE_FILE"
+      reload_apache
+      warn "A kapu kikapcsolva: az oldal mostantól bárki számára elérhető."
+      ;;
+    passwd)
+      user="${2:?Add meg a felhasználónevet}"
+      [[ "$user" =~ ^[A-Za-z0-9._-]{1,64}$ ]] || die "A felhasználónév csak betű, szám, pont, kötőjel és aláhúzás lehet."
+      password="$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-24)"
+      sudo install -d -m 755 "$GATE_DIR"
+      sudo touch "$HTPASSWD"
+      printf '%s\n' "$password" | sudo htpasswd -i -B -C 12 "$HTPASSWD" "$user" >/dev/null 2>&1
+      sudo chown root:www-data "$HTPASSWD"
+      sudo chmod 640 "$HTPASSWD"
+      ok "Kapu-felhasználó: $user"
+      printf '  jelszó: %s\n' "$password"
+      warn "A jelszót most jegyezd fel, többé nem jelenik meg."
+      ;;
+    remove)
+      user="${2:?Add meg a felhasználónevet}"
+      sudo htpasswd -D "$HTPASSWD" "$user"
+      ;;
+    status)
+      printf 'Kapu: %s\n' "$(gate_state)"
+      printf 'Felhasználók: %s\n' "$(sudo cut -d: -f1 "$HTPASSWD" 2>/dev/null | paste -sd, - || true)"
+      ;;
+    *) die "gate on|off|status|passwd <név>|remove <név>" ;;
+  esac
+}
+
+cmd_autodeploy() {
+  require_user
+  case "${1:-status}" in
+    on) sudo systemctl enable --now "$TIMER" && ok "Automatikus telepítés bekapcsolva (origin/main, kétpercenként)." ;;
+    off) sudo systemctl disable --now "$TIMER" && ok "Automatikus telepítés kikapcsolva." ;;
+    status) systemctl is-enabled "$TIMER" 2>/dev/null || true ;;
+    *) die "autodeploy on|off|status" ;;
+  esac
+}
+
+cmd_status() {
+  local live
+  live="$(live_release)"
+  printf 'Élő kiadás:   %s\n' "${live:-nincs}"
+  [[ -n "$live" ]] && sed -n '2,$p' "$live/REVISION" | sed 's/^/              /'
+  printf 'Szolgáltatás: %s\n' "$(systemctl is-active "$SERVICE" 2>/dev/null || true)"
+  printf 'Health:       %s\n' "$(healthy || printf 'NEM VÁLASZOL')"
+  printf 'Kapu:         %s\n' "$(gate_state)"
+  printf 'Autodeploy:   %s\n' "$(systemctl is-enabled "$TIMER" 2>/dev/null || printf 'nincs telepítve')"
+  printf 'Repó:         %s\n' "$(git -C "$REPO" log -1 --format='%h %s' 2>/dev/null || true)"
+  [[ -f "$FAILED" ]] && printf 'Elbukott:     %s\n' "$(cut -c1-12 "$FAILED")"
+  printf 'Kiadások:\n'
+  find "$RELEASES" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -r | while IFS= read -r dir; do
+    printf '  %s %s %s\n' "$([[ "$dir" == "$live" ]] && printf '*' || printf ' ')" "$(basename "$dir")" "$C_DIM$(sed -n '3p' "$dir/REVISION" 2>/dev/null | sed 's/^commit: //')$C_OFF"
+  done
+}
+
+cmd_logs() {
+  local follow=() unit="$SERVICE"
+  while (($#)); do
+    case "$1" in
+      -f) follow=(-f); shift ;;
+      --deploy) unit="minescript-autodeploy"; shift ;;
+      --apache) exec sudo tail -n 100 "${follow[@]}" /var/log/apache2/minescript-access.log /var/log/apache2/minescript-error.log ;;
+      *) die "Ismeretlen kapcsoló: $1" ;;
+    esac
+  done
+  exec sudo journalctl -u "$unit" -n 200 --no-pager -o short-iso "${follow[@]}"
+}
+
+main() {
+  local command="${1:-help}"
+  shift || true
+  case "$command" in
+    deploy) cmd_deploy "$@" ;;
+    rollback) cmd_rollback ;;
+    status) cmd_status ;;
+    health) healthy && printf '\n' || die "Az alkalmazás nem válaszol ($APP_URL)." ;;
+    logs) cmd_logs "$@" ;;
+    restart) sudo systemctl restart "$SERVICE" && wait_healthy && ok "Újraindítva." ;;
+    backup) cmd_backup ;;
+    gate) cmd_gate "$@" ;;
+    autodeploy) cmd_autodeploy "$@" ;;
+    tools) cmd_tools ;;
+    self-update) cmd_self_update ;;
+    __build) build ;;
+    help | -h | --help) usage ;;
+    *) usage; exit 2 ;;
+  esac
+}
+
+main "$@"; exit $?
