@@ -122,7 +122,7 @@ setup_systemd() {
 setup_apache() {
   log "Apache (a beállítás idejére leáll, így közben sem nyilvános)"
   sudo systemctl stop apache2
-  sudo a2dismod -q php8.3 mpm_prefork status autoindex cgi cgid 2>/dev/null || true
+  sudo a2dismod -q -f php8.3 mpm_prefork status autoindex cgi cgid 2>/dev/null || true
   sudo a2enmod -q mpm_event proxy proxy_http headers remoteip deflate alias auth_basic authn_file authz_user reqtimeout >/dev/null
   sudo a2disconf -q serve-cgi-bin 2>/dev/null || true
   install_template apache-hardening.conf /etc/apache2/conf-available/zz-minescript-hardening.conf

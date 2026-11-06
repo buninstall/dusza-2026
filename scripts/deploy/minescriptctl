@@ -359,12 +359,22 @@ cmd_gate() {
   esac
 }
 
+autodeploy_state() {
+  local state
+  state="$(systemctl is-enabled "$TIMER" 2>/dev/null || true)"
+  case "$state" in
+    enabled) printf 'be (origin/main, kétpercenként)' ;;
+    disabled) printf 'ki' ;;
+    *) printf 'nincs telepítve' ;;
+  esac
+}
+
 cmd_autodeploy() {
   require_user
   case "${1:-status}" in
     on) sudo systemctl enable --now "$TIMER" && ok "Automatikus telepítés bekapcsolva (origin/main, kétpercenként)." ;;
     off) sudo systemctl disable --now "$TIMER" && ok "Automatikus telepítés kikapcsolva." ;;
-    status) systemctl is-enabled "$TIMER" 2>/dev/null || true ;;
+    status) printf 'Autodeploy: %s\n' "$(autodeploy_state)" ;;
     *) die "autodeploy on|off|status" ;;
   esac
 }
@@ -377,7 +387,7 @@ cmd_status() {
   printf 'Szolgáltatás: %s\n' "$(systemctl is-active "$SERVICE" 2>/dev/null || true)"
   printf 'Health:       %s\n' "$(healthy || printf 'NEM VÁLASZOL')"
   printf 'Kapu:         %s\n' "$(gate_state)"
-  printf 'Autodeploy:   %s\n' "$(systemctl is-enabled "$TIMER" 2>/dev/null || printf 'nincs telepítve')"
+  printf 'Autodeploy:   %s\n' "$(autodeploy_state)"
   printf 'Repó:         %s\n' "$(git -C "$REPO" log -1 --format='%h %s' 2>/dev/null || true)"
   [[ -f "$FAILED" ]] && printf 'Elbukott:     %s\n' "$(cut -c1-12 "$FAILED")"
   printf 'Kiadások:\n'
