@@ -88,6 +88,13 @@ export function ShiftReport(props: ShiftReportProps) {
 type SubmissionLineProps = { submission: Submission | null; onRetry: () => void };
 
 export function SubmissionLine({ submission, onRetry }: SubmissionLineProps) {
+  if (submission?.state === "done") {
+    return (
+      <p className="visually-hidden" role="status">
+        {hu.play.submitted(submission.gold, submission.steps)}
+      </p>
+    );
+  }
   if (submission?.state !== "error") {
     return null;
   }

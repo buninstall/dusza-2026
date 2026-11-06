@@ -115,7 +115,9 @@ test("egy teljes recept betöltése és lefuttatása csak billentyűzettel, mind
   await expectFocusVisible(page);
   await page.keyboard.press("Enter");
   await expect(dialog).toBeHidden();
-  await expect(page.getByText("Megnyitva: Recept – 2. Az első kanyar")).toBeVisible();
+  await expect(
+    page.getByText("A(z) „Recept – 2. Az első kanyar” program megnyitva.").first(),
+  ).toBeVisible();
 
   await tabUntil(page, async () =>
     page
@@ -175,7 +177,7 @@ test("a játék billentyűparancsai: Ctrl+Enter, Szóköz, nyilak, L és Shift+F
   await expectReadings(page, { status: "Szünet" });
   const timeline = timelineSlider(page);
   const position = Number(await timeline.inputValue());
-  await page.getByRole("link", { name: "Ranglista" }).focus();
+  await page.getByRole("button", { name: /^Konzol/ }).focus();
   await page.keyboard.press("ArrowRight");
   await expect(timeline).toHaveValue(String(position + 1));
   await page.keyboard.press("ArrowLeft");

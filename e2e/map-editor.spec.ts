@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
-import { importMapFile, login } from "./helpers.ts";
+import { importMapFile, login, mapFileMenu } from "./helpers.ts";
 
 test.beforeEach(async ({ page }) => {
   await login(page);
@@ -43,7 +43,8 @@ test("új térkép: festés, ellenőrzés, mentés és exportálás", async ({ p
   await expect(page.getByRole("link", { name: "Kipróbálás" })).toBeVisible();
 
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Exportálás" }).click();
+  await mapFileMenu(page).click();
+  await page.getByRole("menuitem", { name: "Exportálás", exact: true }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe("E2E-akna.txt");
   const content = await readFile(await download.path(), "utf8");

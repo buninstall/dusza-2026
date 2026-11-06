@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   editor,
   expectFinished,
+  expectReadings,
   finishedReport,
   gotoPlay,
   login,
@@ -39,10 +40,8 @@ test("a Futásaim oldal visszajátssza a rögzített futást, és semmit nem kü
   await expect(page.getByRole("heading", { level: 1, name: new RegExp(MAP) })).toBeVisible();
   await expect(page.getByText("Rögzített eredmény: 2 arany, 5 lépés.")).toBeVisible();
   await expect(editor(page)).toHaveText(recipeText(RECIPE).replaceAll("\n", ""));
-  await expect(finishedReport(page)).toContainText(
-    "A program hiba nélkül lefutott: 2 arany, 5 lépés.",
-    { timeout: 20_000 },
-  );
+  await expect(finishedReport(page)).toBeVisible({ timeout: 20_000 });
+  await expectReadings(page, { gold: 2, steps: 5, status: "Kész" });
   expect(submissions).toEqual([]);
 
   await page.getByRole("button", { name: "Megnyitás a szerkesztőben" }).click();

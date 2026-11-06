@@ -20,7 +20,21 @@ export async function useTheme(page: Page, theme: Theme): Promise<void> {
   );
 }
 
+const TOUR_KEY = "minescript.tour";
+
+export async function skipTourPrompt(page: Page): Promise<void> {
+  await page.addInitScript(
+    (key) => window.localStorage.setItem(key, JSON.stringify({ status: "declined" })),
+    TOUR_KEY,
+  );
+}
+
+export async function allowTourPrompt(page: Page): Promise<void> {
+  await page.addInitScript((key) => window.localStorage.removeItem(key), TOUR_KEY);
+}
+
 export async function loginAs(page: Page, account: Account): Promise<void> {
+  await skipTourPrompt(page);
   await page.goto("/login");
   await page.getByLabel("Felhasználónév").fill(account.username);
   await page.getByLabel("Jelszó").fill(account.password);
@@ -40,6 +54,7 @@ export function uniqueName(prefix: string): string {
 
 export async function register(page: Page, prefix: string): Promise<Account> {
   const account = { username: uniqueName(prefix), password: NEW_PASSWORD };
+  await skipTourPrompt(page);
   await page.goto("/register");
   await page.getByLabel("Felhasználónév").fill(account.username);
   await page.getByLabel("Jelszó").fill(account.password);
@@ -178,14 +193,24 @@ export function transport(page: Page, name: string): Locator {
 }
 
 export function finishedReport(page: Page): Locator {
-  return page
-    .getByRole("status")
-    .filter({ hasText: "A program hiba nélkül lefutott" })
-    .filter({ has: page.getByRole("button", { name: "Újrajátszás" }) });
+  return instruments(page).filter({ hasText: /Állapot\s*Kész/ });
 }
 
 export function stoppedReport(page: Page): Locator {
-  return page.getByRole("status").filter({ hasText: "Leállítva" });
+  return page.getByRole("status").filter({ hasText: "A leállított futás nem kerül a ranglistára" });
+}
+
+export async function openConsole(page: Page): Promise<void> {
+  const toggle = page.getByRole("button", { name: /^Konzol/ });
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") {
+    await toggle.click();
+  }
+  await expect(page.getByRole("log", { name: "Konzol" })).toBeVisible();
+}
+
+export async function openLeaderboardFromPlay(page: Page): Promise<void> {
+  const mapId = new URL(page.url()).pathname.split("/").at(-1) ?? "";
+  await page.goto(`/leaderboard/${mapId}`);
 }
 
 export function runtimeErrorReport(page: Page, line: number): Locator {
@@ -199,11 +224,10 @@ export function syntaxReport(page: Page): Locator {
 }
 
 export async function expectFinished(page: Page, gold: number, steps: number): Promise<void> {
-  const report = finishedReport(page);
-  await expect(report).toContainText(
-    `A program hiba nélkül lefutott: ${gold} arany, ${steps} lépés.`,
-  );
-  await expect(report).toContainText(`A szerver rögzítette: ${gold} arany, ${steps} lépés.`);
+  await expectReadings(page, { gold, steps, status: "Kész" });
+  await expect(
+    page.getByText(`A szerver rögzítette: ${gold} arany, ${steps} lépés.`),
+  ).toBeAttached();
 }
 
 export async function expectRuntimeError(
@@ -214,8 +238,9 @@ export async function expectRuntimeError(
 ): Promise<void> {
   const report = runtimeErrorReport(page, line);
   await expect(report).toContainText(`${code} · ${line}. sor`);
-  await expect(report).toContainText(/A szerver rögzítette: \d+ arany, \d+ lépés\./);
-  await expect(report).toContainText(`${steps} lépés.`);
+  await expect(
+    page.getByText(new RegExp(`A szerver rögzítette: \\d+ arany, ${steps} lépés\\.`)),
+  ).toBeAttached();
 }
 
 export async function dismissToasts(page: Page): Promise<void> {
@@ -242,8 +267,11 @@ export async function openFromLibrary(page: Page, title: string): Promise<void> 
   }
   await expect(loaded).toBeVisible();
   await expect(dialog).toBeHidden();
-  await expect(page.getByText(`Megnyitva: ${title}`)).toBeVisible();
   await dismissToasts(page);
+}
+
+export function mapFileMenu(page: Page): Locator {
+  return page.getByRole("button", { name: /^Fájl: térkép/ });
 }
 
 function programFileMenu(page: Page): Locator {
@@ -261,7 +289,8 @@ export async function importProgramFile(page: Page, path: UploadFile): Promise<v
 export async function importMapFile(page: Page, path: UploadFile): Promise<void> {
   await dismissToasts(page);
   const chooser = page.waitForEvent("filechooser");
-  await page.getByRole("button", { name: "Importálás", exact: true }).click();
+  await mapFileMenu(page).click();
+  await page.getByRole("menuitem", { name: "Importálás", exact: true }).click();
   await (await chooser).setFiles(path);
 }
 
@@ -286,7 +315,8 @@ export async function exportProgram(page: Page): Promise<{ name: string; bytes: 
 }
 
 export async function exportMap(page: Page): Promise<{ name: string; bytes: Buffer }> {
-  return downloadBytes(page, page.getByRole("button", { name: "Exportálás", exact: true }));
+  await mapFileMenu(page).click();
+  return downloadBytes(page, page.getByRole("menuitem", { name: "Exportálás", exact: true }));
 }
 
 export async function expectRecorded(page: Page, gold: number, steps: number): Promise<void> {

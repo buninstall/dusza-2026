@@ -12,7 +12,9 @@ import {
   instruments,
   login,
   mapGrid,
+  openConsole,
   openFromLibrary,
+  openLeaderboardFromPlay,
   pickView,
   readNumber,
   register,
@@ -95,6 +97,7 @@ test.describe("3.4 futtatás a bemutató fiókkal", () => {
         status: "Kész",
       });
     }
+    await openConsole(page);
     await expect(page.getByRole("log", { name: "Konzol" })).toContainText("2");
   });
 
@@ -303,7 +306,7 @@ test.describe("3.4 futtatás új fiókkal", () => {
     await expect(editor(page)).not.toHaveAttribute("aria-readonly", "true");
     await expect(page.getByText(/A szerver rögzítette/)).toHaveCount(0);
 
-    await page.getByRole("link", { name: "Ranglista" }).click();
+    await openLeaderboardFromPlay(page);
     await expect(
       page.getByRole("heading", { level: 1, name: `Ranglista – ${CORRIDOR}` }),
     ).toBeVisible();

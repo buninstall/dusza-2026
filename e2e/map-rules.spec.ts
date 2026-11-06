@@ -6,7 +6,9 @@ import {
   exportMap,
   importMapFile,
   login,
+  mapFileMenu,
   openFromLibrary,
+  openLeaderboardFromPlay,
   pickDirection,
   pickTool,
   readTable,
@@ -128,11 +130,8 @@ test("minden mezőtípus festhető, pontosan egy robot van, mind a négy iránny
   await expect(page.getByText("A térkép így nem menthető.")).toBeVisible();
   await expect(page.getByText("Nincs robot.", { exact: true })).toBeVisible();
   await expectSaveRefused(page);
-  await expect(page.getByRole("button", { name: "Exportálás", exact: true })).toHaveAttribute(
-    "data-blocked",
-    "true",
-  );
-  await page.getByRole("button", { name: "Exportálás", exact: true }).click();
+  await mapFileMenu(page).click();
+  await page.getByRole("menuitem", { name: "Exportálás", exact: true }).click();
   await expect(page.getByText("Csak érvényes térkép exportálható.")).toBeVisible();
 
   await pickTool(page, "Robot");
@@ -208,11 +207,8 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
 
   await page.getByRole("link", { name: "Térkép szerkesztése" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Térkép szerkesztése" })).toBeVisible();
-  await expect(page.getByText("Jelenleg a(z) 1. verzió aktív.")).toBeVisible();
   await expect(
-    page.getByText(
-      "Ehhez a verzióhoz már 1 futás tartozik, ezért a tartalom módosítása új verziót hoz létre (v2); a régi ranglista megmarad.",
-    ),
+    page.getByText("1. verzió · 1 futás · a pálya módosítása új verziót hoz létre"),
   ).toBeVisible();
   await pickTool(page, "Fal");
   await editorCell(page, 1, 8).click();
@@ -220,19 +216,20 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
   await expect(
     page.getByText("A térkép elmentve, új verzióként (v2). A korábbi ranglista megmaradt."),
   ).toBeVisible();
-  await expect(page.getByText("Jelenleg a(z) 2. verzió aktív.")).toBeVisible();
   await expect(
-    page.getByText("Ehhez a verzióhoz még nincs futás, ezért a módosítás helyben mentődik."),
+    page.getByText("2. verzió · még nincs futás, a módosítás helyben mentődik"),
   ).toBeVisible();
 
   await page.getByRole("textbox", { name: /Leírás/ }).fill("Csak a leírás változik.");
   await saveButton(page).click();
   await expect(page.getByText("A térkép elmentve.", { exact: true })).toBeVisible();
-  await expect(page.getByText("Jelenleg a(z) 2. verzió aktív.")).toBeVisible();
+  await expect(
+    page.getByText("2. verzió · még nincs futás, a módosítás helyben mentődik"),
+  ).toBeVisible();
 
   await page.getByRole("link", { name: "Kipróbálás" }).click();
   await expect(page.getByRole("gridcell", { name: "1. sor, 8. oszlop: fal" })).toBeAttached();
-  await page.getByRole("link", { name: "Ranglista" }).click();
+  await openLeaderboardFromPlay(page);
   await expect(page.getByRole("heading", { level: 1, name: `Ranglista – ${title}` })).toBeVisible();
   await expect(page.getByText("Ezen a verzión még nincs futás.")).toBeVisible();
   await page.getByRole("button", { name: /Verzió/ }).click();
@@ -241,7 +238,7 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
   await expect(table).toBeVisible();
   const rows = await readTable(table);
   expect(rows).toHaveLength(1);
-  expect(rows[0]?.["Játékos"]).toMatch(/^demo1/);
-  expect(rows[0]?.["Arany"]).toBe("2");
-  expect(rows[0]?.["Lépés"]).toBe("4");
+  expect(rows[0]?.Játékos).toMatch(/^demo1/);
+  expect(rows[0]?.Arany).toBe("2");
+  expect(rows[0]?.Lépés).toBe("4");
 });

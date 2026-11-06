@@ -5,6 +5,7 @@ import {
   importProgramFile,
   login,
   mapGrid,
+  openLeaderboardFromPlay,
   openPlay,
   replaceProgram,
   runProgram,
@@ -50,7 +51,7 @@ test("az üres program lefut, és a szerver rögzíti az eredményt a ranglistá
   ).toBeVisible();
   await expect(page.getByText("A szerver rögzítette: 0 arany, 0 lépés.")).toBeVisible();
 
-  await page.getByRole("link", { name: "Ranglista" }).click();
+  await openLeaderboardFromPlay(page);
   await expect(
     page.getByRole("heading", { level: 1, name: "Ranglista – 1. Egyenes folyosó" }),
   ).toBeVisible();

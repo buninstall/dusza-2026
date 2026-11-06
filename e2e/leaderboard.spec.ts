@@ -6,6 +6,7 @@ import {
   importMapFile,
   loginAs,
   logout,
+  openLeaderboardFromPlay,
   readTable,
   register,
   replaceProgram,
@@ -77,7 +78,7 @@ test("a ranglista arany szerint csökkenő, egyenlőségnél lépés szerint nö
 
   await loginAs(page, owner);
   await page.goto(playUrl);
-  await page.getByRole("link", { name: "Ranglista" }).click();
+  await openLeaderboardFromPlay(page);
   await expect(page.getByRole("heading", { level: 1, name: `Ranglista – ${title}` })).toBeVisible();
   const table = page.getByRole("table", { name: `Ranglista: ${title}, 1. verzió` });
   await expect(table).toBeVisible();

@@ -198,16 +198,11 @@
 }
 
 .well-zoom {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  z-index: 5;
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 2px;
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface-raised);
+  margin-left: auto;
+  padding: var(--space-1) var(--space-2);
 }
 
 .well-zoom-level {

@@ -7,6 +7,7 @@ import {
   gotoPlay,
   importProgramFile,
   login,
+  openConsole,
   setSpeed,
 } from "./helpers.ts";
 import { LOOP_RECIPE, recipeBytes, recipePath, SYNTAX_RECIPE } from "./recipes.ts";
@@ -51,6 +52,7 @@ test("programfájl tallózással betölthető, szerkeszthető, és bájtra ponto
   await setSpeed(page, "max");
   await page.getByRole("button", { name: "Futtatás" }).click();
   await expectFinished(page, LOOP_RECIPE.gold, LOOP_RECIPE.steps + 1);
+  await openConsole(page);
   const console = page.getByRole("log", { name: "Konzol" });
   await expect(console).toContainText("2");
   await expect(console).toContainText("7");

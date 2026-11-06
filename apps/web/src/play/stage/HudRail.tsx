@@ -7,6 +7,7 @@ import { CartGauge } from "./CartGauge.tsx";
 import { Compass } from "./Compass.tsx";
 import { DepthGauge } from "./DepthGauge.tsx";
 import "./HudRail.css";
+import { WellZoom } from "./WellZoom.tsx";
 
 type LineReadoutProps = {
   line: number | null;
@@ -76,6 +77,7 @@ export function HudRail({
       <DepthGauge steps={steps} isLimit={isLimit} />{" "}
       <LineReadout line={line} lineText={lineText} onReveal={onRevealLine} />{" "}
       <Compass robot={robot} />
+      <WellZoom />
     </section>
   );
 }
