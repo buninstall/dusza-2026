@@ -429,6 +429,7 @@ export const hu = {
     diagnosticAt: (line: number, col: number) => `${line}:${col}`,
     diagnosticsMore: (count: number) => `+${count} további`,
     fix: (title: string) => `Javítás: ${title}`,
+    fixShort: "Javítás",
     jumpTo: (line: number) => `Ugrás a(z) ${lineRef(line)}ra`,
     analyzerFailed: "Az elemző nem tudta ellenőrizni a programot.",
     syntaxErrorTitle: "A program szintaktikailag hibás, ezért nem futtatható.",

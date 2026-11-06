@@ -44,8 +44,14 @@ function FaultItem({
         </span>
       </button>
       {fix ? (
-        <Button size="sm" variant="ghost" icon="check" onPress={() => onFix(diagnostic)}>
-          {hu.play.fix(fix.title)}
+        <Button
+          size="sm"
+          variant="ghost"
+          icon="check"
+          aria-label={hu.play.fix(fix.title)}
+          onPress={() => onFix(diagnostic)}
+        >
+          {hu.play.fixShort}
         </Button>
       ) : null}
     </li>
