@@ -110,6 +110,10 @@
   height: var(--control-height);
 }
 
+.board-edge-end .field-stepper .field-input {
+  padding-inline: 0;
+}
+
 .board-edge-bottom .field {
   flex-direction: row;
   align-items: center;
@@ -157,6 +161,10 @@
   .board-edge-end .field-stepper {
     flex-direction: row;
     width: 9rem;
+  }
+
+  .board-edge-end .field-stepper .field-input {
+    padding-inline: var(--space-3);
   }
 }
 

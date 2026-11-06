@@ -125,9 +125,11 @@ export function useCanvasTools({
       setRect((current) => (current ? { ...current, end: pos } : current));
       return;
     }
+    const from = lastPainted.current;
+    const cells = from ? lineCells(from, pos) : [pos];
     dispatch({
       type: "preview",
-      next: paint(draftRef.current, pos, stroke.current.tool, draftRef.current.dir),
+      next: paintCells(draftRef.current, cells, stroke.current.tool),
     });
     lastPainted.current = pos;
   };
