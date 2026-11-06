@@ -16,6 +16,7 @@ import {
 import type { FormatResult, TextEdit } from "@minescript/engine";
 import { type Ref, useEffect, useImperativeHandle, useRef } from "react";
 import { useEngine } from "../engine/useEngine.ts";
+import { useKeyboardFocusRing } from "../lib/input-modality.ts";
 import { breakpoints, toggleBreakpoint } from "./breakpoints.ts";
 import { mineScriptCompletion } from "./completion.ts";
 import { errorLens } from "./error-lens.ts";
@@ -314,6 +315,8 @@ export function MineScriptEditor({
   useEffect(() => {
     viewRef.current?.dispatch({ effects: setRuntimeMark.of(runtimeMark) });
   }, [runtimeMark]);
+
+  useKeyboardFocusRing(hostRef);
 
   return <div ref={hostRef} className="code-host" data-readonly={isReadOnly} />;
 }

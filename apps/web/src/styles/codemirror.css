@@ -18,8 +18,11 @@
   outline: none;
 }
 
-.code-host .cm-editor .cm-content:focus-visible,
-.code-host .cm-editor.cm-focused .cm-content {
+.code-host .cm-editor .cm-content:focus-visible {
+  outline: none;
+}
+
+.code-host[data-focus-ring="true"] .cm-editor.cm-focused .cm-content {
   outline: var(--focus-width) solid var(--c-focus);
   outline-offset: calc(var(--focus-width) * -1);
 }
