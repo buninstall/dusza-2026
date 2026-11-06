@@ -52,6 +52,7 @@ export function LevelTile({ map, depth, box, isOwn, canEdit }: LevelTileProps) {
   const level = hu.signs.level(depth);
   return (
     <li className="lv-tile">
+      <span aria-hidden="true" className="lv-rail" />
       <p className="lv-depth">
         <PixelText text={level} scale={2} />
         <span className="visually-hidden">{level}</span>

@@ -73,6 +73,7 @@ export function EditorBar(props: EditorBarProps) {
   return (
     <LocationPlate
       name={hu.signs.editor}
+      hasSign={false}
       detail={isNew ? hu.mapEditor.newTitle : hu.mapEditor.editTitle}
       documentTitle={isNew ? hu.mapEditor.documentNew : hu.mapEditor.documentEdit(props.title)}
       className="ed-bar"

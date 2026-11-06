@@ -42,6 +42,7 @@ type RobotLayerProps = {
   motion?: RobotMotion;
   walkTiles?: number;
   isIdle?: boolean;
+  beam?: { isScan: boolean; key: string };
 };
 
 export function RobotLayer({
@@ -50,6 +51,7 @@ export function RobotLayer({
   motion,
   walkTiles = 1,
   isIdle = false,
+  beam,
 }: RobotLayerProps) {
   const turns = useQuarterTurns(robot.dir);
   const style = { ...placement(robot.pos), "--walk-steps": walkTiles * 4 } as CSSProperties;
@@ -67,6 +69,16 @@ export function RobotLayer({
         data-motion={motion?.kind ?? "still"}
         data-dir={robot.dir}
       >
+        {beam ? (
+          <div
+            key={beam.key}
+            className="board-robot-cone"
+            data-scan={beam.isScan}
+            style={{ "--turns": turns } as CSSProperties}
+          >
+            <SpriteUse id={SPRITE_ID.cone} className="board-fx-art" />
+          </div>
+        ) : null}
         <div className="board-robot-body" style={{ "--turns": turns } as CSSProperties}>
           <PixelSprite
             sprite={TILE_SPRITES.robot}

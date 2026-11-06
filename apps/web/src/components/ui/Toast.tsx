@@ -15,7 +15,7 @@ type ToastTone = "success" | "error" | "info";
 type ToastMessage = { tone: ToastTone; text: string };
 
 const TOAST_TIMEOUT_MS = 6000;
-const MAX_VISIBLE = 4;
+const MAX_VISIBLE = 3;
 
 const TONE_ICON: Record<ToastTone, IconName> = {
   success: "check",
@@ -25,12 +25,19 @@ const TONE_ICON: Record<ToastTone, IconName> = {
 
 export const toastQueue = new ToastQueue<ToastMessage>({ maxVisibleToasts: MAX_VISIBLE });
 
+function show(tone: ToastTone, text: string, timeout: number): string {
+  for (const item of toastQueue.visibleToasts) {
+    if (item.content.text === text) {
+      toastQueue.close(item.key);
+    }
+  }
+  return toastQueue.add({ tone, text }, { timeout });
+}
+
 export const toast = {
-  success: (text: string) =>
-    toastQueue.add({ tone: "success", text }, { timeout: TOAST_TIMEOUT_MS }),
-  error: (text: string) =>
-    toastQueue.add({ tone: "error", text }, { timeout: TOAST_TIMEOUT_MS * 2 }),
-  info: (text: string) => toastQueue.add({ tone: "info", text }, { timeout: TOAST_TIMEOUT_MS }),
+  success: (text: string) => show("success", text, TOAST_TIMEOUT_MS),
+  error: (text: string) => show("error", text, TOAST_TIMEOUT_MS * 2),
+  info: (text: string) => show("info", text, TOAST_TIMEOUT_MS),
 };
 
 export function Toasts() {

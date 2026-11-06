@@ -113,12 +113,6 @@
   overflow-wrap: normal;
 }
 
-.ed-option[data-selected] .ed-option-label {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
-}
-
 .ed-option[data-focus-visible] {
   outline: var(--focus-width) solid var(--c-focus);
   outline-offset: var(--focus-offset);

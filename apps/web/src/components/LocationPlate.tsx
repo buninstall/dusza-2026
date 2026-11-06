@@ -15,6 +15,7 @@ type LocationPlateProps = {
   children?: ReactNode;
   className?: string;
   isDocked?: boolean;
+  hasSign?: boolean;
 };
 
 export function useDocumentTitle(title: string): void {
@@ -42,13 +43,14 @@ export function LocationPlate({
   children,
   className,
   isDocked = true,
+  hasSign = true,
 }: LocationPlateProps) {
   useDocumentTitle(documentTitle ?? detail ?? name);
   return (
     <header className={clsx("plate", className)} data-docked={isDocked}>
       <span aria-hidden="true" className="plate-rivets" />
       {lead}
-      <PlateSign name={name} />
+      {hasSign ? <PlateSign name={name} /> : null}
       <div className="plate-text">
         {detail === undefined ? (
           <h1 className="visually-hidden">{name}</h1>

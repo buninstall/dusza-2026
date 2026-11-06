@@ -1,6 +1,7 @@
 .plate {
   --rivet-inset: 6px;
 
+  container: plate / inline-size;
   position: relative;
   z-index: 11;
   display: flex;
@@ -93,13 +94,24 @@
   margin-left: auto;
 }
 
+@container plate (width < 46rem) {
+  .plate-actions {
+    flex: 1 0 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    margin-left: 0;
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+  }
+
+  .plate-actions > * {
+    flex: none;
+  }
+}
+
 @media (max-width: 40rem) {
   .plate {
     padding-inline: var(--space-4);
-  }
-
-  .plate-actions {
-    margin-left: 0;
   }
 }
 

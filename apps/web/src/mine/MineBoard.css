@@ -502,7 +502,14 @@
   height: 100%;
 }
 
-.board-fx[data-fx="cone"] .board-fx-art {
+.board-robot-cone {
+  position: absolute;
+  inset: 0;
+  translate: calc(var(--ahead-x) * 100%) calc(var(--ahead-y) * 100%);
+  pointer-events: none;
+}
+
+.board-robot-cone .board-fx-art {
   opacity: 0.55;
   rotate: calc(var(--turns, 0) * 90deg);
 }
@@ -561,7 +568,7 @@
   animation-delay: var(--glint-delay, 0ms);
 }
 
-.board-fx[data-fx="cone"][data-scan="true"] .board-fx-art {
+.board-robot-cone[data-scan="true"] .board-fx-art {
   --px-beam: var(--c-discovery);
 
   animation: fx-scan var(--motion-reveal) var(--ease-px3);

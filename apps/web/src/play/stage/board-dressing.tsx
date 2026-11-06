@@ -1,8 +1,7 @@
 import type { Dir, MineMap, Pos, RobotState } from "@minescript/engine";
 import type { CSSProperties, ReactNode } from "react";
 import { hu } from "../../i18n/hu.ts";
-import type { RobotLook } from "../../mine/MineBoard.tsx";
-import { quarterIndex } from "../../mine/quarter-turns.ts";
+import type { RobotBeam, RobotLook } from "../../mine/MineBoard.tsx";
 import type { RobotMood } from "../../mine/RobotLayer.tsx";
 import { placement, SpriteUse } from "../../mine/RobotLayer.tsx";
 import { type FogMode, posKey } from "../../mine/tiles-model.ts";
@@ -70,7 +69,7 @@ function Fx({
   );
 }
 
-function headlamp(input: DressingInput): ReactNode {
+function headlamp(input: DressingInput): RobotBeam | null {
   const { map, robot, frame, fogMode, isAdvancing, isTurbo } = input;
   const front = aheadOf(robot.pos, robot.dir);
   if (fogMode !== "lamp" || !isInside(map, front)) {
@@ -80,17 +79,7 @@ function headlamp(input: DressingInput): ReactNode {
     isAdvancing && !isTurbo && frame?.scan !== null && frame?.scan !== undefined
       ? posKey(frame.scan) === posKey(front)
       : false;
-  return (
-    <Fx
-      key={isScan ? `cone-${frame?.index ?? 0}` : "cone"}
-      kind="cone"
-      pos={front}
-      isScan={isScan}
-      style={{ "--turns": quarterIndex(robot.dir) } as CSSProperties}
-    >
-      <SpriteUse id={SPRITE_ID.cone} className="board-fx-art" />
-    </Fx>
-  );
+  return { isScan, key: isScan ? `cone-${frame?.index ?? 0}` : "cone" };
 }
 
 function reveals(input: DressingInput): ReactNode[] {
@@ -217,6 +206,10 @@ function robotLook(input: DressingInput, mood: RobotMood): RobotLook {
   return event.path.length > 0 ? { ...base, motion: { kind: "walk", key: index } } : base;
 }
 
+function withBeam(look: RobotLook, beam: RobotBeam | null): RobotLook {
+  return beam ? { ...look, beam } : look;
+}
+
 export function boardDressing(input: DressingInput, mood: RobotMood): Dressing {
   const showFault = input.frame?.atEnd ?? false;
   const fault = showFault ? input.fault : null;
@@ -229,7 +222,6 @@ export function boardDressing(input: DressingInput, mood: RobotMood): Dressing {
   return {
     overlay: (
       <>
-        {headlamp(dressed)}
         {reveals(dressed)}
         {glints(dressed)}
         {faultNodes(dressed)}
@@ -238,6 +230,6 @@ export function boardDressing(input: DressingInput, mood: RobotMood): Dressing {
     ),
     cellMarks: marks,
     cellNotes: notes,
-    look: robotLook(dressed, mood),
+    look: withBeam(robotLook(dressed, mood), headlamp(dressed)),
   };
 }

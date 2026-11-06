@@ -17,16 +17,6 @@
   list-style: none;
 }
 
-.lv-shaft::before {
-  content: "";
-  position: absolute;
-  top: calc(var(--space-5) * -1);
-  bottom: var(--space-5);
-  left: var(--rail-x);
-  width: var(--rail-gap);
-  border-inline: var(--border-thick) solid var(--c-line-strong);
-}
-
 .lv-tile {
   position: relative;
   display: grid;
@@ -38,8 +28,21 @@
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
-  animation: enter-drop var(--motion-enter) var(--ease-px3) both;
-  transition: translate var(--motion-press) var(--ease-px2);
+}
+
+.lv-rail {
+  position: absolute;
+  top: calc(var(--space-5) * -1 - var(--border-thin));
+  right: calc(100% + var(--space-6));
+  bottom: calc(var(--border-thin) * -1);
+  width: var(--rail-gap);
+  border-inline: var(--border-thick) solid var(--c-line-strong);
+}
+
+.lv-tile:last-child .lv-rail {
+  bottom: calc(50% - var(--rail-gap) / 2 - var(--border-thick));
+  border-bottom: var(--border-thick) solid var(--c-line-strong);
+  border-radius: 0 0 8px 8px;
 }
 
 .lv-tile::before {
@@ -53,18 +56,6 @@
   translate: 0 -50%;
 }
 
-.lv-tile:nth-child(2) {
-  animation-delay: 40ms;
-}
-
-.lv-tile:nth-child(3) {
-  animation-delay: 80ms;
-}
-
-.lv-tile:nth-child(n + 4) {
-  animation-delay: 120ms;
-}
-
 .lv-tile::after {
   content: "";
   position: absolute;
@@ -72,12 +63,6 @@
   border: var(--border-thick) solid var(--c-reward);
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--motion-press) var(--ease-px2);
-}
-
-.lv-tile:hover,
-.lv-tile:focus-within {
-  translate: 2px 0;
 }
 
 .lv-tile:hover::after,
@@ -202,6 +187,10 @@
     width: calc(var(--space-4) + var(--border-thin));
   }
 
+  .lv-rail {
+    right: calc(100% + var(--space-4));
+  }
+
   .lv-tile {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
@@ -213,12 +202,5 @@
 
   .lv-actions {
     flex-wrap: wrap;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lv-tile {
-    animation: none;
-    transition: none;
   }
 }

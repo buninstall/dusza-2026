@@ -12,8 +12,11 @@
 }
 
 .tabs-tab {
-  min-height: var(--control-height);
-  padding: var(--space-2) var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--control-height) - 2 * var(--border-thin));
+  padding: 0 var(--space-4);
   color: var(--c-text-muted);
   font: var(--type-control);
   letter-spacing: var(--track-control);
@@ -33,9 +36,6 @@
 .tabs-tab[data-selected] {
   background: var(--c-accent);
   color: var(--c-on-accent);
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
 }
 
 .tabs-tab[data-focus-visible] {

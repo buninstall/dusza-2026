@@ -152,9 +152,10 @@
   color: var(--c-text-muted);
 }
 
-.drawer-item[data-focused] .drawer-item-hint,
-.drawer-item[data-focused] .drawer-item-title {
-  color: var(--c-on-accent);
+.drawer-item[data-focused] {
+  background: var(--c-surface);
+  color: var(--c-text);
+  box-shadow: inset 4px 0 0 var(--c-accent);
 }
 
 .sheet-editor {

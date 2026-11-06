@@ -12,11 +12,14 @@ export type BoardFit = "width" | "both";
 
 export type Sparkle = { pos: Pos; key: number };
 
+export type RobotBeam = { isScan: boolean; key: string };
+
 export type RobotLook = {
   mood?: RobotMood;
   motion?: RobotMotion;
   walkTiles?: number;
   isIdle?: boolean;
+  beam?: RobotBeam;
 };
 
 export type RulerMarks = { rows: ReadonlySet<number>; cols: ReadonlySet<number> };
@@ -172,6 +175,7 @@ export function MineBoard({
               {...(look.motion ? { motion: look.motion } : {})}
               walkTiles={look.walkTiles ?? 1}
               isIdle={look.isIdle ?? false}
+              {...(look.beam ? { beam: look.beam } : {})}
             />
           ) : null}
           {sparkle ? <SparkleBurst key={sparkle.key} pos={sparkle.pos} /> : null}

@@ -26,8 +26,9 @@
   display: flex;
   flex: 1 1 auto;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
-  min-height: var(--control-height);
+  min-height: calc(var(--control-height) - 2 * var(--border-thin));
   padding: 0 var(--space-3);
   color: var(--c-text-muted);
   font: var(--type-control);
@@ -56,12 +57,6 @@
   box-shadow:
     inset var(--border-thin) var(--border-thin) 0 var(--c-accent-hover),
     inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--px-ore-lo);
-}
-
-.seg-segment[data-selected] .seg-segment-label {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
 }
 
 .seg-segment[data-focus-visible] {

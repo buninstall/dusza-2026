@@ -9,7 +9,7 @@ import { ModalShell } from "../components/ui/Dialog.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
 import { useEngine } from "../engine/useEngine.ts";
-import { formatTime, hu } from "../i18n/hu.ts";
+import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { writeStorage } from "../lib/storage.ts";
 import { mapQuery } from "../maps/queries.ts";
@@ -81,12 +81,7 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
     openInEditor();
   };
 
-  const meta = [
-    formatTime(run.createdAt),
-    hu.play.versionChip(run.version),
-    ...(isOld ? [hu.replay.oldVersion] : []),
-    hu.replay.result(run.gold, run.steps),
-  ].join(" · ");
+  const meta = isOld ? hu.replay.oldVersion : undefined;
 
   const bezel = (
     <Bezel
