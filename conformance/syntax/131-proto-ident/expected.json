@@ -1,0 +1,7 @@
+{
+  "description": "__proto__: aláhúzással kezdődő név, nem azonosító.",
+  "specRefs": ["2"],
+  "decisions": ["D19"],
+  "valid": false,
+  "diagnostics": [{ "code": "SYN_INVALID_IDENT", "line": 1, "col": 5 }]
+}

@@ -1,0 +1,10 @@
+{
+  "description": "A spec 2. fejezetének programja a >.@.@# térképen: 3 előkészítő sor, a négy ciklusmenet 7 + 8 + 7 + 8 sora, a záró hamis while és a print, összesen 35 lépés, 2 arany.",
+  "specRefs": ["2", "2.2.3", "3.4"],
+  "decisions": ["D7"],
+  "outcome": { "kind": "ok" },
+  "gold": 2,
+  "steps": 35,
+  "console": ["2"],
+  "robot": { "row": 0, "col": 4, "dir": "east" }
+}
