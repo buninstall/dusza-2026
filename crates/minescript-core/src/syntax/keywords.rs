@@ -7,7 +7,56 @@ pub const COMMANDS: [&str; 8] = [
     "step", "turn", "mine", "print", "set", "if", "else", "while",
 ];
 
-const LONGEST_KEYWORD: usize = 7;
+pub(crate) const fn pack(bytes: &[u8]) -> Option<u64> {
+    if bytes.is_empty() || bytes.len() > 8 {
+        return None;
+    }
+    let mut packed = 0u64;
+    let mut rest = bytes;
+    while let [head @ .., last] = rest {
+        if *last == 0 {
+            return None;
+        }
+        packed = (packed << 8) | *last as u64;
+        rest = head;
+    }
+    Some(packed)
+}
+
+const fn lowercase_mask(length: usize) -> u64 {
+    if length >= 8 {
+        0x2020_2020_2020_2020
+    } else {
+        0x2020_2020_2020_2020 & ((1u64 << (length * 8)) - 1)
+    }
+}
+
+const fn packed(word: &str) -> u64 {
+    match pack(word.as_bytes()) {
+        Some(packed) => packed,
+        None => 0,
+    }
+}
+
+const AND: u64 = packed("and");
+const BY: u64 = packed("by");
+const ELSE: u64 = packed("else");
+const FALSE: u64 = packed("false");
+const FORWARD: u64 = packed("forward");
+const HERE: u64 = packed("here");
+const IF: u64 = packed("if");
+const IS_THERE: u64 = packed("isThere");
+const IS_THERE_LOWER: u64 = packed("isthere");
+const MINE: u64 = packed("mine");
+const NOT: u64 = packed("not");
+const OR: u64 = packed("or");
+const PRINT: u64 = packed("print");
+const SET: u64 = packed("set");
+const STEP: u64 = packed("step");
+const TO: u64 = packed("to");
+const TRUE: u64 = packed("true");
+const TURN: u64 = packed("turn");
+const WHILE: u64 = packed("while");
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Keyword {
@@ -77,56 +126,55 @@ impl Keyword {
     }
 
     pub fn exact(word: &str) -> Option<Self> {
-        Some(match word {
-            "and" => Self::And,
-            "by" => Self::By,
-            "else" => Self::Else,
-            "false" => Self::False,
-            "forward" => Self::Forward,
-            "here" => Self::Here,
-            "if" => Self::If,
-            "isThere" => Self::IsThere,
-            "mine" => Self::Mine,
-            "not" => Self::Not,
-            "or" => Self::Or,
-            "print" => Self::Print,
-            "set" => Self::Set,
-            "step" => Self::Step,
-            "to" => Self::To,
-            "true" => Self::True,
-            "turn" => Self::Turn,
-            "while" => Self::While,
+        let packed = pack(word.as_bytes())?;
+        Self::ignoring_case(word).filter(|keyword| keyword.packed() == packed)
+    }
+
+    pub fn ignoring_case(word: &str) -> Option<Self> {
+        Some(match pack(word.as_bytes())? | lowercase_mask(word.len()) {
+            AND => Self::And,
+            BY => Self::By,
+            ELSE => Self::Else,
+            FALSE => Self::False,
+            FORWARD => Self::Forward,
+            HERE => Self::Here,
+            IF => Self::If,
+            IS_THERE_LOWER => Self::IsThere,
+            MINE => Self::Mine,
+            NOT => Self::Not,
+            OR => Self::Or,
+            PRINT => Self::Print,
+            SET => Self::Set,
+            STEP => Self::Step,
+            TO => Self::To,
+            TRUE => Self::True,
+            TURN => Self::Turn,
+            WHILE => Self::While,
             _ => return None,
         })
     }
 
-    pub fn ignoring_case(word: &str) -> Option<Self> {
-        let mut lowered = [0u8; LONGEST_KEYWORD];
-        let slot = lowered.get_mut(..word.len())?;
-        for (target, byte) in slot.iter_mut().zip(word.bytes()) {
-            *target = byte.to_ascii_lowercase();
+    fn packed(self) -> u64 {
+        match self {
+            Self::And => AND,
+            Self::By => BY,
+            Self::Else => ELSE,
+            Self::False => FALSE,
+            Self::Forward => FORWARD,
+            Self::Here => HERE,
+            Self::If => IF,
+            Self::IsThere => IS_THERE,
+            Self::Mine => MINE,
+            Self::Not => NOT,
+            Self::Or => OR,
+            Self::Print => PRINT,
+            Self::Set => SET,
+            Self::Step => STEP,
+            Self::To => TO,
+            Self::True => TRUE,
+            Self::Turn => TURN,
+            Self::While => WHILE,
         }
-        Some(match &*slot {
-            b"and" => Self::And,
-            b"by" => Self::By,
-            b"else" => Self::Else,
-            b"false" => Self::False,
-            b"forward" => Self::Forward,
-            b"here" => Self::Here,
-            b"if" => Self::If,
-            b"isthere" => Self::IsThere,
-            b"mine" => Self::Mine,
-            b"not" => Self::Not,
-            b"or" => Self::Or,
-            b"print" => Self::Print,
-            b"set" => Self::Set,
-            b"step" => Self::Step,
-            b"to" => Self::To,
-            b"true" => Self::True,
-            b"turn" => Self::Turn,
-            b"while" => Self::While,
-            _ => return None,
-        })
     }
 
     pub fn command(self) -> Option<Command> {
@@ -216,7 +264,7 @@ mod tests {
     #[test]
     fn lookup_tables_agree_with_the_keyword_list() {
         let longest = Keyword::ALL.iter().map(|k| k.as_str().len()).max();
-        assert_eq!(longest, Some(LONGEST_KEYWORD));
+        assert!(longest.is_some_and(|length| length <= 8));
         for keyword in Keyword::ALL {
             let word = keyword.as_str();
             assert_eq!(Keyword::exact(word), Some(keyword));
@@ -231,6 +279,13 @@ mod tests {
         assert_eq!(Keyword::ignoring_case("whileXYZ"), None);
         assert_eq!(Keyword::ignoring_case("ÍF"), None);
         assert_eq!(Keyword::ignoring_case(""), None);
+        assert_eq!(Keyword::exact("isthere"), None);
+        assert_eq!(Keyword::exact("and\0"), None);
+        assert_eq!(Keyword::ignoring_case("AN\u{0}"), None);
+        assert_eq!(Keyword::ignoring_case("a\u{1}d"), None);
+        assert_eq!(Keyword::ignoring_case("@ND"), None);
+        assert_eq!(Keyword::ignoring_case("forwardx"), None);
+        assert_eq!(Keyword::ignoring_case("forwardxy"), None);
         for op in BinOp::ALL {
             assert_eq!(BinOp::from_symbol(op.symbol()), Some(op));
         }

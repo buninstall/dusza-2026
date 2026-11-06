@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::span::Span;
+use crate::syntax::keywords::pack;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -237,6 +238,13 @@ pub enum BinOp {
     Or,
 }
 
+const fn symbol(text: &[u8]) -> u64 {
+    match pack(text) {
+        Some(packed) => packed,
+        None => 0,
+    }
+}
+
 impl BinOp {
     pub const ALL: [Self; 11] = [
         Self::Add,
@@ -269,18 +277,29 @@ impl BinOp {
     }
 
     pub fn from_symbol(text: &str) -> Option<Self> {
-        Some(match text {
-            "+" => Self::Add,
-            "-" => Self::Sub,
-            "*" => Self::Mul,
-            "=" => Self::Eq,
-            "<>" => Self::Ne,
-            "<" => Self::Lt,
-            "<=" => Self::Le,
-            ">" => Self::Gt,
-            ">=" => Self::Ge,
-            "and" => Self::And,
-            "or" => Self::Or,
+        const ADD: u64 = symbol(b"+");
+        const SUB: u64 = symbol(b"-");
+        const MUL: u64 = symbol(b"*");
+        const EQ: u64 = symbol(b"=");
+        const NE: u64 = symbol(b"<>");
+        const LT: u64 = symbol(b"<");
+        const LE: u64 = symbol(b"<=");
+        const GT: u64 = symbol(b">");
+        const GE: u64 = symbol(b">=");
+        const AND: u64 = symbol(b"and");
+        const OR: u64 = symbol(b"or");
+        Some(match pack(text.as_bytes())? {
+            ADD => Self::Add,
+            SUB => Self::Sub,
+            MUL => Self::Mul,
+            EQ => Self::Eq,
+            NE => Self::Ne,
+            LT => Self::Lt,
+            LE => Self::Le,
+            GT => Self::Gt,
+            GE => Self::Ge,
+            AND => Self::And,
+            OR => Self::Or,
             _ => return None,
         })
     }

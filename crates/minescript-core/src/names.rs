@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::hash::{BuildHasherDefault, Hasher};
 
 const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
@@ -25,3 +25,5 @@ impl Hasher for NameHasher {
 }
 
 pub(crate) type NameMap<K, V> = HashMap<K, V, BuildHasherDefault<NameHasher>>;
+
+pub(crate) type NameHashSet<K> = HashSet<K, BuildHasherDefault<NameHasher>>;
