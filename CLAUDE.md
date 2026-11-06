@@ -31,14 +31,14 @@ A konfliktus oka mindig az, hogy két ember ugyanazt a fájlt szerkeszti. Ezért
 
 ## 4. Szerepkör gépenként
 
-- A repóban három szerepfájl van: `.claude/roles/backend.md`, `.claude/roles/frontend.md`, `.claude/roles/testing.md`. Mindenki csak a sajátját szerkeszti.
-- Minden gépen létrehozol egy `CLAUDE.local.md` fájlt, benne egyetlen sor a saját szereppel:
-
-```
-@.claude/roles/backend.md
-```
-
-- A `CLAUDE.local.md` gépi fájl, a `.gitignore` kizárja, soha nem kerül fel.
+- A szerepfájlok: `.claude/roles/backend.md`, `.claude/roles/frontend.md`, `.claude/roles/testing.md`. Mindenki csak a sajátját szerkeszti.
+- A kiosztás: `.claude/roles/ASSIGNMENTS.txt`, sorok formában: `<github-login>: <szerep>`.
+- Szerepkeresés munkamenet elején:
+  1. Olvasd ki: `git config --get claude.teamflowBranch` (ez a GitHub login).
+  2. Keresd meg a sort az `ASSIGNMENTS.txt`-ben.
+  3. Töltsd be a `.claude/roles/<szerep>.md` fájlt, és azt a szerepet kövesd.
+  4. Ha nincs találat vagy üres a beállítás: állj meg, és kérdezd meg a felhasználót, mi a szerepe.
+- A kiosztást csak a `shared` gazda módosítja.
 
 ## 5. Ami nem kerül fel
 
