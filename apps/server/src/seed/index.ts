@@ -6,6 +6,7 @@ import { createMapWithVersion, currentVersion, validateMapContent } from "../ser
 import { executeAndRecord } from "../services/runs.ts";
 import { TUTORIAL_MAPS } from "./maps.ts";
 import { SAMPLE_PROGRAMS } from "./programs.ts";
+import { RECIPES } from "./recipes.ts";
 
 export const DEMO_ACCOUNTS = [
   { username: "admin", password: "dusza2026", role: "admin" },
@@ -19,6 +20,7 @@ export type SeedReport = {
   users: number;
   maps: number;
   programs: number;
+  recipes: number;
   runs: number;
   skippedRuns: number;
 };
@@ -71,13 +73,40 @@ async function createMaps(deps: Deps, ownerId: number, now: number): Promise<Map
   return created;
 }
 
+async function addRecipesToLibraries(
+  deps: Deps,
+  userIds: ReadonlyMap<string, number>,
+  now: number,
+): Promise<number> {
+  const rows = [...userIds.values()].flatMap((ownerId) =>
+    RECIPES.map((recipe, index) => ({
+      ownerId,
+      title: recipe.title,
+      source: recipe.source,
+      updatedAt: now - index - 1,
+    })),
+  );
+  if (rows.length > 0) {
+    await deps.db.insert(programs).values(rows);
+  }
+  return rows.length;
+}
+
 export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise<SeedReport> {
   if (options.reset) {
     await wipe(deps);
   }
   const [existing] = await deps.db.select({ id: users.id }).from(users).limit(1);
   if (existing) {
-    return { seeded: false, users: 0, maps: 0, programs: 0, runs: 0, skippedRuns: 0 };
+    return {
+      seeded: false,
+      users: 0,
+      maps: 0,
+      programs: 0,
+      recipes: 0,
+      runs: 0,
+      skippedRuns: 0,
+    };
   }
   const now = deps.now();
   const userIds = await createUsers(deps, now);
@@ -110,11 +139,13 @@ export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise
       skippedRuns += 1;
     }
   }
+  const recipePrograms = await addRecipesToLibraries(deps, userIds, now);
   return {
     seeded: true,
     users: userIds.size,
     maps: createdMaps.length,
     programs: SAMPLE_PROGRAMS.length,
+    recipes: recipePrograms,
     runs: recordedRuns,
     skippedRuns,
   };
