@@ -1,4 +1,5 @@
 import { Link } from "../components/ui/Link.tsx";
+import { StarRow } from "../game/StarRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import { MapPreview, type PreviewBox } from "../mine/MapPreview.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
@@ -47,6 +48,28 @@ function Badges({ map, isOwn }: { map: MapSummary; isOwn: boolean }) {
   );
 }
 
+export function Progress({ map }: { map: MapSummary }) {
+  return (
+    <div className="lv-progress">
+      {map.stars === null ? (
+        <span className="lv-progress-note">{hu.game.noStars}</span>
+      ) : (
+        <StarRow stars={map.stars} size="sm" />
+      )}
+      <span className="lv-progress-best">
+        <span className="lv-progress-label">{hu.game.bestLabel}</span>
+        {map.best ? hu.game.best(map.best.gold, map.best.steps) : hu.game.notPlayed}
+      </span>
+      {map.likes > 0 ? (
+        <span className="lv-progress-likes" data-liked={map.likedByMe}>
+          <PixelIcon name="heart" size="sm" />
+          {hu.game.likes(map.likes)}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 export function LevelTile({ map, depth, box, isOwn, canEdit }: LevelTileProps) {
   const mapId = String(map.id);
   const level = hu.signs.level(depth);
@@ -70,7 +93,11 @@ export function LevelTile({ map, depth, box, isOwn, canEdit }: LevelTileProps) {
           <Spec label={hu.maps.goldLabel} value={hu.maps.gold(map.reachableGold, map.goldTotal)} />
           <Spec label={hu.maps.versionLabel} value={hu.maps.version(map.version)} />
           <Spec label={hu.maps.ownerLabel} value={map.ownerName} />
+          {map.parSteps === null ? null : (
+            <Spec label={hu.game.parLabel} value={hu.game.par(map.parSteps)} />
+          )}
         </dl>
+        <Progress map={map} />
       </div>
       <div className="lv-actions">
         <Link

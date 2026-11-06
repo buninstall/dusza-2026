@@ -13,7 +13,14 @@ export type Submission =
   | { state: "done"; gold: number; steps: number; standing: Standing | null }
   | { state: "error"; message: string };
 
-export type Standing = { rank: number; players: number; isPersonalBest: boolean };
+export type StarResult = { run: number; best: number; previous: number; parSteps: number | null };
+
+export type Standing = {
+  rank: number;
+  players: number;
+  isPersonalBest: boolean;
+  stars: StarResult | null;
+};
 
 type TrackedSubmission = { runId: number; value: Submission };
 
@@ -57,13 +64,23 @@ export function useEngineRun(mapText: string, start: RobotState) {
   return { run, ...state, clearBlocked };
 }
 
-function standingOf(
-  raw: { rank: number | null; players: number; isPersonalBest: boolean } | undefined,
-): Standing | null {
+type RawStanding = {
+  rank: number | null;
+  players: number;
+  isPersonalBest: boolean;
+  stars?: StarResult | null;
+};
+
+function standingOf(raw: RawStanding | undefined): Standing | null {
   if (!raw || raw.rank === null) {
     return null;
   }
-  return { rank: raw.rank, players: raw.players, isPersonalBest: raw.isPersonalBest };
+  return {
+    rank: raw.rank,
+    players: raw.players,
+    isPersonalBest: raw.isPersonalBest,
+    stars: raw.stars ?? null,
+  };
 }
 
 type SubmissionInput = { mapId: number; mapVersionId: number };
@@ -93,6 +110,7 @@ export function useRunSubmission({ mapId, mapVersionId }: SubmissionInput) {
         void queryClient.invalidateQueries({ queryKey: ["map", mapId] });
         void queryClient.invalidateQueries({ queryKey: ["leaderboard", mapId] });
         void queryClient.invalidateQueries({ queryKey: ["my-runs"] });
+        void queryClient.invalidateQueries({ queryKey: ["maps"] });
       } catch (error) {
         setTracked({
           runId: id,

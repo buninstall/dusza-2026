@@ -155,6 +155,9 @@ export const hu = {
     toDark: "Tárna",
     toLightLabel: "Váltás a világos Felszín témára",
     toDarkLabel: "Váltás a sötét Tárna témára",
+    soundOn: "Hang bekapcsolva",
+    soundOff: "Hang kikapcsolva",
+    soundToggle: "Hangeffektek",
     userMenuFor: (username: string) => `Felhasználói menü: ${username}`,
     signedInAs: (username: string) => `Bejelentkezve: ${username}`,
     logout: "Kijelentkezés",
@@ -194,7 +197,13 @@ export const hu = {
     emptyMine: "Még nincs saját pályád.",
     listLabel: "Pályák listája",
     sortLabel: "Rendezés",
-    sorts: { order: "Sorrend", size: "Méret", gold: "Arany", recent: "Legújabb" },
+    sorts: {
+      order: "Sorrend",
+      size: "Méret",
+      gold: "Arany",
+      recent: "Legújabb",
+      popular: "Népszerű",
+    },
     own: "Saját",
     size: (rows: number, cols: number) => `${rows}×${cols}`,
     sizeLabel: "Méret",
@@ -710,6 +719,148 @@ export const hu = {
     syntaxError: "szintaktikai hiba",
     notInDb: "Ez a pálya nincs az adatbázisban.",
     loaded: (title: string) => `A(z) „${title}” recept betöltve. Futtatás: a robot indul.`,
+  },
+  game: {
+    starsLabel: (stars: number) => `${stars} / 3 csillag`,
+    starsTotal: (earned: number, max: number) => `${earned} / ${max} csillag`,
+    starsTotalLabel: "Összegyűjtött csillagok",
+    starRule: (par: number | null) =>
+      par === null
+        ? "1 csillag: arany. 2: minden elérhető arany. A 3. csillaghoz ennek a pályának nincs célértéke."
+        : `1 csillag: arany. 2: minden elérhető arany. 3: minden elérhető arany legfeljebb ${par} lépésből.`,
+    noStars: "Arany nélküli pálya, nincs csillag",
+    bestLabel: "Legjobbad",
+    best: (gold: number, steps: number) => `${gold} arany · ${steps} lépés`,
+    notPlayed: "még nincs",
+    parLabel: "Célérték",
+    par: (steps: number) => `${steps} lépés`,
+    likes: (count: number) => `${count} tetszés`,
+    like: "Tetszik",
+    likeHint: "Előbb futtass egy programot ezen a pályán, utána jelölheted, hogy tetszik.",
+    likeFailed: "A tetszést nem sikerült menteni.",
+    newStar: (count: number) => (count === 1 ? "Új csillag!" : `${count} új csillag!`),
+    nextStar: (stars: number, par: number | null, reachable: number) => {
+      if (stars === 0) {
+        return "Az első csillaghoz bányássz ki legalább egy aranyat.";
+      }
+      if (stars === 1) {
+        return `A második csillaghoz mind a(z) ${reachable} elérhető aranyat ki kell bányászni.`;
+      }
+      return par === null
+        ? "Ennek a pályának nincs célértéke, 2 csillag a maximum."
+        : `A harmadik csillaghoz legfeljebb ${par} lépés kell.`;
+    },
+    allStars: "Mind a három csillag megvan.",
+    medalTitle: "Eredmény",
+    nextMap: "Következő pálya",
+    nextMapFor: (title: string) => `Következő pálya: ${title}`,
+  },
+  daily: {
+    heading: "Napi kihívás",
+    meta: (date: string) => `${date} · mindenkinek ugyanez a pálya`,
+    note: "Ma generált pálya. Éjfélkor új jön, a mai ranglista megmarad.",
+    play: "Játék a napi pályán",
+    leaderboard: "Napi ranglista",
+    loadFailed: "A napi kihívás nem tölthető be.",
+  },
+  sound: {
+    unsupported: "A böngésző nem támogatja a hangeffekteket.",
+  },
+  tour: {
+    askTitle: "Kérsz egy rövid bevezetőt?",
+    askBody:
+      "Két perc alatt végigvezetünk az első pályán: megírod az első programodat, és kibányászod az első aranyat.",
+    accept: "Igen, mutasd",
+    decline: "Nem, köszönöm",
+    restart: "Bevezető újrakezdése",
+    restartHint: "Az első pályán újra végigvezet a játék alapjain.",
+    next: "Tovább",
+    skip: "Bevezető bezárása",
+    finish: "Kész, megyek bányászni",
+    progress: (step: number, total: number) => `${step}. lépés / ${total}`,
+    insert: (code: string) => `Beírom: ${code}`,
+    waiting: "Várom, hogy megcsináld…",
+    steps: {
+      board: {
+        title: "Ez a bánya",
+        body: "A robot a bal szélen áll, és kelet felé néz. A két aranyrög három, illetve hat mezővel előtte van.",
+      },
+      editor: {
+        title: "Ide írod a programot",
+        body: "Minden sor egy parancs. Írd be a szerkesztőbe: `step forward 3`, vagy kattints a lenti gombra.",
+      },
+      run: {
+        title: "Indítsd el!",
+        body: "Kattints a `Futtatás` gombra, vagy nyomd meg a `Ctrl+Enter` billentyűt.",
+      },
+      watch: {
+        title: "A robot odament, de nem bányászott",
+        body: "A `step forward` csak lépteti a robotot. Az aranyat a `mine here` bányássza ki abból a mezőből, ahol a robot áll. Írd a program végére egy új sorba: `mine here`.",
+      },
+      mine: {
+        title: "Futtasd újra",
+        body: "A futás mindig az alaphelyzetből indul. Indítsd el újra, és figyeld az Arany műszert!",
+      },
+      stars: {
+        title: "Csillagok és ranglista",
+        body: "Egy arany már egy csillag. Ha az összes aranyat kibányászod, kettő; ha a célértéknél nem több lépésből, három. A második aranyat már egyedül is megszerzed!",
+      },
+    },
+  },
+  breakpoints: {
+    toggle: "Töréspont ki/be a kurzor sorában",
+    added: (line: number) => `Töréspont: ${line}. sor`,
+    removed: (line: number) => `Töréspont törölve: ${line}. sor`,
+    hit: (line: number) => `Megállt a(z) ${line}. sor töréspontján`,
+    gutterTitle: "Kattints a sorszámra: töréspont ki/be (F9)",
+  },
+  trial: {
+    button: "Kipróbálom",
+    buttonHint: "Játssz a pályán mentés nélkül",
+    blocked: "Előbb javítsd a térkép hibáit, csak érvényes térképet lehet kipróbálni.",
+    sign: "Próba",
+    title: (title: string) => (title.trim() === "" ? "Mentetlen térkép" : title),
+    back: "Vissza a szerkesztőbe",
+    note: "Próbafutás: az eredmény nem kerül a ranglistára.",
+  },
+  shape: {
+    frame: "Falkeret",
+    frameHint: "A térkép szélére falat húz",
+    clear: "Mind üres",
+    clearHint: "Minden mezőt üres kamrára cserél, a robot marad",
+    framed: "A térkép szélére fal került.",
+    cleared: "A térkép kiürítve.",
+  },
+  generator: {
+    button: "Generálás",
+    title: "Pálya generálása",
+    body: "A generált pálya mindig megoldható: minden arany elérhető, és a célértéket a gép saját megoldása adja.",
+    rows: "Sorok",
+    cols: "Oszlopok",
+    difficulty: "Nehézség",
+    difficulties: { easy: "Könnyű", medium: "Közepes", hard: "Nehéz" },
+    submit: "Generálás",
+    generating: "Generálás…",
+    done: (par: number | null) =>
+      par === null ? "Új pálya generálva." : `Új pálya generálva, célérték: ${par} lépés.`,
+    failed: "A pályát nem sikerült generálni.",
+  },
+  par: {
+    field: "Célérték (lépés)",
+    help: "A 3. csillaghoz minden elérhető aranyat legfeljebb ennyi lépésből kell kibányászni. Üresen hagyva a pályán legfeljebb 2 csillag jár.",
+    compute: "Gépi megoldás",
+    computing: "Számolás…",
+    computed: (steps: number) => `A gép megoldása ${steps} lépés.`,
+    noSolution: "Ezen a térképen nincs kibányászható arany, ezért célérték sem adható.",
+    failed: "A célértéket nem sikerült kiszámolni.",
+  },
+  share: {
+    copy: "Link másolása",
+    copied: "A link a vágólapra került.",
+    copyFailed: "A linket nem sikerült másolni. Másold ki a címsorból.",
+    runBy: (username: string) => `${username} futása`,
+    watch: (username: string) => `${username} futásának visszajátszása`,
+    watchShort: "Megnézem",
   },
   common: {
     loading: "Betöltés…",

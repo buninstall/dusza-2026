@@ -7,9 +7,12 @@ import { Notice } from "../components/Notice.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { Tab, TabList, TabPanel, Tabs } from "../components/ui/Tabs.tsx";
+import { MAX_STARS } from "../game/StarRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
 import { useMediaQuery } from "../lib/useMediaQuery.ts";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
+import { DailyCard } from "./DailyCard.tsx";
 import { LevelTile } from "./LevelTile.tsx";
 import "./MapsPage.css";
 import { type MapScope, mapsQuery } from "./queries.ts";
@@ -69,7 +72,26 @@ function LevelGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; user
 
 function MapCount({ scope }: { scope: MapScope }) {
   const { data } = useQuery(mapsQuery(scope));
-  return data ? hu.maps.count(data.maps.length) : null;
+  if (!data) {
+    return null;
+  }
+  const rated = data.maps.filter((map) => map.stars !== null);
+  const earned = rated.reduce((sum, map) => sum + (map.stars ?? 0), 0);
+  const total = rated.length * MAX_STARS;
+  return (
+    <>
+      {hu.maps.count(data.maps.length)}
+      {total > 0 ? (
+        <>
+          {" · "}
+          <span className="maps-stars" title={hu.game.starsTotalLabel}>
+            <PixelIcon name="starFull" size="sm" />
+            {hu.game.starsTotal(earned, total)}
+          </span>
+        </>
+      ) : null}
+    </>
+  );
 }
 
 export function MapsPage({ scope, sort, user, onScopeChange, onSortChange }: MapsPageProps) {
@@ -101,7 +123,12 @@ export function MapsPage({ scope, sort, user, onScopeChange, onSortChange }: Map
           }
         />
         <TabPanel id="all">
-          {scope === "all" ? <LevelGrid scope="all" sort={sort} user={user} /> : null}
+          {scope === "all" ? (
+            <div className="maps-panel">
+              <DailyCard />
+              <LevelGrid scope="all" sort={sort} user={user} />
+            </div>
+          ) : null}
         </TabPanel>
         <TabPanel id="mine">
           {scope === "mine" ? <LevelGrid scope="mine" sort={sort} user={user} /> : null}

@@ -8,7 +8,7 @@ import { KeysPopover } from "./KeysPopover.tsx";
 type BezelProps = {
   name: string;
   title: string;
-  meta?: string | undefined;
+  meta?: ReactNode | undefined;
   documentTitle?: string;
   actions: ReactNode;
 };

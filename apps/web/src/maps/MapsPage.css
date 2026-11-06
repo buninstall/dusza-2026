@@ -4,6 +4,12 @@
   gap: var(--space-6);
 }
 
+.maps-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
 .lv-shaft {
   --rail-x: var(--space-6);
   --rail-gap: 10px;
@@ -159,6 +165,109 @@
   font-variant-numeric: tabular-nums;
 }
 
+.lv-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-1);
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
+.lv-progress-best {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.lv-progress-label {
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+}
+
+.lv-progress-likes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.lv-progress-likes[data-liked="true"] .px-icon {
+  color: var(--c-danger-ink);
+}
+
+.lv-progress-note {
+  font: var(--type-help);
+  color: var(--c-text-faint);
+}
+
+.daily {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "window body actions";
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-thick) solid var(--c-reward);
+  background: var(--c-surface);
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
+}
+
+.daily-window {
+  grid-area: window;
+  display: grid;
+  place-items: center;
+  width: 7rem;
+  height: 7rem;
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+}
+
+.daily-body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.daily-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  color: var(--c-reward);
+}
+
+.daily-meta {
+  margin: 0;
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
+.daily-note {
+  margin: 0;
+  font: var(--type-help);
+  color: var(--c-text-muted);
+}
+
+.daily-actions {
+  grid-area: actions;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.maps-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--c-reward);
+}
+
 .lv-actions {
   grid-area: actions;
   display: flex;
@@ -173,6 +282,19 @@
       "window depth"
       "window body"
       "actions actions";
+  }
+}
+
+@media (max-width: 48rem) {
+  .daily {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "body"
+      "actions";
+  }
+
+  .daily-window {
+    display: none;
   }
 }
 

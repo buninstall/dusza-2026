@@ -169,3 +169,10 @@
     order: -1;
   }
 }
+
+.play-progress {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}

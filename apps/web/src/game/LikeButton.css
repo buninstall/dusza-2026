@@ -1,0 +1,11 @@
+.like-button[data-selected] {
+  --btn-edge: var(--c-danger-ink);
+
+  color: var(--c-danger-ink);
+}
+
+.like-count {
+  min-width: 2ch;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

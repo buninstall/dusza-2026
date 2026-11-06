@@ -22,6 +22,7 @@ export function mapSummary(id: number, title: string, content: string, ownerId =
     visibility: "public" as const,
     ownerId,
     ownerName: ownerId === 1 ? "admin" : "demo1",
+    parSteps: null as number | null,
     createdAt: CREATED,
     updatedAt: CREATED,
     versionId: id * 10,
@@ -31,10 +32,21 @@ export function mapSummary(id: number, title: string, content: string, ownerId =
     cols: parsed.cols,
     goldTotal: info.goldTotal,
     reachableGold: info.reachableGold,
+    likes: 0,
+    likedByMe: false,
+    best: null as { gold: number; steps: number } | null,
+    stars: (info.reachableGold > 0 ? 0 : null) as number | null,
   };
 }
 
-type DetailOptions = { canEdit?: boolean; runCount?: number; version?: number };
+type DetailOptions = {
+  canEdit?: boolean;
+  runCount?: number;
+  version?: number;
+  parSteps?: number | null;
+  hasPlayed?: boolean;
+  isDaily?: boolean;
+};
 
 export function mapDetail(id: number, title: string, content: string, options: DetailOptions = {}) {
   const parsed = realEngine.parseMap(content);
@@ -47,6 +59,8 @@ export function mapDetail(id: number, title: string, content: string, options: D
       description: `${title} leírása`,
       visibility: "public" as const,
       currentVersionId: id * 10 + version,
+      parSteps: options.parSteps ?? null,
+      dailyDate: options.isDaily ? "2026-11-06" : null,
       createdAt: CREATED,
       updatedAt: CREATED,
     },
@@ -71,6 +85,14 @@ export function mapDetail(id: number, title: string, content: string, options: D
     })),
     runCount: options.runCount ?? 0,
     canEdit: options.canEdit ?? true,
+    player: {
+      best: null as { gold: number; steps: number } | null,
+      stars: 0 as number | null,
+      likes: 0,
+      likedByMe: false,
+      hasPlayed: options.hasPlayed ?? false,
+      isDaily: options.isDaily ?? false,
+    },
   };
 }
 

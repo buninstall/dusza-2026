@@ -2,6 +2,9 @@ import type { MineMap, RobotState } from "@minescript/engine";
 import { useEffect, useId, useMemo, useRef } from "react";
 import { Link } from "../components/ui/Link.tsx";
 import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
+import { LikeButton } from "../game/LikeButton.tsx";
+import { RunMedal } from "../game/RunMedal.tsx";
+import { StarRow } from "../game/StarRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import type { MapDetail } from "../maps/queries.ts";
 import { PlayScreen } from "./PlayScreen.tsx";
@@ -50,6 +53,18 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
     <Bezel
       name={hu.signs.play}
       title={detail.map.title}
+      meta={
+        detail.player.stars === null ? undefined : (
+          <span className="play-progress" title={hu.game.starRule(detail.map.parSteps)}>
+            <StarRow stars={detail.player.stars} size="sm" />
+            {detail.map.parSteps === null ? null : (
+              <span>
+                {hu.game.parLabel}: {hu.game.par(detail.map.parSteps)}
+              </span>
+            )}
+          </span>
+        )
+      }
       actions={
         <>
           <Link
@@ -61,6 +76,12 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
           >
             {hu.play.toLeaderboard}
           </Link>
+          <LikeButton
+            mapId={mapId}
+            likes={detail.player.likes}
+            likedByMe={detail.player.likedByMe}
+            hasPlayed={detail.player.hasPlayed}
+          />
           {detail.canEdit ? (
             <Link
               to="/maps/$mapId/edit"
@@ -110,6 +131,14 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
         />
       }
       reportFooter={<SubmissionLine submission={submission} onRetry={retrySubmit} />}
+      wellOverlay={
+        <RunMedal
+          mapId={mapId}
+          submission={submission}
+          reachableGold={reachableGold}
+          isDaily={detail.player.isDaily}
+        />
+      }
       onRun={run}
       onInsertGuard={(line) => editorRef.current?.insertBeforeLine(line, GUARD_BLOCK)}
       revealLine={(line) => editorRef.current?.revealLine(line)}

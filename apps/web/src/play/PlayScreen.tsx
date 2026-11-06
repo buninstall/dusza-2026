@@ -44,6 +44,7 @@ type PlayScreenProps = {
   sheet: ReactNode;
   reportFooter: ReactNode;
   reportExtra?: ReactNode;
+  wellOverlay?: ReactNode;
   onRun: () => boolean;
   onInsertGuard?: ((line: number) => void) | undefined;
   revealLine: (line: number) => void;
@@ -231,6 +232,7 @@ export function PlayScreen(props: PlayScreenProps) {
             />
           </div>
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
+          {props.wellOverlay}
         </div>
         <ControlDeck
           mode={mode}
