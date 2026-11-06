@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 pub use info::{MapInfo, map_info};
+pub(crate) use parse::map_only;
 pub use parse::{MapParseResult, parse_map, serialize_map};
 
 pub const MIN_DIMENSION: usize = 1;

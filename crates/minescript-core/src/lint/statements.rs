@@ -42,9 +42,9 @@ fn leading_zero(operand: &Simple) -> Option<Diagnostic> {
     let Simple::Int { value, span } = operand else {
         return None;
     };
-    let canonical = value.to_string();
     let written = usize::try_from(span.to.saturating_sub(span.from)).ok()?;
-    (written > canonical.len()).then(|| {
+    (written > decimal_width(*value)).then(|| {
+        let canonical = value.to_string();
         let original = format!("{value:0written$}");
         Diagnostic::new(DiagCode::LintLeadingZero, *span)
             .with_message(messages::leading_zero(&original, *value))
@@ -53,6 +53,14 @@ fn leading_zero(operand: &Simple) -> Option<Diagnostic> {
                 TextEdit::new(span.from, span.to, canonical.clone()),
             ))
     })
+}
+
+fn decimal_width(value: i64) -> usize {
+    let digits = value
+        .unsigned_abs()
+        .checked_ilog10()
+        .map_or(1, |log| log as usize + 1);
+    digits + usize::from(value < 0)
 }
 
 fn non_bool_literal(cond: &Simple) -> Option<Diagnostic> {
@@ -133,4 +141,16 @@ fn noop(stmt: &Stmt, message: String, index: &LineIndex<'_>) -> Diagnostic {
     Diagnostic::new(DiagCode::LintNoop, stmt.span)
         .with_message(message)
         .with_fixes(Fix::removing_lines(index, stmt.line, stmt.line))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::decimal_width;
+
+    #[test]
+    fn decimal_width_matches_the_printed_length() {
+        for value in [0, 1, 9, 10, 99, 100, 101, -1, -10, i64::MAX, i64::MIN] {
+            assert_eq!(decimal_width(value), value.to_string().len(), "{value}");
+        }
+    }
 }

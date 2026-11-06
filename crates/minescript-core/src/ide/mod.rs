@@ -8,10 +8,11 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::diagnostics::Diagnostic;
-use crate::lint::lint;
-use crate::source::{LineIndex, normalize};
+use crate::lint::lint_indexed;
+use crate::source::{LineIndex, normalized};
 use crate::span::Span;
-use crate::syntax::parse;
+use crate::syntax::parse_lines;
+use crate::syntax::scanner::{CodeLine, ScannedLine, scan};
 
 pub use completion::complete;
 pub use docs::{COMMAND_DOCS, CommandDoc, keyword_doc};
@@ -87,17 +88,24 @@ pub struct Hover {
 }
 
 pub fn analyze(src: &str) -> Analysis {
-    let text = normalize(src);
+    let text = normalized(src);
     let index = LineIndex::new(&text);
-    let parsed = parse(src);
+    let scanned: Vec<ScannedLine<'_>> = scan(&text).collect();
+    let parsed = parse_lines(&index, &scanned);
     let diagnostics = match &parsed.program {
-        Some(program) => lint(program, src),
+        Some(program) => lint_indexed(program, &index),
         None => parsed.diagnostics,
     };
-    let lines = outline::code_lines(&text);
+    let lines: Vec<&CodeLine<'_>> = scanned
+        .iter()
+        .filter_map(|line| match line {
+            ScannedLine::Code(code) => Some(code),
+            ScannedLine::Faulty(_) => None,
+        })
+        .collect();
     Analysis {
         diagnostics,
-        tokens: tokens::semantic_tokens(&text, &index),
+        tokens: tokens::semantic_tokens(&scanned, &index),
         folds: outline::folds(&lines, &index),
         symbols: outline::symbols(&lines, &index),
     }

@@ -2,9 +2,9 @@ use super::docs::{
     BOOL_DETAIL, COMMAND_DOCS, ISTHERE_SNIPPET, NOT_SNIPPET, PROBE_CODES, PROBE_DETAIL,
     VARIABLE_DETAIL, keyword_doc, operator_doc,
 };
-use super::outline::{code_lines, first_assignments};
+use super::outline::assignment_sites;
 use super::{CompletionItem, CompletionKind};
-use crate::source::{LineIndex, normalize};
+use crate::source::{LineIndex, normalized};
 use crate::syntax::ast::BinOp;
 use crate::syntax::keywords::Keyword;
 use crate::syntax::lexeme::classify;
@@ -23,7 +23,7 @@ enum Slot {
 }
 
 pub fn complete(src: &str, offset: u32) -> Vec<CompletionItem> {
-    let text = normalize(src);
+    let text = normalized(src);
     let index = LineIndex::new(&text);
     let Some((line, byte_col)) = index.position_of_utf16(offset) else {
         return Vec::new();
@@ -37,8 +37,7 @@ pub fn complete(src: &str, offset: u32) -> Vec<CompletionItem> {
         .split(SPACE)
         .collect();
     words.pop();
-    let lines = code_lines(&text);
-    let variables: Vec<&str> = first_assignments(&lines)
+    let variables: Vec<&str> = assignment_sites(&text)
         .into_iter()
         .filter(|site| site.line != line)
         .map(|site| site.name)

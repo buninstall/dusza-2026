@@ -1,5 +1,5 @@
 use crate::diagnostics::DiagCode;
-use crate::source::split_lines;
+use crate::source::lines;
 use crate::syntax::keywords::Command;
 use crate::syntax::lexeme::{Lexeme, classify};
 
@@ -7,7 +7,6 @@ pub const SPACE: char = ' ';
 pub const TAB: char = '\t';
 pub const CARRIAGE_RETURN: char = '\r';
 pub const TAB_AS_INDENT: &str = "    ";
-const DOUBLE_SPACE: &str = "  ";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Word<'a> {
@@ -98,14 +97,20 @@ impl ScannedLine<'_> {
 }
 
 pub fn scan(normalized: &str) -> impl Iterator<Item = ScannedLine<'_>> {
-    split_lines(normalized)
-        .into_iter()
+    let bytes = normalized.as_bytes();
+    let controls = bytes.contains(&b'\r') || bytes.contains(&b'\t');
+    lines(normalized)
         .zip(1u32..)
-        .map(|(text, number)| scan_line(number, text))
+        .map(move |(text, number)| scan_with(number, text, controls))
 }
 
 pub fn scan_line(number: u32, text: &str) -> ScannedLine<'_> {
-    if let Some((fault, column)) = line_fault(text) {
+    scan_with(number, text, true)
+}
+
+fn scan_with(number: u32, text: &str, controls: bool) -> ScannedLine<'_> {
+    let fault = if controls { line_fault(text) } else { None };
+    if let Some((fault, column)) = fault {
         return ScannedLine::Faulty(FaultyLine {
             number,
             text,
@@ -113,18 +118,28 @@ pub fn scan_line(number: u32, text: &str) -> ScannedLine<'_> {
             column,
         });
     }
-    let indent = leading_spaces(text);
+    let words = words(text, |byte| byte == b' ');
+    if words.is_empty() {
+        return ScannedLine::Faulty(FaultyLine {
+            number,
+            text,
+            fault: LineFault::Empty,
+            column: 0,
+        });
+    }
+    let indent = words.first().map_or(0, |word| word.start);
+    let spacing = spacing_fault(&words, text.len());
     ScannedLine::Code(CodeLine {
         number,
         text,
         indent,
-        words: words(text, |ch| ch == SPACE),
-        spacing: first_spacing_fault(text, indent),
+        words,
+        spacing,
     })
 }
 
 pub fn lenient_words(text: &str) -> Vec<Word<'_>> {
-    words(text, |ch| matches!(ch, SPACE | TAB | CARRIAGE_RETURN))
+    words(text, |byte| matches!(byte, b' ' | b'\t' | b'\r'))
 }
 
 pub fn leading_spaces(text: &str) -> usize {
@@ -138,16 +153,14 @@ fn line_fault(text: &str) -> Option<(LineFault, usize)> {
     if let Some(column) = text.find(TAB) {
         return Some((LineFault::Tab, column));
     }
-    text.trim_matches(SPACE)
-        .is_empty()
-        .then_some((LineFault::Empty, 0))
+    None
 }
 
-fn words(text: &str, is_gap: impl Fn(char) -> bool) -> Vec<Word<'_>> {
-    let mut found = Vec::new();
+fn words(text: &str, is_gap: impl Fn(u8) -> bool) -> Vec<Word<'_>> {
+    let mut found = Vec::with_capacity(6);
     let mut open: Option<usize> = None;
-    for (offset, ch) in text.char_indices() {
-        match (is_gap(ch), open) {
+    for (offset, &byte) in text.as_bytes().iter().enumerate() {
+        match (is_gap(byte), open) {
             (true, Some(start)) => {
                 found.push(word_at(text, start, offset));
                 open = None;
@@ -171,22 +184,22 @@ fn word_at(text: &str, start: usize, end: usize) -> Word<'_> {
     }
 }
 
-fn first_spacing_fault(text: &str, indent: usize) -> Option<SpacingFault> {
-    let content_end = text.trim_end_matches(SPACE).len();
-    let content = text.get(indent..content_end).unwrap_or_default();
-    if let Some(offset) = content.find(DOUBLE_SPACE) {
-        let start = indent + offset + 1;
-        let rest = text.get(start..).unwrap_or_default();
-        return Some(SpacingFault {
+fn spacing_fault(words: &[Word<'_>], line_end: usize) -> Option<SpacingFault> {
+    let double = words.windows(2).find_map(|pair| match pair {
+        [left, right] if right.start - left.end() > 1 => Some(SpacingFault {
             kind: SpacingKind::Double,
-            start,
-            end: start + leading_spaces(rest),
-        });
-    }
-    (content_end < text.len()).then_some(SpacingFault {
-        kind: SpacingKind::Trailing,
-        start: content_end,
-        end: text.len(),
+            start: left.end() + 1,
+            end: right.start,
+        }),
+        _ => None,
+    });
+    double.or_else(|| {
+        let content_end = words.last()?.end();
+        (content_end < line_end).then_some(SpacingFault {
+            kind: SpacingKind::Trailing,
+            start: content_end,
+            end: line_end,
+        })
     })
 }
 

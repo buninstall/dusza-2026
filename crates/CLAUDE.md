@@ -10,13 +10,14 @@
 | `minescript-core/src/syntax/`        | `keywords` (`Keyword`, `Command`), `lexeme` (tokenosztályok), `scanner` (sorok, szavak, szóközhibák), `ast`, `token`                         |
 | `minescript-core/src/syntax/parser/` | `line` (soronkénti nyelvtan), `faults` (az első tokenszintű hiba), `layout` (behúzásverem), `report` (üzenetek, javítások), `repair`, `tree` |
 | `minescript-core/src/format/`        | `whitespace` (D22/1), `indent` (D22/2), `format`                                                                                             |
-| `minescript-core/src/lint/`          | `statements`, `sequences`, `variables`, `flow` (definit értékadás), `types` (statikus típusok)                                               |
+| `minescript-core/src/lint/`          | `statements`, `sequences`, `variables`, `flow` (definit értékadás), `types` (statikus típusok), `names` (változónév → sorszám, bitkészlet)   |
 | `minescript-core/src/ide/`           | `analyze`, `tokens`, `outline` (fold, szimbólum), `completion`, `hover`, `docs`                                                              |
 | `minescript-core/src/map/`           | `Map`, `Cell`, `Dir`, `Pos`, `parse_map`, `serialize_map`, `map_info`                                                                        |
-| `minescript-core/src/runtime/`       | `machine` (VM, eseménysor), `eval` (műveletek), `vm` (`run`, `run_program`), `trace`, `value`, `robot`, `error`                              |
+| `minescript-core/src/runtime/`       | `compile` (AST → utasításlista), `machine` (VM, eseménysor), `eval`, `vm` (`run`, `run_program`), `trace`, `value`, `robot`, `error`         |
 | `minescript-core/tests/`             | `conformance`, `properties` (proptest), `samples` (seed-programok), `export_bindings`                                                        |
-| `minescript-wasm`                    | wasm-bindgen exportok, JSON-kompatibilis szerializálás, magyar `JsError`                                                                     |
+| `minescript-wasm`                    | wasm-bindgen exportok, JSON-kompatibilis szerializálás, tömörített `runPacked`/`analyzePacked`, magyar `JsError`                             |
 | `minescript-cli`                     | `minescript check`, `fmt`, `lint`, `run`, `ast`, `map-check`, ariadne-diagnosztikák                                                          |
+| `minescript-bench`                   | benchmark-korpusz, `cargo bench -p minescript-bench`, `golden` (bájtra egyező kimenet-összevetés), `profile` (egy művelet ismétlése)         |
 
 ## Invariánsok
 
@@ -33,10 +34,11 @@ A `syntax_conformance`, a `runtime_conformance` és a `maps_conformance` mindig 
 
 ## Megvalósítási megjegyzések
 
+- Teljesítmény: a `crates/minescript-bench` korpuszán mérünk (`cargo bench -p minescript-bench -- --save-baseline <név>`, összevetés: `--baseline <név>`), a WASM-határt a `packages/engine/bench/engine.bench.ts` méri. Optimalizálás előtt és után a `minescript-bench golden . <fájl>` kimenete bájtra egyezzen.
 - A soronkénti szintaxis-ellenőrzés sorrendje: szkennerhiba (`\r`, tab, üres sor), különben a sor első tokenszintű hibája oszlop szerint; azonos oszlopon a tokenosztály-hiba megelőzi a nyelvtani hibát. A `SYN_MISSING_TOKEN` a sor végén áll (az utolsó karakter utáni oszlopon), így a sorvégi szóköz megelőzi.
 - `SYN_RESERVED_IDENT` csak azonosító helyén (a `set` neve, simpleval, a `calculatedval` első tagja) jön; rögzített kulcsszó és művelet helyén a rossz írásmód `SYN_UNEXPECTED_TOKEN`, utasítás helyén `SYN_UNKNOWN_COMMAND`. Blokkfejléc csak a pontos `if`, `while`, `else`.
 - A javítások (`Fix`) csak akkor jelennek meg, ha biztosan helyesek: a kulcsszó-írásmód cseréje csak ott, ahol a kulcsszó elfogadott, az `1+2` és a `-5` szétbontása csak akkor, ha a sor utána nyelvtanilag helyes.
-- A VM egy explicit veremmel járja be a blokkokat; minden feldolgozott sor egyetlen belépési ponton (`process`) megy át: limitellenőrzés, `steps += 1`, a sor hatásai, egy esemény.
+- A VM futás előtt a programot lapos utasításlistává fordítja (iteratívan, a mély beágyazás miatt): a változók sorszámot kapnak, a blokkokból ugrások lesznek. Minden feldolgozott sor (az `if`, `else` és `while` fejléc is) egyetlen belépési ponton (`process`) megy át: limitellenőrzés, `steps += 1`, a sor hatásai, egy esemény; az ugrás nem feldolgozott sor.
 - A formázó a D22 szerint először a szóközhibákat javítja, majd a sorokat az AST mélysége szerint húzza be (`indentWidth` 1 és 16 közé szorítva). Ha a javítás után is van hiba, az eredeti szöveget és az eredeti diagnosztikákat adja vissza.
 - A linter súlyosságai: `LINT_LEADING_ZERO` és `LINT_TURN_MOD4` info, `LINT_MERGE_STEPS` és `LINT_MERGE_TURNS` hint, a többi figyelmeztetés. A `lint(program, source)` a forrást is megkapja a sortörlő javításokhoz.
 - Térkép: soronként legfeljebb egy hiba (az első ismeretlen jel, különben a sorhossz), a `MAP_MULTIPLE_ROBOTS` egyszer, a második robotnál; a `MAP_EMPTY` az 1. sorra mutat.

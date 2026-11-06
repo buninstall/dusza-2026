@@ -1,5 +1,5 @@
 use super::*;
-use crate::map::{Cell, Dir, Pos};
+use crate::map::{Cell, Dir, Pos, parse_map};
 use crate::runtime::{Assignment, MAX_STEPS, RuntimeErrorCode, Value};
 
 const SPEC_MAP: &str = "3 15\n....@..........\n.#############.\n.......@...>...\n";

@@ -1,38 +1,62 @@
-use crate::source::split_lines;
-use crate::syntax::scanner::{SPACE, TAB, TAB_AS_INDENT};
+use crate::source::lines;
+use crate::syntax::scanner::TAB_AS_INDENT;
 
 pub(super) fn repair(normalized: &str) -> String {
-    split_lines(normalized)
-        .into_iter()
-        .map(repair_line)
-        .filter(|line| !line.is_empty())
-        .fold(String::with_capacity(normalized.len()), |mut text, line| {
-            text.push_str(&line);
-            text.push('\n');
-            text
-        })
+    let mut text = Vec::with_capacity(normalized.len());
+    for line in lines(normalized) {
+        repair_line(line.as_bytes(), &mut text);
+    }
+    String::from_utf8(text)
+        .unwrap_or_else(|error| String::from_utf8_lossy(error.as_bytes()).into_owned())
 }
 
-fn repair_line(line: &str) -> String {
-    let content = line.trim_start_matches([SPACE, TAB]);
-    let indentation = line.get(..line.len() - content.len()).unwrap_or_default();
-    let words: Vec<&str> = content
-        .split(SPACE)
-        .filter(|word| !word.is_empty())
-        .collect();
-    if words.is_empty() {
-        return String::new();
+fn repair_line(line: &[u8], text: &mut Vec<u8>) {
+    let indentation = line
+        .iter()
+        .take_while(|byte| matches!(byte, b' ' | b'\t'))
+        .count();
+    let content = line.get(indentation..).unwrap_or_default();
+    if content.iter().all(|byte| *byte == b' ') {
+        return;
     }
-    format!(
-        "{}{}",
-        indentation.replace(TAB, TAB_AS_INDENT),
-        words.join(" ")
-    )
+    for run in line
+        .get(..indentation)
+        .unwrap_or_default()
+        .split_inclusive(|byte| *byte == b'\t')
+    {
+        match run.split_last() {
+            Some((b'\t', spaces)) => {
+                text.extend_from_slice(spaces);
+                text.extend_from_slice(TAB_AS_INDENT.as_bytes());
+            }
+            _ => text.extend_from_slice(run),
+        }
+    }
+    let mut gap = false;
+    for &byte in content {
+        if byte == b' ' {
+            gap = true;
+        } else {
+            if gap {
+                text.push(b' ');
+                gap = false;
+            }
+            text.push(byte);
+        }
+    }
+    text.push(b'\n');
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn repair_line(line: &str) -> String {
+        let mut text = Vec::new();
+        super::repair_line(line.as_bytes(), &mut text);
+        text.pop();
+        String::from_utf8(text).unwrap()
+    }
 
     #[test]
     fn tabs_in_the_indentation_become_four_spaces() {

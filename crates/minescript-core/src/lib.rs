@@ -3,6 +3,7 @@ pub mod format;
 pub mod ide;
 pub mod lint;
 pub mod map;
+mod names;
 pub mod runtime;
 pub mod source;
 pub mod span;

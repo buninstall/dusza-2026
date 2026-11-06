@@ -78,11 +78,12 @@ pub fn classify(word: &str) -> Lexeme {
 }
 
 pub fn is_identifier(word: &str) -> bool {
-    let mut chars = word.chars();
-    chars
-        .next()
-        .is_some_and(|first| first.is_ascii_alphabetic())
-        && chars.all(|rest| rest.is_ascii_alphanumeric())
+    match word.as_bytes().split_first() {
+        Some((first, rest)) => {
+            first.is_ascii_alphabetic() && rest.iter().all(u8::is_ascii_alphanumeric)
+        }
+        None => false,
+    }
 }
 
 fn is_digits(word: &str) -> bool {
