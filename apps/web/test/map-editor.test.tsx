@@ -114,9 +114,11 @@ describe("térkép szerkesztése", () => {
     respond("PUT", "/maps/4", { map: { id: 4 }, createdNewVersion: true });
     const { user } = renderApp("/maps/4/edit");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Labirintus szerkesztése" }),
+      await screen.findByRole("heading", { level: 1, name: "Térkép szerkesztése" }),
     ).toBeTruthy();
-    expect(screen.getByText(/már 3 futás tartozik.*új verziót hoz létre \(v3\)/)).toBeTruthy();
+    expect(
+      await screen.findByText(/már 3 futás tartozik.*új verziót hoz létre \(v3\)/),
+    ).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Mentés" }));
     expect(await screen.findByText(/új verzióként \(v3\)/)).toBeTruthy();
     expect(callsTo("PUT", "/maps/4")[0]?.body).toMatchObject({

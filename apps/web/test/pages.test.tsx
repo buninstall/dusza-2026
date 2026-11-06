@@ -11,10 +11,10 @@ describe("térképlista", () => {
   test("szintenként mutatja a térképeket, a szerkesztés csak a sajátnál látszik", async () => {
     respond("GET", "/maps", { maps: MAPS });
     renderApp("/maps");
-    const list = await screen.findByRole("list", { name: "Térképek listája" });
+    const list = await screen.findByRole("list", { name: "Pályák listája" });
     const levels = within(list).getAllByRole("listitem");
     expect(levels).toHaveLength(2);
-    expect(within(levels[0] as HTMLElement).getByText("01. szint")).toBeTruthy();
+    expect(within(levels[0] as HTMLElement).getByText("Szint 01")).toBeTruthy();
     expect(within(levels[0] as HTMLElement).getByText("1×8")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Játék: Folyosó" }).getAttribute("href")).toBe(
       "/play/1",
@@ -29,9 +29,9 @@ describe("térképlista", () => {
       body: { maps: request.search.get("scope") === "mine" ? [] : MAPS },
     }));
     const { user } = renderApp("/maps");
-    await screen.findByRole("list", { name: "Térképek listája" });
+    await screen.findByRole("list", { name: "Pályák listája" });
     await user.click(screen.getByRole("tab", { name: "Sajátjaim" }));
-    expect(await screen.findByText(/Még nem készítettél térképet/)).toBeTruthy();
+    expect(await screen.findByText(/Még nincs saját pályád/)).toBeTruthy();
     expect(callsTo("GET", "/maps").some((call) => call.search.get("scope") === "mine")).toBe(true);
   });
 
@@ -220,7 +220,7 @@ describe("adminisztráció", () => {
   test("játékos nem éri el", async () => {
     respond("GET", "/maps", { maps: [] });
     const { router } = renderApp("/admin");
-    await screen.findByRole("heading", { level: 1, name: "Térképek" });
+    await screen.findByRole("heading", { level: 1, name: "Pályák" });
     expect(router.state.location.pathname).toBe("/maps");
   });
 });
@@ -267,14 +267,14 @@ describe("keret, kézikönyv és hibaképernyők", () => {
 
   test("ismeretlen útvonalon beomlott járat", async () => {
     renderApp("/nincs-ilyen");
-    expect(await screen.findByRole("heading", { name: "Ez a járat beomlott" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Vissza a térképekhez" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "404: nincs ilyen oldal" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Vissza a pályákhoz" })).toBeTruthy();
   });
 
   test("a gyökér a térképekhez irányít", async () => {
     respond("GET", "/maps", { maps: [] });
     const { router } = renderApp("/");
-    await screen.findByRole("heading", { level: 1, name: "Térképek" });
+    await screen.findByRole("heading", { level: 1, name: "Pályák" });
     expect(router.state.location.pathname).toBe("/maps");
   });
 });

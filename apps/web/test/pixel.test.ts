@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
+import { hu } from "../src/i18n/hu.ts";
+import { GLYPH_WIDTH, glyphRows, isSignable, signArt, toSignCase } from "../src/pixel/aknajel.ts";
 import { ICON_ART, ICON_GRID, ICON_NAMES, iconPath } from "../src/pixel/icons.ts";
-import { LOGO_MARK } from "../src/pixel/logo-art.ts";
+import { LOGO_MARK, WORDMARK_ART } from "../src/pixel/logo-art.ts";
 import {
   mirror,
   pixelPath,
@@ -10,6 +12,7 @@ import {
   toneFill,
 } from "../src/pixel/pixel-art.ts";
 import {
+  CART_LEVELS,
   FRINGE_SIDES,
   SPRITE_ID,
   TILE_SIZE,
@@ -53,7 +56,15 @@ describe("pixel art", () => {
       TILE_SPRITES.dug,
       TILE_SPRITES.robot,
       TILE_SPRITES.shroud,
-      TILE_SPRITES.sparkle,
+      ...TILE_SPRITES.burst,
+      TILE_SPRITES.cone,
+      TILE_SPRITES.scan,
+      TILE_SPRITES.crack,
+      TILE_SPRITES.impact,
+      TILE_SPRITES.dust,
+      TILE_SPRITES.alert,
+      TILE_SPRITES.rubble,
+      TILE_SPRITES.nugget,
       ...FRINGE_SIDES.map((side) => TILE_SPRITES.fringe[side]),
       LOGO_MARK,
     ];
@@ -84,5 +95,59 @@ describe("pixel art", () => {
     }
     expect(SPRITE_ID.floor(2)).toBe("ms-floor-2");
     expect(SPRITE_ID.fringe("west")).toBe("ms-fringe-west");
+  });
+});
+
+describe("Aknajel betűkészlet", () => {
+  const SAMPLES = [1, 7, 15];
+
+  function signTexts(): string[] {
+    return Object.values(hu.signs).flatMap((value) =>
+      typeof value === "function" ? SAMPLES.map((sample) => value(sample)) : [value],
+    );
+  }
+
+  test("minden tábla és számláló szövege kirajzolható", () => {
+    for (const text of [...signTexts(), "0123456789", ". : / - – # × · ? !"]) {
+      expect(isSignable(text), text).toBe(true);
+      const art = signArt(text);
+      expect(art.width).toBeGreaterThan(0);
+      expect(art.path).toMatch(/^M/);
+    }
+  });
+
+  test("az ékezetek a cella felső két sorában vannak, a hosszú és a rövid nem keverhető", () => {
+    expect(glyphRows("Ő")?.slice(0, 2)).toEqual(["..#.#", ".#.#."]);
+    expect(glyphRows("Ö")?.slice(0, 2)).toEqual([".....", ".#.#."]);
+    expect(glyphRows("Ó")?.slice(0, 2)).toEqual(["...#.", "..#.."]);
+    expect(glyphRows("Ű")?.slice(3)).toEqual(glyphRows("U")?.slice(3));
+    expect(glyphRows("ő")).toBeNull();
+    expect(toSignCase("pályák")).toBe("PÁLYÁK");
+  });
+
+  test("a szöveg szélessége a jelek számából adódik, a szóköz keskenyebb", () => {
+    expect(signArt("A").width).toBe(GLYPH_WIDTH);
+    expect(signArt("AB").width).toBe(GLYPH_WIDTH * 2 + 1);
+    expect(signArt("A B").width).toBe(GLYPH_WIDTH * 2 + 1 + 3);
+    expect(signArt("A")).toBe(signArt("A"));
+  });
+
+  test("ismeretlen jelnél fejlesztés közben hibát dob", () => {
+    expect(isSignable("€")).toBe(false);
+    expect(() => signArt("€")).toThrow(/€/);
+  });
+
+  test("a szóvédjegy két tónusú és legfeljebb 60 pixel széles", () => {
+    expect(WORDMARK_ART.width).toBeLessThanOrEqual(60);
+    expect(WORDMARK_ART.height).toBe(10);
+    expect(WORDMARK_ART.layers.map((layer) => layer.tone)).toEqual(["ink", "ink-gold"]);
+  });
+
+  test("a csille öt töltöttségi szintet ismer", () => {
+    expect(TILE_SPRITES.cart).toHaveLength(CART_LEVELS + 1);
+    const empty = TILE_SPRITES.cart[0];
+    const full = TILE_SPRITES.cart[CART_LEVELS];
+    expect(empty?.layers.some((layer) => layer.tone === "ore")).toBe(false);
+    expect(full?.layers.some((layer) => layer.tone === "ore")).toBe(true);
   });
 });

@@ -8,7 +8,7 @@
 .data-table-grid {
   width: 100%;
   min-width: 36rem;
-  font-size: var(--text-sm);
+  font: var(--type-body);
 }
 
 .data-table-grid th,
@@ -22,10 +22,8 @@
 .data-table-grid thead th {
   border-bottom-color: var(--c-line-strong);
   background: var(--c-surface-raised);
-  font-family: var(--font-display);
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-stencil);
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
   text-transform: uppercase;
   color: var(--c-text-muted);
 }
@@ -39,8 +37,7 @@
 }
 
 .data-table-number {
-  font-family: var(--font-code);
-  font-variant-numeric: tabular-nums;
+  font: var(--type-mono);
   text-align: right;
 }
 
@@ -64,9 +61,7 @@
   margin-left: var(--space-2);
   padding: 0 var(--space-1);
   border: var(--border-thin) solid currentColor;
-  font-family: var(--font-display);
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-stencil);
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
   text-transform: uppercase;
 }

@@ -1,6 +1,6 @@
 import type { Pos, RobotState } from "@minescript/engine";
 import type { CSSProperties } from "react";
-import { SPRITE_ID, TILE_SIZE } from "../pixel/tiles.ts";
+import { SPRITE_ID, TILE_SIZE, TILE_SPRITES } from "../pixel/tiles.ts";
 import "./MineBoard.css";
 import { useQuarterTurns } from "./quarter-turns.ts";
 
@@ -36,7 +36,13 @@ export function RobotLayer({ robot }: { robot: RobotState }) {
 export function SparkleBurst({ pos }: { pos: Pos }) {
   return (
     <div className="board-sparkle" style={placement(pos)}>
-      <SpriteUse id={SPRITE_ID.sparkle} className="board-tile-art" />
+      {TILE_SPRITES.burst.map((_, frame) => (
+        <SpriteUse
+          key={SPRITE_ID.burst(frame)}
+          id={SPRITE_ID.burst(frame)}
+          className={`board-tile-art board-burst board-burst-${frame}`}
+        />
+      ))}
     </div>
   );
 }

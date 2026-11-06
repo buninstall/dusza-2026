@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
+import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
-import { PageHeader } from "../components/PageHeader.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Tab, TabList, TabPanel, Tabs } from "../components/ui/Tabs.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -45,13 +45,11 @@ function ShaftList({ scope, user }: { scope: MapScope; user: SessionUser }) {
 export function MapsPage({ scope, user, onScopeChange }: MapsPageProps) {
   return (
     <div className="maps-page">
-      <PageHeader
-        eyebrow={hu.maps.eyebrow}
-        title={hu.maps.title}
-        lead={hu.maps.lead}
+      <LocationPlate
+        name={hu.signs.maps}
         actions={
           <Link to="/maps/new" variant="primary" icon="pickaxe">
-            {hu.nav.newMap}
+            {hu.maps.newMap}
           </Link>
         }
       />

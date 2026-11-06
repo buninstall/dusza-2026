@@ -1,0 +1,114 @@
+.plate {
+  --rivet-inset: 6px;
+
+  position: relative;
+  z-index: 11;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  min-height: var(--header-height);
+  padding: var(--space-3) var(--space-5);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+  box-shadow:
+    inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-hi),
+    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-bevel-lo),
+    var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
+  animation: enter-drop var(--motion-enter) var(--ease-px3);
+}
+
+.plate[data-docked="true"] {
+  margin-top: calc(-1 * var(--main-pad-top) - var(--hazard-height) / 2);
+}
+
+.plate::before,
+.plate::after,
+.plate-rivets::before,
+.plate-rivets::after {
+  content: "";
+  position: absolute;
+  width: var(--rivet);
+  height: var(--rivet);
+  background: var(--c-line-strong);
+  box-shadow: 1px 1px 0 var(--c-bevel-hi);
+}
+
+.plate::before {
+  top: var(--rivet-inset);
+  left: var(--rivet-inset);
+}
+
+.plate::after {
+  top: var(--rivet-inset);
+  right: var(--rivet-inset);
+}
+
+.plate-rivets {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.plate-rivets::before {
+  bottom: var(--rivet-inset);
+  left: var(--rivet-inset);
+}
+
+.plate-rivets::after {
+  right: var(--rivet-inset);
+  bottom: var(--rivet-inset);
+}
+
+.plate-sign {
+  display: inline-flex;
+  flex: none;
+  padding: var(--space-1) var(--space-3) var(--space-2);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+  box-shadow: inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-lo);
+  color: var(--c-text);
+}
+
+.plate-text {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.plate-detail {
+  font: var(--type-detail);
+  letter-spacing: var(--track-tight);
+  overflow-wrap: anywhere;
+}
+
+.plate-meta {
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
+.plate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-left: auto;
+}
+
+@media (max-width: 40rem) {
+  .plate {
+    padding-inline: var(--space-4);
+  }
+
+  .plate-actions {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plate {
+    animation: none;
+  }
+}

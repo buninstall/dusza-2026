@@ -15,9 +15,8 @@
   min-height: var(--control-height);
   padding: var(--space-2) var(--space-4);
   color: var(--c-text-muted);
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font: var(--type-control);
+  letter-spacing: var(--track-control);
   cursor: pointer;
   outline: none;
 }

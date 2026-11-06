@@ -2,8 +2,8 @@ import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import "../components/DataTable.css";
+import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
-import { PageHeader } from "../components/PageHeader.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { ConfirmDialog } from "../components/ui/Dialog.tsx";
 import { toast } from "../components/ui/Toast.tsx";
@@ -57,6 +57,10 @@ function AccountActions({
   );
 }
 
+function countAdmins(accounts: readonly Account[]): number {
+  return accounts.filter((account) => account.role === "admin").length;
+}
+
 export function AdminPage({ me }: { me: SessionUser }) {
   const queryClient = useQueryClient();
   const { data, error } = useQuery(usersQuery);
@@ -86,7 +90,10 @@ export function AdminPage({ me }: { me: SessionUser }) {
 
   return (
     <div className="admin-page">
-      <PageHeader eyebrow={hu.admin.eyebrow} title={hu.admin.title} lead={hu.admin.lead} />
+      <LocationPlate
+        name={hu.signs.admin}
+        meta={data ? hu.admin.meta(data.users.length, countAdmins(data.users)) : undefined}
+      />
       {error ? (
         <Notice tone="error" title={errorMessage(error, hu.admin.loadFailed)} live="alert" />
       ) : null}

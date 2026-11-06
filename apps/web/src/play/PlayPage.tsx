@@ -1,6 +1,6 @@
 import type { Diagnostic, MineMap, RobotState, RunResult } from "@minescript/engine";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PageHeader } from "../components/PageHeader.tsx";
+import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Panel } from "../components/Panel.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Segmented } from "../components/ui/Segmented.tsx";
@@ -108,10 +108,10 @@ export function PlayPage({ detail, map }: PlayPageProps) {
 
   return (
     <div className="play-page">
-      <PageHeader
-        eyebrow={`${hu.play.eyebrow} · ${hu.maps.versionLong(detail.version.version)}`}
-        title={detail.map.title}
-        lead={detail.map.description || undefined}
+      <LocationPlate
+        name={hu.signs.play}
+        detail={detail.map.title}
+        meta={hu.maps.versionLong(detail.version.version)}
         actions={
           <>
             <Link

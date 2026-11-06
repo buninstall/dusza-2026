@@ -1,8 +1,8 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { Loading } from "../app/StatusScreens.tsx";
 import "../components/DataTable.css";
+import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
-import { PageHeader } from "../components/PageHeader.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
@@ -25,7 +25,7 @@ export function MyRunsPage() {
   const { data, error } = useQuery(myRunsQuery);
   return (
     <div className="runs-page">
-      <PageHeader eyebrow={hu.runs.eyebrow} title={hu.runs.title} lead={hu.runs.lead} />
+      <LocationPlate name={hu.signs.runs} meta={hu.runs.meta} />
       {error ? (
         <Notice tone="error" title={errorMessage(error, hu.runs.loadFailed)} live="alert" />
       ) : null}

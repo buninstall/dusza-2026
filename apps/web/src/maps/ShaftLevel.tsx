@@ -2,6 +2,7 @@ import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
 import { MapPreview } from "../mine/MapPreview.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
+import { PixelText } from "../pixel/PixelText.tsx";
 import "./MapsPage.css";
 import type { MapSummary } from "./queries.ts";
 
@@ -21,7 +22,10 @@ export function ShaftLevel({ map, depth, canEdit }: ShaftLevelProps) {
   const unreachable = map.goldTotal - map.reachableGold;
   return (
     <li className="maps-level">
-      <p className="maps-depth">{hu.maps.level(depth)}</p>
+      <p className="maps-depth">
+        <PixelText text={hu.signs.level(depth)} scale={2} />
+        <span className="visually-hidden">{hu.signs.level(depth)}</span>
+      </p>
       <MapPreview content={map.content} className="maps-preview" />
       <div className="maps-info">
         <h2 className="maps-map-title">

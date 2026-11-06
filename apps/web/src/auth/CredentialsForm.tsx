@@ -14,24 +14,46 @@ type CredentialsFormProps = {
   onSubmit: (credentials: Credentials) => Promise<void>;
 };
 
-function readCredentials(form: HTMLFormElement): Credentials {
-  const data = new FormData(form);
-  return {
-    username: String(data.get("username") ?? ""),
-    password: String(data.get("password") ?? ""),
-  };
+function DemoAccounts({ onFill }: { onFill: (credentials: Credentials) => void }) {
+  return (
+    <section aria-labelledby="demo-title" className="auth-demo">
+      <h2 id="demo-title" className="auth-demo-title">
+        {hu.auth.demoTitle}
+      </h2>
+      <ul className="auth-demo-list">
+        {hu.auth.demoAccounts.map((account) => (
+          <li key={account.username} className="auth-demo-row">
+            <Button
+              size="sm"
+              icon="key"
+              onPress={() => onFill({ username: account.username, password: account.password })}
+            >
+              {hu.auth.demoFill(account.username)}
+            </Button>
+            <span className="auth-demo-pair">
+              <code>
+                {account.username} / {account.password}
+              </code>
+              <span className="auth-demo-role">{account.role}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 export function CredentialsForm({ isNewAccount, submitLabel, onSubmit }: CredentialsFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, setPending] = useState(false);
+  const [values, setValues] = useState<Credentials>({ username: "", password: "" });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setPending(true);
     setError(null);
     try {
-      await onSubmit(readCredentials(event.currentTarget));
+      await onSubmit(values);
     } catch (caught) {
       setError(errorMessage(caught, hu.app.unexpected));
     } finally {
@@ -40,28 +62,35 @@ export function CredentialsForm({ isNewAccount, submitLabel, onSubmit }: Credent
   };
 
   return (
-    <Form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
-      {error ? <Notice tone="error" title={error} live="alert" /> : null}
-      <TextField
-        name="username"
-        label={hu.auth.username}
-        autoComplete="username"
-        isRequired
-        validate={usernameProblem}
-        description={isNewAccount ? hu.auth.usernameHelp : undefined}
-      />
-      <TextField
-        name="password"
-        type="password"
-        label={hu.auth.password}
-        autoComplete={isNewAccount ? "new-password" : "current-password"}
-        isRequired
-        validate={passwordProblem}
-        description={isNewAccount ? hu.auth.passwordHelp : undefined}
-      />
-      <Button type="submit" variant="primary" isPending={isPending} icon="play">
-        {submitLabel}
-      </Button>
-    </Form>
+    <>
+      <Form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
+        {error ? <Notice tone="error" title={error} live="alert" /> : null}
+        <TextField
+          name="username"
+          label={hu.auth.username}
+          autoComplete="username"
+          isRequired
+          value={values.username}
+          onChange={(username) => setValues((current) => ({ ...current, username }))}
+          validate={usernameProblem}
+          description={isNewAccount ? hu.auth.usernameHelp : undefined}
+        />
+        <TextField
+          name="password"
+          type="password"
+          label={hu.auth.password}
+          autoComplete={isNewAccount ? "new-password" : "current-password"}
+          isRequired
+          value={values.password}
+          onChange={(password) => setValues((current) => ({ ...current, password }))}
+          validate={passwordProblem}
+          description={isNewAccount ? hu.auth.passwordHelp : undefined}
+        />
+        <Button type="submit" variant="primary" isPending={isPending} icon="play">
+          {submitLabel}
+        </Button>
+      </Form>
+      {isNewAccount ? null : <DemoAccounts onFill={setValues} />}
+    </>
   );
 }

@@ -42,16 +42,21 @@
 }
 
 .panel-title {
-  margin-right: auto;
-  font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: var(--tracking-stencil);
-  text-transform: uppercase;
+  display: flex;
   color: var(--c-text);
+}
+
+.panel-title-meta {
+  margin-right: auto;
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-text-muted);
 }
 
 .panel-actions {
   display: flex;
+  margin-left: auto;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);

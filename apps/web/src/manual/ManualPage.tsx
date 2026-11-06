@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { PageHeader } from "../components/PageHeader.tsx";
+import { LocationPlate } from "../components/LocationPlate.tsx";
 import { tokenizeLine } from "../editor/language.ts";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
@@ -129,7 +129,7 @@ export function ManualPage() {
   const { manual } = hu;
   return (
     <div className="manual-page">
-      <PageHeader eyebrow={manual.eyebrow} title={manual.title} lead={manual.lead} />
+      <LocationPlate name={hu.signs.manual} />
       <div className="manual-layout">
         <nav aria-label={manual.tocLabel} className="manual-toc">
           <p className="manual-toc-title">{manual.tocLabel}</p>

@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useMatches, useRouterState } from "@tanstack/react-router";
+import { createContext, type ReactNode, useContext } from "react";
 import type { SessionUser } from "../auth/session.ts";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -9,29 +10,60 @@ import "./AppShell.css";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 import { UserMenu } from "./UserMenu.tsx";
 
+export type ShellLayout = "page" | "cab" | "workbench";
+
+declare module "@tanstack/react-router" {
+  interface StaticDataRouteOption {
+    layout?: ShellLayout;
+  }
+}
+
 type NavTarget = "/maps" | "/maps/new" | "/runs" | "/manual" | "/admin";
 
-type NavItem = { to: NavTarget; label: string; icon: IconName; isExact?: boolean };
+type NavItem = { to: NavTarget; label: string; icon: IconName; section: RegExp };
+
+const ShellContext = createContext(false);
+
+export function useIsInShell(): boolean {
+  return useContext(ShellContext);
+}
 
 function navItems(user: SessionUser): NavItem[] {
   const items: NavItem[] = [
-    { to: "/maps", label: hu.nav.maps, icon: "grid", isExact: true },
-    { to: "/maps/new", label: hu.nav.newMap, icon: "pickaxe" },
-    { to: "/runs", label: hu.nav.runs, icon: "list" },
-    { to: "/manual", label: hu.nav.manual, icon: "book" },
+    {
+      to: "/maps",
+      label: hu.nav.maps,
+      icon: "grid",
+      section: /^\/(maps\/?$|play\/|leaderboard\/)/,
+    },
+    { to: "/maps/new", label: hu.nav.editor, icon: "pickaxe", section: /^\/maps\/(new|\d+\/edit)/ },
+    { to: "/manual", label: hu.nav.manual, icon: "book", section: /^\/manual/ },
+    { to: "/runs", label: hu.nav.runs, icon: "list", section: /^\/runs/ },
   ];
   return user.role === "admin"
-    ? [...items, { to: "/admin", label: hu.nav.admin, icon: "key" }]
+    ? [...items, { to: "/admin", label: hu.nav.admin, icon: "key", section: /^\/admin/ }]
     : items;
 }
 
+function useShellLayout(): ShellLayout {
+  const matches = useMatches();
+  return matches.findLast((match) => match.staticData.layout)?.staticData.layout ?? "page";
+}
+
 export function AppShell({ user, children }: { user: SessionUser; children: ReactNode }) {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const layout = useShellLayout();
   return (
-    <div className="shell-shell">
+    <div className="shell" data-layout={layout}>
       <header className="shell-header">
         <div className="shell-bar">
           <Link to="/maps" variant="plain" className="shell-brand" aria-label={hu.app.name}>
-            <Logo />
+            <span className="shell-lockup">
+              <Logo scale={2} />
+            </span>
+            <span className="shell-mark">
+              <Logo scale={2} isMarkOnly />
+            </span>
           </Link>
           <nav aria-label={hu.nav.label} className="shell-nav">
             <ul className="shell-nav-list">
@@ -42,7 +74,8 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
                     variant="plain"
                     icon={item.icon}
                     className="shell-nav-link"
-                    activeOptions={{ exact: item.isExact ?? false }}
+                    data-current={item.section.test(pathname)}
+                    activeOptions={{ exact: true }}
                   >
                     {item.label}
                   </Link>
@@ -58,7 +91,7 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
         <HazardStripe />
       </header>
       <main id="main" tabIndex={-1} className="shell-main">
-        {children}
+        <ShellContext value={true}>{children}</ShellContext>
       </main>
     </div>
   );

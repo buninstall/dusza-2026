@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Loading } from "../app/StatusScreens.tsx";
+import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
-import { PageHeader } from "../components/PageHeader.tsx";
 import { ConfirmDialog } from "../components/ui/Dialog.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { toast } from "../components/ui/Toast.tsx";
@@ -31,7 +31,7 @@ export function NewMapPage() {
 
   return (
     <div className="editor-page">
-      <PageHeader eyebrow={hu.mapEditor.newEyebrow} title={hu.mapEditor.newTitle} />
+      <LocationPlate name={hu.signs.editor} detail={hu.mapEditor.newTitle} />
       <MapEditor
         initialDraft={emptyDraft()}
         initialDetails={{ title: "", description: "", visibility: "public" }}
@@ -122,9 +122,9 @@ export function EditMapPage({ mapId }: { mapId: number }) {
   const { data, error } = useQuery(mapQuery(mapId));
   return (
     <div className="editor-page">
-      <PageHeader
-        eyebrow={hu.mapEditor.editEyebrow}
-        title={data ? hu.mapEditor.editTitle(data.map.title) : hu.mapEditor.editEyebrow}
+      <LocationPlate
+        name={hu.signs.editor}
+        detail={hu.mapEditor.editTitle}
         actions={
           data ? (
             <Link

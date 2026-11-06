@@ -62,7 +62,7 @@ describe("i18n teljesség", () => {
     expect(hu.play.syntaxErrorLines([2])).toBe("Hibás sor: 2.");
     expect(hu.play.syntaxErrorLines([2, 5])).toBe("Hibás sorok: 2, 5.");
     expect(hu.maps.gold(2, 3)).toBe("2 / 3");
-    expect(hu.maps.level(3)).toBe("03. szint");
+    expect(hu.signs.level(3)).toBe("Szint 03");
   });
 });
 

@@ -2,21 +2,24 @@
   height: 100%;
   background: var(--c-screen);
   color: var(--c-text);
-  font-family: var(--font-code);
-  font-size: var(--text-sm);
+  font: var(--type-code);
 }
 
 .cm-editor .cm-scroller {
-  font-family: inherit;
-  line-height: 1.7;
+  font: inherit;
 }
 
 .cm-editor .cm-content {
   padding: var(--space-2) 0;
-  caret-color: var(--c-gold);
+  caret-color: var(--c-current);
 }
 
-.cm-editor.cm-focused {
+.code-host .cm-editor.cm-focused {
+  outline: none;
+}
+
+.code-host .cm-editor .cm-content:focus-visible,
+.code-host .cm-editor.cm-focused .cm-content {
   outline: var(--focus-width) solid var(--c-focus);
   outline-offset: calc(var(--focus-width) * -1);
 }
@@ -42,7 +45,7 @@
 }
 
 .cm-editor .cm-cursor {
-  border-left: 2px solid var(--c-gold);
+  border-left: 2px solid var(--c-current);
 }
 
 .cm-editor .cm-selectionBackground,
@@ -52,13 +55,92 @@
 }
 
 .cm-editor .cm-exec-line {
+  position: relative;
   background: var(--c-exec-line);
-  box-shadow: inset 4px 0 0 var(--c-gold);
+  box-shadow: inset 4px 0 0 var(--c-current);
+}
+
+.cm-editor .cm-exec-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--c-current);
+  opacity: 0;
+  pointer-events: none;
+  animation: cm-exec-flash 160ms var(--ease-px2);
 }
 
 .cm-editor .cm-error-line {
   background: var(--c-error-line);
-  box-shadow: inset 4px 0 0 var(--c-rust);
+  box-shadow: inset 4px 0 0 var(--c-danger-ink);
+}
+
+.cm-editor .cm-runtime-line {
+  position: relative;
+  background: var(--c-error-line);
+}
+
+.cm-editor .cm-runtime-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  background: var(--c-hazard) var(--hazard-pattern);
+  background-size: 12px 12px;
+}
+
+.cm-editor .cm-placeholder {
+  color: var(--c-text-faint);
+}
+
+.cm-lens {
+  margin-left: var(--space-4);
+  padding: 0 var(--space-1);
+  color: var(--c-danger-ink);
+  font: var(--type-mono-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.cm-gutter-fault {
+  width: 14px;
+}
+
+.cm-fault-marker {
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+
+.cm-fault-marker::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+}
+
+.cm-fault-marker[data-kind="error"]::before {
+  background: var(--c-danger-ink);
+}
+
+.cm-fault-marker[data-kind="warning"]::before {
+  box-sizing: border-box;
+  border: var(--border-thin) solid var(--c-warning);
+}
+
+.cm-fault-marker[data-kind="exec"]::before {
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--c-current);
+}
+
+@keyframes cm-exec-flash {
+  from {
+    opacity: 0.35;
+  }
 }
 
 .cm-editor .cm-highlightSpace {
@@ -83,7 +165,7 @@
 
 .cm-editor .cm-lintRange-error {
   background: none;
-  text-decoration: underline wavy var(--c-rust);
+  text-decoration: underline wavy var(--c-danger-ink);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
@@ -92,7 +174,7 @@
 .cm-editor .cm-lintRange-info,
 .cm-editor .cm-lintRange-hint {
   background: none;
-  text-decoration: underline dotted var(--c-warn);
+  text-decoration: underline dotted var(--c-warning);
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
 }
@@ -104,12 +186,12 @@
 }
 
 .cm-editor .cm-lint-marker-error {
-  background: var(--c-rust);
+  background: var(--c-danger-ink);
 }
 
 .cm-editor .cm-lint-marker-warning,
 .cm-editor .cm-lint-marker-info {
-  background: var(--c-warn);
+  border: var(--border-thin) solid var(--c-warning);
 }
 
 .cm-tooltip.cm-tooltip-hover,
@@ -119,11 +201,11 @@
   background: var(--c-surface-raised);
   color: var(--c-text);
   box-shadow: var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow);
-  font-family: var(--font-text);
+  font: var(--type-help);
 }
 
 .cm-tooltip.cm-tooltip-autocomplete > ul {
-  font-family: var(--font-code);
+  font: var(--type-mono-sm);
 }
 
 .cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
@@ -142,11 +224,11 @@
 }
 
 .cm-tooltip-lint .cm-diagnostic-error {
-  border-left-color: var(--c-rust);
+  border-left-color: var(--c-danger-ink);
 }
 
 .cm-tooltip-lint .cm-diagnostic-warning {
-  border-left-color: var(--c-warn);
+  border-left-color: var(--c-warning);
 }
 
 .cm-tooltip-lint .cm-diagnosticAction {
@@ -154,14 +236,13 @@
   border-radius: 0;
   background: var(--c-accent);
   color: var(--c-on-accent);
-  font-family: var(--font-display);
+  font: var(--type-control-sm);
 }
 
 .cm-ms-hover {
   max-width: 26rem;
   padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
-  line-height: 1.45;
+  font: var(--type-help);
 }
 
 .cm-tooltip .cm-completionInfo {
@@ -169,11 +250,12 @@
   padding: var(--space-2) var(--space-3);
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface-raised);
-  font-family: var(--font-text);
+  font: var(--type-help);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cm-editor .cm-cursorLayer {
+  .cm-editor .cm-cursorLayer,
+  .cm-editor .cm-exec-line::after {
     animation: none;
   }
 }

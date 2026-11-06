@@ -18,7 +18,7 @@ describe("hibaképernyők", () => {
     expect(await screen.findByText("Üzemzavar", undefined, { timeout: 5000 })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Újrapróbálás" }));
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Térképek" }, { timeout: 5000 }),
+      await screen.findByRole("heading", { level: 1, name: "Pályák" }, { timeout: 5000 }),
     ).toBeTruthy();
   });
 

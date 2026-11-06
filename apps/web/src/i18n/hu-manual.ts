@@ -22,7 +22,7 @@ const sections: readonly ManualSection[] = [
     blocks: [
       {
         kind: "paragraph",
-        text: "Egy elhagyott bánya sötét kamráiban aranyrögök várnak. A kincskereső robot sorról sorra hajtja végre a MineScriptben írt programodat: csak azt érzékeli, ami közvetlenül előtte van, és ahol aranyra bukkan, ott kibányászhatja.",
+        text: "A robot sorról sorra végrehajtja a MineScript-programot. Csak a közvetlenül előtte lévő mezőt érzékeli (`isThere`), és azon a mezőn bányászhat, amelyen áll (`mine here`).",
       },
       {
         kind: "paragraph",
@@ -31,7 +31,7 @@ const sections: readonly ManualSection[] = [
       {
         kind: "list",
         items: [
-          "Válassz egy térképet a `Térképek` oldalon, és nyomd meg a `Játék` gombot.",
+          "Válassz pályát a `Pályák` oldalon, és nyomd meg a `Játék` gombot.",
           "Írd meg a programot a szerkesztőben, vagy importáld egy `.ms` / `.txt` fájlból.",
           "A `Futtatás` gomb ellenőrzi a programot. Hibás programot nem indít el, hanem megjelöli a hibás sorokat.",
           "Helyes program esetén a térkép és a robot alaphelyzetbe kerül, és a futás lassítva lejátszódik.",
@@ -285,9 +285,7 @@ const sections: readonly ManualSection[] = [
 ];
 
 export const manual = {
-  eyebrow: "Kézikönyv",
-  title: "A MineScript kézikönyve",
-  lead: "Minden, amit a robot programozásához tudnod kell: a térkép, az utasítások, a típusok, a lépésszámlálás és a hibák.",
+  title: "Kézikönyv",
   tocLabel: "Tartalom",
   sections,
 } as const;

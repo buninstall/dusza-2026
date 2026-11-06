@@ -52,7 +52,7 @@ describe("MineBoard", () => {
     expect(screen.getByRole("gridcell", { name: "1. sor, 3. oszlop: felderítetlen" })).toBeTruthy();
     expect(screen.getByRole("gridcell", { name: "1. sor, 2. oszlop: üres kamra" })).toBeTruthy();
     expect(container.querySelector('use[href="#ms-fringe-west"]')).not.toBeNull();
-    expect(container.querySelector('use[href="#ms-sparkle"]')).not.toBeNull();
+    expect(container.querySelector('use[href="#ms-burst-0"]')).not.toBeNull();
   });
 
   test("szerkesztéskor Enter és Szóköz fest, a számbillentyű eszközt vált", () => {

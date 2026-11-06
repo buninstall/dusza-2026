@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { AuthScreen, DemoAccounts } from "../auth/AuthScreen.tsx";
+import { AuthScreen } from "../auth/AuthScreen.tsx";
 import { CredentialsForm } from "../auth/CredentialsForm.tsx";
 import { safeRedirect, sessionQuery } from "../auth/session.ts";
 import { Link } from "../components/ui/Link.tsx";
@@ -16,15 +16,9 @@ function LoginPage() {
   const navigate = useNavigate();
   return (
     <AuthScreen
-      eyebrow={hu.auth.loginEyebrow}
+      plate={hu.signs.login}
       title={hu.auth.loginTitle}
-      lead={hu.auth.loginLead}
-      footer={
-        <>
-          <Link to="/register">{hu.auth.toRegister}</Link>
-          <DemoAccounts />
-        </>
-      }
+      footer={<Link to="/register">{hu.auth.toRegister}</Link>}
     >
       <CredentialsForm
         isNewAccount={false}

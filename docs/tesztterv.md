@@ -17,23 +17,23 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 
 ## 1. A térkép és a program formátuma (spec 1)
 
-| ID    | Spec | Szabály                                                                    | Teszteset(ek)                                                 | Állapot                       |
-| ----- | ---- | -------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------- |
-| T1.1  | 1    | A spec példatérképe érvényes, 3 sor és 15 oszlop, a robot keletre néz      | m001, m010, r001, r023                                        | zöld (Rust, WASM, referencia) |
-| T1.2  | 1    | A spec példaprogramja: `isThere 2` eredménye az `arany` változóba, print   | r001                                                          | zöld (Rust, WASM, referencia) |
-| T1.3  | 1    | Fejléc: a két dimenzió egy szóközzel elválasztva                           | m008, m016–m026, m041                                         | zöld (Rust, WASM, referencia) |
-| T1.4  | 1    | Mindkét dimenzió legalább 1, legfeljebb 15                                 | m005, m006, m027–m029, m042, m043, `e2e:map-rules` (méretmezők) | zöld (Rust, WASM, referencia) |
-| T1.5  | 1    | `.` üres kamra, `@` arany, `#` fal; más jel hiba                           | m001, m042, m049, m007, m030, m039, m040                      | zöld (Rust, WASM, referencia) |
-| T1.6  | 1    | `>` kelet, `<` nyugat, `^` észak, `v` dél, a robot a jel helyén áll        | m044–m047, r088, r089, r004, `e2e:map-rules` (négy irány) | zöld (Rust, WASM, referencia) |
-| T1.7  | 1    | A térképen pontosan egy robot van                                          | m002, m038, m003, m036, m037, `e2e:map-rules` (egy robot) | zöld (Rust, WASM, referencia) |
-| T1.8  | 1    | A robot aranyrögöt nem tartalmazó kamrában áll                             | r109, m001, `e2e:map-rules` (robot nem állhat aranyon) | zöld (Rust, WASM, referencia) |
-| T1.9  | 1    | Pontosan R sor, mindegyik pontosan C jel                                   | m004, m011, m031–m035                                         | zöld (Rust, WASM, referencia) |
-| T1.10 | 1    | A program lehet üres                                                       | r002, r107, s017, s027, s032                                  | zöld (Rust, WASM, referencia) |
-| T1.11 | 1    | `isThere x`: 0 üres kamra, 1 fal, 2 arany                                  | r001, r041, r042, r082, r083                                  | zöld (Rust, WASM, referencia) |
+| ID    | Spec | Szabály                                                                    | Teszteset(ek)                                                                                                                                                              | Állapot                       |
+| ----- | ---- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| T1.1  | 1    | A spec példatérképe érvényes, 3 sor és 15 oszlop, a robot keletre néz      | m001, m010, r001, r023                                                                                                                                                     | zöld (Rust, WASM, referencia) |
+| T1.2  | 1    | A spec példaprogramja: `isThere 2` eredménye az `arany` változóba, print   | r001                                                                                                                                                                       | zöld (Rust, WASM, referencia) |
+| T1.3  | 1    | Fejléc: a két dimenzió egy szóközzel elválasztva                           | m008, m016–m026, m041                                                                                                                                                      | zöld (Rust, WASM, referencia) |
+| T1.4  | 1    | Mindkét dimenzió legalább 1, legfeljebb 15                                 | m005, m006, m027–m029, m042, m043, `e2e:map-rules` (méretmezők)                                                                                                            | zöld (Rust, WASM, referencia) |
+| T1.5  | 1    | `.` üres kamra, `@` arany, `#` fal; más jel hiba                           | m001, m042, m049, m007, m030, m039, m040                                                                                                                                   | zöld (Rust, WASM, referencia) |
+| T1.6  | 1    | `>` kelet, `<` nyugat, `^` észak, `v` dél, a robot a jel helyén áll        | m044–m047, r088, r089, r004, `e2e:map-rules` (négy irány)                                                                                                                  | zöld (Rust, WASM, referencia) |
+| T1.7  | 1    | A térképen pontosan egy robot van                                          | m002, m038, m003, m036, m037, `e2e:map-rules` (egy robot)                                                                                                                  | zöld (Rust, WASM, referencia) |
+| T1.8  | 1    | A robot aranyrögöt nem tartalmazó kamrában áll                             | r109, m001, `e2e:map-rules` (robot nem állhat aranyon)                                                                                                                     | zöld (Rust, WASM, referencia) |
+| T1.9  | 1    | Pontosan R sor, mindegyik pontosan C jel                                   | m004, m011, m031–m035                                                                                                                                                      | zöld (Rust, WASM, referencia) |
+| T1.10 | 1    | A program lehet üres                                                       | r002, r107, s017, s027, s032                                                                                                                                               | zöld (Rust, WASM, referencia) |
+| T1.11 | 1    | `isThere x`: 0 üres kamra, 1 fal, 2 arany                                  | r001, r041, r042, r082, r083                                                                                                                                               | zöld (Rust, WASM, referencia) |
 | T1.12 | 1    | Hibás importált fájl: érthető hiba, nem töltődik be, nincs összeomlás      | m002–m040, s129, `server:maps.test` (422), `web` import, `e2e:map-rules` (minden `docs/receptek/hibas-terkepek` fájl), `e2e:program` (bináris, NUL, nem UTF-8, túl hosszú) | zöld (Rust, WASM, referencia) |
-| T1.13 | D2   | BOM, CRLF és egy záró újsor elfogadott; csak újsoros fájl üres             | m010, m012–m015, m035, m053, m054, r104–r108, s016, s027–s034, `e2e:program` (BOM és CRLF) | zöld (Rust, WASM, referencia) |
-| T1.14 | D15  | Arany nélküli és elérhetetlen arany: csak figyelmeztetés (BFS, 4-szomszéd) | m009, m043–m046, m048–m052                                    | zöld (Rust, WASM, referencia) |
-| T1.15 | D15  | Szerializálás → beolvasás változatlan                                      | `core:serialize_then_parse_round_trips`, `engine:map.test`    | zöld                          |
+| T1.13 | D2   | BOM, CRLF és egy záró újsor elfogadott; csak újsoros fájl üres             | m010, m012–m015, m035, m053, m054, r104–r108, s016, s027–s034, `e2e:program` (BOM és CRLF)                                                                                 | zöld (Rust, WASM, referencia) |
+| T1.14 | D15  | Arany nélküli és elérhetetlen arany: csak figyelmeztetés (BFS, 4-szomszéd) | m009, m043–m046, m048–m052                                                                                                                                                 | zöld (Rust, WASM, referencia) |
+| T1.15 | D15  | Szerializálás → beolvasás változatlan                                      | `core:serialize_then_parse_round_trips`, `engine:map.test`                                                                                                                 | zöld                          |
 
 ## 2. A nyelvtan (spec 2, EBNF)
 
@@ -77,7 +77,7 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 | T3.11 | 2.1/3   | A nem rögzített tokenek simpleval-ok                                  | s067, s070, s072, s078, s080                                | zöld (Rust, WASM, referencia) |
 | T3.12 | 2.1/4   | Nincs beágyazott kifejezés, minden simpleval egy token                | s044, s056, s058, s062                                      | zöld (Rust, WASM, referencia) |
 | T3.13 | 2.1/5   | Nincs üres (vagy csak szóközös) sor                                   | s002, s025, s026, s028–s030, s034                           | zöld (Rust, WASM, referencia) |
-| T3.14 | 2.1/5   | Futtatás előtt kötelező ellenőrzés, hibás program nem fut (D16)       | r102, r103, `e2e:smoke`, `e2e:run` | zöld (Rust, WASM, referencia) |
+| T3.14 | 2.1/5   | Futtatás előtt kötelező ellenőrzés, hibás program nem fut (D16)       | r102, r103, `e2e:smoke`, `e2e:run`                          | zöld (Rust, WASM, referencia) |
 | T3.15 | 2.1/5   | A hibás sor megjelölése, minden sor ellenőrzése (D17)                 | s015, s125, r103                                            | zöld (Rust, WASM, referencia) |
 | T3.16 | D2, D19 | Magányos `\r` hiba, és elsőbbsége a tabbal szemben                    | s019–s022                                                   | zöld (Rust, WASM, referencia) |
 | T3.17 | D4, D19 | Legfelső szintű behúzás, a kihagyott sor utáni első sorban is         | s010, s100, s101                                            | zöld (Rust, WASM, referencia) |
@@ -139,32 +139,32 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 
 ## 6. Futtatás és lépésszámlálás (spec 3.4)
 
-| ID    | Spec     | Szabály                                                                       | Teszteset(ek)                                                 | Állapot                       |
-| ----- | -------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------- |
-| T6.1  | 3.4, D16 | Csak szintaktikailag helyes program fut; a hiba és a sor látszik              | r102, r103, `e2e:smoke`, `e2e:run` (minden hibás sor a hibalistán) | zöld (Rust, WASM, referencia) |
-| T6.2  | 3.4      | Indításkor a térkép és a robot alaphelyzetben                                 | r102, `web:playback-store.test`, `e2e:run` (kétszeri futtatás) | zöld (Rust, WASM, referencia) |
-| T6.3  | 3.4, D20 | Az aktuális sor és a print kimenete követhető (eseménysor)                    | r092–r096, `web:derive.test`, `e2e:run` (`aria-current` sor, konzol) | zöld (Rust, WASM, referencia) |
-| T6.4  | 3.4, D20 | A robot helyzete és iránya minden sor után                                    | r088, r046, r083, `e2e:run` (cellacímkék, műszerek) | zöld (Rust, WASM, referencia) |
-| T6.5  | 3.4, D11 | Felfedezett mezők: amin járt és amire isThere hívódott, sorrendben            | r023–r027, r041, r045, r077, r078, r083, r087, r088, `e2e:run` (isThere felfedez) | zöld (Rust, WASM, referencia) |
-| T6.6  | 3.4      | A kibányászott arany helyét nem kell jelölni (üres kamra lesz)                | r042                                                          | zöld (Rust, WASM, referencia) |
-| T6.7  | 3.4, D7  | Minden végrehajtott sor egy lépés, a hibát okozó sor is                       | r018, r036, r003, r033                                        | zöld (Rust, WASM, referencia) |
-| T6.8  | 3.4, D7  | A törzs sorai minden lefutáskor, a while sora minden kiértékeléskor számít    | r018, r035, r094, r032                                        | zöld (Rust, WASM, referencia) |
-| T6.9  | 3.4, D7  | Az else sora csak akkor számít, ha az else-ág fut                             | r016, r017, r038, r039, r093, r031                            | zöld (Rust, WASM, referencia) |
-| T6.10 | 3.4, D7  | Pontosan 1000 sor hibátlan; az 1001. előtt `INSTRUCTION_COUNT_LIMIT_EXCEEDED` | r028, r029, r015, `e2e:run` (1000 lépés után) | zöld (Rust, WASM, referencia) |
-| T6.11 | 3.4, D7  | A limit az else során és az ismételt while soron is                           | r030, r032                                                    | zöld (Rust, WASM, referencia) |
-| T6.12 | 3.4, D7  | Az 1000. sor futásidejű hibája nyer; az 1001. hibás sor helyett a limit       | r033, r034                                                    | zöld (Rust, WASM, referencia) |
-| T6.13 | 3.4      | Vége: hiba nélkül, futásidejű hibával vagy a limittel; a kód és a sor         | r001, r003, r015, minden `runtimeError` eset, `e2e:run` (minden hibapróba kódja és sora) | zöld (Rust, WASM, referencia) |
+| ID    | Spec     | Szabály                                                                       | Teszteset(ek)                                                                                                        | Állapot                       |
+| ----- | -------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| T6.1  | 3.4, D16 | Csak szintaktikailag helyes program fut; a hiba és a sor látszik              | r102, r103, `e2e:smoke`, `e2e:run` (minden hibás sor a hibalistán)                                                   | zöld (Rust, WASM, referencia) |
+| T6.2  | 3.4      | Indításkor a térkép és a robot alaphelyzetben                                 | r102, `web:playback-store.test`, `e2e:run` (kétszeri futtatás)                                                       | zöld (Rust, WASM, referencia) |
+| T6.3  | 3.4, D20 | Az aktuális sor és a print kimenete követhető (eseménysor)                    | r092–r096, `web:derive.test`, `e2e:run` (`aria-current` sor, konzol)                                                 | zöld (Rust, WASM, referencia) |
+| T6.4  | 3.4, D20 | A robot helyzete és iránya minden sor után                                    | r088, r046, r083, `e2e:run` (cellacímkék, műszerek)                                                                  | zöld (Rust, WASM, referencia) |
+| T6.5  | 3.4, D11 | Felfedezett mezők: amin járt és amire isThere hívódott, sorrendben            | r023–r027, r041, r045, r077, r078, r083, r087, r088, `e2e:run` (isThere felfedez)                                    | zöld (Rust, WASM, referencia) |
+| T6.6  | 3.4      | A kibányászott arany helyét nem kell jelölni (üres kamra lesz)                | r042                                                                                                                 | zöld (Rust, WASM, referencia) |
+| T6.7  | 3.4, D7  | Minden végrehajtott sor egy lépés, a hibát okozó sor is                       | r018, r036, r003, r033                                                                                               | zöld (Rust, WASM, referencia) |
+| T6.8  | 3.4, D7  | A törzs sorai minden lefutáskor, a while sora minden kiértékeléskor számít    | r018, r035, r094, r032                                                                                               | zöld (Rust, WASM, referencia) |
+| T6.9  | 3.4, D7  | Az else sora csak akkor számít, ha az else-ág fut                             | r016, r017, r038, r039, r093, r031                                                                                   | zöld (Rust, WASM, referencia) |
+| T6.10 | 3.4, D7  | Pontosan 1000 sor hibátlan; az 1001. előtt `INSTRUCTION_COUNT_LIMIT_EXCEEDED` | r028, r029, r015, `e2e:run` (1000 lépés után)                                                                        | zöld (Rust, WASM, referencia) |
+| T6.11 | 3.4, D7  | A limit az else során és az ismételt while soron is                           | r030, r032                                                                                                           | zöld (Rust, WASM, referencia) |
+| T6.12 | 3.4, D7  | Az 1000. sor futásidejű hibája nyer; az 1001. hibás sor helyett a limit       | r033, r034                                                                                                           | zöld (Rust, WASM, referencia) |
+| T6.13 | 3.4      | Vége: hiba nélkül, futásidejű hibával vagy a limittel; a kód és a sor         | r001, r003, r015, minden `runtimeError` eset, `e2e:run` (minden hibapróba kódja és sora)                             | zöld (Rust, WASM, referencia) |
 | T6.14 | 3.4, 3.5 | Kibányászott arany és lépésszám minden futásnál                               | minden runtime eset `gold`/`steps` mezője, `server:runs.test`, `e2e:run` (minden recept pontos arany- és lépésszáma) | zöld (Rust, WASM, referencia) |
-| T6.15 | 3.4      | A futás leállítható                                                           | `web:playback-store.test` (stop), `e2e:run` (leállítás, nem kerül a ranglistára) | zöld                          |
-| T6.16 | 3.4      | Felfedezett és felderítetlen mezők megkülönböztetve a felületen               | `web:MapGrid.test` (köd mód), `e2e:run` (lámpafény és teljes térkép cellacímkéi) | zöld                          |
-| T6.17 | D20      | A referencia és a motor eseménysora mezőről mezőre egyezik                    | `diff`                                                        | zöld (Rust, WASM, referencia) |
+| T6.15 | 3.4      | A futás leállítható                                                           | `web:playback-store.test` (stop), `e2e:run` (leállítás, nem kerül a ranglistára)                                     | zöld                          |
+| T6.16 | 3.4      | Felfedezett és felderítetlen mezők megkülönböztetve a felületen               | `web:MapGrid.test` (köd mód), `e2e:run` (lámpafény és teljes térkép cellacímkéi)                                     | zöld                          |
+| T6.17 | D20      | A referencia és a motor eseménysora mezőről mezőre egyezik                    | `diff`                                                                                                               | zöld (Rust, WASM, referencia) |
 
 ## 7. D-döntések
 
 | Döntés | Téma                          | Teszteset(ek)                                                                            | Állapot                       |
 | ------ | ----------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------- |
 | D1     | Üres blokk                    | s018, s114, s115, r015, r037–r040                                                        | zöld (Rust, WASM, referencia) |
-| D2     | Normalizálás                  | T1.13 sorai, s019–s022, m026, m030, `e2e:program` | zöld (Rust, WASM, referencia) |
+| D2     | Normalizálás                  | T1.13 sorai, s019–s022, m026, m030, `e2e:program`                                        | zöld (Rust, WASM, referencia) |
 | D3     | Szóközök                      | s001–s004, s023–s026, s035–s039                                                          | zöld (Rust, WASM, referencia) |
 | D4     | Behúzás                       | s009–s012, s100–s113, s118, s119, r036                                                   | zöld (Rust, WASM, referencia) |
 | D5     | Számliterálok                 | s007, s088, s089, s096–s099, r022, r075                                                  | zöld (Rust, WASM, referencia) |
@@ -175,8 +175,8 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 | D10    | Hibaelsőbbség                 | r008, r010–r014, r047–r051, r058, r059, r063, r079, r081, r084, r085                     | zöld (Rust, WASM, referencia) |
 | D11    | Felfedezés                    | r020, r023–r027, r041, r042, r045, r077, r078, r082, r083, r087, r088                    | zöld (Rust, WASM, referencia) |
 | D12    | print                         | r022, r055, r069, r071, r092                                                             | zöld (Rust, WASM, referencia) |
-| D13    | Ranglista                     | `server:leaderboard.test`, `server:runs.test`, `e2e:leaderboard`, `e2e:run` (leállítás) | zöld                          |
-| D14    | Térképverziók                 | `server:maps.test` (D14), `e2e:map-rules` | zöld                          |
+| D13    | Ranglista                     | `server:leaderboard.test`, `server:runs.test`, `e2e:leaderboard`, `e2e:run` (leállítás)  | zöld                          |
+| D14    | Térképverziók                 | `server:maps.test` (D14), `e2e:map-rules`                                                | zöld                          |
 | D15    | Térképformátum                | m001–m054, r106                                                                          | zöld (Rust, WASM, referencia) |
 | D16    | Hibás program nem fut         | r102, r103, `ref:machine`                                                                | zöld (Rust, WASM, referencia) |
 | D17    | Minden sor ellenőrzése        | s014, s015, s035, s040, s041, s052, s081, s086, s101, s106, s107, s117, s120–s125        | zöld (Rust, WASM, referencia) |
@@ -185,36 +185,36 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 | D20    | Eseménysor                    | r023, r045, r046, r077, r078, r083, r087, r088, r092–r096, r102, r107                    | zöld (Rust, WASM, referencia) |
 | D21    | Kiértékelés lépésről lépésre  | r030, r032, r043, r047–r053, r058–r072, r077–r081, r084–r086, r099, r100                 | zöld (Rust, WASM, referencia) |
 | D22    | Formázó                       | `core:format` unit-tesztek, `core:properties` (idempotencia, `run(format(x)) == run(x)`) | zöld                          |
-| D23    | Programfájl importja          | s129 (a motor oldala), `web` import, `e2e:program` | zöld (Rust, WASM, referencia) |
+| D23    | Programfájl importja          | s129 (a motor oldala), `web` import, `e2e:program`                                       | zöld (Rust, WASM, referencia) |
 
 ## 8. Felhasználók, térképek, ranglista (spec 3.1, 3.2, 3.5)
 
-| ID   | Spec     | Szabály                                                              | Teszteset(ek)                                               | Állapot |
-| ---- | -------- | -------------------------------------------------------------------- | ----------------------------------------------------------- | ------- |
-| T8.1 | 3.1      | Funkciók csak bejelentkezés után                                     | `server:runs.test` (401), `e2e:smoke` (átirányítás), `e2e:auth` (minden védett útvonal és API) | zöld    |
-| T8.2 | 3.1      | Regisztráció, belépés, kilépés                                       | `server:auth.test`, `e2e:smoke`, `e2e:keyboard`, `e2e:auth` (mezőhibák, foglalt név) | zöld    |
-| T8.3 | 3.2      | Csak szabályos térkép menthető                                       | `server:maps.test` (422), m002–m040, `e2e:map-rules` (mentés letiltva) | zöld    |
-| T8.4 | 3.2      | Térkép export fájlba                                                 | `server:maps.test` (export), `e2e:map-rules` (minden mintapálya exportja bájtra) | zöld    |
-| T8.5 | D14      | Futás után új verzió, külön ranglista                                | `server:maps.test` (D14), `e2e:map-rules` | zöld    |
-| T8.6 | 3.5, D13 | Rendezés: arany DESC, lépés ASC, idő ASC; felhasználónként a legjobb | `server:leaderboard.test`, `e2e:leaderboard` (öt felhasználó a felületen) | zöld    |
-| T8.7 | D13      | A szerver számolja az eredményt                                      | `server:runs.test` (a kliens `gold` mezője figyelmen kívül) | zöld    |
-| T8.8 | D13      | Szintaktikai hiba nem kerül a ranglistára                            | `server:runs.test`, `e2e:run` | zöld    |
-| T8.9 | 3.2      | Privát térkép csak a tulajdonosnak és az adminnak                    | `server:maps.test`                                          | zöld    |
-| T8.10 | 3.3      | Program importja fájlból, szerkesztése és exportja bájtra pontosan    | `e2e:program`                                               | zöld    |
+| ID    | Spec     | Szabály                                                              | Teszteset(ek)                                                                                  | Állapot |
+| ----- | -------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------- |
+| T8.1  | 3.1      | Funkciók csak bejelentkezés után                                     | `server:runs.test` (401), `e2e:smoke` (átirányítás), `e2e:auth` (minden védett útvonal és API) | zöld    |
+| T8.2  | 3.1      | Regisztráció, belépés, kilépés                                       | `server:auth.test`, `e2e:smoke`, `e2e:keyboard`, `e2e:auth` (mezőhibák, foglalt név)           | zöld    |
+| T8.3  | 3.2      | Csak szabályos térkép menthető                                       | `server:maps.test` (422), m002–m040, `e2e:map-rules` (mentés letiltva)                         | zöld    |
+| T8.4  | 3.2      | Térkép export fájlba                                                 | `server:maps.test` (export), `e2e:map-rules` (minden mintapálya exportja bájtra)               | zöld    |
+| T8.5  | D14      | Futás után új verzió, külön ranglista                                | `server:maps.test` (D14), `e2e:map-rules`                                                      | zöld    |
+| T8.6  | 3.5, D13 | Rendezés: arany DESC, lépés ASC, idő ASC; felhasználónként a legjobb | `server:leaderboard.test`, `e2e:leaderboard` (öt felhasználó a felületen)                      | zöld    |
+| T8.7  | D13      | A szerver számolja az eredményt                                      | `server:runs.test` (a kliens `gold` mezője figyelmen kívül)                                    | zöld    |
+| T8.8  | D13      | Szintaktikai hiba nem kerül a ranglistára                            | `server:runs.test`, `e2e:run`                                                                  | zöld    |
+| T8.9  | 3.2      | Privát térkép csak a tulajdonosnak és az adminnak                    | `server:maps.test`                                                                             | zöld    |
+| T8.10 | 3.3      | Program importja fájlból, szerkesztése és exportja bájtra pontosan   | `e2e:program`                                                                                  | zöld    |
 
 ## 9. Akadálymentesség és biztonság
 
-| ID   | Forrás        | Szabály                                                    | Teszteset(ek)                                    | Állapot |
-| ---- | ------------- | ---------------------------------------------------------- | ------------------------------------------------ | ------- |
-| T9.1 | 4 (értékelés) | Nincs serious/critical axe-találat (világos és sötét téma) | `e2e:a11y` (minden oldal és állapot) | zöld    |
-| T9.2 | 4             | Teljes belépés és navigáció billentyűzettel                | `e2e:keyboard`, `e2e:keyboard` (teljes recept futtatása) | zöld    |
-| T9.3 | 4             | A térképrács szerepkörei és nyílbillentyűs navigációja     | `web:MapGrid.test`                               | zöld    |
-| T9.4 | –             | CSRF Origin-ellenőrzés                                     | `server:csrf.test`                               | zöld    |
-| T9.5 | –             | Bejelentkezési korlát                                      | `server:auth.test`                               | zöld    |
-| T9.6 | –             | Minden kód magyar szöveggel                                | `web:i18n.test`, `core:every_code_has_a_message` | zöld    |
-| T9.7 | 4             | 320–1440 px, mindkét téma: nincs kilógás, takarás, 24 px-es célok | `e2e:responsive`                                 | zöld    |
-| T9.8 | 4             | `prefers-reduced-motion`: nincs futó animáció                | `e2e:a11y` (csökkentett mozgás)                  | zöld    |
-| T9.9 | 4             | Látható fókusz minden tabulátor-megállón                     | `e2e:keyboard`                                   | zöld    |
+| ID   | Forrás        | Szabály                                                           | Teszteset(ek)                                            | Állapot |
+| ---- | ------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------- |
+| T9.1 | 4 (értékelés) | Nincs serious/critical axe-találat (világos és sötét téma)        | `e2e:a11y` (minden oldal és állapot)                     | zöld    |
+| T9.2 | 4             | Teljes belépés és navigáció billentyűzettel                       | `e2e:keyboard`, `e2e:keyboard` (teljes recept futtatása) | zöld    |
+| T9.3 | 4             | A térképrács szerepkörei és nyílbillentyűs navigációja            | `web:MapGrid.test`                                       | zöld    |
+| T9.4 | –             | CSRF Origin-ellenőrzés                                            | `server:csrf.test`                                       | zöld    |
+| T9.5 | –             | Bejelentkezési korlát                                             | `server:auth.test`                                       | zöld    |
+| T9.6 | –             | Minden kód magyar szöveggel                                       | `web:i18n.test`, `core:every_code_has_a_message`         | zöld    |
+| T9.7 | 4             | 320–1440 px, mindkét téma: nincs kilógás, takarás, 24 px-es célok | `e2e:responsive`                                         | zöld    |
+| T9.8 | 4             | `prefers-reduced-motion`: nincs futó animáció                     | `e2e:a11y` (csökkentett mozgás)                          | zöld    |
+| T9.9 | 4             | Látható fókusz minden tabulátor-megállón                          | `e2e:keyboard`                                           | zöld    |
 
 ## Futtatás
 

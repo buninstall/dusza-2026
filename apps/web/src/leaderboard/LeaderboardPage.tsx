@@ -4,8 +4,8 @@ import type { CSSProperties } from "react";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import "../components/DataTable.css";
+import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
-import { PageHeader } from "../components/PageHeader.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
@@ -103,10 +103,11 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
 
   return (
     <div className="lb-page">
-      <PageHeader
-        eyebrow={hu.leaderboard.eyebrow}
-        title={data ? hu.leaderboard.title(data.title) : hu.leaderboard.eyebrow}
-        lead={hu.leaderboard.lead}
+      <LocationPlate
+        name={hu.signs.leaderboard}
+        detail={data?.title}
+        headingPrefix={hu.leaderboard.headingPrefix}
+        documentTitle={data ? `${hu.signs.leaderboard} – ${data.title}` : hu.signs.leaderboard}
         actions={
           <>
             {data && versionOptions.length > 1 ? (
