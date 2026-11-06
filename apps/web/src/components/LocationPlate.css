@@ -107,6 +107,13 @@
   }
 }
 
+@media (max-width: 23rem) {
+  .plate-sign .px-text {
+    width: auto;
+    height: 20px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .plate {
     animation: none;

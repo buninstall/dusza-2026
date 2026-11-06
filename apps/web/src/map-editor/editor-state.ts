@@ -126,3 +126,141 @@ export function toolForKey(key: string): Tool | null {
   const index = Number.parseInt(key, 10) - 1;
   return TOOLS[index] ?? null;
 }
+
+export type Mode = "brush" | "rect" | "fill";
+
+export const MODES: readonly Mode[] = ["brush", "rect", "fill"];
+
+const MODE_KEYS: Readonly<Record<string, Mode>> = { e: "brush", t: "rect", k: "fill" };
+
+export function modeForKey(key: string): Mode | null {
+  return MODE_KEYS[key.toLowerCase()] ?? null;
+}
+
+const posKeyOf = (pos: Pos): string => `${pos.row}:${pos.col}`;
+
+export function rectCells(a: Pos, b: Pos): Pos[] {
+  const top = Math.min(a.row, b.row);
+  const left = Math.min(a.col, b.col);
+  const bottom = Math.max(a.row, b.row);
+  const right = Math.max(a.col, b.col);
+  const cells: Pos[] = [];
+  for (let row = top; row <= bottom; row += 1) {
+    for (let col = left; col <= right; col += 1) {
+      cells.push({ row, col });
+    }
+  }
+  return cells;
+}
+
+export function lineCells(a: Pos, b: Pos): Pos[] {
+  const cells: Pos[] = [];
+  const dRow = Math.abs(b.row - a.row);
+  const dCol = Math.abs(b.col - a.col);
+  const stepRow = a.row < b.row ? 1 : -1;
+  const stepCol = a.col < b.col ? 1 : -1;
+  let error = dCol - dRow;
+  let row = a.row;
+  let col = a.col;
+  cells.push({ row, col });
+  while (row !== b.row || col !== b.col) {
+    const doubled = 2 * error;
+    if (doubled > -dRow) {
+      error -= dRow;
+      col += stepCol;
+    }
+    if (doubled < dCol) {
+      error += dCol;
+      row += stepRow;
+    }
+    cells.push({ row, col });
+  }
+  return cells;
+}
+
+const NEIGHBOURS: readonly Pos[] = [
+  { row: -1, col: 0 },
+  { row: 1, col: 0 },
+  { row: 0, col: -1 },
+  { row: 0, col: 1 },
+];
+
+function contentAt(draft: DraftMap, pos: Pos): Cell {
+  return draft.cells[pos.row]?.[pos.col] ?? "empty";
+}
+
+function spread(draft: DraftMap, start: Pos, isOpen: (pos: Pos) => boolean): Pos[] {
+  const seen = new Set([posKeyOf(start)]);
+  const queue = [start];
+  const cells: Pos[] = [];
+  for (let head = 0; head < queue.length; head += 1) {
+    const pos = queue[head] as Pos;
+    cells.push(pos);
+    for (const delta of NEIGHBOURS) {
+      const next = { row: pos.row + delta.row, col: pos.col + delta.col };
+      if (isInside(draft, next) && !seen.has(posKeyOf(next)) && isOpen(next)) {
+        seen.add(posKeyOf(next));
+        queue.push(next);
+      }
+    }
+  }
+  return cells;
+}
+
+export function floodCells(draft: DraftMap, start: Pos): Pos[] {
+  if (!isInside(draft, start)) {
+    return [];
+  }
+  const target = contentAt(draft, start);
+  return spread(draft, start, (pos) => contentAt(draft, pos) === target);
+}
+
+export function reachableCells(draft: DraftMap): ReadonlySet<string> {
+  if (!draft.robot) {
+    return new Set();
+  }
+  return new Set(
+    spread(draft, draft.robot, (pos) => contentAt(draft, pos) !== "wall").map(posKeyOf),
+  );
+}
+
+export function paintCells(draft: DraftMap, cells: readonly Pos[], tool: Tool): DraftMap {
+  if (tool === "robot") {
+    const last = cells[cells.length - 1];
+    return last ? paint(draft, last, "robot", draft.dir) : draft;
+  }
+  return cells.reduce((current, pos) => paint(current, pos, tool, current.dir), draft);
+}
+
+const LEFT_OF: Record<Dir, Dir> = { north: "west", west: "south", south: "east", east: "north" };
+const RIGHT_OF: Record<Dir, Dir> = { north: "east", east: "south", south: "west", west: "north" };
+
+export function rotateRobot(draft: DraftMap, side: "left" | "right"): DraftMap {
+  return { ...draft, dir: side === "left" ? LEFT_OF[draft.dir] : RIGHT_OF[draft.dir] };
+}
+
+function isRobotAt(draft: DraftMap, pos: Pos): boolean {
+  return draft.robot?.row === pos.row && draft.robot.col === pos.col;
+}
+
+export function changedCells(before: DraftMap, after: DraftMap): Pos[] {
+  const cells: Pos[] = [];
+  for (let row = 0; row < after.rows; row += 1) {
+    for (let col = 0; col < after.cols; col += 1) {
+      const pos = { row, col };
+      const wasRobot = isRobotAt(before, pos);
+      const isRobot = isRobotAt(after, pos);
+      const turned = isRobot && before.dir !== after.dir;
+      if (contentAt(before, pos) !== contentAt(after, pos) || wasRobot !== isRobot || turned) {
+        cells.push(pos);
+      }
+    }
+  }
+  return cells;
+}
+
+const VISIBLE = /[^\s\p{Cc}\p{Cf}\p{M}]/u;
+
+export function hasVisibleText(text: string): boolean {
+  return VISIBLE.test(text);
+}

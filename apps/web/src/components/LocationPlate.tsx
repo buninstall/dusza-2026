@@ -10,6 +10,7 @@ type LocationPlateProps = {
   headingPrefix?: string;
   documentTitle?: string;
   meta?: ReactNode;
+  lead?: ReactNode;
   actions?: ReactNode;
   children?: ReactNode;
   className?: string;
@@ -36,6 +37,7 @@ export function LocationPlate({
   headingPrefix,
   documentTitle,
   meta,
+  lead,
   actions,
   children,
   className,
@@ -45,6 +47,7 @@ export function LocationPlate({
   return (
     <header className={clsx("plate", className)} data-docked={isDocked}>
       <span aria-hidden="true" className="plate-rivets" />
+      {lead}
       <PlateSign name={name} />
       <div className="plate-text">
         {detail === undefined ? (

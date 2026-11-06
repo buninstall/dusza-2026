@@ -51,7 +51,113 @@
 }
 
 .board[data-size="editor"] {
-  --tile-max: 40px;
+  --tile-min: 24px;
+  --tile-max: 64px;
+}
+
+.board[data-edges="true"] {
+  --edge: 72px;
+
+  grid-template-columns: var(--ruler) max-content var(--edge);
+  grid-template-rows: var(--ruler) max-content var(--edge);
+}
+
+.board[data-edges="true"][data-fit="both"] {
+  --tile-fit: min(
+    (100cqw - var(--ruler) - var(--edge) - var(--shadow-offset) - 2 * var(--border-thin)) /
+    var(--cols),
+    (100cqh - var(--ruler) - var(--edge) - var(--shadow-offset) - 2 * var(--border-thin)) /
+    var(--rows)
+  );
+  padding-right: 0;
+}
+
+.board-edge-end {
+  grid-area: 2 / 3;
+  display: grid;
+  align-items: center;
+  justify-items: start;
+  padding-left: var(--space-2);
+}
+
+.board-edge-bottom {
+  grid-area: 3 / 2;
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-2);
+}
+
+.board-edge-end .field {
+  align-items: center;
+}
+
+.board-edge-end .field-stepper {
+  flex-direction: column-reverse;
+  width: var(--control-height);
+}
+
+.board-edge-end .field-stepper-button:first-child {
+  border-top: var(--border-thin) solid var(--c-line-strong);
+  border-right: 0;
+}
+
+.board-edge-end .field-stepper-button:last-child {
+  border-bottom: var(--border-thin) solid var(--c-line-strong);
+  border-left: 0;
+}
+
+.board-edge-end .field-stepper-button {
+  height: var(--control-height);
+}
+
+.board-edge-bottom .field {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.board-ruler-top > span[data-flag="true"],
+.board-ruler-left > span[data-flag="true"] {
+  color: var(--c-warning);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+@media (max-width: 48rem) {
+  .board[data-edges="true"] {
+    --ruler: 0px;
+    --edge: 0px;
+
+    grid-template-columns: 0 max-content;
+    grid-template-rows: 0 max-content auto auto;
+  }
+
+  .board[data-edges="true"] .board-ruler-top,
+  .board[data-edges="true"] .board-ruler-left {
+    display: none;
+  }
+
+  .board-edge-end,
+  .board-edge-bottom {
+    grid-area: 3 / 2;
+    justify-self: start;
+    padding: var(--space-2) 0 0;
+  }
+
+  .board-edge-end {
+    grid-area: 4 / 2;
+  }
+
+  .board-edge-end .field {
+    flex-direction: row;
+    gap: var(--space-2);
+  }
+
+  .board-edge-end .field-stepper {
+    flex-direction: row;
+    width: 9rem;
+  }
 }
 
 .board[data-size="scene"] {

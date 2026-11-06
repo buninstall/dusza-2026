@@ -1,14 +1,7 @@
 import type { MineMap, Pos, RobotState } from "@minescript/engine";
-import {
-  type CSSProperties,
-  type KeyboardEvent,
-  type PointerEvent,
-  type ReactNode,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { clampPos, moveFocus, samePos } from "./grid-nav.ts";
+import { type CSSProperties, type ReactNode, useMemo, useRef } from "react";
+import { type BoardInteraction, useBoardInput } from "./board-input.ts";
+import { samePos } from "./grid-nav.ts";
 import "./MineBoard.css";
 import { RobotLayer, type RobotMood, type RobotMotion, SparkleBurst } from "./RobotLayer.tsx";
 import { TileArt } from "./TileArt.tsx";
@@ -26,6 +19,10 @@ export type RobotLook = {
   isIdle?: boolean;
 };
 
+export type RulerMarks = { rows: ReadonlySet<number>; cols: ReadonlySet<number> };
+
+export type BoardEdges = { end?: ReactNode; bottom?: ReactNode };
+
 type MineBoardProps = {
   map: MineMap;
   robot: RobotState | null;
@@ -40,12 +37,13 @@ type MineBoardProps = {
   overlay?: ReactNode;
   cellMarks?: ReadonlyMap<string, string>;
   cellNotes?: ReadonlyMap<string, string>;
-  onPaint?: ((pos: Pos) => void) | undefined;
-  onShortcut?: ((key: string) => boolean) | undefined;
+  rulerMarks?: RulerMarks;
+  edges?: BoardEdges;
+  interaction?: BoardInteraction | undefined;
 };
 
-const PAINT_KEYS = new Set(["Enter", " "]);
 const NO_MARKS: ReadonlyMap<string, string> = new Map();
+const NO_FLAGS: ReadonlySet<number> = new Set();
 
 export function tileMaxFor(map: MineMap): number {
   const longest = Math.max(map.rows, map.cols);
@@ -55,26 +53,32 @@ export function tileMaxFor(map: MineMap): number {
   return longest <= 8 ? 80 : 64;
 }
 
-function cellPos(element: Element | null): Pos | null {
-  const cell = element?.closest<HTMLElement>("[data-row]");
-  if (!cell) {
-    return null;
-  }
-  return { row: Number(cell.dataset.row), col: Number(cell.dataset.col) };
-}
-
-function Rulers({ rows, cols }: { rows: number; cols: number }) {
+function Rulers({
+  rows,
+  cols,
+  marks,
+}: {
+  rows: number;
+  cols: number;
+  marks: RulerMarks | undefined;
+}) {
+  const flaggedRows = marks?.rows ?? NO_FLAGS;
+  const flaggedCols = marks?.cols ?? NO_FLAGS;
   return (
     <>
       <span aria-hidden="true" className="board-corner" />
       <span aria-hidden="true" className="board-ruler-top">
         {Array.from({ length: cols }, (_, col) => (
-          <span key={`c${col.toString()}`}>{col + 1}</span>
+          <span key={`c${col.toString()}`} data-flag={flaggedCols.has(col)}>
+            {col + 1}
+          </span>
         ))}
       </span>
       <span aria-hidden="true" className="board-ruler-left">
         {Array.from({ length: rows }, (_, row) => (
-          <span key={`r${row.toString()}`}>{row + 1}</span>
+          <span key={`r${row.toString()}`} data-flag={flaggedRows.has(row)}>
+            {row + 1}
+          </span>
         ))}
       </span>
     </>
@@ -95,86 +99,32 @@ export function MineBoard({
   overlay,
   cellMarks = NO_MARKS,
   cellNotes = NO_MARKS,
-  onPaint,
-  onShortcut,
+  rulerMarks,
+  edges,
+  interaction,
 }: MineBoardProps) {
   const tiles = useMemo(() => buildTiles(map, robot, exploration), [map, robot, exploration]);
-  const [focus, setFocus] = useState<Pos>({ row: 0, col: 0 });
   const gridRef = useRef<HTMLTableElement>(null);
-  const lastPainted = useRef<string | null>(null);
-  const safeFocus = clampPos(focus, map.rows, map.cols);
-  const isEditable = onPaint !== undefined;
-
-  const focusCell = (pos: Pos) => {
-    setFocus(pos);
-    gridRef.current
-      ?.querySelector<HTMLElement>(`[data-row="${pos.row}"][data-col="${pos.col}"]`)
-      ?.focus();
-  };
-
-  const paintAt = (pos: Pos | null) => {
-    if (!onPaint || pos === null || posKey(pos) === lastPainted.current) {
-      return;
-    }
-    lastPainted.current = posKey(pos);
-    onPaint(pos);
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLTableElement>) => {
-    const target = moveFocus(event, safeFocus, map.rows, map.cols);
-    if (target) {
-      event.preventDefault();
-      focusCell(target);
-      return;
-    }
-    if (onShortcut?.(event.key)) {
-      event.preventDefault();
-      return;
-    }
-    if (onPaint && PAINT_KEYS.has(event.key)) {
-      event.preventDefault();
-      onPaint(safeFocus);
-    }
-  };
-
-  const handlePointerDown = (event: PointerEvent<HTMLTableElement>) => {
-    if (!isEditable || event.button !== 0) {
-      return;
-    }
-    const pos = cellPos(event.target as Element);
-    if (!pos) {
-      return;
-    }
-    lastPainted.current = null;
-    focusCell(pos);
-    paintAt(pos);
-    const stop = () => {
-      lastPainted.current = null;
-      gridRef.current?.removeAttribute("data-painting");
-    };
-    gridRef.current?.setAttribute("data-painting", "true");
-    window.addEventListener("pointerup", stop, { once: true });
-    window.addEventListener("pointercancel", stop, { once: true });
-  };
-
-  const handlePointerMove = (event: PointerEvent<HTMLTableElement>) => {
-    if (!gridRef.current?.hasAttribute("data-painting")) {
-      return;
-    }
-    paintAt(cellPos(document.elementFromPoint(event.clientX, event.clientY)));
-  };
+  const input = useBoardInput({ gridRef, rows: map.rows, cols: map.cols, interaction });
+  const isEditable = interaction !== undefined;
 
   const boardStyle = {
     "--rows": map.rows,
     "--cols": map.cols,
     "--step-ms": `${stepMs}ms`,
-    "--tile-max": `${tileMaxFor(map)}px`,
+    ...(size === "play" ? { "--tile-max": `${tileMaxFor(map)}px` } : {}),
   } as CSSProperties;
 
   return (
     <div className="board-viewport" data-fit={fit}>
-      <div className="board" style={boardStyle} data-size={size} data-fit={fit}>
-        <Rulers rows={map.rows} cols={map.cols} />
+      <div
+        className="board"
+        style={boardStyle}
+        data-size={size}
+        data-fit={fit}
+        data-edges={edges !== undefined}
+      >
+        <Rulers rows={map.rows} cols={map.cols} marks={rulerMarks} />
         <div className="board-field">
           <table
             ref={gridRef}
@@ -186,9 +136,7 @@ export function MineBoard({
             aria-readonly={!isEditable}
             className="board-grid"
             data-editable={isEditable}
-            onKeyDown={handleKeyDown}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
+            {...input.handlers}
           >
             <tbody>
               {tiles.map((row, rowIndex) => (
@@ -201,12 +149,12 @@ export function MineBoard({
                         role="gridcell"
                         aria-colindex={view.pos.col + 1}
                         aria-label={describeTile(view, robot, cellNotes.get(key))}
-                        tabIndex={samePos(view.pos, safeFocus) ? 0 : -1}
+                        tabIndex={samePos(view.pos, input.focus) ? 0 : -1}
                         data-row={view.pos.row}
                         data-col={view.pos.col}
                         data-mark={cellMarks.get(key)}
                         className="board-cell"
-                        onFocus={() => setFocus(view.pos)}
+                        onFocus={() => input.setFocus(view.pos)}
                       >
                         <TileArt view={view} />
                       </td>
@@ -228,6 +176,8 @@ export function MineBoard({
           ) : null}
           {sparkle ? <SparkleBurst key={sparkle.key} pos={sparkle.pos} /> : null}
         </div>
+        {edges?.end ? <div className="board-edge-end">{edges.end}</div> : null}
+        {edges?.bottom ? <div className="board-edge-bottom">{edges.bottom}</div> : null}
       </div>
     </div>
   );
