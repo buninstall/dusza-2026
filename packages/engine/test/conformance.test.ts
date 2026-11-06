@@ -151,7 +151,7 @@ describe("conformance: maps", () => {
   }
 });
 
-describe.skipIf(!process.env.CONFORMANCE)("conformance: syntax", () => {
+describe("conformance: syntax", () => {
   for (const { dir, expected } of syntaxCases) {
     test(`${caseName(dir)} — ${expected.description}`, () => {
       const analysis = engine.analyze(readText(dir, "program.ms"));
@@ -162,7 +162,7 @@ describe.skipIf(!process.env.CONFORMANCE)("conformance: syntax", () => {
   }
 });
 
-describe.skipIf(!process.env.CONFORMANCE)("conformance: runtime", () => {
+describe("conformance: runtime", () => {
   for (const { dir, expected } of runtimeCases) {
     test(`${caseName(dir)} — ${expected.description}`, () => {
       expectRun(engine.run(readText(dir, "program.ms"), readText(dir, "map.txt")), expected);

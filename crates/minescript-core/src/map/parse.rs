@@ -91,6 +91,8 @@ pub fn parse_map(text: &str) -> MapParseResult {
         diagnostics.push(Diagnostic::new(DiagCode::MapMultipleRobots, second.span));
     }
 
+    diagnostics.sort_by_key(|diagnostic| (diagnostic.span.line, diagnostic.span.col_start));
+
     let (Some((robot, dir)), false) = (robot, has_errors(&diagnostics)) else {
         return MapParseResult {
             map: None,

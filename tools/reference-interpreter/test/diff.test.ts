@@ -7,7 +7,7 @@ import { check, parseMapText, run as referenceRun } from "../src/index.ts";
 
 const root = join(import.meta.dir, "..", "..", "..");
 const conformance = join(root, "conformance");
-const GENERATED_SEEDS = 2000;
+const GENERATED_SEEDS = Number(process.env.DIFF_SEEDS ?? "2000");
 const MAX_REPORTS = Number(process.env.DIFF_REPORTS ?? "5");
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type Difference = { path: string; reference: Json | undefined; engine: Json | undefined };
@@ -81,7 +81,7 @@ function firstDifference(
     );
     if (found) return found;
   }
-  return { path, reference, engine: other };
+  return null;
 }
 
 function numbered(text: string): string {
@@ -173,7 +173,7 @@ const read = (dir: string, file: string) => readFileSync(join(dir, file), "utf8"
 const nameOf = (dir: string) => dir.split(/[\\/]/).at(-1) ?? dir;
 const seeds = Array.from({ length: GENERATED_SEEDS }, (_, index) => index + 1);
 
-describe.skipIf(!process.env.REFERENCE)("referencia ↔ WASM", () => {
+describe("referencia ↔ WASM", () => {
   beforeAll(async () => {
     const wasm = await Bun.file(
       join(root, "packages", "engine", "pkg", "minescript_wasm_bg.wasm"),

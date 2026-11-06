@@ -5,190 +5,187 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 ## Jelölések és állapotok
 
 - `rNNN` = `conformance/runtime/NNN-*`, `sNNN` = `conformance/syntax/NNN-*`, `mNNN` = `conformance/maps/NNN-*`.
-- `ref:…` = a referencia-interpreter unit-tesztje (`tools/reference-interpreter/test`), `gen:…` = a generátor tesztje, `diff` = a `REFERENCE=1` differenciális teszt (minden conformance-eset és 2000-2000 generált helyes program, hibás program és térkép).
+- `ref:…` = a referencia-interpreter unit-tesztje (`tools/reference-interpreter/test`), `gen:…` = a generátor tesztje, `diff` = a differenciális teszt (minden conformance-eset és 2000-2000 generált helyes program, hibás program és térkép; a `DIFF_SEEDS` környezeti változóval növelhető, egyszeri próbán 30 000 seeden is eltérés nélkül).
 - `core:…` Rust unit-teszt, `server:…` bun-teszt, `web:…` Vitest, `e2e:…` Playwright.
 
 Állapotok:
 
-- **zöld (referencia)**: a referencia-interpreter a kézzel levezetett elvárást teljesíti (`packages/engine/test/conformance.test.ts`, „conformance: referencia-interpreter” blokk, mindig fut).
-- **zöld (referencia, WASM)**: a Rust-motor WASM-buildje is teljesíti (a térképesetek blokkja kapcsoló nélkül fut).
-- **WASM: csak m**: a térképesetek (`m`) a WASM-motoron is zöldek, a sorban szereplő `r`/`s` esetek Rust-állapota ismeretlen.
-- **Rust: ?**: a Rust parser és VM még stub, a `CONFORMANCE=1` blokkok és a `diff` piros; az állapot a motor elkészülte után frissül.
-- **zöld**: nem conformance-teszt, és átmegy; **hiányzik**: még nincs teszt.
+- **zöld (Rust, WASM, referencia)**: a kézzel levezetett elvárást a Rust-motor (`crates/minescript-core/tests/conformance.rs`), a WASM-build (`packages/engine/test/conformance.test.ts`) és a független referencia-interpreter is teljesíti, és a két interpreter eseménysora mezőről mezőre egyezik.
+- **zöld**: nem conformance-teszt, és átmegy.
 
 Összesen 293 conformance-eset: 110 runtime, 129 syntax, 54 maps. Minden `SYN_*` kód (a `SYN_NOT_IMPLEMENTED` kivételével), minden `MAP_*` kód és minden `RuntimeErrorCode` legalább egy esetben szerepel. A referencia-interpreter `src/` sorlefedettsége 100%.
 
 ## 1. A térkép és a program formátuma (spec 1)
 
-| ID    | Spec | Szabály                                                                    | Teszteset(ek)                                                 | Állapot                         |
-| ----- | ---- | -------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------- |
-| T1.1  | 1    | A spec példatérképe érvényes, 3 sor és 15 oszlop, a robot keletre néz      | m001, m010, r001, r023                                        | zöld (referencia), WASM: csak m |
-| T1.2  | 1    | A spec példaprogramja: `isThere 2` eredménye az `arany` változóba, print   | r001                                                          | zöld (referencia), Rust: ?      |
-| T1.3  | 1    | Fejléc: a két dimenzió egy szóközzel elválasztva                           | m008, m016–m026, m041                                         | zöld (referencia, WASM)         |
-| T1.4  | 1    | Mindkét dimenzió legalább 1, legfeljebb 15                                 | m005, m006, m027–m029, m042, m043                             | zöld (referencia, WASM)         |
-| T1.5  | 1    | `.` üres kamra, `@` arany, `#` fal; más jel hiba                           | m001, m042, m049, m007, m030, m039, m040                      | zöld (referencia, WASM)         |
-| T1.6  | 1    | `>` kelet, `<` nyugat, `^` észak, `v` dél, a robot a jel helyén áll        | m044–m047, r088, r089, r004                                   | zöld (referencia), WASM: csak m |
-| T1.7  | 1    | A térképen pontosan egy robot van                                          | m002, m038, m003, m036, m037                                  | zöld (referencia, WASM)         |
-| T1.8  | 1    | A robot aranyrögöt nem tartalmazó kamrában áll                             | r109, m001                                                    | zöld (referencia), Rust: ?      |
-| T1.9  | 1    | Pontosan R sor, mindegyik pontosan C jel                                   | m004, m011, m031–m035                                         | zöld (referencia, WASM)         |
-| T1.10 | 1    | A program lehet üres                                                       | r002, r107, s017, s027, s032                                  | zöld (referencia), Rust: ?      |
-| T1.11 | 1    | `isThere x`: 0 üres kamra, 1 fal, 2 arany                                  | r001, r041, r042, r082, r083                                  | zöld (referencia), Rust: ?      |
-| T1.12 | 1    | Hibás importált fájl: érthető hiba, nem töltődik be, nincs összeomlás      | m002–m040, s129, `server:maps.test` (422), `web` import       | zöld (referencia), WASM: csak m |
-| T1.13 | D2   | BOM, CRLF és egy záró újsor elfogadott; csak újsoros fájl üres             | m010, m012–m015, m035, m053, m054, r104–r108, s016, s027–s034 | zöld (referencia), Rust: ?      |
-| T1.14 | D15  | Arany nélküli és elérhetetlen arany: csak figyelmeztetés (BFS, 4-szomszéd) | m009, m043–m046, m048–m052                                    | zöld (referencia, WASM)         |
-| T1.15 | D15  | Szerializálás → beolvasás változatlan                                      | `core:serialize_then_parse_round_trips`, `engine:map.test`    | zöld                            |
+| ID    | Spec | Szabály                                                                    | Teszteset(ek)                                                 | Állapot                       |
+| ----- | ---- | -------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------- |
+| T1.1  | 1    | A spec példatérképe érvényes, 3 sor és 15 oszlop, a robot keletre néz      | m001, m010, r001, r023                                        | zöld (Rust, WASM, referencia) |
+| T1.2  | 1    | A spec példaprogramja: `isThere 2` eredménye az `arany` változóba, print   | r001                                                          | zöld (Rust, WASM, referencia) |
+| T1.3  | 1    | Fejléc: a két dimenzió egy szóközzel elválasztva                           | m008, m016–m026, m041                                         | zöld (Rust, WASM, referencia) |
+| T1.4  | 1    | Mindkét dimenzió legalább 1, legfeljebb 15                                 | m005, m006, m027–m029, m042, m043                             | zöld (Rust, WASM, referencia) |
+| T1.5  | 1    | `.` üres kamra, `@` arany, `#` fal; más jel hiba                           | m001, m042, m049, m007, m030, m039, m040                      | zöld (Rust, WASM, referencia) |
+| T1.6  | 1    | `>` kelet, `<` nyugat, `^` észak, `v` dél, a robot a jel helyén áll        | m044–m047, r088, r089, r004                                   | zöld (Rust, WASM, referencia) |
+| T1.7  | 1    | A térképen pontosan egy robot van                                          | m002, m038, m003, m036, m037                                  | zöld (Rust, WASM, referencia) |
+| T1.8  | 1    | A robot aranyrögöt nem tartalmazó kamrában áll                             | r109, m001                                                    | zöld (Rust, WASM, referencia) |
+| T1.9  | 1    | Pontosan R sor, mindegyik pontosan C jel                                   | m004, m011, m031–m035                                         | zöld (Rust, WASM, referencia) |
+| T1.10 | 1    | A program lehet üres                                                       | r002, r107, s017, s027, s032                                  | zöld (Rust, WASM, referencia) |
+| T1.11 | 1    | `isThere x`: 0 üres kamra, 1 fal, 2 arany                                  | r001, r041, r042, r082, r083                                  | zöld (Rust, WASM, referencia) |
+| T1.12 | 1    | Hibás importált fájl: érthető hiba, nem töltődik be, nincs összeomlás      | m002–m040, s129, `server:maps.test` (422), `web` import       | zöld (Rust, WASM, referencia) |
+| T1.13 | D2   | BOM, CRLF és egy záró újsor elfogadott; csak újsoros fájl üres             | m010, m012–m015, m035, m053, m054, r104–r108, s016, s027–s034 | zöld (Rust, WASM, referencia) |
+| T1.14 | D15  | Arany nélküli és elérhetetlen arany: csak figyelmeztetés (BFS, 4-szomszéd) | m009, m043–m046, m048–m052                                    | zöld (Rust, WASM, referencia) |
+| T1.15 | D15  | Szerializálás → beolvasás változatlan                                      | `core:serialize_then_parse_round_trips`, `engine:map.test`    | zöld                          |
 
 ## 2. A nyelvtan (spec 2, EBNF)
 
-| ID    | Spec  | Szabály                                                                     | Teszteset(ek)                           | Állapot                    |
-| ----- | ----- | --------------------------------------------------------------------------- | --------------------------------------- | -------------------------- |
-| T2.1  | 2     | `programme = { command }`, a 8 utasítás és minden operátor szabályos alakja | s127, s099, s108                        | zöld (referencia), Rust: ? |
-| T2.2  | 2     | `step "forward" simpleval`                                                  | s042, s060, s063, s073, s089, s098      | zöld (referencia), Rust: ? |
-| T2.3  | 2     | `turn "by" simpleval`                                                       | s049, s062, s064                        | zöld (referencia), Rust: ? |
-| T2.4  | 2     | `mine "here"`                                                               | s046, s054, s065                        | zöld (referencia), Rust: ? |
-| T2.5  | 2     | `print simpleval`                                                           | s047, s053, s067, s078                  | zöld (referencia), Rust: ? |
-| T2.6  | 2     | `isThere simpleval` csak a `set` értékeként                                 | s050, s057, s058, s072, s082            | zöld (referencia), Rust: ? |
-| T2.7  | 2     | `set ident "to" calculatedval`                                              | s043, s048, s066, s068, s074–s076       | zöld (referencia), Rust: ? |
-| T2.8  | 2     | `if`, `if … else`, `while` simpleval feltétellel és blokkal                 | s045, s052, s055, s061, s081, s117      | zöld (referencia), Rust: ? |
-| T2.9  | 2, D1 | `block = { command }`: az üres blokk szabályos                              | s018, s114, s115, r015, r037–r040       | zöld (referencia), Rust: ? |
-| T2.10 | 2     | `calculatedval` = simpleval / függvény / binop / unop, semmi más            | s044, s051, s056, s058, s059, s069–s072 | zöld (referencia), Rust: ? |
-| T2.11 | 2     | `binoperator` és `unoperator` (`and`, `or` bináris, `not` unáris)           | s071, s127, r056, r057, r068            | zöld (referencia), Rust: ? |
-| T2.12 | 2     | `boolean-lit = true \| false`                                               | s075, r055, r056                        | zöld (referencia), Rust: ? |
-| T2.13 | 2     | `ident = letter { letter \| digit }`, csak angol betű                       | s013, s090, s093–s095, r076             | zöld (referencia), Rust: ? |
-| T2.14 | 2, D5 | `number = digit { digit }`, vezető nulla érvényes                           | s099, r075                              | zöld (referencia), Rust: ? |
-| T2.15 | 2     | A kulcsszavak kis- és nagybetűérzékenyek                                    | s005, s073, s074, s086, s128            | zöld (referencia), Rust: ? |
-| T2.16 | 2     | Az azonosítók kis- és nagybetűérzékenyek (`arany` ≠ `Arany`)                | r073, r074                              | zöld (referencia), Rust: ? |
-| T2.17 | 2, D5 | A számliterál 0..100; 101, 0101 és a hosszú szám hiba                       | s007, s096–s099, r075                   | zöld (referencia), Rust: ? |
-| T2.18 | 2     | Kulcsszó semmilyen írásmódban nem azonosító (mind a 18)                     | s006, s075–s081                         | zöld (referencia), Rust: ? |
-| T2.19 | D5    | Negatív literál nincs, csak kivonással                                      | s088, s089, s062, r022                  | zöld (referencia), Rust: ? |
-| T2.20 | 2     | A 2. fejezet bányászó példaprogramja                                        | r023–r027                               | zöld (referencia), Rust: ? |
+| ID    | Spec  | Szabály                                                                     | Teszteset(ek)                           | Állapot                       |
+| ----- | ----- | --------------------------------------------------------------------------- | --------------------------------------- | ----------------------------- |
+| T2.1  | 2     | `programme = { command }`, a 8 utasítás és minden operátor szabályos alakja | s127, s099, s108                        | zöld (Rust, WASM, referencia) |
+| T2.2  | 2     | `step "forward" simpleval`                                                  | s042, s060, s063, s073, s089, s098      | zöld (Rust, WASM, referencia) |
+| T2.3  | 2     | `turn "by" simpleval`                                                       | s049, s062, s064                        | zöld (Rust, WASM, referencia) |
+| T2.4  | 2     | `mine "here"`                                                               | s046, s054, s065                        | zöld (Rust, WASM, referencia) |
+| T2.5  | 2     | `print simpleval`                                                           | s047, s053, s067, s078                  | zöld (Rust, WASM, referencia) |
+| T2.6  | 2     | `isThere simpleval` csak a `set` értékeként                                 | s050, s057, s058, s072, s082            | zöld (Rust, WASM, referencia) |
+| T2.7  | 2     | `set ident "to" calculatedval`                                              | s043, s048, s066, s068, s074–s076       | zöld (Rust, WASM, referencia) |
+| T2.8  | 2     | `if`, `if … else`, `while` simpleval feltétellel és blokkal                 | s045, s052, s055, s061, s081, s117      | zöld (Rust, WASM, referencia) |
+| T2.9  | 2, D1 | `block = { command }`: az üres blokk szabályos                              | s018, s114, s115, r015, r037–r040       | zöld (Rust, WASM, referencia) |
+| T2.10 | 2     | `calculatedval` = simpleval / függvény / binop / unop, semmi más            | s044, s051, s056, s058, s059, s069–s072 | zöld (Rust, WASM, referencia) |
+| T2.11 | 2     | `binoperator` és `unoperator` (`and`, `or` bináris, `not` unáris)           | s071, s127, r056, r057, r068            | zöld (Rust, WASM, referencia) |
+| T2.12 | 2     | `boolean-lit = true \| false`                                               | s075, r055, r056                        | zöld (Rust, WASM, referencia) |
+| T2.13 | 2     | `ident = letter { letter \| digit }`, csak angol betű                       | s013, s090, s093–s095, r076             | zöld (Rust, WASM, referencia) |
+| T2.14 | 2, D5 | `number = digit { digit }`, vezető nulla érvényes                           | s099, r075                              | zöld (Rust, WASM, referencia) |
+| T2.15 | 2     | A kulcsszavak kis- és nagybetűérzékenyek                                    | s005, s073, s074, s086, s128            | zöld (Rust, WASM, referencia) |
+| T2.16 | 2     | Az azonosítók kis- és nagybetűérzékenyek (`arany` ≠ `Arany`)                | r073, r074                              | zöld (Rust, WASM, referencia) |
+| T2.17 | 2, D5 | A számliterál 0..100; 101, 0101 és a hosszú szám hiba                       | s007, s096–s099, r075                   | zöld (Rust, WASM, referencia) |
+| T2.18 | 2     | Kulcsszó semmilyen írásmódban nem azonosító (mind a 18)                     | s006, s075–s081                         | zöld (Rust, WASM, referencia) |
+| T2.19 | D5    | Negatív literál nincs, csak kivonással                                      | s088, s089, s062, r022                  | zöld (Rust, WASM, referencia) |
+| T2.20 | 2     | A 2. fejezet bányászó példaprogramja                                        | r023–r027                               | zöld (Rust, WASM, referencia) |
 
 ## 3. Soronkénti feldolgozás (spec 2.1)
 
-| ID    | Spec    | Szabály                                                               | Teszteset(ek)                                               | Állapot                    |
-| ----- | ------- | --------------------------------------------------------------------- | ----------------------------------------------------------- | -------------------------- |
-| T3.1  | 2.1/1   | Minden sor egy utasítás, nincs más elválasztó                         | s015, s125, s056                                            | zöld (referencia), Rust: ? |
-| T3.2  | 2.1/1   | A behúzás adja a szintet, szinten belül egységes                      | s103, s104                                                  | zöld (referencia), Rust: ? |
-| T3.3  | 2.1/1   | A behúzás jelöli a törzset; csökkenésével a törzs lezárul             | r036, s106, s109                                            | zöld (referencia), Rust: ? |
-| T3.4  | 2.1/1   | Az else az if törzsével azonos behúzáson áll                          | s110, s118, s119                                            | zöld (referencia), Rust: ? |
-| T3.5  | 2.1/1   | Behúzás csak szóközzel, tab sehol                                     | s001, s023, s024, s122                                      | zöld (referencia), Rust: ? |
-| T3.6  | 2.1/1   | Blokkonként eltérő behúzás megengedett                                | s108, r036                                                  | zöld (referencia), Rust: ? |
-| T3.7  | 2.1/2   | Pontosan egy szóköz a tokenek között; sorvégi szóköz hiba             | s003, s004, s035–s041                                       | zöld (referencia), Rust: ? |
-| T3.8  | 2.1/2   | A szóköz választja el a tokeneket (`1+2`, `1<2`, `a+1`)               | s008, s092, s095                                            | zöld (referencia), Rust: ? |
-| T3.9  | 2.1/3   | Az első token adja az utasítást; más első token ismeretlen utasítás   | s005, s082–s087, s128                                       | zöld (referencia), Rust: ? |
-| T3.10 | 2.1/3   | A rögzített kulcsszavak helyén más token hiba                         | s063–s066, s073, s074                                       | zöld (referencia), Rust: ? |
-| T3.11 | 2.1/3   | A nem rögzített tokenek simpleval-ok                                  | s067, s070, s072, s078, s080                                | zöld (referencia), Rust: ? |
-| T3.12 | 2.1/4   | Nincs beágyazott kifejezés, minden simpleval egy token                | s044, s056, s058, s062                                      | zöld (referencia), Rust: ? |
-| T3.13 | 2.1/5   | Nincs üres (vagy csak szóközös) sor                                   | s002, s025, s026, s028–s030, s034                           | zöld (referencia), Rust: ? |
-| T3.14 | 2.1/5   | Futtatás előtt kötelező ellenőrzés, hibás program nem fut (D16)       | r102, r103, `e2e:smoke`                                     | zöld (referencia), Rust: ? |
-| T3.15 | 2.1/5   | A hibás sor megjelölése, minden sor ellenőrzése (D17)                 | s015, s125, r103                                            | zöld (referencia), Rust: ? |
-| T3.16 | D2, D19 | Magányos `\r` hiba, és elsőbbsége a tabbal szemben                    | s019–s022                                                   | zöld (referencia), Rust: ? |
-| T3.17 | D4, D19 | Legfelső szintű behúzás, a kihagyott sor utáni első sorban is         | s010, s100, s101                                            | zöld (referencia), Rust: ? |
-| T3.18 | D4, D19 | Váratlan behúzás blokkfejléc nélkül                                   | s012, s086, s102, s121                                      | zöld (referencia), Rust: ? |
-| T3.19 | D4, D19 | Visszahúzás nem nyitott szintre, utána helyreáll                      | s011, s105, s106                                            | zöld (referencia), Rust: ? |
-| T3.20 | D4, D19 | Else csak közvetlenül az azonos mélységű if után, legfeljebb egyszer  | s009, s110–s116, s120                                       | zöld (referencia), Rust: ? |
-| T3.21 | D17     | A hibás fejléc is blokkot nyit                                        | s014, s052, s081, s117, s035                                | zöld (referencia), Rust: ? |
-| T3.22 | D17     | A szkennerhibás sor kimarad a behúzás-elemzésből                      | s101, s122–s124                                             | zöld (referencia), Rust: ? |
-| T3.23 | D17     | Soronként egy behúzás- és egy (az első) tokenszintű hiba              | s040, s041, s107, s120, s121                                | zöld (referencia), Rust: ? |
-| T3.24 | D19     | MISSING, EXTRA és UNEXPECTED minden D19-es példája                    | s042–s076                                                   | zöld (referencia), Rust: ? |
-| T3.25 | D19     | Token-osztályok: érvénytelen token és azonosító, a `#` nem megjegyzés | s008, s013, s087–s095, s129                                 | zöld (referencia), Rust: ? |
-| T3.26 | D19     | Diagnosztikák oszlop szerint (dupla szóköz: a második szóköz)         | s038, s039, s107, s120                                      | zöld (referencia), Rust: ? |
-| T3.27 | –       | Generált helyes programok hibátlanok, mutált programok hibásak        | `gen:generateProgram`, `gen:generateInvalidProgram`, `diff` | zöld (referencia), Rust: ? |
+| ID    | Spec    | Szabály                                                               | Teszteset(ek)                                               | Állapot                       |
+| ----- | ------- | --------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------- |
+| T3.1  | 2.1/1   | Minden sor egy utasítás, nincs más elválasztó                         | s015, s125, s056                                            | zöld (Rust, WASM, referencia) |
+| T3.2  | 2.1/1   | A behúzás adja a szintet, szinten belül egységes                      | s103, s104                                                  | zöld (Rust, WASM, referencia) |
+| T3.3  | 2.1/1   | A behúzás jelöli a törzset; csökkenésével a törzs lezárul             | r036, s106, s109                                            | zöld (Rust, WASM, referencia) |
+| T3.4  | 2.1/1   | Az else az if törzsével azonos behúzáson áll                          | s110, s118, s119                                            | zöld (Rust, WASM, referencia) |
+| T3.5  | 2.1/1   | Behúzás csak szóközzel, tab sehol                                     | s001, s023, s024, s122                                      | zöld (Rust, WASM, referencia) |
+| T3.6  | 2.1/1   | Blokkonként eltérő behúzás megengedett                                | s108, r036                                                  | zöld (Rust, WASM, referencia) |
+| T3.7  | 2.1/2   | Pontosan egy szóköz a tokenek között; sorvégi szóköz hiba             | s003, s004, s035–s041                                       | zöld (Rust, WASM, referencia) |
+| T3.8  | 2.1/2   | A szóköz választja el a tokeneket (`1+2`, `1<2`, `a+1`)               | s008, s092, s095                                            | zöld (Rust, WASM, referencia) |
+| T3.9  | 2.1/3   | Az első token adja az utasítást; más első token ismeretlen utasítás   | s005, s082–s087, s128                                       | zöld (Rust, WASM, referencia) |
+| T3.10 | 2.1/3   | A rögzített kulcsszavak helyén más token hiba                         | s063–s066, s073, s074                                       | zöld (Rust, WASM, referencia) |
+| T3.11 | 2.1/3   | A nem rögzített tokenek simpleval-ok                                  | s067, s070, s072, s078, s080                                | zöld (Rust, WASM, referencia) |
+| T3.12 | 2.1/4   | Nincs beágyazott kifejezés, minden simpleval egy token                | s044, s056, s058, s062                                      | zöld (Rust, WASM, referencia) |
+| T3.13 | 2.1/5   | Nincs üres (vagy csak szóközös) sor                                   | s002, s025, s026, s028–s030, s034                           | zöld (Rust, WASM, referencia) |
+| T3.14 | 2.1/5   | Futtatás előtt kötelező ellenőrzés, hibás program nem fut (D16)       | r102, r103, `e2e:smoke`                                     | zöld (Rust, WASM, referencia) |
+| T3.15 | 2.1/5   | A hibás sor megjelölése, minden sor ellenőrzése (D17)                 | s015, s125, r103                                            | zöld (Rust, WASM, referencia) |
+| T3.16 | D2, D19 | Magányos `\r` hiba, és elsőbbsége a tabbal szemben                    | s019–s022                                                   | zöld (Rust, WASM, referencia) |
+| T3.17 | D4, D19 | Legfelső szintű behúzás, a kihagyott sor utáni első sorban is         | s010, s100, s101                                            | zöld (Rust, WASM, referencia) |
+| T3.18 | D4, D19 | Váratlan behúzás blokkfejléc nélkül                                   | s012, s086, s102, s121                                      | zöld (Rust, WASM, referencia) |
+| T3.19 | D4, D19 | Visszahúzás nem nyitott szintre, utána helyreáll                      | s011, s105, s106                                            | zöld (Rust, WASM, referencia) |
+| T3.20 | D4, D19 | Else csak közvetlenül az azonos mélységű if után, legfeljebb egyszer  | s009, s110–s116, s120                                       | zöld (Rust, WASM, referencia) |
+| T3.21 | D17     | A hibás fejléc is blokkot nyit                                        | s014, s052, s081, s117, s035                                | zöld (Rust, WASM, referencia) |
+| T3.22 | D17     | A szkennerhibás sor kimarad a behúzás-elemzésből                      | s101, s122–s124                                             | zöld (Rust, WASM, referencia) |
+| T3.23 | D17     | Soronként egy behúzás- és egy (az első) tokenszintű hiba              | s040, s041, s107, s120, s121                                | zöld (Rust, WASM, referencia) |
+| T3.24 | D19     | MISSING, EXTRA és UNEXPECTED minden D19-es példája                    | s042–s076                                                   | zöld (Rust, WASM, referencia) |
+| T3.25 | D19     | Token-osztályok: érvénytelen token és azonosító, a `#` nem megjegyzés | s008, s013, s087–s095, s129                                 | zöld (Rust, WASM, referencia) |
+| T3.26 | D19     | Diagnosztikák oszlop szerint (dupla szóköz: a második szóköz)         | s038, s039, s107, s120                                      | zöld (Rust, WASM, referencia) |
+| T3.27 | –       | Generált helyes programok hibátlanok, mutált programok hibásak        | `gen:generateProgram`, `gen:generateInvalidProgram`, `diff` | zöld (Rust, WASM, referencia) |
 
 ## 4. Szemantika (spec 2.2.1, 2.2.2)
 
-| ID    | Spec       | Szabály                                                                        | Teszteset(ek)                   | Állapot                    |
-| ----- | ---------- | ------------------------------------------------------------------------------ | ------------------------------- | -------------------------- |
-| T4.1  | 2.2.1      | Aritmetika: egész operandus, egész eredmény                                    | r018, r022, r055, r064, r065    | zöld (referencia), Rust: ? |
-| T4.2  | 2.2.1      | Összehasonlítás: egész operandus, logikai eredmény, határértékek               | r068, r063                      | zöld (referencia), Rust: ? |
-| T4.3  | 2.2.1      | `=`/`<>` egészre és logikaira, azonos típussal                                 | r056, r013, r066, r067          | zöld (referencia), Rust: ? |
-| T4.4  | 2.2.1      | `and`/`or`/`not` logikai operandussal                                          | r057, r012, r060–r062, r059     | zöld (referencia), Rust: ? |
-| T4.5  | 2.2.1, D21 | `set`: előbb kiértékel, siker esetén ír; az első értékadás hozza létre         | r077, r072, r009, r101          | zöld (referencia), Rust: ? |
-| T4.6  | 2.2.1, D21 | Balról jobbra, minden operandus azonnali típusellenőrzése, első hibánál megáll | r012, r059, r063–r065           | zöld (referencia), Rust: ? |
-| T4.7  | 2.2.1, D10 | Nincs rövidzár: `true or c` a c-t is beolvassa                                 | r011, r058                      | zöld (referencia), Rust: ? |
-| T4.8  | 2.2.1, D21 | `=`/`<>` első operandusa bármi, az egyezés a második után                      | r013, r066, r067                | zöld (referencia), Rust: ? |
-| T4.9  | 2.2.1      | `if`: then- vagy else-ág                                                       | r016, r017, r093                | zöld (referencia), Rust: ? |
-| T4.10 | 2.2.1      | `while`: a törzs ismétlődik, amíg a feltétel igaz                              | r018, r035, r094                | zöld (referencia), Rust: ? |
-| T4.11 | 2.2.2      | Két típus, nincs implicit konverzió                                            | r013, r048, r053, r064          | zöld (referencia), Rust: ? |
-| T4.12 | 2.2.2      | Nincs deklaráció, a változó a program végéig él                                | r097, r098                      | zöld (referencia), Rust: ? |
-| T4.13 | 2.2.2      | A típus az első értékadáskor véglegesen rögzül                                 | r009, r099, r100                | zöld (referencia), Rust: ? |
-| T4.14 | 2.2.2      | Az if és a while feltétele logikai                                             | r010, r084–r086                 | zöld (referencia), Rust: ? |
-| T4.15 | 2.2.2      | Minden típusellenőrzés futásidőben, szintaktikailag helyes                     | s126, r010                      | zöld (referencia), Rust: ? |
-| T4.16 | 2.2.2      | Fentről lefelé, szekvenciálisan; a blokk az azonos mélységű sorok              | r036, r088                      | zöld (referencia), Rust: ? |
-| T4.17 | D6         | Ellenőrzött egész a ±(2^53 − 1) határon, `E_INT_OVERFLOW`                      | r019, r069–r072, `ref:evaluate` | zöld (referencia), Rust: ? |
+| ID    | Spec       | Szabály                                                                        | Teszteset(ek)                   | Állapot                       |
+| ----- | ---------- | ------------------------------------------------------------------------------ | ------------------------------- | ----------------------------- |
+| T4.1  | 2.2.1      | Aritmetika: egész operandus, egész eredmény                                    | r018, r022, r055, r064, r065    | zöld (Rust, WASM, referencia) |
+| T4.2  | 2.2.1      | Összehasonlítás: egész operandus, logikai eredmény, határértékek               | r068, r063                      | zöld (Rust, WASM, referencia) |
+| T4.3  | 2.2.1      | `=`/`<>` egészre és logikaira, azonos típussal                                 | r056, r013, r066, r067          | zöld (Rust, WASM, referencia) |
+| T4.4  | 2.2.1      | `and`/`or`/`not` logikai operandussal                                          | r057, r012, r060–r062, r059     | zöld (Rust, WASM, referencia) |
+| T4.5  | 2.2.1, D21 | `set`: előbb kiértékel, siker esetén ír; az első értékadás hozza létre         | r077, r072, r009, r101          | zöld (Rust, WASM, referencia) |
+| T4.6  | 2.2.1, D21 | Balról jobbra, minden operandus azonnali típusellenőrzése, első hibánál megáll | r012, r059, r063–r065           | zöld (Rust, WASM, referencia) |
+| T4.7  | 2.2.1, D10 | Nincs rövidzár: `true or c` a c-t is beolvassa                                 | r011, r058                      | zöld (Rust, WASM, referencia) |
+| T4.8  | 2.2.1, D21 | `=`/`<>` első operandusa bármi, az egyezés a második után                      | r013, r066, r067                | zöld (Rust, WASM, referencia) |
+| T4.9  | 2.2.1      | `if`: then- vagy else-ág                                                       | r016, r017, r093                | zöld (Rust, WASM, referencia) |
+| T4.10 | 2.2.1      | `while`: a törzs ismétlődik, amíg a feltétel igaz                              | r018, r035, r094                | zöld (Rust, WASM, referencia) |
+| T4.11 | 2.2.2      | Két típus, nincs implicit konverzió                                            | r013, r048, r053, r064          | zöld (Rust, WASM, referencia) |
+| T4.12 | 2.2.2      | Nincs deklaráció, a változó a program végéig él                                | r097, r098                      | zöld (Rust, WASM, referencia) |
+| T4.13 | 2.2.2      | A típus az első értékadáskor véglegesen rögzül                                 | r009, r099, r100                | zöld (Rust, WASM, referencia) |
+| T4.14 | 2.2.2      | Az if és a while feltétele logikai                                             | r010, r084–r086                 | zöld (Rust, WASM, referencia) |
+| T4.15 | 2.2.2      | Minden típusellenőrzés futásidőben, szintaktikailag helyes                     | s126, r010                      | zöld (Rust, WASM, referencia) |
+| T4.16 | 2.2.2      | Fentről lefelé, szekvenciálisan; a blokk az azonos mélységű sorok              | r036, r088                      | zöld (Rust, WASM, referencia) |
+| T4.17 | D6         | Ellenőrzött egész a ±(2^53 − 1) határon, `E_INT_OVERFLOW`                      | r019, r069–r072, `ref:evaluate` | zöld (Rust, WASM, referencia) |
 
 ## 5. Robot API és futásidejű hibák (spec 2.2.3, 2.2.4)
 
-| ID    | Spec       | Szabály                                                              | Teszteset(ek)                                        | Állapot                    |
-| ----- | ---------- | -------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------- |
-| T5.1  | 2.2.3, D8  | `step forward n`: n mező előre, a köztes mezőket is érintve          | r045, r054, r087, r088                               | zöld (referencia), Rust: ? |
-| T5.2  | 2.2.3, D8  | Az áthaladt aranyat a helyén hagyja                                  | r044                                                 | zöld (referencia), Rust: ? |
-| T5.3  | 2.2.3      | n nemnegatív egész                                                   | r052, r053, r051                                     | zöld (referencia), Rust: ? |
-| T5.4  | 2.2.3, D9  | `turn by n`: n negyedfordulat balra, 0 nem változtat, mod 4          | r007, r021, r046, r090, r091, r032                   | zöld (referencia), Rust: ? |
-| T5.5  | 2.2.3      | `mine here`: kibányássza, utána nincs több arany a mezőn             | r006, r043, r096                                     | zöld (referencia), Rust: ? |
-| T5.6  | 2.2.3      | `isThere w` a robot előtti mezőt vizsgálja                           | r001, r082, r083, r042                               | zöld (referencia), Rust: ? |
-| T5.7  | 2.2.3, D11 | A térkép szélén túl falat lát                                        | r020, r027, r041                                     | zöld (referencia), Rust: ? |
-| T5.8  | 2.2.3, D12 | `print`: egész (negatív is) és logikai érték a konzolra              | r022, r055, r069, r071, r092                         | zöld (referencia), Rust: ? |
-| T5.9  | 2.2.3      | Az n, w, x paraméter simpleval                                       | s062, s067, r054, r082                               | zöld (referencia), Rust: ? |
-| T5.10 | 2.2.4      | `E_TYPE_MISMATCH`                                                    | r009, r077, r099, r100                               | zöld (referencia), Rust: ? |
-| T5.11 | 2.2.4      | `E_UNINITIALIZED`                                                    | r008, r011, r050, r051, r058, r059, r062, r081, r098 | zöld (referencia), Rust: ? |
-| T5.12 | 2.2.4      | `E_NON_BOOL_CONDITION`                                               | r010, r085, r086                                     | zöld (referencia), Rust: ? |
-| T5.13 | 2.2.4      | `E_BAD_OPERAND` (aritmetika, összehasonlítás, logika, egyenlőség)    | r012, r013, r060, r061, r063, r064, r067             | zöld (referencia), Rust: ? |
-| T5.14 | 2.2.4, D8  | `E_BEDROCK_HIT`: falra lépés vagy lelépés a soron következő lépésnél | r003, r004, r045, r087, r110                         | zöld (referencia), Rust: ? |
-| T5.15 | 2.2.4      | `E_NO_GOLD`: nincs vagy már nincs arany                              | r005, r043, r096, r109                               | zöld (referencia), Rust: ? |
-| T5.16 | 2.2.4      | `E_BAD_ARG`: isThere 0..2-n kívül, `turn by true`, negatív lépés     | r014, r047–r049, r052, r053, r078–r080               | zöld (referencia), Rust: ? |
-| T5.17 | 2.2.4      | Hiba esetén a végrehajtás befejeződik                                | r043, r095, r109                                     | zöld (referencia), Rust: ? |
-| T5.18 | D10, D21   | API-paraméter: előbb inicializálás, utána típus és tartomány         | r050, r051, r081, r079                               | zöld (referencia), Rust: ? |
+| ID    | Spec       | Szabály                                                              | Teszteset(ek)                                        | Állapot                       |
+| ----- | ---------- | -------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------- |
+| T5.1  | 2.2.3, D8  | `step forward n`: n mező előre, a köztes mezőket is érintve          | r045, r054, r087, r088                               | zöld (Rust, WASM, referencia) |
+| T5.2  | 2.2.3, D8  | Az áthaladt aranyat a helyén hagyja                                  | r044                                                 | zöld (Rust, WASM, referencia) |
+| T5.3  | 2.2.3      | n nemnegatív egész                                                   | r052, r053, r051                                     | zöld (Rust, WASM, referencia) |
+| T5.4  | 2.2.3, D9  | `turn by n`: n negyedfordulat balra, 0 nem változtat, mod 4          | r007, r021, r046, r090, r091, r032                   | zöld (Rust, WASM, referencia) |
+| T5.5  | 2.2.3      | `mine here`: kibányássza, utána nincs több arany a mezőn             | r006, r043, r096                                     | zöld (Rust, WASM, referencia) |
+| T5.6  | 2.2.3      | `isThere w` a robot előtti mezőt vizsgálja                           | r001, r082, r083, r042                               | zöld (Rust, WASM, referencia) |
+| T5.7  | 2.2.3, D11 | A térkép szélén túl falat lát                                        | r020, r027, r041                                     | zöld (Rust, WASM, referencia) |
+| T5.8  | 2.2.3, D12 | `print`: egész (negatív is) és logikai érték a konzolra              | r022, r055, r069, r071, r092                         | zöld (Rust, WASM, referencia) |
+| T5.9  | 2.2.3      | Az n, w, x paraméter simpleval                                       | s062, s067, r054, r082                               | zöld (Rust, WASM, referencia) |
+| T5.10 | 2.2.4      | `E_TYPE_MISMATCH`                                                    | r009, r077, r099, r100                               | zöld (Rust, WASM, referencia) |
+| T5.11 | 2.2.4      | `E_UNINITIALIZED`                                                    | r008, r011, r050, r051, r058, r059, r062, r081, r098 | zöld (Rust, WASM, referencia) |
+| T5.12 | 2.2.4      | `E_NON_BOOL_CONDITION`                                               | r010, r085, r086                                     | zöld (Rust, WASM, referencia) |
+| T5.13 | 2.2.4      | `E_BAD_OPERAND` (aritmetika, összehasonlítás, logika, egyenlőség)    | r012, r013, r060, r061, r063, r064, r067             | zöld (Rust, WASM, referencia) |
+| T5.14 | 2.2.4, D8  | `E_BEDROCK_HIT`: falra lépés vagy lelépés a soron következő lépésnél | r003, r004, r045, r087, r110                         | zöld (Rust, WASM, referencia) |
+| T5.15 | 2.2.4      | `E_NO_GOLD`: nincs vagy már nincs arany                              | r005, r043, r096, r109                               | zöld (Rust, WASM, referencia) |
+| T5.16 | 2.2.4      | `E_BAD_ARG`: isThere 0..2-n kívül, `turn by true`, negatív lépés     | r014, r047–r049, r052, r053, r078–r080               | zöld (Rust, WASM, referencia) |
+| T5.17 | 2.2.4      | Hiba esetén a végrehajtás befejeződik                                | r043, r095, r109                                     | zöld (Rust, WASM, referencia) |
+| T5.18 | D10, D21   | API-paraméter: előbb inicializálás, utána típus és tartomány         | r050, r051, r081, r079                               | zöld (Rust, WASM, referencia) |
 
 ## 6. Futtatás és lépésszámlálás (spec 3.4)
 
-| ID    | Spec     | Szabály                                                                       | Teszteset(ek)                                                 | Állapot                    |
-| ----- | -------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------------- |
-| T6.1  | 3.4, D16 | Csak szintaktikailag helyes program fut; a hiba és a sor látszik              | r102, r103, `e2e:smoke`                                       | zöld (referencia), Rust: ? |
-| T6.2  | 3.4      | Indításkor a térkép és a robot alaphelyzetben                                 | r102, `web:playback-store.test`                               | zöld (referencia), Rust: ? |
-| T6.3  | 3.4, D20 | Az aktuális sor és a print kimenete követhető (eseménysor)                    | r092–r096, `web:derive.test`                                  | zöld (referencia), Rust: ? |
-| T6.4  | 3.4, D20 | A robot helyzete és iránya minden sor után                                    | r088, r046, r083                                              | zöld (referencia), Rust: ? |
-| T6.5  | 3.4, D11 | Felfedezett mezők: amin járt és amire isThere hívódott, sorrendben            | r023–r027, r041, r045, r077, r078, r083, r087, r088           | zöld (referencia), Rust: ? |
-| T6.6  | 3.4      | A kibányászott arany helyét nem kell jelölni (üres kamra lesz)                | r042                                                          | zöld (referencia), Rust: ? |
-| T6.7  | 3.4, D7  | Minden végrehajtott sor egy lépés, a hibát okozó sor is                       | r018, r036, r003, r033                                        | zöld (referencia), Rust: ? |
-| T6.8  | 3.4, D7  | A törzs sorai minden lefutáskor, a while sora minden kiértékeléskor számít    | r018, r035, r094, r032                                        | zöld (referencia), Rust: ? |
-| T6.9  | 3.4, D7  | Az else sora csak akkor számít, ha az else-ág fut                             | r016, r017, r038, r039, r093, r031                            | zöld (referencia), Rust: ? |
-| T6.10 | 3.4, D7  | Pontosan 1000 sor hibátlan; az 1001. előtt `INSTRUCTION_COUNT_LIMIT_EXCEEDED` | r028, r029, r015                                              | zöld (referencia), Rust: ? |
-| T6.11 | 3.4, D7  | A limit az else során és az ismételt while soron is                           | r030, r032                                                    | zöld (referencia), Rust: ? |
-| T6.12 | 3.4, D7  | Az 1000. sor futásidejű hibája nyer; az 1001. hibás sor helyett a limit       | r033, r034                                                    | zöld (referencia), Rust: ? |
-| T6.13 | 3.4      | Vége: hiba nélkül, futásidejű hibával vagy a limittel; a kód és a sor         | r001, r003, r015, minden `runtimeError` eset                  | zöld (referencia), Rust: ? |
-| T6.14 | 3.4, 3.5 | Kibányászott arany és lépésszám minden futásnál                               | minden runtime eset `gold`/`steps` mezője, `server:runs.test` | zöld (referencia), Rust: ? |
-| T6.15 | 3.4      | A futás leállítható                                                           | `web:playback-store.test` (stop)                              | zöld                       |
-| T6.16 | 3.4      | Felfedezett és felderítetlen mezők megkülönböztetve a felületen               | `web:MapGrid.test` (köd mód)                                  | zöld                       |
-| T6.17 | D20      | A referencia és a motor eseménysora mezőről mezőre egyezik                    | `diff`                                                        | zöld (referencia), Rust: ? |
+| ID    | Spec     | Szabály                                                                       | Teszteset(ek)                                                 | Állapot                       |
+| ----- | -------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------- |
+| T6.1  | 3.4, D16 | Csak szintaktikailag helyes program fut; a hiba és a sor látszik              | r102, r103, `e2e:smoke`                                       | zöld (Rust, WASM, referencia) |
+| T6.2  | 3.4      | Indításkor a térkép és a robot alaphelyzetben                                 | r102, `web:playback-store.test`                               | zöld (Rust, WASM, referencia) |
+| T6.3  | 3.4, D20 | Az aktuális sor és a print kimenete követhető (eseménysor)                    | r092–r096, `web:derive.test`                                  | zöld (Rust, WASM, referencia) |
+| T6.4  | 3.4, D20 | A robot helyzete és iránya minden sor után                                    | r088, r046, r083                                              | zöld (Rust, WASM, referencia) |
+| T6.5  | 3.4, D11 | Felfedezett mezők: amin járt és amire isThere hívódott, sorrendben            | r023–r027, r041, r045, r077, r078, r083, r087, r088           | zöld (Rust, WASM, referencia) |
+| T6.6  | 3.4      | A kibányászott arany helyét nem kell jelölni (üres kamra lesz)                | r042                                                          | zöld (Rust, WASM, referencia) |
+| T6.7  | 3.4, D7  | Minden végrehajtott sor egy lépés, a hibát okozó sor is                       | r018, r036, r003, r033                                        | zöld (Rust, WASM, referencia) |
+| T6.8  | 3.4, D7  | A törzs sorai minden lefutáskor, a while sora minden kiértékeléskor számít    | r018, r035, r094, r032                                        | zöld (Rust, WASM, referencia) |
+| T6.9  | 3.4, D7  | Az else sora csak akkor számít, ha az else-ág fut                             | r016, r017, r038, r039, r093, r031                            | zöld (Rust, WASM, referencia) |
+| T6.10 | 3.4, D7  | Pontosan 1000 sor hibátlan; az 1001. előtt `INSTRUCTION_COUNT_LIMIT_EXCEEDED` | r028, r029, r015                                              | zöld (Rust, WASM, referencia) |
+| T6.11 | 3.4, D7  | A limit az else során és az ismételt while soron is                           | r030, r032                                                    | zöld (Rust, WASM, referencia) |
+| T6.12 | 3.4, D7  | Az 1000. sor futásidejű hibája nyer; az 1001. hibás sor helyett a limit       | r033, r034                                                    | zöld (Rust, WASM, referencia) |
+| T6.13 | 3.4      | Vége: hiba nélkül, futásidejű hibával vagy a limittel; a kód és a sor         | r001, r003, r015, minden `runtimeError` eset                  | zöld (Rust, WASM, referencia) |
+| T6.14 | 3.4, 3.5 | Kibányászott arany és lépésszám minden futásnál                               | minden runtime eset `gold`/`steps` mezője, `server:runs.test` | zöld (Rust, WASM, referencia) |
+| T6.15 | 3.4      | A futás leállítható                                                           | `web:playback-store.test` (stop)                              | zöld                          |
+| T6.16 | 3.4      | Felfedezett és felderítetlen mezők megkülönböztetve a felületen               | `web:MapGrid.test` (köd mód)                                  | zöld                          |
+| T6.17 | D20      | A referencia és a motor eseménysora mezőről mezőre egyezik                    | `diff`                                                        | zöld (Rust, WASM, referencia) |
 
 ## 7. D-döntések
 
-| Döntés | Téma                          | Teszteset(ek)                                                                     | Állapot                         |
-| ------ | ----------------------------- | --------------------------------------------------------------------------------- | ------------------------------- |
-| D1     | Üres blokk                    | s018, s114, s115, r015, r037–r040                                                 | zöld (referencia), Rust: ?      |
-| D2     | Normalizálás                  | T1.13 sorai, s019–s022, m026, m030                                                | zöld (referencia), Rust: ?      |
-| D3     | Szóközök                      | s001–s004, s023–s026, s035–s039                                                   | zöld (referencia), Rust: ?      |
-| D4     | Behúzás                       | s009–s012, s100–s113, s118, s119, r036                                            | zöld (referencia), Rust: ?      |
-| D5     | Számliterálok                 | s007, s088, s089, s096–s099, r022, r075                                           | zöld (referencia), Rust: ?      |
-| D6     | Futásidejű egész              | r019, r069–r072                                                                   | zöld (referencia), Rust: ?      |
-| D7     | Lépésszámlálás                | r015–r018, r028–r035, r093, r094                                                  | zöld (referencia), Rust: ?      |
-| D8     | step forward n                | r003, r004, r021, r044, r045, r052, r054, r087, r110                              | zöld (referencia), Rust: ?      |
-| D9     | turn by n                     | r007, r021, r032, r046–r049, r090, r091                                           | zöld (referencia), Rust: ?      |
-| D10    | Hibaelsőbbség                 | r008, r010–r014, r047–r051, r058, r059, r063, r079, r081, r084, r085              | zöld (referencia), Rust: ?      |
-| D11    | Felfedezés                    | r020, r023–r027, r041, r042, r045, r077, r078, r082, r083, r087, r088             | zöld (referencia), Rust: ?      |
-| D12    | print                         | r022, r055, r069, r071, r092                                                      | zöld (referencia), Rust: ?      |
-| D13    | Ranglista                     | `server:leaderboard.test`, `server:runs.test`                                     | zöld                            |
-| D14    | Térképverziók                 | `server:maps.test` (D14)                                                          | zöld                            |
-| D15    | Térképformátum                | m001–m054, r106                                                                   | zöld (referencia), WASM: csak m |
-| D16    | Hibás program nem fut         | r102, r103, `ref:machine`                                                         | zöld (referencia), Rust: ?      |
-| D17    | Minden sor ellenőrzése        | s014, s015, s035, s040, s041, s052, s081, s086, s101, s106, s107, s117, s120–s125 | zöld (referencia), Rust: ?      |
-| D18    | Koordináták                   | r088, r089 és minden `robot`/`discovered`/`events` mező (0-alapú)                 | zöld (referencia), Rust: ?      |
-| D19    | Szintaktikai hibák leképezése | s019–s129 (`decisions` szerint), `ref:scanner`, `ref:parser`                      | zöld (referencia), Rust: ?      |
-| D20    | Eseménysor                    | r023, r045, r046, r077, r078, r083, r087, r088, r092–r096, r102, r107             | zöld (referencia), Rust: ?      |
-| D21    | Kiértékelés lépésről lépésre  | r030, r032, r043, r047–r053, r058–r072, r077–r081, r084–r086, r099, r100          | zöld (referencia), Rust: ?      |
-| D22    | Formázó                       | –                                                                                 | hiányzik                        |
-| D23    | Programfájl importja          | s129 (a motor oldala), `web` import                                               | zöld (referencia), Rust: ?      |
+| Döntés | Téma                          | Teszteset(ek)                                                                            | Állapot                       |
+| ------ | ----------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------- |
+| D1     | Üres blokk                    | s018, s114, s115, r015, r037–r040                                                        | zöld (Rust, WASM, referencia) |
+| D2     | Normalizálás                  | T1.13 sorai, s019–s022, m026, m030                                                       | zöld (Rust, WASM, referencia) |
+| D3     | Szóközök                      | s001–s004, s023–s026, s035–s039                                                          | zöld (Rust, WASM, referencia) |
+| D4     | Behúzás                       | s009–s012, s100–s113, s118, s119, r036                                                   | zöld (Rust, WASM, referencia) |
+| D5     | Számliterálok                 | s007, s088, s089, s096–s099, r022, r075                                                  | zöld (Rust, WASM, referencia) |
+| D6     | Futásidejű egész              | r019, r069–r072                                                                          | zöld (Rust, WASM, referencia) |
+| D7     | Lépésszámlálás                | r015–r018, r028–r035, r093, r094                                                         | zöld (Rust, WASM, referencia) |
+| D8     | step forward n                | r003, r004, r021, r044, r045, r052, r054, r087, r110                                     | zöld (Rust, WASM, referencia) |
+| D9     | turn by n                     | r007, r021, r032, r046–r049, r090, r091                                                  | zöld (Rust, WASM, referencia) |
+| D10    | Hibaelsőbbség                 | r008, r010–r014, r047–r051, r058, r059, r063, r079, r081, r084, r085                     | zöld (Rust, WASM, referencia) |
+| D11    | Felfedezés                    | r020, r023–r027, r041, r042, r045, r077, r078, r082, r083, r087, r088                    | zöld (Rust, WASM, referencia) |
+| D12    | print                         | r022, r055, r069, r071, r092                                                             | zöld (Rust, WASM, referencia) |
+| D13    | Ranglista                     | `server:leaderboard.test`, `server:runs.test`                                            | zöld                          |
+| D14    | Térképverziók                 | `server:maps.test` (D14)                                                                 | zöld                          |
+| D15    | Térképformátum                | m001–m054, r106                                                                          | zöld (Rust, WASM, referencia) |
+| D16    | Hibás program nem fut         | r102, r103, `ref:machine`                                                                | zöld (Rust, WASM, referencia) |
+| D17    | Minden sor ellenőrzése        | s014, s015, s035, s040, s041, s052, s081, s086, s101, s106, s107, s117, s120–s125        | zöld (Rust, WASM, referencia) |
+| D18    | Koordináták                   | r088, r089 és minden `robot`/`discovered`/`events` mező (0-alapú)                        | zöld (Rust, WASM, referencia) |
+| D19    | Szintaktikai hibák leképezése | s019–s129 (`decisions` szerint), `ref:scanner`, `ref:parser`                             | zöld (Rust, WASM, referencia) |
+| D20    | Eseménysor                    | r023, r045, r046, r077, r078, r083, r087, r088, r092–r096, r102, r107                    | zöld (Rust, WASM, referencia) |
+| D21    | Kiértékelés lépésről lépésre  | r030, r032, r043, r047–r053, r058–r072, r077–r081, r084–r086, r099, r100                 | zöld (Rust, WASM, referencia) |
+| D22    | Formázó                       | `core:format` unit-tesztek, `core:properties` (idempotencia, `run(format(x)) == run(x)`) | zöld                          |
+| D23    | Programfájl importja          | s129 (a motor oldala), `web` import                                                      | zöld (Rust, WASM, referencia) |
 
 ## 8. Felhasználók, térképek, ranglista (spec 3.1, 3.2, 3.5)
 
@@ -220,6 +217,6 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 ```bash
 bun test --cwd tools/reference-interpreter
 bun test --cwd packages/engine
-CONFORMANCE=1 bun test --cwd packages/engine test/conformance.test.ts
-REFERENCE=1 bun test --cwd tools/reference-interpreter test/diff.test.ts
+just conformance
+DIFF_SEEDS=30000 bun test --timeout 600000 --cwd tools/reference-interpreter test/diff.test.ts
 ```

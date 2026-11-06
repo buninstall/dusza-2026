@@ -5,7 +5,9 @@ const lines = (...text: string[]) => text.join("\n");
 
 describe("run", () => {
   test("hibás térképre magyar hibát dob", () => {
-    expect(() => run("", "1 1\nx")).toThrow(/A térkép hibás: MAP_BAD_SYMBOL/);
+    expect(() => run("", "1 1\nx")).toThrow(
+      /A térkép hibás: MAP_NO_ROBOT \(1\. sor\), MAP_BAD_SYMBOL/,
+    );
   });
 
   test("szintaktikai hibánál nincs esemény, csak a kezdőmező felfedezett", () => {

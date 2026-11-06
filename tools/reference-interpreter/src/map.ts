@@ -137,6 +137,7 @@ export function parseMapText(text: string): MapCheck {
     .map((line, row) => checkRow(line, cols, row, robots, diagnostics));
   const robot = robots[0];
   if (!robot) diagnostics.push(mapDiagnostic("MAP_NO_ROBOT", header));
+  diagnostics.sort((a, b) => a.span.line - b.span.line || a.span.colStart - b.span.colStart);
   if (!robot || diagnostics.length > 0) return invalid(diagnostics);
   const map: MineMap = { rows, cols, cells, robot: robot.pos, dir: robot.dir };
   const info = mapInfo(map);

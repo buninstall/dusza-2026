@@ -298,3 +298,16 @@ A független referencia-interpreter írásakor felmerült, a D15 és a D19 álta
 9. Soronként legfeljebb egy hiba: ha a sorban ismeretlen jel van, csak `MAP_BAD_SYMBOL` az első ismeretlen jelnél; különben `MAP_ROW_LENGTH`, ha a hossz hibás.
 10. A `MAP_MULTIPLE_ROBOTS` egyszer jelenik meg, a második robotnál; a `MAP_DIM_RANGE` egyszer, akkor is, ha mindkét méret hibás; a `MAP_UNREACHABLE_GOLD` cellánként egy figyelmeztetés.
 11. Sorszámok: a `MAP_EMPTY` és a `MAP_NO_ROBOT` az 1. soron; a `MAP_ROW_COUNT` túl sok sornál az első fölösleges soron, hiányzó soroknál az 1. soron. Fejléchiba után nincs további ellenőrzés. A fejléc számjegyei vezető nullát is tartalmazhatnak (`03 15` érvényes); a `+1 1` és a `-1 1` `MAP_HEADER`; a túl nagy szám `MAP_DIM_RANGE`.
+
+## D25 – Formázó, linter és javítások
+
+A spec ezeket nem írja elő; a D22 kiegészítése és a plusz szolgáltatások pontos viselkedése.
+
+- Ha a szóközjavítás után is szintaktikai hiba marad, a formázó az eredeti szöveget és az eredeti szöveg diagnosztikáit adja vissza, így a pozíciók a változatlan szövegre mutatnak.
+- Az `indentWidth` 1 és 16 közé szorul: a 0 összevonná a blokkokat, vagyis megváltoztatná a program jelentését.
+- A csak üres sorokból álló program formázva `""`.
+- A magányos `\r` nem sorvég, a formázó nem javítja; a hiba megmarad, a forrás változatlan.
+- Javítás (`Fix`) csak ott jelenik meg, ahol biztosan helyes: a kulcsszó írásmódja csak olyan helyen, ahol az a kulcsszó elfogadott; az `1+2` → `1 + 2` és a `-5` → `0 - 5` csak akkor, ha a sor utána nyelvtanilag helyes; a behúzásban lévő tab 4, a soron belüli tab 1 szóközre cserélődik.
+- A linter folyamatelemzése: sikeres olvasás után a változó az adott ágon értéket kapottnak számít; a literál `true`/`false` feltétel konstans, a `while true` utáni kód elérhetetlen; a lépések és fordulások összevonása nem ad 100-nál nagyobb literált.
+- A linter súlyosságai: `LINT_LEADING_ZERO` és `LINT_TURN_MOD4` info, `LINT_MERGE_STEPS` és `LINT_MERGE_TURNS` hint, a többi figyelmeztetés. A figyelmeztetések nem akadályozzák a futtatást.
+- A térkép-diagnosztikák sor, azon belül oszlop szerint rendezettek; egy sorban az ismeretlen jel mellett a robotok is számítanak (`>x<` → `MAP_BAD_SYMBOL` és `MAP_MULTIPLE_ROBOTS`).

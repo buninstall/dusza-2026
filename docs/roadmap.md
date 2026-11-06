@@ -8,24 +8,19 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 
 ### P1
 
-- [ ] Szkenner: sorokra bontás, behúzás, tokenizálás, `SYN_TAB`, `SYN_EMPTY_LINE`, `SYN_DOUBLE_SPACE`, `SYN_TRAILING_SPACE`, `SYN_LONE_CR` (D2, D3), a `scanner::raw_lines` kiinduló API-ra építve.
-- [ ] Parser: a 8 utasítás és a `calculatedval` minden alakja, blokk-felépítés behúzás alapján, minden `SYN_*` kód (D4, D5, D17), a `SYN_NOT_IMPLEMENTED` stub eltávolítása.
-- [ ] VM: `run()` teljes trace-szel, lépésszámlálás (D7), robot API (D8, D9, D11, D12), minden futásidejű hiba és a hibaelsőbbség (D6, D10), `E_INT_OVERFLOW`.
-- [ ] A `#[ignore]` levétele a `syntax_conformance` és `runtime_conformance` tesztről, a `CONFORMANCE` feltétel levétele a WASM-tesztből, a CI conformance-jobjának `continue-on-error` törlése.
-- [ ] Futásidejű hibák magyar `message` szövege az `Outcome::RuntimeError`-ban (a `RuntimeErrorCode::message` alapján, a sor számával).
+- [x] Szkenner és parser a D19 és a D24 szerint, minden `SYN_*` kóddal és biztonságos javításokkal.
+- [x] VM a D6–D12, D20 és D21 szerint, minden futásidejű hibával és a lépéskorláttal.
+- [x] A conformance-tesztek bekapcsolva (293 eset), a WASM-teszt és a differenciális teszt kapu nélkül fut.
 
 ### P2
 
-- [ ] Formatter: kanonikus 4 szóközös behúzás, egy szóköz a tokenek között, `changed` jelzés.
-- [ ] Linter: `LINT_UNUSED_VAR`, `LINT_MAYBE_UNINIT`, `LINT_EMPTY_BLOCK`, `LINT_LEADING_ZERO`, `LINT_ISTHERE_RANGE`, `LINT_TURN_MOD4`, `LINT_MERGE_STEPS`, `LINT_MERGE_TURNS`, `LINT_NOOP`, `LINT_CASE_COLLISION`, `LINT_TYPE_CHANGE`, `LINT_NON_BOOL_LITERAL_CONDITION`.
-- [ ] Hibajavítási javaslatok (`Fix`): sorvégi szóköz törlése, dupla szóköz, tab cseréje, `1+2` → `1 + 2`, `-5` → `0 - 5`, kis-/nagybetűs kulcsszó javítása.
-- [ ] IDE: `SemanticToken`, `FoldRange`, `Symbol`; változónév-kiegészítés a `set` után és az értékhelyeken.
+- [x] Formázó (D22, D25), linter (minden `LINT_*` kód), szemantikus tokenek, blokkhatárok, szimbólumok, környezetfüggő kiegészítés és súgó.
 - [ ] `wasm-opt` a CI-ban, a `.wasm` méretének figyelése.
+- [ ] A már nem használt `SYN_NOT_IMPLEMENTED` kód eltávolítása (a frontend összefésülése után).
 
 ### P3
 
 - [ ] Golf-tippek (rövidebb program ugyanannyi aranyra).
-- [ ] AST-nézet a `astDump` alapján.
 - [ ] LSP-szerver a core-ból (VS Code-bővítményhez).
 
 ## web
@@ -57,16 +52,15 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 
 ### P1
 
-- [ ] A conformance-készlet bővítése: minden spec-szabályhoz legalább egy eset (lásd `docs/tesztterv.md`, „hiányzik” sorok).
-- [ ] Referencia-interpreter (`tools/reference-interpreter/src/index.ts`) a specből és a D-döntésekből.
+- [x] Conformance-készlet: 293 kézzel levezetett eset, minden spec-szabályra és D-döntésre (`docs/tesztterv.md`).
+- [x] Független referencia-interpreter a specből, 100% sorlefedettséggel.
+- [x] Seedelt generátor és differenciális teszt (2000 seed minden futáskor, egyszeri próbán 30 000 eltérés nélkül).
 - [ ] `docs/beadando.md` kitöltése a végleges funkciókkal és képernyőképekkel.
-- [ ] Demó-tartalom: a seed mintaprogramjainak ellenőrzése a kész VM-mel (`--reset-demo`).
+- [ ] Demó-tartalom ellenőrzése a kész motorral (`--reset-demo`).
 
 ### P2
 
-- [ ] Programgenerátor (`src/generate.ts`) és differenciális teszt (`REFERENCE=1`).
-- [ ] e2e: térképszerkesztő (festés, import, export, mentés), lejátszás (szünet, léptetés, leállítás), ranglista.
-- [ ] Vizuális regresszió 320 / 768 / 1024 / 1440 px-en.
+- [ ] e2e: a kiírás minden funkciója a felületen keresztül, 320 / 768 / 1024 / 1440 px-en, mindkét témában.
 
 ### P3
 

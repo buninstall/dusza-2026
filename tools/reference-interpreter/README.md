@@ -28,7 +28,7 @@ A MineScript független, TypeScriptben írt referencia-interpretere differenciá
 bun test --cwd tools/reference-interpreter
 bun test --coverage --cwd tools/reference-interpreter
 just wasm
-REFERENCE=1 bun test --cwd tools/reference-interpreter test/diff.test.ts
+bun test --cwd tools/reference-interpreter test/diff.test.ts
 ```
 
-Az összevetés alapból ki van kapcsolva; a `REFERENCE=1` kapcsolja be. Eltérésnél a teszt kiírja a seedet, a programot, a térképet és az első eltérő mezőt. Egy seed újrafuttatása: `generateProgram(seed)` vagy `generateInvalidProgram(seed)`.
+Az összevetés minden tesztfuttatáskor lefut (a `just wasm` után); a generált esetek száma a `DIFF_SEEDS` környezeti változóval növelhető. Eltérésnél a teszt kiírja a seedet, a programot, a térképet és az első eltérő mezőt. Egy seed újrafuttatása: `generateProgram(seed)` vagy `generateInvalidProgram(seed)`.

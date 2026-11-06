@@ -2,21 +2,21 @@
 
 ## Modultérkép
 
-| Crate / modul                              | Tartalom                                                                               |
-| ------------------------------------------ | -------------------------------------------------------------------------------------- |
-| `minescript-core/src/source.rs`            | normalizálás (BOM, CRLF, D2), sorokra bontás, sor ↔ UTF-16 offset                      |
-| `minescript-core/src/span.rs`              | `Span { line, colStart, colEnd, from, to }` (D18)                                      |
-| `minescript-core/src/diagnostics/`         | `Diagnostic`, `DiagCode`, `Severity`, `Fix`, magyar üzenetek (`messages.rs`)           |
-| `minescript-core/src/syntax/`              | `keywords` (`Keyword`, `Command`), `lexeme` (tokenosztályok), `scanner` (sorok, szavak, szóközhibák), `ast`, `token` |
-| `minescript-core/src/syntax/parser/`       | `line` (soronkénti nyelvtan), `faults` (az első tokenszintű hiba), `layout` (behúzásverem), `report` (üzenetek, javítások), `repair`, `tree` |
-| `minescript-core/src/format/`              | `whitespace` (D22/1), `indent` (D22/2), `format`                                       |
-| `minescript-core/src/lint/`                | `statements`, `sequences`, `variables`, `flow` (definit értékadás), `types` (statikus típusok) |
-| `minescript-core/src/ide/`                 | `analyze`, `tokens`, `outline` (fold, szimbólum), `completion`, `hover`, `docs`        |
-| `minescript-core/src/map/`                 | `Map`, `Cell`, `Dir`, `Pos`, `parse_map`, `serialize_map`, `map_info`                  |
-| `minescript-core/src/runtime/`             | `machine` (VM, eseménysor), `eval` (műveletek), `vm` (`run`, `run_program`), `trace`, `value`, `robot`, `error` |
-| `minescript-core/tests/`                   | `conformance`, `properties` (proptest), `samples` (seed-programok), `export_bindings`  |
-| `minescript-wasm`                          | wasm-bindgen exportok, JSON-kompatibilis szerializálás, magyar `JsError`               |
-| `minescript-cli`                           | `minescript check`, `fmt`, `lint`, `run`, `ast`, `map-check`, ariadne-diagnosztikák    |
+| Crate / modul                        | Tartalom                                                                                                                                     |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `minescript-core/src/source.rs`      | normalizálás (BOM, CRLF, D2), sorokra bontás, sor ↔ UTF-16 offset                                                                            |
+| `minescript-core/src/span.rs`        | `Span { line, colStart, colEnd, from, to }` (D18)                                                                                            |
+| `minescript-core/src/diagnostics/`   | `Diagnostic`, `DiagCode`, `Severity`, `Fix`, magyar üzenetek (`messages.rs`)                                                                 |
+| `minescript-core/src/syntax/`        | `keywords` (`Keyword`, `Command`), `lexeme` (tokenosztályok), `scanner` (sorok, szavak, szóközhibák), `ast`, `token`                         |
+| `minescript-core/src/syntax/parser/` | `line` (soronkénti nyelvtan), `faults` (az első tokenszintű hiba), `layout` (behúzásverem), `report` (üzenetek, javítások), `repair`, `tree` |
+| `minescript-core/src/format/`        | `whitespace` (D22/1), `indent` (D22/2), `format`                                                                                             |
+| `minescript-core/src/lint/`          | `statements`, `sequences`, `variables`, `flow` (definit értékadás), `types` (statikus típusok)                                               |
+| `minescript-core/src/ide/`           | `analyze`, `tokens`, `outline` (fold, szimbólum), `completion`, `hover`, `docs`                                                              |
+| `minescript-core/src/map/`           | `Map`, `Cell`, `Dir`, `Pos`, `parse_map`, `serialize_map`, `map_info`                                                                        |
+| `minescript-core/src/runtime/`       | `machine` (VM, eseménysor), `eval` (műveletek), `vm` (`run`, `run_program`), `trace`, `value`, `robot`, `error`                              |
+| `minescript-core/tests/`             | `conformance`, `properties` (proptest), `samples` (seed-programok), `export_bindings`                                                        |
+| `minescript-wasm`                    | wasm-bindgen exportok, JSON-kompatibilis szerializálás, magyar `JsError`                                                                     |
+| `minescript-cli`                     | `minescript check`, `fmt`, `lint`, `run`, `ast`, `map-check`, ariadne-diagnosztikák                                                          |
 
 ## Invariánsok
 
@@ -27,14 +27,9 @@
 - Határon átmenő típus: `Serialize + Deserialize + TS`, `#[serde(rename_all = "camelCase")]`, enumoknál `tag = "kind"`. Változás után `just types`, a generált fájlok commitolása.
 - Az `#[ts(export)]` attribútumot nem használjuk (kommentfejlécet írna); az új gyökértípust az `tests/export_bindings.rs` listájába kell felvenni.
 
-## A conformance bekapcsolása
+## Conformance
 
-Amikor a parser és a VM elkészül:
-
-1. vedd le az `#[ignore]`-t a `syntax_conformance` és a `runtime_conformance` tesztről (`tests/conformance.rs`);
-2. szólj a testing gazdának, hogy a `packages/engine/test/conformance.test.ts`-ből vegye ki a `CONFORMANCE` feltételt;
-3. szólj a web gazdának, hogy a CI conformance-jobjából törölje a `continue-on-error`-t;
-4. futtasd: `just conformance`.
+A `syntax_conformance`, a `runtime_conformance` és a `maps_conformance` mindig fut; a WASM-teszt és a referencia-interpreterrel végzett differenciális teszt is (`just conformance`). Új nyelvi szabályhoz előbb conformance-eset kell, és a referencia-interpreternek is követnie kell.
 
 ## Megvalósítási megjegyzések
 
