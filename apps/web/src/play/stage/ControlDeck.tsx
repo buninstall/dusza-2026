@@ -14,6 +14,7 @@ import {
   usePlayback,
 } from "../playback-store.ts";
 import { DeckKeys } from "./DeckKeys.tsx";
+import "./ControlDeck.css";
 
 function TimelineMarks() {
   const result = usePlayback((state) => state.result);

@@ -31,7 +31,7 @@ const SCREENS: readonly Screen[] = [
     name: "terkepek",
     open: async (page) => {
       await page.goto("/maps");
-      await heading(page, "Térképek");
+      await heading(page, "Pályák");
     },
   },
   {
@@ -46,7 +46,7 @@ const SCREENS: readonly Screen[] = [
     open: async (page) => {
       await page.goto("/maps");
       await page.getByRole("link", { name: "Szerkesztés: 8. A nagy bánya" }).click();
-      await heading(page, "8. A nagy bánya szerkesztése");
+      await heading(page, "Térkép szerkesztése");
       await expect(page.getByRole("gridcell")).toHaveCount(225);
     },
   },

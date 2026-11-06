@@ -1,9 +1,9 @@
 import { act, screen, waitFor, within } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { toast } from "../src/components/ui/Toast.tsx";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { CORRIDOR, demoUser, LABYRINTH, mapSummary } from "./support/fixtures.ts";
+import { CORRIDOR, demoUser, LABYRINTH, mapDetail, mapSummary } from "./support/fixtures.ts";
 
 const MAPS = [mapSummary(1, "Folyosó", CORRIDOR), mapSummary(2, "Labirintus", LABYRINTH, 2)];
 
@@ -135,6 +135,62 @@ describe("ranglista", () => {
     await user.click(screen.getByRole("option", { name: "1. verzió" }));
     expect(await screen.findByText("Ezen a verzión még nincs futás.")).toBeTruthy();
     expect(router.state.location.search).toEqual({ version: 21 });
+  });
+});
+
+describe("ranglista részletei", () => {
+  test("régebbi verziónál jelzés, a saját sor kilógásakor ugrósáv", async () => {
+    const callbacks: IntersectionObserverCallback[] = [];
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          callbacks.push(callback);
+        }
+        observe() {
+          return undefined;
+        }
+        disconnect() {
+          return undefined;
+        }
+      },
+    );
+    respond("GET", "/maps/2/leaderboard", { ...BOARD, versionId: 21 });
+    respond("GET", "/maps/2", mapDetail(2, "Labirintus", LABYRINTH));
+    const { user } = renderApp("/leaderboard/2");
+    expect(await screen.findByText("v1 · régebbi verzió")).toBeTruthy();
+    expect(screen.getByText(/Ez a v1 ranglistája/)).toBeTruthy();
+    expect(screen.getByText("2. hely")).toBeTruthy();
+    await waitFor(() => expect(callbacks.length).toBeGreaterThan(0));
+    act(() => {
+      for (const callback of callbacks) {
+        callback(
+          [{ isIntersecting: false } as IntersectionObserverEntry],
+          {} as IntersectionObserver,
+        );
+      }
+    });
+    expect(screen.getByText("A te helyed: 2.")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Ugrás a soromhoz" }));
+    expect(document.activeElement?.textContent).toBe("demo1te");
+    vi.unstubAllGlobals();
+  });
+
+  test("üres ranglista a játékra hív, a saját legjobb hiányát jelzi", async () => {
+    respond("GET", "/maps/2/leaderboard", { ...BOARD, entries: [] });
+    respond("GET", "/maps/2", mapDetail(2, "Labirintus", LABYRINTH));
+    renderApp("/leaderboard/2");
+    expect(await screen.findByText("Ezen a verzión még nincs futás.")).toBeTruthy();
+    expect(screen.getByText("Még nem futtattál programot ezen a verzión.")).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: "Játék ezen a térképen" })).toHaveLength(2);
+    expect(await screen.findByText("4×5 · 2 arany · v2")).toBeTruthy();
+  });
+
+  test("/leaderboard/abc: nincs ilyen oldal", async () => {
+    renderApp("/leaderboard/abc");
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "404: nincs ilyen oldal" }),
+    ).toBeTruthy();
   });
 });
 

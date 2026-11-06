@@ -12,6 +12,25 @@ export type PlayCommands = {
 const NATIVE_KEYS =
   '[role="grid"], [role="slider"], [role="toolbar"], [role="radiogroup"], [role="menu"], [role="dialog"], input, textarea, [contenteditable="true"]';
 const ACTIVATES = 'button, a[href], [role="button"], [role="radio"], [role="link"]';
+const READ_ONLY_GRID = '[role="grid"][aria-readonly="true"]';
+const GRID_KEYS = new Set([
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
+]);
+
+function ownsKey(target: Element, key: string): boolean {
+  const owner = target.closest(NATIVE_KEYS);
+  if (!owner) {
+    return false;
+  }
+  return !owner.matches(READ_ONLY_GRID) || GRID_KEYS.has(key);
+}
 
 function centerAction(): void {
   const playback = usePlayback.getState();
@@ -63,7 +82,7 @@ function stageKey(event: KeyboardEvent, stage: HTMLElement | null): (() => void)
     return null;
   }
   const target = event.target instanceof Element ? event.target : null;
-  if (!target || !stage.contains(target) || target.closest(NATIVE_KEYS)) {
+  if (!target || !stage.contains(target) || ownsKey(target, event.key)) {
     return null;
   }
   if (event.key === " ") {

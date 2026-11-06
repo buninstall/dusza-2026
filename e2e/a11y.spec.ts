@@ -124,7 +124,7 @@ for (const theme of THEMES) {
       await loginAs(page, ADMIN);
       await page.getByRole("link", { name: "Szerkesztés: 4. Zsákutcák" }).click();
       await expect(
-        page.getByRole("heading", { level: 1, name: "4. Zsákutcák szerkesztése" }),
+        page.getByRole("heading", { level: 1, name: "Térkép szerkesztése" }),
       ).toBeVisible();
       await expectClean(page, "meglévő térkép");
       await page.getByRole("button", { name: "Térkép törlése" }).click();
@@ -135,17 +135,31 @@ for (const theme of THEMES) {
       await page.getByRole("button", { name: "Mégse" }).click();
     });
 
+    test("futásnapló és visszajátszás", async ({ page }) => {
+      await login(page);
+      await page.getByRole("navigation").getByRole("link", { name: "Futásaim" }).click();
+      await expect(page.getByRole("heading", { level: 1, name: "Futásaim" })).toBeVisible();
+      await page
+        .getByRole("link", { name: /^Visszajátszás: / })
+        .first()
+        .click();
+      await expect(page).toHaveURL(/\/runs\/\d+$/);
+      await expect(page.getByText(/^Rögzített eredmény: /)).toBeVisible();
+      await expectClean(page, "visszajátszás");
+    });
+
     test("ranglista, kézikönyv, futásnapló és felhasználókezelés", async ({ page }) => {
       await loginAs(page, ADMIN);
       await page.getByRole("link", { name: "Ranglista: 1. Egyenes folyosó" }).click();
       await expect(page.getByRole("heading", { level: 1, name: /Ranglista/ })).toBeVisible();
       await expectClean(page, "ranglista");
       await page.getByRole("link", { name: "Kézikönyv" }).click();
-      await expect(
-        page.getByRole("heading", { level: 1, name: "A MineScript kézikönyve" }),
-      ).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: "Kézikönyv" })).toBeVisible();
       await expectClean(page, "kézikönyv");
-      await page.getByRole("link", { name: "Futásaim" }).click();
+      await page.getByRole("link", { name: "Receptek: kész programok minden pályához" }).click();
+      await expect(page.getByRole("heading", { level: 1, name: "Receptek" })).toBeVisible();
+      await expectClean(page, "receptek");
+      await page.getByRole("navigation").getByRole("link", { name: "Futásaim" }).click();
       await expect(page.getByRole("heading", { level: 1, name: "Futásaim" })).toBeVisible();
       await expectClean(page, "futásnapló");
       await page.getByRole("link", { name: "Felhasználók" }).click();

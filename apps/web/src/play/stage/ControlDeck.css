@@ -1,0 +1,203 @@
+.deck {
+  grid-area: deck;
+  display: grid;
+  grid-template-columns: auto minmax(8rem, 1fr) 9.5rem auto;
+  grid-template-areas: "keys timeline tempo lever";
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-top: var(--border-thin) solid var(--c-line-strong);
+  border-bottom: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+  box-shadow: inset 0 var(--border-thin) 0 var(--c-bevel-hi);
+}
+
+@container stage (width < 46rem) {
+  .deck {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "keys tempo lever"
+      "timeline timeline timeline";
+  }
+}
+
+.deck-keys {
+  grid-area: keys;
+  display: flex;
+  gap: var(--space-1);
+}
+
+.deck-keys .btn {
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.deck-timeline {
+  grid-area: timeline;
+  min-width: 0;
+}
+
+.deck-tempo {
+  grid-area: tempo;
+  min-width: 0;
+}
+
+.deck-lever {
+  position: relative;
+  grid-area: lever;
+  display: flex;
+  flex-direction: column;
+}
+
+.deck-lever .btn {
+  min-width: 9rem;
+}
+
+.deck-lever-hazard {
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--space-1) * -1 - 2px);
+  left: 0;
+
+  --hazard-height: 4px;
+}
+
+.deck-timeline .slider-rail {
+  height: 10px;
+  border-width: var(--border-thin) 0;
+  background: var(--c-screen) var(--rail-pattern);
+  background-size: 8px 10px;
+}
+
+.deck-timeline .slider-fill {
+  height: 10px;
+  border-width: var(--border-thin) 0;
+  background: var(--c-exec-line) var(--rail-pattern);
+  background-size: 8px 10px;
+}
+
+.deck-timeline .slider-thumb {
+  width: var(--target-min);
+  height: var(--target-min);
+  background: var(--px-steel);
+  box-shadow:
+    inset var(--border-thin) var(--border-thin) 0 var(--px-steel-hi),
+    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--px-steel-lo),
+    var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow);
+}
+
+.deck-marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.deck-marks > span {
+  position: absolute;
+  left: calc(var(--at) * 100%);
+  width: 3px;
+  translate: -50% 0;
+}
+
+.deck-marks > span[data-kind="gold"] {
+  top: 4px;
+  height: 6px;
+  background: var(--c-reward);
+}
+
+.deck-marks > span[data-kind="print"] {
+  bottom: 4px;
+  width: 2px;
+  height: 6px;
+  background: var(--c-discovery);
+}
+
+.deck-marks > span[data-kind="ok"],
+.deck-marks > span[data-kind="error"] {
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  translate: -100% 0;
+}
+
+.deck-marks > span[data-kind="ok"] {
+  background: var(--c-success);
+}
+
+.deck-marks > span[data-kind="error"] {
+  background: var(--c-danger-ink);
+}
+
+.deck-detents {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  translate: 0 -50%;
+  pointer-events: none;
+}
+
+.deck-detents > span {
+  width: 2px;
+  height: 14px;
+  background: var(--c-line-strong);
+}
+
+.deck-tempo .slider-fill {
+  background: var(--c-action);
+}
+
+.deck[data-layout="panes"] {
+  position: sticky;
+  bottom: 0;
+  grid-area: auto;
+  z-index: 9;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "lever keys";
+  padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+  border: var(--border-thin) solid var(--c-line-strong);
+  box-shadow: 0 calc(var(--shadow-offset) * -1) 0 var(--c-shadow);
+}
+
+.deck[data-layout="panes"] .deck-lever .btn {
+  min-width: 0;
+}
+
+.deck[data-layout="panes"] .deck-keys {
+  justify-content: flex-end;
+}
+
+.stage-timeline {
+  grid-area: timeline;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(8rem, 1fr);
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border-top: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+}
+
+.stage-timeline > .slider {
+  grid-area: auto;
+}
+
+@container stage (width < 30rem) {
+  .stage-timeline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 30rem) {
+  .deck[data-layout="panes"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "lever"
+      "keys";
+  }
+
+  .deck[data-layout="panes"] .deck-keys {
+    justify-content: space-between;
+  }
+}

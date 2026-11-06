@@ -30,6 +30,8 @@ async function createMap(page: Page, title: string): Promise<string> {
   await expect(page.getByRole("gridcell")).toHaveCount(8);
   await page.getByRole("textbox", { name: /Cím/ }).fill(title);
   await page.getByRole("button", { name: "Mentés", exact: true }).click();
+  await expect(page).toHaveURL(/\/maps\/\d+\/edit$/);
+  await page.getByRole("link", { name: "Kipróbálás" }).click();
   await expect(page).toHaveURL(/\/play\/\d+/);
   return page.url();
 }

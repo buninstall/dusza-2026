@@ -1,12 +1,16 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
   editor,
+  expectFinished,
   importProgramFile,
   login,
+  mapGrid,
   openPlay,
   replaceProgram,
   runProgram,
+  setSpeed,
 } from "./helpers.ts";
+import { recipeText } from "./recipes.ts";
 
 const LONG_PROGRAM = [
   "set i to 0",
@@ -103,4 +107,23 @@ test("a leállított futás nem kerül a ranglistára", async ({ page }) => {
   await page.getByRole("button", { name: "Leállítás" }).click();
   await expect(page.getByText("A leállított futás nem kerül a ranglistára.").first()).toBeVisible();
   expect(await recordedRunCount(page, "5. Kígyó")).toBe(before);
+});
+
+test("375 px-en a bánya és a program külön fülön van, a vezérlőpult mindkettőn kéznél", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openPlay(page, "1. Egyenes folyosó");
+  const stageTab = page.getByRole("tab", { name: "Bánya" });
+  await expect(stageTab).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "Program" }).click();
+  await expect(editor(page)).toBeVisible();
+  await expect(mapGrid(page)).toBeHidden();
+  await replaceProgram(page, recipeText("01-egyenes-folyoso.ms"));
+  await setSpeed(page, "max");
+  await page.getByRole("button", { name: "Futtatás" }).click();
+  await expect(stageTab).toHaveAttribute("aria-selected", "true");
+  await expect(mapGrid(page)).toBeVisible();
+  await expectFinished(page, 2, 4);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });

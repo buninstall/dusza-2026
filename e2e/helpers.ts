@@ -25,7 +25,7 @@ export async function loginAs(page: Page, account: Account): Promise<void> {
   await page.getByLabel("Felhasználónév").fill(account.username);
   await page.getByLabel("Jelszó").fill(account.password);
   await page.getByRole("button", { name: "Belépés" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Térképek" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Pályák" })).toBeVisible();
 }
 
 export async function login(page: Page): Promise<void> {
@@ -44,7 +44,7 @@ export async function register(page: Page, prefix: string): Promise<Account> {
   await page.getByLabel("Felhasználónév").fill(account.username);
   await page.getByLabel("Jelszó").fill(account.password);
   await page.getByRole("button", { name: "Fiók létrehozása" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Térképek" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Pályák" })).toBeVisible();
   return account;
 }
 
@@ -76,8 +76,10 @@ export async function replaceProgram(page: Page, source: string): Promise<void> 
   await page.keyboard.press("Delete");
   if (source.length > 0) {
     await page.keyboard.insertText(source);
+    await expect(box).toHaveText(source.replaceAll("\n", ""));
+  } else {
+    await expect(box.locator(".cm-placeholder")).toBeVisible();
   }
-  await expect(box).toHaveText(source.replaceAll("\n", ""));
 }
 
 export async function runProgram(page: Page): Promise<void> {
@@ -160,7 +162,7 @@ export async function setSpeed(page: Page, edge: "min" | "max"): Promise<void> {
   const slider = speedSlider(page);
   await slider.focus();
   await page.keyboard.press(edge === "max" ? "End" : "Home");
-  await expect(slider).toHaveValue(edge === "max" ? "30" : "1");
+  await expect(slider).toHaveAttribute("aria-valuetext", edge === "max" ? "30 sor/s" : "1 sor/s");
 }
 
 export function transport(page: Page, name: string): Locator {
@@ -233,13 +235,15 @@ export async function openFromLibrary(page: Page, title: string): Promise<void> 
   await dismissToasts(page);
 }
 
+function programFileMenu(page: Page): Locator {
+  return page.getByRole("region", { name: "Program" }).getByRole("button", { name: "Fájl" });
+}
+
 export async function importProgramFile(page: Page, path: UploadFile): Promise<void> {
   await dismissToasts(page);
   const chooser = page.waitForEvent("filechooser");
-  await page
-    .getByRole("region", { name: "Program" })
-    .getByRole("button", { name: "Importálás" })
-    .click();
+  await programFileMenu(page).click();
+  await page.getByRole("menuitem", { name: "Importálás fájlból…" }).click();
   await (await chooser).setFiles(path);
 }
 
@@ -265,10 +269,9 @@ export async function downloadBytes(
 }
 
 export async function exportProgram(page: Page): Promise<{ name: string; bytes: Buffer }> {
-  return downloadBytes(
-    page,
-    page.getByRole("region", { name: "Program" }).getByRole("button", { name: "Exportálás" }),
-  );
+  await dismissToasts(page);
+  await programFileMenu(page).click();
+  return downloadBytes(page, page.getByRole("menuitem", { name: "Exportálás fájlba" }));
 }
 
 export async function exportMap(page: Page): Promise<{ name: string; bytes: Buffer }> {
@@ -311,11 +314,12 @@ export async function pickDirection(
   page: Page,
   dir: "észak" | "kelet" | "dél" | "nyugat",
 ): Promise<void> {
+  const radio = page.getByRole("radio", { name: dir, exact: true });
   await page
     .getByRole("radiogroup", { name: "A robot kezdőiránya" })
-    .getByText(dir, { exact: true })
+    .locator("label", { has: radio })
     .click();
-  await expect(page.getByRole("radio", { name: dir, exact: true })).toBeChecked();
+  await expect(radio).toBeChecked();
 }
 
 export type TableRow = Record<string, string>;

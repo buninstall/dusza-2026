@@ -40,7 +40,17 @@ function stepper(page: Page, field: "Sorok" | "Oszlopok", action: "növelése" |
 }
 
 function saveButton(page: Page) {
-  return page.getByRole("button", { name: "Mentés", exact: true });
+  return page.getByRole("button", { name: /^Mentés/ });
+}
+
+async function expectSaveRefused(page: Page): Promise<void> {
+  const save = saveButton(page);
+  await expect(save).toHaveAttribute("data-blocked", "true");
+  const url = page.url();
+  await save.click();
+  await expect(page.getByRole("heading", { level: 2, name: "Ellenőrzés" })).toBeFocused();
+  await expect(page.getByText(/^Még nem menthető: \d+ hiba\./)).toBeAttached();
+  expect(page.url()).toBe(url);
 }
 
 function mapRow(text: string, row: number): string {
@@ -71,7 +81,7 @@ test("a méret csak 1 és 15 között állítható", async ({ page }) => {
   await expect(sizeField(page, "Oszlopok")).toHaveValue("2");
   await page.getByRole("textbox", { name: /Cím/ }).fill("Egycellás");
   await expect(page.getByText("A térkép érvényes, menthető.")).toBeVisible();
-  await expect(saveButton(page)).toBeEnabled();
+  await expect(saveButton(page)).toHaveAttribute("data-blocked", "false");
   const exported = await exportMap(page);
   expect(exported.bytes.toString("utf8")).toBe("1 2\n>.\n");
 });
@@ -117,21 +127,26 @@ test("minden mezőtípus festhető, pontosan egy robot van, mind a négy iránny
   await expect(robots).toHaveCount(0);
   await expect(page.getByText("A térkép így nem menthető.")).toBeVisible();
   await expect(page.getByText("Nincs robot.", { exact: true })).toBeVisible();
-  await expect(saveButton(page)).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Exportálás", exact: true })).toBeDisabled();
+  await expectSaveRefused(page);
+  await expect(page.getByRole("button", { name: "Exportálás", exact: true })).toHaveAttribute(
+    "data-blocked",
+    "true",
+  );
+  await page.getByRole("button", { name: "Exportálás", exact: true }).click();
+  await expect(page.getByText("Csak érvényes térkép exportálható.")).toBeVisible();
 
   await pickTool(page, "Robot");
   await editorCell(page, 1, 3).click();
   await expect(editorCell(page, 1, 3)).toHaveAccessibleName("1. sor, 3. oszlop: robot, kelet felé");
   await expect(robots).toHaveCount(1);
-  await expect(saveButton(page)).toBeEnabled();
+  await expect(saveButton(page)).toHaveAttribute("data-blocked", "false");
   const exported = await exportMap(page);
   expect(mapRow(exported.bytes.toString("utf8"), 1)).toBe("..>.......");
   expect(mapRow(exported.bytes.toString("utf8"), 3)).toBe("....@.....");
 
   await page.getByRole("textbox", { name: /Cím/ }).fill("");
   await expect(page.getByText("A térkép címe hiányzik.")).toBeVisible();
-  await expect(saveButton(page)).toBeDisabled();
+  await expectSaveRefused(page);
 });
 
 test("minden mintapálya fájlból betölthető, és az exportja bájtra egyezik a fájllal", async ({
@@ -181,9 +196,11 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
   await importMapFile(page, recipePath("palyak/01-egyenes-folyoso.txt"));
   await page.getByRole("textbox", { name: /Cím/ }).fill(title);
   await saveButton(page).click();
+  await expect(page).toHaveURL(/\/maps\/\d+\/edit$/);
+  await page.getByRole("link", { name: "Kipróbálás" }).click();
   await expect(page).toHaveURL(/\/play\/\d+/);
   await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
-  await expect(page.getByText("Vezérlőpult · 1. verzió")).toBeVisible();
+  await expect(page.getByText(/^v1 · \d+×\d+ · \d+ arany$/)).toBeVisible();
 
   await openFromLibrary(page, "Recept – 1. Egyenes folyosó");
   await setSpeed(page, "max");
@@ -191,9 +208,7 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
   await expectFinished(page, 2, 4);
 
   await page.getByRole("link", { name: "Térkép szerkesztése" }).click();
-  await expect(
-    page.getByRole("heading", { level: 1, name: `${title} szerkesztése` }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Térkép szerkesztése" })).toBeVisible();
   await expect(page.getByText("Jelenleg a(z) 1. verzió aktív.")).toBeVisible();
   await expect(
     page.getByText(
@@ -216,8 +231,8 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
   await expect(page.getByText("A térkép elmentve.", { exact: true })).toBeVisible();
   await expect(page.getByText("Jelenleg a(z) 2. verzió aktív.")).toBeVisible();
 
-  await page.getByRole("link", { name: "Játék", exact: true }).click();
-  await expect(page.getByText("Vezérlőpult · 2. verzió")).toBeVisible();
+  await page.getByRole("link", { name: "Kipróbálás" }).click();
+  await expect(page.getByText(/^v2 · \d+×\d+ · \d+ arany$/)).toBeVisible();
   await expect(page.getByRole("gridcell", { name: "1. sor, 8. oszlop: fal" })).toBeAttached();
   await page.getByRole("link", { name: "Ranglista" }).click();
   await expect(page.getByRole("heading", { level: 1, name: `Ranglista – ${title}` })).toBeVisible();

@@ -7,6 +7,7 @@ import { PixelText } from "../../pixel/PixelText.tsx";
 import { type Blocked, errorLinesOf, type ReportKind } from "../phase.ts";
 import { PROGRAM_MAX_CHARS } from "../program-file.ts";
 import type { Submission } from "../useRunSession.ts";
+import "./ShiftReport.css";
 
 type ReportActions = {
   onShowLine: (line: number) => void;

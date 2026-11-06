@@ -90,7 +90,7 @@ test("regisztráció ellenőrzéssel, belépés, kijelentkezés után a védett 
 
   const username = uniqueName("ujbanyasz");
   await submitCredentials(page, "Fiók létrehozása", username, NEW_PASSWORD);
-  await expect(page.getByRole("heading", { level: 1, name: "Térképek" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Pályák" })).toBeVisible();
   await expect(page.getByRole("button", { name: `Felhasználói menü: ${username}` })).toBeVisible();
   await expect(navLink(page, "Felhasználók")).toHaveCount(0);
 

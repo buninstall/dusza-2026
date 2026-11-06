@@ -1,0 +1,167 @@
+.log {
+  grid-area: log;
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-areas: "console memory";
+  gap: var(--space-2);
+  min-height: 0;
+  padding: var(--space-2);
+  background: var(--c-surface);
+}
+
+.log[data-report="true"] {
+  grid-template-columns: minmax(17rem, 4fr) minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-areas: "report console memory";
+}
+
+.stage[data-layout="panes"] .log,
+.stage[data-layout="panes"] .log[data-report="true"] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: none;
+}
+
+.log-cell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-1);
+  min-width: 0;
+  min-height: 0;
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+}
+
+.log-report {
+  grid-area: report;
+}
+
+.log-console {
+  grid-area: console;
+}
+
+.log-memory {
+  grid-area: memory;
+}
+
+.stage[data-layout="panes"] .log-cell {
+  grid-area: auto;
+  max-height: 18rem;
+}
+
+.log-head {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  padding: var(--space-1) var(--space-2) 0;
+  color: var(--c-text-muted);
+}
+
+.log-tape,
+.log-scroll {
+  min-height: 0;
+  overflow: auto;
+  padding: 0 var(--space-2) var(--space-2);
+}
+
+.log-empty {
+  padding: var(--space-1) var(--space-2) var(--space-2);
+  font: var(--type-help);
+  color: var(--c-text-faint);
+}
+
+.log-lines {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.log-line {
+  animation: log-feed var(--motion-tick) var(--ease-px2);
+}
+
+.log-line-button {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--target-min);
+  align-items: center;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.log-line-button:hover:not(:disabled) {
+  background: var(--c-surface);
+}
+
+.log-line-button:disabled {
+  cursor: default;
+}
+
+.log-step {
+  min-width: 6ch;
+  font: var(--type-mono-sm);
+  color: var(--c-text-faint);
+}
+
+.log-line samp {
+  font: var(--type-mono);
+  color: var(--c-discovery);
+}
+
+.log-line samp[data-kind="bool"] {
+  color: var(--c-success);
+}
+
+.log-table {
+  width: 100%;
+  font: var(--type-help);
+}
+
+.log-table th,
+.log-table td {
+  padding: 2px var(--space-2);
+  border-bottom: 1px solid var(--c-line);
+  text-align: left;
+}
+
+.log-table thead th {
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+}
+
+.log-table tr[data-changed="true"] > * {
+  background: var(--c-exec-line);
+}
+
+.log-table code {
+  font: var(--type-mono-sm);
+}
+
+.log-table code[data-kind="int"] {
+  color: var(--c-discovery);
+}
+
+.log-table code[data-kind="bool"] {
+  color: var(--c-success);
+}
+
+.log-changed {
+  margin-left: var(--space-1);
+  color: var(--c-current);
+}
+
+@keyframes log-feed {
+  from {
+    translate: 0 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .log-line {
+    animation: none;
+  }
+}

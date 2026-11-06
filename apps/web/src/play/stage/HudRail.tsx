@@ -6,6 +6,7 @@ import { lampFor, type StagePhase } from "../phase.ts";
 import { CartGauge } from "./CartGauge.tsx";
 import { Compass } from "./Compass.tsx";
 import { DepthGauge } from "./DepthGauge.tsx";
+import "./HudRail.css";
 
 type LineReadoutProps = {
   line: number | null;

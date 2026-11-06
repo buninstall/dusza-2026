@@ -4,6 +4,7 @@ import { InlineText } from "../../components/InlineText.tsx";
 import { hu } from "../../i18n/hu.ts";
 import { PixelText } from "../../pixel/PixelText.tsx";
 import { type ConsoleEntry, formatValue } from "../derive.ts";
+import "./LogStrip.css";
 
 function StripCell({
   title,

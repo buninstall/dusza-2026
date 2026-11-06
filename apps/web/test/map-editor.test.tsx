@@ -136,6 +136,52 @@ describe("új térkép", () => {
     expect(cell("3. sor, 5. oszlop: üres kamra")).toBeTruthy();
   });
 
+  test("egérrel: téglalap húzása, kitöltés, robot elhelyezése és forgatása, rávezetett előnézet", async () => {
+    const { user } = await openNew();
+    const drag = (from: HTMLElement, to: HTMLElement) => {
+      document.elementFromPoint = vi.fn(() => to);
+      fireEvent.pointerDown(from, { button: 0 });
+      fireEvent.pointerMove(to, { clientX: 1, clientY: 1 });
+      fireEvent.pointerUp(window);
+    };
+    await user.click(screen.getByRole("radio", { name: /Téglalap/ }));
+    drag(cell("2. sor, 2. oszlop: üres kamra"), cell("3. sor, 4. oszlop: üres kamra"));
+    expect(cell("3. sor, 4. oszlop: fal")).toBeTruthy();
+    expect(screen.getByText("Téglalap: 6 mező, Fal")).toBeTruthy();
+
+    await user.click(screen.getByRole("radio", { name: /Kitöltés/ }));
+    await user.click(screen.getByRole("radio", { name: /Arany/ }));
+    fireEvent.pointerDown(cell("7. sor, 10. oszlop: üres kamra"), { button: 0 });
+    fireEvent.pointerUp(window);
+    expect(cell("1. sor, 2. oszlop: arany")).toBeTruthy();
+    expect(cell("2. sor, 2. oszlop: fal")).toBeTruthy();
+
+    await user.click(screen.getByRole("radio", { name: /Robot/ }));
+    fireEvent.pointerDown(cell("5. sor, 5. oszlop: arany"), { button: 0 });
+    fireEvent.pointerUp(window);
+    expect(cell("5. sor, 5. oszlop: robot, kelet felé")).toBeTruthy();
+    fireEvent.pointerDown(cell("5. sor, 5. oszlop: robot, kelet felé"), { button: 0 });
+    fireEvent.pointerUp(window);
+    expect(cell("5. sor, 5. oszlop: robot, észak felé")).toBeTruthy();
+
+    document.elementFromPoint = vi.fn(() => cell("6. sor, 6. oszlop: arany"));
+    fireEvent.pointerMove(screen.getByRole("grid"), { clientX: 2, clientY: 2 });
+    expect(document.querySelector('[data-source="hover"]')).not.toBeNull();
+    fireEvent.pointerLeave(screen.getByRole("grid"));
+    expect(document.querySelector('[data-source="hover"]')).toBeNull();
+  });
+
+  test("Shift+nyíl festés közben mozog, a Shift felengedése egy lépésbe zárja", async () => {
+    const { user } = await openNew();
+    cell("1. sor, 2. oszlop: üres kamra").focus();
+    await user.keyboard("{Shift>}{ArrowRight}{ArrowRight}{/Shift}");
+    expect(cell("1. sor, 3. oszlop: fal")).toBeTruthy();
+    expect(cell("1. sor, 4. oszlop: fal")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Visszavonás" }));
+    expect(cell("1. sor, 3. oszlop: üres kamra")).toBeTruthy();
+    expect(cell("1. sor, 4. oszlop: üres kamra")).toBeTruthy();
+  });
+
   test("méretváltás a léptetőkkel, egy lépésben visszavonható", async () => {
     const { user } = await openNew();
     await user.click(screen.getByRole("button", { name: "Sorok csökkentése" }));

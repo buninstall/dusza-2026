@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 import { recipeText } from "../src/recipes/catalog.ts";
 import { respond } from "./support/api.ts";
@@ -88,5 +88,51 @@ describe("kézikönyv", () => {
     });
     expect(entry.getAttribute("href")).toBe("/manual/receptek");
     expect(screen.getByRole("heading", { level: 1, name: "Kézikönyv" })).toBeTruthy();
+  });
+
+  test("görgetéskor a tartalomjegyzék a látható szakaszt jelöli", async () => {
+    const callbacks: IntersectionObserverCallback[] = [];
+    const observed: Element[] = [];
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          callbacks.push(callback);
+        }
+        observe(element: Element) {
+          observed.push(element);
+        }
+        disconnect() {
+          return undefined;
+        }
+      },
+    );
+    renderApp("/manual");
+    const toc = await screen.findByRole("navigation", { name: "Tartalom" });
+    await waitFor(() => expect(observed.length).toBeGreaterThan(2));
+    const [first, second] = observed;
+    const notify = (target: Element | undefined, isIntersecting: boolean) =>
+      act(() => {
+        for (const callback of callbacks) {
+          callback(
+            [{ target, isIntersecting } as unknown as IntersectionObserverEntry],
+            {} as IntersectionObserver,
+          );
+        }
+      });
+    notify(first, false);
+    notify(second, true);
+    expect(
+      within(toc)
+        .getByRole("link", { name: /A térkép/ })
+        .getAttribute("aria-current"),
+    ).toBe("location");
+    notify(second, false);
+    expect(
+      within(toc)
+        .getByRole("link", { name: /A térkép/ })
+        .getAttribute("aria-current"),
+    ).toBe("location");
+    vi.unstubAllGlobals();
   });
 });

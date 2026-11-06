@@ -151,6 +151,10 @@ export function PlayScreen(props: PlayScreenProps) {
       return;
     }
     ui.setFaultBarOpen(true);
+    if (layout === "panes" && ui.pane !== "sheet") {
+      ui.setPane("sheet");
+      setPaneNote(hu.play.paneSheetAnnounce);
+    }
   };
 
   const run = (isFromLever: boolean) => afterRun(props.onRun(), isFromLever);

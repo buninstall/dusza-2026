@@ -467,6 +467,7 @@ export const hu = {
     paneStage: "Bánya",
     paneSheet: "Program",
     paneAnnounce: "Bánya nézet",
+    paneSheetAnnounce: "Program nézet: a hibás sorok jelölve",
     stageFailed: "A bánya kijelzője hibára futott.",
     sheetFailed: "A programlap hibára futott.",
     versionChip: (version: number) => `v${version}`,
