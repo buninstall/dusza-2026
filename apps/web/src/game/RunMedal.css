@@ -1,5 +1,4 @@
 .medal {
-  grid-area: medal;
   display: flex;
   flex-wrap: wrap;
   align-items: center;

@@ -441,6 +441,11 @@ export const hu = {
     changedNow: "most változott",
     noVariables: "Még nincs változó: a `set` hozza létre.",
     report: "Jelentés",
+    logToggle: "Konzol",
+    zoomGroup: "Térkép nagyítása",
+    zoomIn: "Nagyítás",
+    zoomOut: "Kicsinyítés",
+    zoomLevel: (percent: number) => `${percent}%`,
     diagnosticsHeading: "Hibalista",
     diagnosticsEmpty: "Nincs szintaktikai hiba.",
     diagnosticsCount: (errors: number, warnings: number) =>
@@ -466,6 +471,7 @@ export const hu = {
     stoppedBody: "A leállított futás nem kerül a ranglistára.",
     engineCrashTitle: "A futtatómotor hibát jelzett",
     engineCrashBody: "A program nem futott le. A szerkesztő tartalma megmaradt.",
+    syntaxErrorShort: "A program szintaktikailag hibás",
     submitting: "Rögzítés…",
     submitted: (gold: number, steps: number) =>
       `A szerver rögzítette: ${gold} arany, ${steps} lépés.`,

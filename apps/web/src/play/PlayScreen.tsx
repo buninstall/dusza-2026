@@ -11,12 +11,14 @@ import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
 import { type Blocked, moodFor } from "./phase.ts";
 import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
+import { WellZoom } from "./stage/WellZoom.tsx";
 import { useBreakpointNotice } from "./useBreakpointNotice.ts";
+import { useWellZoom } from "./useWellZoom.ts";
 import "./PlayScreen.css";
 import { boardDressing } from "./stage/board-dressing.tsx";
 import { ControlDeck } from "./stage/ControlDeck.tsx";
 import { HudRail } from "./stage/HudRail.tsx";
-import { ConsoleTape, MemoryTable, ReportCell } from "./stage/LogStrip.tsx";
+import { ConsoleTape, LOG_ID, LogToggle, MemoryTable } from "./stage/LogStrip.tsx";
 import { ShiftReport } from "./stage/ShiftReport.tsx";
 import { isTurbo, segmentDuration, stepDuration, usePrevious } from "./step-animation.ts";
 import "./stage/Stage.css";
@@ -45,7 +47,6 @@ type PlayScreenProps = {
   bezel: ReactNode;
   sheet: ReactNode;
   reportFooter: ReactNode;
-  reportExtra?: ReactNode;
   wellOverlay?: ReactNode;
   onRun: () => boolean;
   onInsertGuard?: ((line: number) => void) | undefined;
@@ -124,6 +125,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const leverRef = useRef<HTMLButtonElement>(null);
   const centerRef = useRef<HTMLButtonElement>(null);
   const reportRef = useRef<HTMLDivElement>(null);
+  const wellRef = useRef<HTMLDivElement>(null);
   const status = usePlayback((state) => state.status);
   const result = usePlayback((state) => state.result);
   const runId = usePlayback((state) => state.runId);
@@ -131,6 +133,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const motion = useStageMotion(map, view, start);
   usePlaybackTimer();
   usePlaybackSounds();
+  useWellZoom(wellRef, motion.robot.pos);
   useBreakpointNotice();
 
   useEffect(() => () => usePlayback.getState().clear(), []);
@@ -166,22 +169,16 @@ export function PlayScreen(props: PlayScreenProps) {
       : undefined;
 
   const report =
-    view.report === null ? null : (
-      <ReportCell>
-        <ShiftReport
-          ref={reportRef}
-          kind={view.report}
-          result={result}
-          blocked={blocked}
-          reachableGold={facts.reachableGold}
-          footer={view.report === "stopped" || blocked ? null : props.reportFooter}
-          extra={props.reportExtra}
-          onShowLine={props.revealLine}
-          onInsertGuard={props.onInsertGuard}
-          onReplay={() => usePlayback.getState().replay()}
-        />
-      </ReportCell>
+    view.report === null || view.report === "ok" ? null : (
+      <ShiftReport
+        ref={reportRef}
+        kind={view.report}
+        result={result}
+        blocked={blocked}
+        onShowLine={props.revealLine}
+      />
     );
+  const consoleCount = frame?.console.length ?? 0;
 
   const stage = (
     <RegionBoundary message={hu.play.stageFailed}>
@@ -197,7 +194,6 @@ export function PlayScreen(props: PlayScreenProps) {
           phase={view.phase}
           gold={frame?.gold ?? 0}
           goldTotal={facts.goldTotal}
-          reachableGold={facts.reachableGold}
           steps={frame?.steps ?? 0}
           line={frame?.line ?? null}
           lineText={lineTextOf(usePlayback.getState().source, frame?.line ?? null)}
@@ -215,7 +211,12 @@ export function PlayScreen(props: PlayScreenProps) {
               {facts.description}
             </p>
           ) : null}
-          <div className="well-view">
+          <div
+            ref={wellRef}
+            className="well-view"
+            data-zoomed={ui.zoom > 1}
+            style={{ "--zoom": ui.zoom } as CSSProperties}
+          >
             <MineBoard
               map={map}
               robot={motion.robot}
@@ -236,8 +237,8 @@ export function PlayScreen(props: PlayScreenProps) {
             />
           </div>
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
+          <WellZoom />
         </div>
-        {props.wellOverlay}
         <ControlDeck
           mode={mode}
           layout="cab"
@@ -245,19 +246,26 @@ export function PlayScreen(props: PlayScreenProps) {
           centerRef={centerRef}
           shakeKey={blocked ? props.attempt : null}
           onRun={() => run(true)}
+          extra={<LogToggle count={consoleCount} isOpen={ui.isLogOpen} onToggle={ui.toggleLog} />}
         />
-        <div className="log" data-report={report !== null}>
+        <div className="stage-status">
           {report}
-          <ConsoleTape
-            entries={frame?.console ?? []}
-            canSeek={isScrubbable(status)}
-            onSeek={(index) => usePlayback.getState().seek(index)}
-          />
-          <MemoryTable
-            variables={frame?.variables ?? new Map()}
-            changed={frame?.changedVar ?? null}
-          />
+          {view.report === "stopped" || blocked ? null : props.reportFooter}
+          {props.wellOverlay}
         </div>
+        {ui.isLogOpen ? (
+          <div className="log" id={LOG_ID}>
+            <ConsoleTape
+              entries={frame?.console ?? []}
+              canSeek={isScrubbable(status)}
+              onSeek={(index) => usePlayback.getState().seek(index)}
+            />
+            <MemoryTable
+              variables={frame?.variables ?? new Map()}
+              changed={frame?.changedVar ?? null}
+            />
+          </div>
+        ) : null}
       </section>
     </RegionBoundary>
   );

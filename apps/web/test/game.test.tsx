@@ -94,7 +94,7 @@ describe("hang", () => {
 
 describe("bevezető", () => {
   test("a válasz és a haladás a böngészőben marad", () => {
-    expect(useTour.getState().data.status).toBe("unasked");
+    expect(useTour.getState().data.status).toBe("declined");
     useTour.getState().start(7);
     expect(activeStep(useTour.getState().data, 7)).toBe("board");
     expect(activeStep(useTour.getState().data, 8)).toBeNull();
@@ -110,12 +110,13 @@ describe("bevezető", () => {
     });
   });
 
-  test("a pályák oldala megkérdezi, a Nem választ megjegyzi", async () => {
+  test("a pályák oldala felugró ablakban megkérdezi, a Nem választ megjegyzi", async () => {
+    useTour.setState({ data: { status: "unasked" } });
     respond("GET", "/maps", { maps: [mapSummary(1, "Folyosó", CORRIDOR)] });
     const { user } = renderApp("/maps");
-    const prompt = await screen.findByRole("region", { name: "Kérsz egy rövid bevezetőt?" });
+    const prompt = await screen.findByRole("dialog", { name: "Kérsz egy rövid bevezetőt?" });
     await user.click(within(prompt).getByRole("button", { name: "Nem, köszönöm" }));
-    expect(screen.queryByRole("region", { name: "Kérsz egy rövid bevezetőt?" })).toBeNull();
+    expect(screen.queryByRole("dialog", { name: "Kérsz egy rövid bevezetőt?" })).toBeNull();
     expect(JSON.parse(window.localStorage.getItem(TOUR_KEY) ?? "{}")).toEqual({
       status: "declined",
     });

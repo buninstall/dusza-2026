@@ -12,9 +12,9 @@ export function cartLevel(gold: number, total: number): number {
   return gold >= total ? CART_LEVELS : Math.ceil((gold / total) * PARTIAL_LEVELS);
 }
 
-type CartGaugeProps = { gold: number; total: number; reachable: number; isRolling: boolean };
+type CartGaugeProps = { gold: number; total: number; isRolling: boolean };
 
-export function CartGauge({ gold, total, reachable, isRolling }: CartGaugeProps) {
+export function CartGauge({ gold, total, isRolling }: CartGaugeProps) {
   const sprite = TILE_SPRITES.cart[cartLevel(gold, total)] ?? TILE_SPRITES.cart[0];
   return (
     <div className="hud-gauge hud-cart" data-gold-target="true">
@@ -27,10 +27,6 @@ export function CartGauge({ gold, total, reachable, isRolling }: CartGaugeProps)
         <span className="hud-of">/ {total}</span>
       </span>{" "}
       {sprite ? <PixelSprite sprite={sprite} className="hud-cart-art" /> : null}
-      {total === 0 ? <span className="hud-note">{hu.play.noGold}</span> : null}{" "}
-      {reachable < total ? (
-        <span className="hud-note">{hu.play.goldReachable(reachable)}</span>
-      ) : null}
     </div>
   );
 }

@@ -25,11 +25,19 @@ const persistedSchema = z.object({
   fogMode: z.enum(["lamp", "full"]).catch("lamp"),
   dismissedTips: z.array(z.enum(TIP_IDS)).catch([]),
   hasRunOnce: z.boolean().catch(false),
+  isLogOpen: z.boolean().catch(false),
 });
 
 type Persisted = z.infer<typeof persistedSchema>;
 
-const DEFAULTS: Persisted = { fogMode: "lamp", dismissedTips: [], hasRunOnce: false };
+const DEFAULTS: Persisted = {
+  fogMode: "lamp",
+  dismissedTips: [],
+  hasRunOnce: false,
+  isLogOpen: false,
+};
+
+export const ZOOM_LEVELS = [1, 1.5, 2, 3] as const;
 
 function readPersisted(): Persisted {
   const stored = readStorage(STORAGE_KEY);
@@ -48,7 +56,10 @@ type PlayUiState = Persisted & {
   isFaultBarOpen: boolean;
   pane: Pane;
   openDrawer: DrawerId | null;
+  zoom: number;
   setFogMode: (mode: FogMode) => void;
+  toggleLog: () => void;
+  shiftZoom: (delta: number) => void;
   toggleFog: () => void;
   dismissTip: (id: TipId) => void;
   markRun: () => void;
@@ -69,7 +80,14 @@ export const usePlayUi = create<PlayUiState>()((set, get) => {
     isFaultBarOpen: false,
     pane: "stage",
     openDrawer: null,
+    zoom: 1,
     setFogMode: (fogMode) => persist({ fogMode }),
+    toggleLog: () => persist({ isLogOpen: !get().isLogOpen }),
+    shiftZoom: (delta) => {
+      const current = ZOOM_LEVELS.findIndex((level) => level >= get().zoom);
+      const next = Math.min(Math.max(current + delta, 0), ZOOM_LEVELS.length - 1);
+      set({ zoom: ZOOM_LEVELS[next] ?? 1 });
+    },
     toggleFog: () => persist({ fogMode: get().fogMode === "lamp" ? "full" : "lamp" }),
     dismissTip: (id) => {
       if (id !== "blocked" && !get().dismissedTips.includes(id)) {
@@ -85,7 +103,7 @@ export const usePlayUi = create<PlayUiState>()((set, get) => {
     setPane: (pane) => set({ pane }),
     setOpenDrawer: (openDrawer) => set({ openDrawer }),
     reset: () =>
-      set({ ...readPersisted(), isFaultBarOpen: false, pane: "stage", openDrawer: null }),
+      set({ ...readPersisted(), isFaultBarOpen: false, pane: "stage", openDrawer: null, zoom: 1 }),
   };
 });
 
@@ -94,5 +112,6 @@ function pick(state: Persisted): Persisted {
     fogMode: state.fogMode,
     dismissedTips: state.dismissedTips,
     hasRunOnce: state.hasRunOnce,
+    isLogOpen: state.isLogOpen,
   };
 }

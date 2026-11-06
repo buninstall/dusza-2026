@@ -1,19 +1,14 @@
 .report {
-  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-height: 0;
-  overflow: auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
   padding: var(--space-2) var(--space-3);
   border-left: 6px solid var(--c-line-strong);
+  background: var(--c-surface);
   outline: none;
   font: var(--type-help);
   animation: report-enter var(--motion-enter) var(--ease-px3);
-}
-
-.report[data-tone="ok"] {
-  border-left-color: var(--c-success);
 }
 
 .report[data-tone="error"] {
@@ -25,114 +20,36 @@
   outline-offset: calc(var(--focus-width) * -1);
 }
 
-.report-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
 .report-stamp {
   display: inline-flex;
   flex: none;
   padding: 2px var(--space-1) var(--space-1);
   border: var(--border-thin) solid currentColor;
   color: var(--c-text-muted);
-  animation: stamp-drop var(--motion-enter) var(--ease-px2) 120ms backwards;
-}
-
-.report[data-tone="ok"] .report-stamp {
-  color: var(--c-success);
-}
-
-.report[data-kind="ok"] .report-stamp {
-  color: var(--c-success);
 }
 
 .report[data-tone="error"] .report-stamp {
   color: var(--c-danger-ink);
 }
 
-.report-title {
+.report-text {
+  flex: 1 1 14rem;
   min-width: 0;
-  font: var(--type-help-strong);
-}
-
-.report-code {
-  font: var(--type-mono);
-  font-weight: 700;
-  color: var(--c-danger-ink);
-  overflow-wrap: anywhere;
-}
-
-.report-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-}
-
-.report-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  color: var(--c-text-muted);
-}
-
-.report-body strong {
-  color: var(--c-text);
-}
-
-.report-reward {
-  color: var(--c-reward);
-  font-weight: 700;
-}
-
-.report-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.report-footer {
-  font: var(--type-help);
-}
-
-.report-submission {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.report-standing {
   margin: 0;
-  color: var(--c-text-muted);
-  font: var(--type-help);
-}
-
-.report-standing[data-best="true"] {
-  color: var(--c-reward);
-  font: var(--type-help-strong);
+  font: var(--type-mono-sm);
+  color: var(--c-text);
+  overflow-wrap: anywhere;
 }
 
 @keyframes report-enter {
   from {
-    translate: 0 8px;
-    opacity: 0;
-  }
-}
-
-@keyframes stamp-drop {
-  from {
-    translate: 0 -10px;
+    translate: 0 6px;
     opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .report,
-  .report-stamp {
+  .report {
     animation: none;
   }
 }

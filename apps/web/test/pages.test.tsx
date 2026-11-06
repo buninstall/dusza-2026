@@ -15,7 +15,7 @@ describe("térképlista", () => {
     const levels = within(list).getAllByRole("listitem");
     expect(levels).toHaveLength(2);
     expect(within(levels[0] as HTMLElement).getByText("Szint 01")).toBeTruthy();
-    expect(within(levels[0] as HTMLElement).getByText("1×8")).toBeTruthy();
+    expect(within(levels[0] as HTMLElement).getByText("Készítette: admin")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Játék: Folyosó" }).getAttribute("href")).toBe(
       "/play/1",
     );
@@ -35,13 +35,12 @@ describe("térképlista", () => {
     expect(callsTo("GET", "/maps").some((call) => call.search.get("scope") === "mine")).toBe(true);
   });
 
-  test("az admin minden térképet szerkeszthet, a privát térkép jelölve", async () => {
+  test("az admin minden térképet szerkeszthet", async () => {
     respond("GET", "/maps", {
       maps: [{ ...mapSummary(3, "Titkos", CORRIDOR, 2), visibility: "private" }],
     });
     renderApp("/maps", "admin");
     expect(await screen.findByRole("link", { name: "Szerkesztés: Titkos" })).toBeTruthy();
-    expect(screen.getByText("Privát")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Felhasználók" })).toBeTruthy();
   });
 

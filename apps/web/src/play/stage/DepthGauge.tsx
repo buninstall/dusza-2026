@@ -27,7 +27,6 @@ export function DepthGauge({ steps, isLimit }: DepthGaugeProps) {
         <span className="visually-hidden">{steps}</span>
         <span className="hud-of">{hu.play.stepsLimit(STEP_LIMIT)}</span>
       </span>{" "}
-      <span className="hud-note">{hu.play.stepsLeft(Math.max(STEP_LIMIT - steps, 0))}</span>
       <span aria-hidden="true" className="hud-meter" style={meter}>
         {Array.from({ length: SEGMENTS }, (_, segment) => (
           <span key={`s${segment.toString()}`} data-on={segment < filled} />

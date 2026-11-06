@@ -12,7 +12,7 @@ configure({ asyncUtilTimeout: 4000 });
 beforeEach(() => {
   window.localStorage.clear();
   usePlayUi.getState().reset();
-  useTour.setState({ data: { status: "unasked" } });
+  useTour.setState({ data: { status: "declined" } });
   usePlayback.setState({ breakpoints: new Set() });
 });
 

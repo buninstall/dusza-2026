@@ -53,7 +53,7 @@ describe("a játék billentyűparancsai", () => {
     await waitFor(() => expect(usePlayback.getState().status).toBe("playing"));
     key(firstCell(), { key: " " });
     expect(usePlayback.getState().status).toBe("paused");
-    const lever = screen.getByRole("link", { name: "Ranglista" });
+    const lever = screen.getByRole("button", { name: /^Konzol/ });
     const at = usePlayback.getState().index;
     key(lever, { key: "ArrowRight" });
     expect(usePlayback.getState().index).toBe(at + 1);
@@ -94,7 +94,7 @@ describe("a játék billentyűparancsai", () => {
     expect(usePlayback.getState().index).toBe(at);
     key(screen.getByRole("slider", { name: "Sebesség" }), { key: "l" });
     expect(usePlayUi.getState().fogMode).toBe("lamp");
-    key(screen.getByRole("link", { name: "Ranglista" }), { key: " " });
+    key(screen.getByRole("button", { name: /^Konzol/ }), { key: " " });
     expect(usePlayback.getState().status).toBe("paused");
     key(document.body, { key: "l" });
     expect(usePlayUi.getState().fogMode).toBe("lamp");

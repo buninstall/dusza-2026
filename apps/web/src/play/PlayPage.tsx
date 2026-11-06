@@ -64,28 +64,17 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
         )
       }
       actions={
-        <>
+        detail.canEdit ? (
           <Link
-            to="/leaderboard/$mapId"
+            to="/maps/$mapId/edit"
             params={{ mapId: String(mapId) }}
-            variant="secondary"
+            variant="ghost"
             size="sm"
-            icon="trophy"
+            icon="pickaxe"
           >
-            {hu.play.toLeaderboard}
+            {hu.play.editMap}
           </Link>
-          {detail.canEdit ? (
-            <Link
-              to="/maps/$mapId/edit"
-              params={{ mapId: String(mapId) }}
-              variant="ghost"
-              size="sm"
-              icon="pickaxe"
-            >
-              {hu.play.editMap}
-            </Link>
-          ) : null}
-        </>
+        ) : null
       }
     />
   );

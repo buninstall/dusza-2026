@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button.tsx";
+import { ModalShell } from "../components/ui/Dialog.tsx";
 import { hu } from "../i18n/hu.ts";
 import { mapsQuery } from "../maps/queries.ts";
 import { sortMaps } from "../maps/sort.ts";
-import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { useTour } from "./tour-state.ts";
 import "./Tour.css";
 
@@ -30,24 +30,26 @@ export function TourPrompt() {
     return null;
   }
   return (
-    <section className="tour-prompt" aria-labelledby="tour-prompt-title">
-      <span className="tour-prompt-icon" aria-hidden="true">
-        <PixelIcon name="book" size="lg" />
-      </span>
-      <div className="tour-prompt-text">
-        <h2 id="tour-prompt-title" className="tour-prompt-title">
-          {hu.tour.askTitle}
-        </h2>
-        <p>{hu.tour.askBody}</p>
-      </div>
-      <div className="tour-prompt-actions">
-        <Button variant="primary" icon="play" onPress={startTour}>
-          {hu.tour.accept}
-        </Button>
-        <Button variant="ghost" onPress={decline}>
-          {hu.tour.decline}
-        </Button>
-      </div>
-    </section>
+    <ModalShell
+      title={hu.tour.askTitle}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          decline();
+        }
+      }}
+    >
+      {() => (
+        <>
+          <p className="overlay-body">{hu.tour.askBody}</p>
+          <div className="overlay-actions">
+            <Button onPress={decline}>{hu.tour.decline}</Button>
+            <Button variant="primary" icon="play" onPress={startTour} autoFocus>
+              {hu.tour.accept}
+            </Button>
+          </div>
+        </>
+      )}
+    </ModalShell>
   );
 }

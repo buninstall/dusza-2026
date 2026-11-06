@@ -3,8 +3,6 @@ import { Button } from "../../components/ui/Button.tsx";
 import { IconButton } from "../../components/ui/IconButton.tsx";
 import { Menu, MenuItem, MenuSeparator } from "../../components/ui/Menu.tsx";
 import { hu } from "../../i18n/hu.ts";
-import { PixelIcon } from "../../pixel/PixelIcon.tsx";
-import { isModified, type ProgramDraft } from "../program-draft.ts";
 
 type FileActions = {
   onImport?: ((file: File) => void) | undefined;
@@ -55,34 +53,6 @@ export function FileMenu({ onImport, onExport, onSaveAs, isLocked }: FileActions
         />
       ) : null}
     </>
-  );
-}
-
-export function DocumentTab({
-  draft,
-  isLocked,
-  lockText,
-}: {
-  draft: ProgramDraft;
-  isLocked: boolean;
-  lockText: string;
-}) {
-  if (isLocked) {
-    return (
-      <p className="sheet-tab" data-state="locked">
-        <PixelIcon name="lock" size="sm" />
-        {lockText}
-      </p>
-    );
-  }
-  if (draft.linked === null) {
-    return null;
-  }
-  return (
-    <p className="sheet-tab">
-      <span className="sheet-tab-title">{hu.programs.current(draft.linked.title)}</span>
-      {isModified(draft) ? <em className="sheet-pill">{hu.programs.modified}</em> : null}
-    </p>
   );
 }
 

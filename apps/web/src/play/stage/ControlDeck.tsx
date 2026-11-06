@@ -1,4 +1,4 @@
-import { type CSSProperties, type Ref, useEffect, useRef } from "react";
+import { type CSSProperties, type ReactNode, type Ref, useEffect, useRef } from "react";
 import { Button } from "../../components/ui/Button.tsx";
 import { Slider } from "../../components/ui/Slider.tsx";
 import { hu } from "../../i18n/hu.ts";
@@ -142,6 +142,7 @@ type ControlDeckProps = {
   centerRef: Ref<HTMLButtonElement>;
   shakeKey: number | null;
   onRun: () => void;
+  extra?: ReactNode;
 };
 
 export function ControlDeck({
@@ -151,6 +152,7 @@ export function ControlDeck({
   centerRef,
   shakeKey,
   onRun,
+  extra,
 }: ControlDeckProps) {
   return (
     <section aria-label={hu.play.transport} className="deck" data-layout={layout}>
@@ -159,12 +161,14 @@ export function ControlDeck({
           <DeckKeys centerRef={centerRef} />
           <Timeline />
           <TempoGate />
+          {extra ? <div className="deck-extra">{extra}</div> : null}
           <Lever mode={mode} leverRef={leverRef} shakeKey={shakeKey} onRun={onRun} />
         </>
       ) : (
         <>
           <Lever mode={mode} leverRef={leverRef} shakeKey={shakeKey} onRun={onRun} />
           <DeckKeys centerRef={centerRef} />
+          {extra ? <div className="deck-extra">{extra}</div> : null}
         </>
       )}
     </section>

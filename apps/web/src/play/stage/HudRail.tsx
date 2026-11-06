@@ -44,7 +44,6 @@ type HudRailProps = {
   phase: StagePhase;
   gold: number;
   goldTotal: number;
-  reachableGold: number;
   steps: number;
   line: number | null;
   lineText: string | null;
@@ -58,7 +57,6 @@ export function HudRail({
   phase,
   gold,
   goldTotal,
-  reachableGold,
   steps,
   line,
   lineText,
@@ -74,7 +72,7 @@ export function HudRail({
         <span className="visually-hidden">{hu.play.status}</span>{" "}
         <Led state={lamp.led} label={lamp.label} isBlinking={lamp.blink} />
       </div>{" "}
-      <CartGauge gold={gold} total={goldTotal} reachable={reachableGold} isRolling={isRolling} />{" "}
+      <CartGauge gold={gold} total={goldTotal} isRolling={isRolling} />{" "}
       <DepthGauge steps={steps} isLimit={isLimit} />{" "}
       <LineReadout line={line} lineText={lineText} onReveal={onRevealLine} />{" "}
       <Compass robot={robot} />

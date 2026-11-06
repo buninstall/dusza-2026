@@ -16,7 +16,7 @@ import type { Block } from "./blocks.ts";
 import { FaultBar } from "./FaultBar.tsx";
 import { reportFormat } from "./format-report.ts";
 import { ProgramLibraryDialog } from "./ProgramLibraryDialog.tsx";
-import { DocumentTab, SheetToolbar } from "./SheetToolbar.tsx";
+import { SheetToolbar } from "./SheetToolbar.tsx";
 import "./Sheet.css";
 import type { ProgramPersistence } from "./useProgramPersistence.ts";
 
@@ -96,7 +96,6 @@ export function ProgramSheet(props: ProgramSheetProps) {
         onFormat={() => reportFormat(editorRef.current?.format() ?? null)}
         onSave={persistence.saveCurrent}
       />
-      <DocumentTab draft={draft} isLocked={isLocked} lockText={hu.play.locked} />
       <BlockDrawers isDisabled={isLocked} onInsert={insert} />
       <div className="sheet-editor">
         <MineScriptEditor

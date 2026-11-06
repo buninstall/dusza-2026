@@ -1,9 +1,9 @@
 .stage {
-  --rail-w: 9.5rem;
-  --log-h: clamp(9rem, 21vh, 13rem);
+  --log-h: clamp(9rem, 22vh, 14rem);
 
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface);
@@ -12,39 +12,37 @@
 
 .stage[data-layout="cab"] {
   container: stage / size;
-  min-height: 36rem;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto auto var(--log-h);
-  grid-template-areas:
-    "bezel bezel"
-    "rail well"
-    "rail medal"
-    "deck deck"
-    "log log";
-}
-
-@media (min-height: 50rem) {
-  .stage[data-layout="cab"]:has(.log[data-report="true"]) {
-    --log-h: clamp(10rem, 25vh, 15rem);
-  }
-}
-
-.stage[data-layout="panes"] {
-  container: stage / inline-size;
-  grid-template-columns: minmax(0, 1fr);
+  min-height: 32rem;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
   grid-template-areas:
     "bezel"
     "rail"
     "well"
-    "medal"
     "deck"
+    "status"
     "log";
 }
 
-@media (max-width: 80rem) {
-  .stage {
-    --rail-w: 8rem;
-  }
+.stage[data-layout="panes"] {
+  container: stage / inline-size;
+  grid-template-areas:
+    "bezel"
+    "rail"
+    "well"
+    "deck"
+    "status"
+    "log";
+}
+
+.stage-status {
+  grid-area: status;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stage-status:empty {
+  display: none;
 }
 
 .stage-bezel {
@@ -179,4 +177,42 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1) var(--space-3);
+}
+
+.well-view[data-zoomed="true"] {
+  overflow: auto;
+}
+
+.well-view[data-zoomed="true"] .board-viewport[data-fit="both"] {
+  place-items: start;
+  width: max-content;
+  min-width: 100%;
+  height: max-content;
+  min-height: 100%;
+}
+
+.well-view[data-zoomed="true"] .board {
+  --tile: calc(clamp(var(--tile-min), var(--tile-fit), var(--tile-max)) * var(--zoom, 1));
+
+  margin: var(--space-2);
+}
+
+.well-zoom {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+}
+
+.well-zoom-level {
+  min-width: 4ch;
+  font: var(--type-micro);
+  color: var(--c-text-muted);
+  text-align: center;
 }

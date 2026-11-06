@@ -4,20 +4,32 @@
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   grid-template-areas: "console memory";
   gap: var(--space-2);
+  height: var(--log-h);
   min-height: 0;
   padding: var(--space-2);
+  border-top: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface);
 }
 
-.log[data-report="true"] {
-  grid-template-columns: minmax(17rem, 4fr) minmax(0, 3fr) minmax(0, 2fr);
-  grid-template-areas: "report console memory";
-}
-
-.stage[data-layout="panes"] .log,
-.stage[data-layout="panes"] .log[data-report="true"] {
+.stage[data-layout="panes"] .log {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: none;
+  height: auto;
+}
+
+.log-toggle[data-open="true"] {
+  --btn-edge: var(--c-current);
+
+  color: var(--c-current);
+}
+
+.log-toggle-count {
+  min-width: 2ch;
+  padding: 0 var(--space-1);
+  background: var(--c-screen);
+  color: var(--c-reward);
+  font: var(--type-micro);
+  text-align: center;
 }
 
 .log-cell {
@@ -28,10 +40,6 @@
   min-height: 0;
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-screen);
-}
-
-.log-report {
-  grid-area: report;
 }
 
 .log-console {

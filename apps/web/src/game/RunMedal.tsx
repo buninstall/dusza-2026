@@ -47,7 +47,7 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
     const timer = window.setTimeout(() => playCue("star"), STAR_CUE_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [gainedNow, runId]);
-  if (!stars || !isAtEnd || dismissedRun === runId) {
+  if (!stars || stars.run === 0 || !isAtEnd || dismissedRun === runId) {
     return null;
   }
   const gained = gainedNow;

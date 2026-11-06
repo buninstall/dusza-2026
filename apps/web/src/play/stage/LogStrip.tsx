@@ -1,6 +1,7 @@
 import type { Value } from "@minescript/engine";
 import { type ReactNode, useEffect, useId, useRef } from "react";
 import { InlineText } from "../../components/InlineText.tsx";
+import { Button } from "../../components/ui/Button.tsx";
 import { hu } from "../../i18n/hu.ts";
 import { PixelText } from "../../pixel/PixelText.tsx";
 import { type ConsoleEntry, formatValue } from "../derive.ts";
@@ -127,10 +128,23 @@ export function MemoryTable({ variables, changed }: MemoryTableProps) {
   );
 }
 
-export function ReportCell({ children }: { children: ReactNode }) {
+export const LOG_ID = "play-log";
+
+type LogToggleProps = { count: number; isOpen: boolean; onToggle: () => void };
+
+export function LogToggle({ count, isOpen, onToggle }: LogToggleProps) {
   return (
-    <StripCell title={hu.play.report} className="log-report">
-      {() => children}
-    </StripCell>
+    <Button
+      size="sm"
+      icon="list"
+      aria-expanded={isOpen}
+      {...(isOpen ? { "aria-controls": LOG_ID } : {})}
+      onPress={onToggle}
+      className="log-toggle"
+      data-open={isOpen}
+    >
+      {hu.play.logToggle}
+      {count > 0 ? <span className="log-toggle-count">{count}</span> : null}
+    </Button>
   );
 }

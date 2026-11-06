@@ -18,6 +18,11 @@ function seedProgram(
   window.localStorage.setItem(`minescript.program.${MAP_ID}`, JSON.stringify({ source, linked }));
 }
 
+function linkedTitle(): string | undefined {
+  const stored = window.localStorage.getItem(`minescript.program.${MAP_ID}`) ?? "{}";
+  return (JSON.parse(stored) as { linked?: { title: string } | null }).linked?.title;
+}
+
 function editorText(): string {
   return [...document.querySelectorAll(".cm-line")].map((line) => line.textContent).join("\n");
 }
@@ -58,7 +63,7 @@ describe("futtatás", () => {
     const { user } = await openPlay();
     await user.click(runButton());
     const alert = await screen.findByRole("alert");
-    expect(alert.textContent).toContain("A program szintaktikailag hibás, ezért nem futtatható.");
+    expect(alert.textContent).toContain("A program szintaktikailag hibás");
     expect(alert.textContent).toContain("Hibás sor: 2.");
     expect(run).toHaveBeenCalledWith(PROGRAM, LABYRINTH);
     expect(document.querySelector(".cm-error-line")?.textContent).toBe("step forward 2");
@@ -83,21 +88,18 @@ describe("futtatás", () => {
     );
     const { user } = await openPlay();
     await user.click(runButton());
-    expect(screen.getByText("Futás közben zárolva")).toBeTruthy();
-    expect(
-      (await screen.findAllByText(/A program hiba nélkül lefutott/, undefined, { timeout: 3000 }))
-        .length,
-    ).toBeGreaterThan(0);
-    expect(await screen.findByText("A szerver rögzítette: 1 arany, 5 lépés.")).toBeTruthy();
-    expect(screen.getByText("Új egyéni csúcs: 2. hely a ranglistán (3 játékos).")).toBeTruthy();
+    expect(document.querySelector(".cm-content")?.getAttribute("aria-readonly")).toBe("true");
+    await waitFor(() => expect(callsTo("POST", "/runs")).toHaveLength(1), { timeout: 3000 });
     expect(callsTo("POST", "/runs")[0]?.body).toEqual({
       mapVersionId: VERSION_ID,
       source: PROGRAM,
     });
+    expect(screen.queryByRole("log", { name: "Konzol" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: /^Konzol/ }));
     expect(screen.getByRole("log", { name: "Konzol" }).textContent).toContain("1");
     expect(screen.getByRole("table", { name: "Változók" }).textContent).toContain("elol");
     expect(screen.getByText("Kész")).toBeTruthy();
-    expect(screen.queryByText("Futás közben zárolva")).toBeNull();
+    expect(document.querySelector(".cm-content")?.getAttribute("aria-readonly")).toBe("false");
   });
 
   test("a rögzített futás után a térkép adatai frissülnek, így a szerkesztő látja a futást", async () => {
@@ -112,7 +114,7 @@ describe("futtatás", () => {
     const { user } = await openPlay();
     const loads = callsTo("GET", `/maps/${MAP_ID}`).length;
     await user.click(runButton());
-    expect(await screen.findByText("A szerver rögzítette: 1 arany, 5 lépés.")).toBeTruthy();
+    await waitFor(() => expect(callsTo("POST", "/runs")).toHaveLength(1), { timeout: 3000 });
     await waitFor(() => expect(callsTo("GET", `/maps/${MAP_ID}`).length).toBeGreaterThan(loads));
   });
 
@@ -143,10 +145,11 @@ describe("futtatás", () => {
     const { user } = await openPlay();
     await user.click(runButton());
     expect(
-      await screen.findAllByText("E_BEDROCK_HIT · 2. sor", undefined, { timeout: 3000 }),
-    ).not.toHaveLength(0);
-    expect(screen.getByText("Falba ütközés.")).toBeTruthy();
-    expect(await screen.findByText("A szerver rögzítette: 0 arany, 2 lépés.")).toBeTruthy();
+      await screen.findByText("E_BEDROCK_HIT · 2. sor · Falba ütközés", undefined, {
+        timeout: 3000,
+      }),
+    ).toBeTruthy();
+    await waitFor(() => expect(callsTo("POST", "/runs")).toHaveLength(1));
     expect(screen.getByText("Hiba")).toBeTruthy();
     await waitFor(() =>
       expect(document.querySelector(".cm-runtime-line")?.textContent).toMatch(/^step forward 1/),
@@ -174,7 +177,8 @@ describe("futtatás", () => {
     await user.click(
       await screen.findByRole("button", { name: "Rögzítés újra" }, { timeout: 3000 }),
     );
-    expect(await screen.findByText("A szerver rögzítette: 1 arany, 5 lépés.")).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Rögzítés újra" })).toBeNull());
+    expect(attempts).toBe(2);
   });
 });
 
@@ -293,7 +297,7 @@ describe("program kezelése", () => {
     await user.clear(title);
     await user.type(title, "Első");
     await user.click(within(dialog).getByRole("button", { name: "Mentés újként" }));
-    expect(await screen.findByText("Megnyitva: Első")).toBeTruthy();
+    await waitFor(() => expect(linkedTitle()).toBe("Első"));
     expect(callsTo("POST", "/programs")[0]?.body).toEqual({ title: "Első", source: "print 1\n" });
     await user.click(screen.getByRole("button", { name: "Mentés" }));
     await waitFor(() => expect(callsTo("PUT", "/programs/5")).toHaveLength(1));
@@ -312,13 +316,13 @@ describe("program kezelése", () => {
     });
     respond("DELETE", "/programs/5", { ok: true });
     const { user } = await openPlay();
-    expect(screen.getByText("módosítva")).toBeTruthy();
+    expect(linkedTitle()).toBe("Első");
     await user.click(screen.getByRole("button", { name: "Programtár" }));
     const dialog = await screen.findByRole("dialog", { name: "Mentett programok" });
     await user.click(await within(dialog).findByRole("button", { name: "Megnyitás: Második" }));
     expect(await within(dialog).findByText("Felülírod a szerkesztő tartalmát?")).toBeTruthy();
     await user.click(within(dialog).getByRole("button", { name: "Megnyitás" }));
-    expect(await screen.findByText("Megnyitva: Második")).toBeTruthy();
+    await waitFor(() => expect(linkedTitle()).toBe("Második"));
     await waitFor(() => expect(editorText()).toBe("turn by 1\n"));
 
     await user.click(screen.getByRole("button", { name: "Programtár" }));
