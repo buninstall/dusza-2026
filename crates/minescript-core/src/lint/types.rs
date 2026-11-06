@@ -1,5 +1,6 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
+use super::names::Names;
 use crate::diagnostics::messages;
 use crate::runtime::ValueType;
 use crate::syntax::ast::{BinOp, Expr, Ident, LineNode, Program, Simple, Stmt, StmtKind};
@@ -23,8 +24,6 @@ pub(super) struct Assignment<'p> {
     pub value: &'p Expr,
 }
 
-pub(super) type FirstAssignments<'a, 'p> = BTreeMap<&'p str, &'a Assignment<'p>>;
-
 pub(super) fn assignments(program: &Program) -> Vec<Assignment<'_>> {
     let mut found = Vec::new();
     program.for_each_line(|node, _| {
@@ -41,14 +40,94 @@ pub(super) fn assignments(program: &Program) -> Vec<Assignment<'_>> {
     found
 }
 
-pub(super) fn first_assignments<'a, 'p>(all: &'a [Assignment<'p>]) -> FirstAssignments<'a, 'p> {
-    let mut first = BTreeMap::new();
-    for assignment in all {
-        first
-            .entry(assignment.name.name.as_str())
-            .or_insert(assignment);
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Resolution {
+    Pending,
+    InProgress,
+    Done(Option<ValueType>),
+}
+
+pub(super) struct Types<'a, 'p> {
+    names: &'a Names<'p>,
+    first: Vec<Option<&'a Assignment<'p>>>,
+    resolved: Vec<Resolution>,
+}
+
+impl<'a, 'p> Types<'a, 'p> {
+    pub fn new(names: &'a Names<'p>, all: &'a [Assignment<'p>]) -> Self {
+        let mut first = vec![None; names.len()];
+        for assignment in all {
+            if let Some(slot) = names
+                .id(&assignment.name.name)
+                .and_then(|id| first.get_mut(id))
+            {
+                slot.get_or_insert(assignment);
+            }
+        }
+        Self {
+            names,
+            resolved: vec![Resolution::Pending; first.len()],
+            first,
+        }
     }
-    first
+
+    pub fn first(&self, name: &str) -> Option<&'a Assignment<'p>> {
+        self.first.get(self.names.id(name)?).copied().flatten()
+    }
+
+    pub fn first_assignments(&self) -> impl Iterator<Item = (&'p str, &'a Assignment<'p>)> + '_ {
+        self.names
+            .spellings()
+            .iter()
+            .zip(&self.first)
+            .filter_map(|(name, first)| Some((*name, (*first)?)))
+    }
+
+    pub fn resolve(&mut self, start: StaticType<'_>) -> Option<ValueType> {
+        match start {
+            StaticType::Known(value_type) => Some(value_type),
+            StaticType::Unknown => None,
+            StaticType::SameAs(name) => self.variable(self.names.id(name)?),
+        }
+    }
+
+    fn variable(&mut self, start: usize) -> Option<ValueType> {
+        let mut chain = Vec::new();
+        let mut current = start;
+        let result = loop {
+            match self.resolved.get(current).copied() {
+                Some(Resolution::Done(result)) => break result,
+                Some(Resolution::InProgress) | None => break None,
+                Some(Resolution::Pending) => {}
+            }
+            if let Some(slot) = self.resolved.get_mut(current) {
+                *slot = Resolution::InProgress;
+            }
+            chain.push(current);
+            let next = self
+                .first
+                .get(current)
+                .copied()
+                .flatten()
+                .map_or(StaticType::Unknown, |assignment| {
+                    static_type(assignment.value)
+                });
+            match next {
+                StaticType::Known(value_type) => break Some(value_type),
+                StaticType::Unknown => break None,
+                StaticType::SameAs(name) => match self.names.id(name) {
+                    Some(id) => current = id,
+                    None => break None,
+                },
+            }
+        };
+        for id in chain {
+            if let Some(slot) = self.resolved.get_mut(id) {
+                *slot = Resolution::Done(result);
+            }
+        }
+        result
+    }
 }
 
 pub(super) fn static_type(expr: &Expr) -> StaticType<'_> {
@@ -81,28 +160,6 @@ fn result_type(op: BinOp) -> ValueType {
     }
 }
 
-pub(super) fn resolve(
-    start: StaticType<'_>,
-    first: &FirstAssignments<'_, '_>,
-) -> Option<ValueType> {
-    let mut current = start;
-    let mut followed = BTreeSet::new();
-    loop {
-        match current {
-            StaticType::Known(value_type) => return Some(value_type),
-            StaticType::Unknown => return None,
-            StaticType::SameAs(name) => {
-                if !followed.insert(name) {
-                    return None;
-                }
-                current = first.get(name).map_or(StaticType::Unknown, |assignment| {
-                    static_type(assignment.value)
-                });
-            }
-        }
-    }
-}
-
 pub fn type_name(value_type: ValueType) -> &'static str {
     match value_type {
         ValueType::Int => messages::TYPE_INT,
@@ -111,16 +168,18 @@ pub fn type_name(value_type: ValueType) -> &'static str {
 }
 
 pub fn variable_types(program: &Program) -> BTreeMap<&str, VariableInfo> {
+    let names = Names::of(program);
     let all = assignments(program);
-    let first = first_assignments(&all);
-    first
-        .iter()
+    let mut types = Types::new(&names, &all);
+    let firsts: Vec<(&str, &Assignment<'_>)> = types.first_assignments().collect();
+    firsts
+        .into_iter()
         .map(|(name, assignment)| {
             let info = VariableInfo {
                 first_line: assignment.stmt.line,
-                value_type: resolve(static_type(assignment.value), &first),
+                value_type: types.resolve(static_type(assignment.value)),
             };
-            (*name, info)
+            (name, info)
         })
         .collect()
 }

@@ -57,28 +57,27 @@ pub(super) fn check(program: &Program, index: &LineIndex<'_>) -> Vec<Diagnostic>
     let mut pending: Vec<&[Stmt]> = vec![&program.body];
     while let Some(block) = pending.pop() {
         diagnostics.extend(runs(block).iter().filter_map(|run| merge_hint(run, index)));
-        pending.extend(block.iter().flat_map(child_blocks));
+        pending.extend(block.iter().flat_map(child_blocks).flatten());
     }
     diagnostics
 }
 
-fn child_blocks(stmt: &Stmt) -> Vec<&[Stmt]> {
+fn child_blocks(stmt: &Stmt) -> [Option<&[Stmt]>; 2] {
     match &stmt.kind {
         StmtKind::If {
             then_body,
             else_branch,
             ..
-        } => {
-            let mut blocks = vec![then_body.as_slice()];
-            blocks.extend(else_branch.iter().map(|branch| branch.body.as_slice()));
-            blocks
-        }
-        StmtKind::While { body, .. } => vec![body.as_slice()],
+        } => [
+            Some(then_body.as_slice()),
+            else_branch.as_ref().map(|branch| branch.body.as_slice()),
+        ],
+        StmtKind::While { body, .. } => [Some(body.as_slice()), None],
         StmtKind::Step { .. }
         | StmtKind::Turn { .. }
         | StmtKind::Mine
         | StmtKind::Print { .. }
-        | StmtKind::Set { .. } => Vec::new(),
+        | StmtKind::Set { .. } => [None, None],
     }
 }
 

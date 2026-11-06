@@ -1,23 +1,23 @@
-use std::collections::BTreeSet;
-
+use super::names::{NameSet, Names};
 use super::types::assignments;
 use crate::diagnostics::{DiagCode, Diagnostic, messages};
 use crate::syntax::ast::{ElseBranch, Program, Simple, Stmt, StmtKind};
 
-type Assigned<'p> = BTreeSet<&'p str>;
+type Assigned = NameSet;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum Flow<'p> {
-    Live(Assigned<'p>),
+enum Flow {
+    Live(Assigned),
     Dead,
 }
 
-impl Flow<'_> {
+impl Flow {
     fn meet(self, other: Self) -> Self {
         match (self, other) {
             (Self::Dead, flow) | (flow, Self::Dead) => flow,
-            (Self::Live(left), Self::Live(right)) => {
-                Self::Live(left.intersection(&right).copied().collect())
+            (Self::Live(mut left), Self::Live(right)) => {
+                left.intersect(&right);
+                Self::Live(left)
             }
         }
     }
@@ -28,20 +28,20 @@ enum After<'p> {
     Result,
     Then {
         else_branch: Option<&'p ElseBranch>,
-        assigned: Assigned<'p>,
+        assigned: Assigned,
     },
-    Meet(Flow<'p>),
-    Replace(Flow<'p>),
+    Meet(Flow),
+    Replace(Flow),
 }
 
 struct Frame<'p> {
     rest: &'p [Stmt],
-    flow: Flow<'p>,
+    flow: Flow,
     after: After<'p>,
 }
 
 impl<'p> Frame<'p> {
-    fn new(rest: &'p [Stmt], assigned: Assigned<'p>, after: After<'p>) -> Self {
+    fn new(rest: &'p [Stmt], assigned: Assigned, after: After<'p>) -> Self {
         Self {
             rest,
             flow: Flow::Live(assigned),
@@ -51,16 +51,20 @@ impl<'p> Frame<'p> {
 }
 
 enum Step<'p> {
-    Done(Flow<'p>),
+    Done(Flow),
     Enter(Frame<'p>),
 }
 
-pub(super) fn check(program: &Program) -> Vec<Diagnostic> {
+pub(super) fn check(program: &Program, names: &Names<'_>) -> Vec<Diagnostic> {
+    let mut assigned_anywhere = names.set();
+    for assignment in assignments(program) {
+        if let Some(id) = names.id(&assignment.name.name) {
+            assigned_anywhere.insert(id);
+        }
+    }
     let mut analysis = Analysis {
-        assigned_anywhere: assignments(program)
-            .iter()
-            .map(|assignment| assignment.name.name.as_str())
-            .collect(),
+        names,
+        assigned_anywhere,
         findings: Vec::new(),
     };
     analysis.run(&program.body);
@@ -74,14 +78,15 @@ fn constant_condition(cond: &Simple) -> Option<bool> {
     }
 }
 
-struct Analysis<'p> {
-    assigned_anywhere: Assigned<'p>,
+struct Analysis<'n, 'p> {
+    names: &'n Names<'p>,
+    assigned_anywhere: Assigned,
     findings: Vec<Diagnostic>,
 }
 
-impl<'p> Analysis<'p> {
+impl<'p> Analysis<'_, '_> {
     fn run(&mut self, body: &'p [Stmt]) {
-        let mut frames = vec![Frame::new(body, Assigned::new(), After::Root)];
+        let mut frames = vec![Frame::new(body, self.names.set(), After::Root)];
         while let Some(mut frame) = frames.pop() {
             if let Some((stmt, rest)) = frame.rest.split_first() {
                 frame.rest = rest;
@@ -126,7 +131,7 @@ impl<'p> Analysis<'p> {
         }
     }
 
-    fn statement(&mut self, stmt: &'p Stmt, flow: Flow<'p>) -> Step<'p> {
+    fn statement(&mut self, stmt: &'p Stmt, flow: Flow) -> Step<'p> {
         let Flow::Live(mut assigned) = flow else {
             return Step::Done(Flow::Dead);
         };
@@ -135,7 +140,9 @@ impl<'p> Analysis<'p> {
         }
         match &stmt.kind {
             StmtKind::Set { name, .. } => {
-                assigned.insert(name.name.as_str());
+                if let Some(id) = self.names.id(&name.name) {
+                    assigned.insert(id);
+                }
                 Step::Done(Flow::Live(assigned))
             }
             StmtKind::If {
@@ -151,14 +158,17 @@ impl<'p> Analysis<'p> {
         }
     }
 
-    fn read(&mut self, operand: &'p Simple, assigned: &mut Assigned<'p>) {
+    fn read(&mut self, operand: &Simple, assigned: &mut Assigned) {
         let Simple::Ident { name, span } = operand else {
             return;
         };
-        if !assigned.insert(name.as_str()) {
+        let Some(id) = self.names.id(name) else {
+            return;
+        };
+        if !assigned.insert(id) {
             return;
         }
-        let message = if self.assigned_anywhere.contains(name.as_str()) {
+        let message = if self.assigned_anywhere.contains(id) {
             messages::maybe_uninit(name)
         } else {
             messages::never_assigned(name)
@@ -172,7 +182,7 @@ fn branch<'p>(
     cond: &Simple,
     then_body: &'p [Stmt],
     else_branch: Option<&'p ElseBranch>,
-    assigned: Assigned<'p>,
+    assigned: Assigned,
 ) -> Step<'p> {
     match (constant_condition(cond), else_branch) {
         (Some(true), _) => Step::Enter(Frame::new(then_body, assigned, After::Result)),
@@ -191,7 +201,7 @@ fn branch<'p>(
     }
 }
 
-fn loop_over<'p>(cond: &Simple, body: &'p [Stmt], assigned: Assigned<'p>) -> Step<'p> {
+fn loop_over<'p>(cond: &Simple, body: &'p [Stmt], assigned: Assigned) -> Step<'p> {
     match constant_condition(cond) {
         Some(false) => Step::Done(Flow::Live(assigned)),
         Some(true) => Step::Enter(Frame::new(body, assigned, After::Replace(Flow::Dead))),

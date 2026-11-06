@@ -1,6 +1,5 @@
-use std::collections::{BTreeMap, BTreeSet};
-
-use super::types::{assignments, first_assignments, resolve, static_type, type_name};
+use super::names::{NameMap, Names};
+use super::types::{Assignment, Types, assignments, static_type, type_name};
 use crate::diagnostics::{DiagCode, Diagnostic, messages};
 use crate::span::Span;
 use crate::syntax::ast::{LineNode, Program, Simple, StmtKind};
@@ -12,58 +11,62 @@ enum Role {
 }
 
 struct Occurrence<'p> {
+    id: usize,
     name: &'p str,
     span: Span,
     role: Role,
 }
 
-pub(super) fn check(program: &Program) -> Vec<Diagnostic> {
-    let occurrences = occurrences(program);
-    let mut diagnostics = unused_variables(&occurrences);
-    diagnostics.extend(case_collisions(&occurrences));
-    diagnostics.extend(type_changes(program));
+pub(super) fn check(program: &Program, names: &Names<'_>) -> Vec<Diagnostic> {
+    let occurrences = occurrences(program, names);
+    let mut diagnostics = unused_variables(&occurrences, names);
+    diagnostics.extend(case_collisions(&occurrences, names));
+    diagnostics.extend(type_changes(program, names));
     diagnostics
 }
 
-fn occurrences(program: &Program) -> Vec<Occurrence<'_>> {
+fn occurrences<'p>(program: &'p Program, names: &Names<'_>) -> Vec<Occurrence<'p>> {
     let mut found = Vec::new();
+    let mut push = |name: &'p str, span: Span, role: Role| {
+        if let Some(id) = names.id(name) {
+            found.push(Occurrence {
+                id,
+                name,
+                span,
+                role,
+            });
+        }
+    };
     program.for_each_line(|node, _| {
         let LineNode::Statement(stmt) = node else {
             return;
         };
         if let StmtKind::Set { name, .. } = &stmt.kind {
-            found.push(Occurrence {
-                name: &name.name,
-                span: name.span,
-                role: Role::Assigned,
-            });
+            push(&name.name, name.span, Role::Assigned);
         }
         for operand in stmt.kind.operands() {
             if let Simple::Ident { name, span } = operand {
-                found.push(Occurrence {
-                    name,
-                    span: *span,
-                    role: Role::Read,
-                });
+                push(name, *span, Role::Read);
             }
         }
     });
     found
 }
 
-fn unused_variables(occurrences: &[Occurrence<'_>]) -> Vec<Diagnostic> {
-    let read: BTreeSet<&str> = occurrences
-        .iter()
-        .filter(|occurrence| occurrence.role == Role::Read)
-        .map(|occurrence| occurrence.name)
-        .collect();
-    let mut reported = BTreeSet::new();
+fn unused_variables(occurrences: &[Occurrence<'_>], names: &Names<'_>) -> Vec<Diagnostic> {
+    let mut read = names.set();
+    for occurrence in occurrences {
+        if occurrence.role == Role::Read {
+            read.insert(occurrence.id);
+        }
+    }
+    let mut reported = names.set();
     occurrences
         .iter()
         .filter(|occurrence| {
             occurrence.role == Role::Assigned
-                && !read.contains(occurrence.name)
-                && reported.insert(occurrence.name)
+                && !read.contains(occurrence.id)
+                && reported.insert(occurrence.id)
         })
         .map(|occurrence| {
             Diagnostic::new(DiagCode::LintUnusedVar, occurrence.span)
@@ -72,46 +75,69 @@ fn unused_variables(occurrences: &[Occurrence<'_>]) -> Vec<Diagnostic> {
         .collect()
 }
 
-fn case_collisions(occurrences: &[Occurrence<'_>]) -> Vec<Diagnostic> {
-    let mut first_spelling: BTreeMap<String, &str> = BTreeMap::new();
-    let mut reported = BTreeSet::new();
+fn case_collisions(occurrences: &[Occurrence<'_>], names: &Names<'_>) -> Vec<Diagnostic> {
+    let mut groups: NameMap<String, usize> = NameMap::default();
+    let group_of: Vec<usize> = names
+        .spellings()
+        .iter()
+        .map(|spelling| {
+            let next = groups.len();
+            *groups.entry(spelling.to_ascii_lowercase()).or_insert(next)
+        })
+        .collect();
+    if groups.len() == names.len() {
+        return Vec::new();
+    }
+    let mut first_spelling: Vec<Option<usize>> = vec![None; groups.len()];
+    let mut reported = names.set();
     let mut diagnostics = Vec::new();
     for occurrence in occurrences {
-        let first = *first_spelling
-            .entry(occurrence.name.to_ascii_lowercase())
-            .or_insert(occurrence.name);
-        if first != occurrence.name && reported.insert(occurrence.name) {
+        let Some(slot) = group_of
+            .get(occurrence.id)
+            .and_then(|group| first_spelling.get_mut(*group))
+        else {
+            continue;
+        };
+        let first = *slot.get_or_insert(occurrence.id);
+        if first != occurrence.id && reported.insert(occurrence.id) {
+            let first_name = names.spellings().get(first).copied().unwrap_or_default();
             diagnostics.push(
                 Diagnostic::new(DiagCode::LintCaseCollision, occurrence.span)
-                    .with_message(messages::case_collision(occurrence.name, first)),
+                    .with_message(messages::case_collision(occurrence.name, first_name)),
             );
         }
     }
     diagnostics
 }
 
-fn type_changes(program: &Program) -> Vec<Diagnostic> {
+fn type_changes(program: &Program, names: &Names<'_>) -> Vec<Diagnostic> {
     let all = assignments(program);
-    let first = first_assignments(&all);
-    all.iter()
-        .filter_map(|assignment| {
-            let name = assignment.name.name.as_str();
-            let reference = first.get(name)?;
-            if reference.stmt.line == assignment.stmt.line {
-                return None;
-            }
-            let fixed = resolve(static_type(reference.value), &first)?;
-            let assigned = resolve(static_type(assignment.value), &first)?;
-            (fixed != assigned).then(|| {
-                Diagnostic::new(DiagCode::LintTypeChange, assignment.stmt.span).with_message(
-                    messages::type_change(
-                        name,
-                        type_name(assigned),
-                        type_name(fixed),
-                        reference.stmt.line,
-                    ),
-                )
-            })
-        })
-        .collect()
+    let mut types = Types::new(names, &all);
+    let mut diagnostics = Vec::new();
+    for assignment in &all {
+        if let Some(diagnostic) = type_change(assignment, &mut types) {
+            diagnostics.push(diagnostic);
+        }
+    }
+    diagnostics
+}
+
+fn type_change(assignment: &Assignment<'_>, types: &mut Types<'_, '_>) -> Option<Diagnostic> {
+    let name = assignment.name.name.as_str();
+    let reference = types.first(name)?;
+    if reference.stmt.line == assignment.stmt.line {
+        return None;
+    }
+    let fixed = types.resolve(static_type(reference.value))?;
+    let assigned = types.resolve(static_type(assignment.value))?;
+    (fixed != assigned).then(|| {
+        Diagnostic::new(DiagCode::LintTypeChange, assignment.stmt.span).with_message(
+            messages::type_change(
+                name,
+                type_name(assigned),
+                type_name(fixed),
+                reference.stmt.line,
+            ),
+        )
+    })
 }
