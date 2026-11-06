@@ -461,6 +461,11 @@ mod tests {
     }
 
     proptest! {
+        #![proptest_config(ProptestConfig {
+            failure_persistence: None,
+            ..ProptestConfig::default()
+        })]
+
         #[test]
         fn serialize_then_parse_round_trips(map in arb_map()) {
             let text = serialize_map(&map);

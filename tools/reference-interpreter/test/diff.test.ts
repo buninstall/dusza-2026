@@ -1,4 +1,4 @@
-import { beforeAll, describe, test } from "bun:test";
+import { beforeAll, describe, setDefaultTimeout, test } from "bun:test";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createEngine, type Diagnostic, type Engine, type RunResult } from "@minescript/engine";
@@ -9,6 +9,9 @@ const root = join(import.meta.dir, "..", "..", "..");
 const conformance = join(root, "conformance");
 const GENERATED_SEEDS = Number(process.env.DIFF_SEEDS ?? "2000");
 const MAX_REPORTS = Number(process.env.DIFF_REPORTS ?? "5");
+const DIFF_TIMEOUT_MS = 600_000;
+
+setDefaultTimeout(DIFF_TIMEOUT_MS);
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type Difference = { path: string; reference: Json | undefined; engine: Json | undefined };
 type Subject = { label: string; program: string; map?: string };

@@ -43,20 +43,25 @@ pub struct FormatResult {
 
 pub fn format(src: &str, options: &FormatOptions) -> FormatResult {
     let repaired = whitespace::repair(&normalize(src));
-    match parse(&repaired).program {
-        Some(program) => {
-            let text = indent::reindent(&repaired, &program, options.effective_indent_width());
-            FormatResult {
-                changed: text != src,
-                text,
-                diagnostics: Vec::new(),
-            }
-        }
-        None => FormatResult {
-            text: src.to_owned(),
-            changed: false,
-            diagnostics: parse(src).diagnostics,
-        },
+    if normalize(&repaired) != repaired {
+        return unchanged(src);
+    }
+    let Some(program) = parse(&repaired).program else {
+        return unchanged(src);
+    };
+    let text = indent::reindent(&repaired, &program, options.effective_indent_width());
+    FormatResult {
+        changed: text != src,
+        text,
+        diagnostics: Vec::new(),
+    }
+}
+
+fn unchanged(src: &str) -> FormatResult {
+    FormatResult {
+        text: src.to_owned(),
+        changed: false,
+        diagnostics: parse(src).diagnostics,
     }
 }
 
@@ -67,6 +72,35 @@ mod tests {
 
     fn formatted(src: &str) -> String {
         format(src, &FormatOptions::default()).text
+    }
+
+    #[test]
+    fn a_second_byte_order_mark_stays_an_error() {
+        let result = format("\u{feff}\u{feff}", &FormatOptions::default());
+        assert_eq!(result.text, "\u{feff}\u{feff}");
+        assert_eq!(result.diagnostics[0].code, DiagCode::SynInvalidToken);
+    }
+
+    #[test]
+    fn lone_carriage_returns_are_never_turned_into_line_breaks() {
+        for src in [
+            "\r",
+            "print 1\r",
+            "print 1\rprint 2",
+            "print 1\r\r\n",
+            " \r \n",
+        ] {
+            let result = format(src, &FormatOptions::default());
+            assert_eq!(result.text, src);
+            assert!(!result.changed);
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .any(|diagnostic| diagnostic.code == DiagCode::SynLoneCr),
+                "{src:?}"
+            );
+        }
     }
 
     #[test]

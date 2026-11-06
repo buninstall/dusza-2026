@@ -347,3 +347,4 @@ release/
 *.gen.ts
 *.gen.js
 !apps/server/src/db/migrations.gen.ts
+*.proptest-regressions

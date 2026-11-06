@@ -7,7 +7,7 @@ info("WASM conformance");
 const wasm = await run(["bun", "test", "test/conformance.test.ts"], { cwd: "packages/engine" });
 
 info("Referencia-interpreter ↔ WASM-motor (differenciális teszt)");
-const differential = await run(["bun", "test", "--timeout", "600000", "test/diff.test.ts"], {
+const differential = await run(["bun", "test", "test/diff.test.ts"], {
   cwd: "tools/reference-interpreter",
 });
 

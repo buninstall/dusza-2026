@@ -249,8 +249,22 @@ fn assert_trace_contract(result: &RunResult, map: &Map) -> Result<(), TestCaseEr
     Ok(())
 }
 
+const DEFAULT_CASES: u32 = 512;
+
+fn property_config() -> ProptestConfig {
+    let cases = std::env::var("PROPTEST_CASES")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(DEFAULT_CASES);
+    ProptestConfig {
+        cases,
+        failure_persistence: None,
+        ..ProptestConfig::default()
+    }
+}
+
 proptest! {
-    #![proptest_config(ProptestConfig::with_cases(512))]
+    #![proptest_config(property_config())]
 
     #[test]
     fn language_services_never_panic(source in arbitrary_source(), offset in 0u32..400) {
