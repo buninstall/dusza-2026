@@ -20,6 +20,8 @@ const ssh = [
   port,
   "-o",
   "LogLevel=ERROR",
+  "-o",
+  "UpdateHostKeys=no",
   ...(usePassword ? ["-o", "PubkeyAuthentication=no"] : []),
   target,
   "minescriptctl",
