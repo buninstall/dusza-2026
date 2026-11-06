@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-const BOM: char = '\u{feff}';
+pub const BOM: char = '\u{feff}';
 
 pub fn normalize(raw: &str) -> String {
     normalized(raw).into_owned()

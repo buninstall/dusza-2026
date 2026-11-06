@@ -1,34 +1,50 @@
 use crate::source::lines;
-use crate::syntax::scanner::{SPACE, TAB, TAB_AS_INDENT};
+use crate::syntax::scanner::TAB_AS_INDENT;
 
 pub(super) fn repair(normalized: &str) -> String {
-    let mut text = String::with_capacity(normalized.len());
+    let mut text = Vec::with_capacity(normalized.len());
     for line in lines(normalized) {
-        repair_line(line, &mut text);
+        repair_line(line.as_bytes(), &mut text);
     }
-    text
+    String::from_utf8(text)
+        .unwrap_or_else(|error| String::from_utf8_lossy(error.as_bytes()).into_owned())
 }
 
-fn repair_line(line: &str, text: &mut String) {
-    let content = line.trim_start_matches([SPACE, TAB]);
-    let mut words = content.split(SPACE).filter(|word| !word.is_empty());
-    let Some(first) = words.next() else {
+fn repair_line(line: &[u8], text: &mut Vec<u8>) {
+    let indentation = line
+        .iter()
+        .take_while(|byte| matches!(byte, b' ' | b'\t'))
+        .count();
+    let content = line.get(indentation..).unwrap_or_default();
+    if content.iter().all(|byte| *byte == b' ') {
         return;
-    };
-    let indentation = line.get(..line.len() - content.len()).unwrap_or_default();
-    for ch in indentation.chars() {
-        if ch == TAB {
-            text.push_str(TAB_AS_INDENT);
-        } else {
-            text.push(ch);
+    }
+    for run in line
+        .get(..indentation)
+        .unwrap_or_default()
+        .split_inclusive(|byte| *byte == b'\t')
+    {
+        match run.split_last() {
+            Some((b'\t', spaces)) => {
+                text.extend_from_slice(spaces);
+                text.extend_from_slice(TAB_AS_INDENT.as_bytes());
+            }
+            _ => text.extend_from_slice(run),
         }
     }
-    text.push_str(first);
-    for word in words {
-        text.push(SPACE);
-        text.push_str(word);
+    let mut gap = false;
+    for &byte in content {
+        if byte == b' ' {
+            gap = true;
+        } else {
+            if gap {
+                text.push(b' ');
+                gap = false;
+            }
+            text.push(byte);
+        }
     }
-    text.push('\n');
+    text.push(b'\n');
 }
 
 #[cfg(test)]
@@ -36,10 +52,10 @@ mod tests {
     use super::*;
 
     fn repair_line(line: &str) -> String {
-        let mut text = String::new();
-        super::repair_line(line, &mut text);
+        let mut text = Vec::new();
+        super::repair_line(line.as_bytes(), &mut text);
         text.pop();
-        text
+        String::from_utf8(text).unwrap()
     }
 
     #[test]
