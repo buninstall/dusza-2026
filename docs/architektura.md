@@ -95,6 +95,10 @@ A szerver közvetlenül egy MySQL-szerverhez kapcsolódik (MySQL 8.0 vagy újabb
 - `just release`: `bun build --compile --minify` három célra (`bun-windows-x64`, `bun-linux-x64`, `bun-darwin-arm64`). A bináris tartalmazza a SPA-t, a `.wasm`-ot, a migrációkat és a `mysql2` meghajtót; induláskor a `DATABASE_URL` szerinti MySQL-hez kapcsolódik, szükség esetén létrehozza az adatbázist, migrál, és üres adatbázist feltölt a demó-adatokkal.
 - `just smoke`: az aktuális platform binárisát egy ideiglenes `minescript_smoke_*` MySQL-adatbázissal (a `TEST_DATABASE_URL` szerverén) elindítja, ellenőrzi a health, a HTML, a `.wasm` MIME-típus, az SPA-fallback, a demó-belépés és a `SIGTERM`-re történő leállás működését, végül törli az adatbázist.
 
+## Éles üzem
+
+A verseny szerveren (`https://csapat13.dusza.cloudsyso.com`) a `just release` szerinti Linux-bináris fut systemd alatt, a helyi MySQL-lel. Előtte egy Apache fordított proxy áll, jelszavas kapuval, a TLS-t a szervezői proxy zárja le. A frissítés `just deploy`: a szerver lefordítja a main-t, atomi cserével élesít, health checket futtat, és hiba esetén visszaáll az előző kiadásra. Részletek: `docs/telepites.md`, eszközök: `scripts/deploy/`.
+
 ## Generált fájlok és a .gitignore
 
 | Fájl                                     | Commitolva?             | Indok                                                                                                                                                                                                    |
