@@ -2,7 +2,7 @@ import { type CSSProperties, useState } from "react";
 import { PixelText, type SignScale } from "./PixelText.tsx";
 import "./pixel.css";
 
-type PixelCounterProps = { value: number; scale: SignScale; isRolling?: boolean };
+type RollingDigitsProps = { value: number; scale: SignScale; isRolling?: boolean };
 
 type Memory = { value: number; previous: number; turn: number };
 
@@ -16,7 +16,7 @@ function useRollMemory(value: number): Memory {
   return memory;
 }
 
-export function PixelCounter({ value, scale, isRolling = true }: PixelCounterProps) {
+export function RollingDigits({ value, scale, isRolling = true }: RollingDigitsProps) {
   const memory = useRollMemory(value);
   const digits = String(value);
   const before = String(memory.previous).padStart(digits.length, " ").slice(-digits.length);
