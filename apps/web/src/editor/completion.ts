@@ -22,7 +22,8 @@ export function completionSource(engine: Engine) {
       return null;
     }
     const items = engine.complete(context.state.doc.toString(), context.pos);
-    if (items.length === 0) {
+    const isTypedOut = items.every((item) => item.label === word.text);
+    if (items.length === 0 || (isTypedOut && !context.explicit)) {
       return null;
     }
     const options: Completion[] = items.map((item) =>

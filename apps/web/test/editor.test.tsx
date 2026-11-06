@@ -68,6 +68,11 @@ describe("szerkesztőbővítmények", () => {
     expect(completionSource(realEngine)(new CompletionContext(state, 2, true))).toBeNull();
   });
 
+  test("a kiegészítés eltűnik, ha a szó már teljesen be van gépelve", () => {
+    const typed = EditorState.create({ doc: "mine here" });
+    expect(completionSource(realEngine)(new CompletionContext(typed, 9, false))).toBeNull();
+  });
+
   test("a súgóbuborék a motor magyar leírását mutatja", () => {
     const editor = view("set x to 1");
     const tooltip = hoverSource(realEngine)(editor, 1);
