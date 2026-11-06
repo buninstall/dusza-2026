@@ -22,4 +22,10 @@ describe("seedelhető PRNG", () => {
       expect(value).toBeLessThanOrEqual(3);
     }
   });
+
+  test("a pick a lista elemét adja, üres listára hibát dob", () => {
+    const random = createRandom(3);
+    expect(["a", "b"]).toContain(random.pick(["a", "b"]));
+    expect(() => random.pick([])).toThrow(/Üres listából/);
+  });
 });

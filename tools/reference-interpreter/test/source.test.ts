@@ -1,13 +1,15 @@
 import { describe, expect, test } from "bun:test";
 import { digitsValue, normalize, spanOf, splitLines } from "../src/source.ts";
 
+const BOM = String.fromCharCode(0xfeff);
+
 describe("normalize", () => {
   test("eldobja a BOM-ot és a CRLF-et LF-re cseréli", () => {
-    expect(normalize("﻿a\r\nb\r\n")).toBe("a\nb\n");
+    expect(normalize(`${BOM}a\r\nb\r\n`)).toBe("a\nb\n");
   });
 
   test("csak a fájl eleji BOM-ot dobja el", () => {
-    expect(normalize("a﻿")).toBe("a﻿");
+    expect(normalize(`a${BOM}`)).toBe(`a${BOM}`);
   });
 
   test("a magányos \\r megmarad", () => {
@@ -19,7 +21,7 @@ describe("splitLines", () => {
   test("az üres és a csak újsoros fájl nulla sor", () => {
     expect(splitLines("")).toEqual([]);
     expect(splitLines("\n")).toEqual([]);
-    expect(splitLines("﻿\r\n")).toEqual([]);
+    expect(splitLines(`${BOM}\r\n`)).toEqual([]);
   });
 
   test("egy záró újsor nem ad üres sort, a második igen", () => {

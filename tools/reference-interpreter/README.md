@@ -4,20 +4,31 @@ A MineScript független, TypeScriptben írt referencia-interpretere differenciá
 
 ## Módszer
 
-1. A `src/index.ts` `run(src, mapText)` függvénye kizárólag a specifikáció (`docs/feladat.md`) és az értelmezési döntések (`docs/dontesek.md`) alapján készül. A Rust-forrásba nem nézünk bele, hogy a két implementáció ne ugyanazt a hibát kövesse el.
-2. A visszatérési típus ugyanaz a `RunResult`, amit a Rust-motor a `@minescript/engine`-en keresztül ad, így a két kimenet mezőről mezőre összevethető.
-3. A `src/generate.ts` seedelhető PRNG-vel (`src/prng.ts`, mulberry32) szintaktikailag helyes, véletlen programokat és térképeket állít elő. Ugyanaz a seed mindig ugyanazt az esetet adja, így egy eltérés pontosan reprodukálható.
-4. A `test/diff.test.ts` először a `conformance/runtime` eseteken, majd a generált programokon veti össze a referenciát a WASM-motorral.
+1. A referencia kizárólag a specifikáció (`docs/feladat.md`) és az értelmezési döntések (`docs/dontesek.md`) alapján készül. A Rust-forrásba nem nézünk bele, hogy a két implementáció ne ugyanazt a hibát kövesse el.
+2. A visszatérési típusok a `@minescript/engine` generált típusai (`RunResult`, `Diagnostic`, `MineMap`, `MapInfo`, `Program`), így a két kimenet mezőről mezőre összevethető.
+3. A `src/generate.ts` seedelhető PRNG-vel (`src/prng.ts`, mulberry32) szintaktikailag helyes, véletlen programokat és érvényes térképeket állít elő, és a helyes programok mutálásával szintaktikailag hibásakat is. Ugyanaz a seed mindig ugyanazt az esetet adja.
+4. A `test/diff.test.ts` a conformance-eseteken és 2000 generált seeden veti össze a referenciát a WASM-motorral.
+
+## Modulok
+
+| Fájl | Tartalom |
+| --- | --- |
+| `src/source.ts` | normalizálás (BOM, CRLF, záró újsor, D2), sorokra bontás, konstansok |
+| `src/scanner.ts` | sorszintű hibák és tokenosztályok (D3, D5, D19) |
+| `src/grammar.ts` | egy sor nyelvtana, az első tokenszintű hiba kiválasztása (D17, D19) |
+| `src/parser.ts` | behúzásverem, else-szabály, AST, `check` és `parse` (D4, D19) |
+| `src/map.ts` | `parseMapText` és `mapInfo` (D2, D15) |
+| `src/evaluate.ts` | értékek olvasása, műveletek, túlcsordulás (D6, D10, D21) |
+| `src/machine.ts` | `run`: lépésszámlálás, robot API, eseménysor (D7–D12, D16, D20) |
+| `src/generate.ts` | `generateProgram`, `generateMap`, `generateInvalidProgram` |
 
 ## Futtatás
 
 ```bash
-just wasm
 bun test --cwd tools/reference-interpreter
+bun test --coverage --cwd tools/reference-interpreter
+just wasm
+REFERENCE=1 bun test --cwd tools/reference-interpreter test/diff.test.ts
 ```
 
-Az összevetés alapból ki van kapcsolva; bekapcsolni a `REFERENCE=1` környezeti változóval lehet, amikor a referencia-interpreter és a motor is elkészült.
-
-## Állapot
-
-A `run` és a `generateProgram` még szándékosan hibát dob; a PRNG kész és tesztelt. A hátralévő munka a `docs/roadmap.md`-ben van.
+Az összevetés alapból ki van kapcsolva; a `REFERENCE=1` kapcsolja be. Eltérésnél a teszt kiírja a seedet, a programot, a térképet és az első eltérő mezőt. Egy seed újrafuttatása: `generateProgram(seed)` vagy `generateInvalidProgram(seed)`.

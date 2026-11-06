@@ -41,7 +41,7 @@ export const MAX_MAP_SIZE = 15;
 
 export type SourceLine = { number: number; text: string; offset: number };
 
-const BOM = "﻿";
+const BOM = String.fromCharCode(0xfeff);
 
 export function normalize(text: string): string {
   const withoutBom = text.startsWith(BOM) ? text.slice(BOM.length) : text;
