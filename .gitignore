@@ -348,5 +348,4 @@ release/
 *.db-*
 *.gen.ts
 *.gen.js
-!**/routeTree.gen.ts
 !apps/server/src/db/migrations.gen.ts

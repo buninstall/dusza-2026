@@ -46,7 +46,9 @@ const engine: Engine = {
   astDump: (src) => bindings.astDump(src),
 };
 
-export function createEngine(wasm: BufferSource | WebAssembly.Module): Engine {
+export type WasmSource = ArrayBuffer | ArrayBufferView | WebAssembly.Module;
+
+export function createEngine(wasm: WasmSource): Engine {
   bindings.initSync({ module: wasm });
   return engine;
 }

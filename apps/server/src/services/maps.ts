@@ -111,6 +111,7 @@ export function listMaps(db: Db, user: SessionUser, scope: "all" | "mine") {
       updatedAt: maps.updatedAt,
       versionId: mapVersions.id,
       version: mapVersions.version,
+      content: mapVersions.content,
       rows: mapVersions.rows,
       cols: mapVersions.cols,
       goldTotal: mapVersions.goldTotal,

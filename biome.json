@@ -28,7 +28,10 @@
     "includes": ["**", "!**/generated/**", "!**/*.gen.ts"],
     "rules": {
       "preset": "recommended",
-      "a11y": "error",
+      "a11y": {
+        "preset": "all",
+        "noNoninteractiveElementToInteractiveRole": "off"
+      },
       "suspicious": {
         "noExplicitAny": "error"
       },
@@ -50,6 +53,11 @@
     "formatter": {
       "quoteStyle": "double",
       "semicolons": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   }
 }
