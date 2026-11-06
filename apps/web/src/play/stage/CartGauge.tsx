@@ -1,5 +1,5 @@
 import { hu } from "../../i18n/hu.ts";
-import { PixelCounter } from "../../pixel/PixelCounter.tsx";
+import { RollingDigits } from "../../pixel/RollingDigits.tsx";
 import { PixelSprite } from "../../pixel/SpriteLayers.tsx";
 import { CART_LEVELS, TILE_SPRITES } from "../../pixel/tiles.ts";
 
@@ -21,7 +21,7 @@ export function CartGauge({ gold, total, reachable, isRolling }: CartGaugeProps)
       <span className="label">{hu.play.gold}</span>{" "}
       <span className="hud-value">
         <span className="hud-reward">
-          <PixelCounter value={gold} scale={3} isRolling={isRolling} />
+          <RollingDigits value={gold} scale={3} isRolling={isRolling} />
         </span>
         <span className="visually-hidden">{gold}</span>
         <span className="hud-of">/ {total}</span>
