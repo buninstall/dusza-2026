@@ -1,5 +1,5 @@
 import { useMatches, useRouterState } from "@tanstack/react-router";
-import { createContext, type ReactNode, useContext, useEffect, useRef } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import type { SessionUser } from "../auth/session.ts";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -22,15 +22,13 @@ type NavTarget = "/maps" | "/maps/new" | "/runs" | "/manual" | "/admin";
 
 type NavItem = { to: NavTarget; label: string; icon: IconName; section: RegExp };
 
-const NAV_PEEK_PX = 32;
-
 const ShellContext = createContext(false);
 
 export function useIsInShell(): boolean {
   return useContext(ShellContext);
 }
 
-function navItems(user: Pick<SessionUser, "role">): NavItem[] {
+function navItems(user: SessionUser): NavItem[] {
   const items: NavItem[] = [
     {
       to: "/maps",
@@ -55,16 +53,6 @@ function useShellLayout(): ShellLayout {
 export function AppShell({ user, children }: { user: SessionUser; children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const layout = useShellLayout();
-  const navRef = useRef<HTMLUListElement>(null);
-  const role = user.role;
-  useEffect(() => {
-    const list = navRef.current;
-    const index = navItems({ role }).findIndex((item) => item.section.test(pathname));
-    const current = list?.children.item(index);
-    if (list && current instanceof HTMLElement && list.scrollWidth > list.clientWidth) {
-      list.scrollTo({ left: current.offsetLeft - list.offsetLeft - NAV_PEEK_PX });
-    }
-  }, [pathname, role]);
   return (
     <div className="shell" data-layout={layout}>
       <header className="shell-header">
@@ -78,7 +66,7 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
             </span>
           </Link>
           <nav aria-label={hu.nav.label} className="shell-nav">
-            <ul ref={navRef} className="shell-nav-list">
+            <ul className="shell-nav-list">
               {navItems(user).map((item) => (
                 <li key={item.to}>
                   <Link
