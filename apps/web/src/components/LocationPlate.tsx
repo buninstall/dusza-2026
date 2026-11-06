@@ -16,6 +16,7 @@ type LocationPlateProps = {
   className?: string;
   isDocked?: boolean;
   hasSign?: boolean;
+  isTitleHidden?: boolean;
 };
 
 export function useDocumentTitle(title: string): void {
@@ -44,6 +45,7 @@ export function LocationPlate({
   className,
   isDocked = true,
   hasSign = true,
+  isTitleHidden = false,
 }: LocationPlateProps) {
   useDocumentTitle(documentTitle ?? detail ?? name);
   return (
@@ -55,7 +57,7 @@ export function LocationPlate({
         {detail === undefined ? (
           <h1 className="visually-hidden">{name}</h1>
         ) : (
-          <h1 className="plate-detail">
+          <h1 className={isTitleHidden ? "visually-hidden" : "plate-detail"}>
             {headingPrefix ? <span className="visually-hidden">{headingPrefix}</span> : null}
             {detail}
           </h1>

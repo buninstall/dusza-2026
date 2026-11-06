@@ -74,6 +74,7 @@ export function EditorBar(props: EditorBarProps) {
     <LocationPlate
       name={hu.signs.editor}
       hasSign={false}
+      isTitleHidden
       detail={isNew ? hu.mapEditor.newTitle : hu.mapEditor.editTitle}
       documentTitle={isNew ? hu.mapEditor.documentNew : hu.mapEditor.documentEdit(props.title)}
       className="ed-bar"
@@ -82,7 +83,6 @@ export function EditorBar(props: EditorBarProps) {
           {hu.mapEditor.back}
         </Link>
       }
-      meta={props.version === null ? undefined : hu.maps.version(props.version)}
       actions={
         <>
           {props.mapId === null ? null : (
