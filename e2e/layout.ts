@@ -207,15 +207,31 @@ export async function auditLayout(page: Page, options: AuditOptions): Promise<La
         }
       }
 
+      const visibleRect = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        let { left, top, right, bottom } = rect;
+        for (let node = element.parentElement; node; node = node.parentElement) {
+          const style = getComputedStyle(node);
+          if (isScrollable(style.overflowX) || isScrollable(style.overflowY)) {
+            const box = node.getBoundingClientRect();
+            left = Math.max(left, box.left);
+            top = Math.max(top, box.top);
+            right = Math.min(right, box.right);
+            bottom = Math.min(bottom, box.bottom);
+          }
+        }
+        return { left, top, right, bottom };
+      };
+
       for (let first = 0; first < targets.length; first += 1) {
         const a = targets[first] as Element;
-        const ra = a.getBoundingClientRect();
+        const ra = visibleRect(a);
         for (let second = first + 1; second < targets.length; second += 1) {
           const b = targets[second] as Element;
           if (a.contains(b) || b.contains(a)) {
             continue;
           }
-          const rb = b.getBoundingClientRect();
+          const rb = visibleRect(b);
           const width = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
           const height = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
           if (width > TOLERANCE && height > TOLERANCE) {

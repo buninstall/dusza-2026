@@ -99,7 +99,7 @@ export async function replaceProgram(page: Page, source: string): Promise<void> 
 
 export async function runProgram(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Futtatás" }).click();
-  await expect(page.getByText("Fut", { exact: true })).toBeVisible();
+  await expect(instruments(page)).not.toContainText(/Állapot\s*Készenlét/);
 }
 
 export function mapGrid(page: Page): Locator {
