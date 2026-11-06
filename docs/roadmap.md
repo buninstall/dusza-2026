@@ -27,11 +27,12 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 
 ### P1
 
-- [ ] Lejátszás: a kész lejátszó finomhangolása a valódi trace-szel (sebesség, aktuális sor, konzol), a leállítás és a hibasor kiemelése a VM elkészülte után.
-- [ ] Térképszerkesztő: kész (méret, festés, robot és irány, import/export, mentés, törlés) – végső UX-ellenőrzés valódi felhasználókkal.
-- [ ] Ranglista-oldal: kész – a verzióváltó és a saját sor kiemelésének ellenőrzése.
+- [x] Lejátszás a valódi trace-szel: lassított futás állítható sebességgel, az aktuális sor kiemelése, konzol, arany- és lépésszámláló, leállítás, a hibakód és a hibás sor jelölése.
+- [x] Térképszerkesztő: méret (1–15), festés, robot és kezdőirány, import/export, élő ellenőrzés, csak érvényes térkép menthető, törlés.
+- [x] Ranglista-oldal: térképenként és verziónként, több arany előrébb, egyenlőségnél a kevesebb lépés; verzióváltó és a saját sor kiemelése.
 - [x] Program mentése a szerverre (`/api/programs`) és betöltése a játék oldalon (Programtár).
-- [ ] Felfedezett mezők: a köd/teljes nézet váltó ellenőrzése a valódi trace-szel.
+- [x] Felfedezett mezők: „Lámpafény” (csak a bejárt és az `isThere`-rel vizsgált mezők) és „Teljes térkép” nézet.
+- [x] Programfájl importja: a szintaktikai hibás fájl betöltésekor hibaüzenet jelzi a hibák számát és az első hibás sort.
 
 ### P2
 
