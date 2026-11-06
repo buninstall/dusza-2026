@@ -364,3 +364,8 @@
     animation: none;
   }
 }
+
+.play[data-layout="panes"] .faults-list {
+  max-height: none;
+  overflow: visible;
+}
