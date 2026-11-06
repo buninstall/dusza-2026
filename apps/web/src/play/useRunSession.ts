@@ -1,27 +1,65 @@
-import type { Diagnostic, RobotState } from "@minescript/engine";
+import type { RobotState, RunResult } from "@minescript/engine";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
+import type { Blocked } from "./phase.ts";
 import { usePlayback } from "./playback-store.ts";
+import { PROGRAM_MAX_CHARS } from "./program-file.ts";
 
 export type Submission =
   | { state: "pending" }
   | { state: "done"; gold: number; steps: number }
   | { state: "error"; message: string };
 
-type RunSessionInput = { mapId: number; mapVersionId: number; mapText: string; start: RobotState };
-
 type TrackedSubmission = { runId: number; value: Submission };
 
-export function useRunSession({ mapId, mapVersionId, mapText, start }: RunSessionInput) {
+export type RunAttempt = { blocked: Blocked | null; attempt: number; wasRefused: boolean };
+
+export function useEngineRun(mapText: string, start: RobotState) {
   const engine = useEngine();
+  const [state, setState] = useState<RunAttempt>({ blocked: null, attempt: 0, wasRefused: false });
+
+  const refuse = (blocked: Blocked) => {
+    usePlayback.getState().clear();
+    setState((current) => ({ blocked, attempt: current.attempt + 1, wasRefused: true }));
+    return false;
+  };
+
+  const run = (source: string): boolean => {
+    if (source.length > PROGRAM_MAX_CHARS) {
+      return refuse({ kind: "tooLong", length: source.length });
+    }
+    let result: RunResult;
+    try {
+      result = engine.run(source, mapText);
+    } catch {
+      return refuse({ kind: "engine" });
+    }
+    if (result.outcome.kind === "syntaxError") {
+      return refuse({ kind: "syntax", diagnostics: result.outcome.diagnostics });
+    }
+    setState((current) => ({ blocked: null, attempt: current.attempt + 1, wasRefused: false }));
+    usePlayback.getState().load(result, start, source);
+    return true;
+  };
+
+  const clearBlocked = useCallback(
+    () => setState((current) => (current.blocked ? { ...current, blocked: null } : current)),
+    [],
+  );
+
+  return { run, ...state, clearBlocked };
+}
+
+type SubmissionInput = { mapId: number; mapVersionId: number };
+
+export function useRunSubmission({ mapId, mapVersionId }: SubmissionInput) {
   const queryClient = useQueryClient();
   const status = usePlayback((state) => state.status);
   const runId = usePlayback((state) => state.runId);
   const runSource = usePlayback((state) => state.source);
-  const [syntaxErrors, setSyntaxErrors] = useState<Diagnostic[] | null>(null);
   const [tracked, setTracked] = useState<TrackedSubmission | null>(null);
   const submittedRun = useRef(0);
 
@@ -54,25 +92,8 @@ export function useRunSession({ mapId, mapVersionId, mapText, start }: RunSessio
     }
   }, [status, runId, runSource, submit]);
 
-  const run = (source: string): boolean => {
-    const result = engine.run(source, mapText);
-    if (result.outcome.kind === "syntaxError") {
-      setSyntaxErrors(result.outcome.diagnostics);
-      usePlayback.getState().clear();
-      return false;
-    }
-    setSyntaxErrors(null);
-    usePlayback.getState().load(result, start, source);
-    return true;
-  };
-
-  const retrySubmit = () => void submit(runId, runSource);
-
   return {
-    run,
-    syntaxErrors,
-    clearSyntaxErrors: () => setSyntaxErrors(null),
     submission: tracked?.runId === runId ? tracked.value : null,
-    retrySubmit,
+    retrySubmit: () => void submit(runId, runSource),
   };
 }

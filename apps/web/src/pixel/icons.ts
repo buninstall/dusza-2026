@@ -524,6 +524,19 @@ const TURN_BACK: PixelRows = [
   "........#.",
 ];
 
+const REPLAY: PixelRows = [
+  "...####...",
+  "..#....#..",
+  ".#......#.",
+  ".#......#.",
+  ".#...#####",
+  ".#....###.",
+  ".#.....#..",
+  "..#.......",
+  "...####...",
+  "..........",
+];
+
 const SIGNAL: PixelRows = [
   "..........",
   ".#......#.",
@@ -586,6 +599,7 @@ const ART = {
   turnRight: mirror(TURN_LEFT),
   turnBack: TURN_BACK,
   signal: SIGNAL,
+  replay: REPLAY,
 } satisfies Record<string, PixelRows>;
 
 export type IconName = keyof typeof ART;

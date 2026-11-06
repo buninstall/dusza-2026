@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import {
   Button as AriaButton,
   type ButtonProps as AriaButtonProps,
@@ -34,13 +34,18 @@ export function ButtonContent({ icon, children }: ButtonContentProps) {
 }
 
 type ButtonProps = Omit<AriaButtonProps, "children"> &
-  ButtonLookProps & { children?: ReactNode; className?: string | undefined };
+  ButtonLookProps & {
+    children?: ReactNode;
+    className?: string | undefined;
+    ref?: Ref<HTMLButtonElement> | undefined;
+  };
 
-export function Button({ variant, size, icon, children, className, ...props }: ButtonProps) {
+export function Button({ variant, size, icon, children, className, ref, ...props }: ButtonProps) {
   const isIconOnly = children === undefined && icon !== undefined;
   return (
     <AriaButton
       {...props}
+      {...(ref ? { ref } : {})}
       {...buttonLook(variant, size)}
       className={composeRenderProps(className, (custom) =>
         clsx("btn", isIconOnly && "btn-icon-only", custom),

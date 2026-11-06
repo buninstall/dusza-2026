@@ -1,6 +1,7 @@
+import { snippet } from "@codemirror/autocomplete";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { lintKeymap } from "@codemirror/lint";
-import { Compartment, EditorSelection, EditorState } from "@codemirror/state";
+import { nextDiagnostic, previousDiagnostic } from "@codemirror/lint";
+import { Compartment, EditorSelection, EditorState, Prec } from "@codemirror/state";
 import {
   drawSelection,
   EditorView,
@@ -10,34 +11,55 @@ import {
   highlightWhitespace,
   keymap,
   lineNumbers,
+  placeholder as placeholderExtension,
 } from "@codemirror/view";
-import type { Diagnostic, FormatResult } from "@minescript/engine";
+import type { FormatResult, TextEdit } from "@minescript/engine";
 import { type Ref, useEffect, useImperativeHandle, useRef } from "react";
 import { useEngine } from "../engine/useEngine.ts";
 import { mineScriptCompletion } from "./completion.ts";
+import { errorLens } from "./error-lens.ts";
 import "./MineScriptEditor.css";
-import { lineMarks, scrollToLine, setErrorLines, setExecLine } from "./exec-line.ts";
+import {
+  lineMarks,
+  type RuntimeMark,
+  scrollToLine,
+  setErrorLines,
+  setExecLine,
+  setRuntimeMark,
+} from "./exec-line.ts";
 import { mineScriptHover } from "./hover.ts";
+import { type InsertableBlock, planInsertion } from "./insertion.ts";
 import { formatDocument, mineScriptKeymap } from "./keymap.ts";
 import { mineScriptHighlighting, mineScriptLanguage } from "./language.ts";
-import { mineScriptLinter } from "./lint.ts";
+import { type LintReport, mineScriptLinter } from "./lint.ts";
+
+export type InsertedRange = { firstLine: number; lastLine: number };
 
 export type EditorHandle = {
   reveal: (from: number, to: number) => void;
   revealLine: (line: number) => void;
   format: () => FormatResult | null;
+  insertBlock: (block: InsertableBlock) => InsertedRange | null;
+  insertBeforeLine: (line: number, block: InsertableBlock) => InsertedRange | null;
+  focus: () => void;
+  applyEdits: (edits: readonly TextEdit[]) => void;
 };
+
+export type EditorCommands = { onToggleFaults?: () => void };
 
 type MineScriptEditorProps = {
   value: string;
   onChange: (value: string) => void;
   label: string;
   describedBy?: string;
+  placeholder?: string;
   execLine?: number | null;
   errorLines?: readonly number[];
+  runtimeMark?: RuntimeMark | null;
   isReadOnly?: boolean;
-  onDiagnostics?: (diagnostics: Diagnostic[]) => void;
+  onLint?: (report: LintReport) => void;
   onFormat?: (result: FormatResult) => void;
+  commands?: EditorCommands;
   ref?: Ref<EditorHandle>;
 };
 
@@ -50,25 +72,51 @@ function readOnlyExtension(isReadOnly: boolean) {
   ];
 }
 
+function insertInto(
+  view: EditorView,
+  block: InsertableBlock,
+  cursor: number,
+): InsertedRange | null {
+  if (view.state.readOnly) {
+    return null;
+  }
+  const plan = planInsertion(view.state.doc.toString(), cursor, block);
+  if (plan.snippet) {
+    snippet(plan.snippet.template)(view, null, plan.snippet.from, plan.snippet.to);
+  } else {
+    view.dispatch({
+      changes: { from: plan.from, to: plan.to, insert: plan.text },
+      selection: EditorSelection.cursor(plan.cursor),
+      userEvent: "input.block",
+      scrollIntoView: true,
+    });
+  }
+  view.focus();
+  return { firstLine: plan.firstLine, lastLine: plan.lastLine };
+}
+
 export function MineScriptEditor({
   value,
   onChange,
   label,
   describedBy,
+  placeholder,
   execLine = null,
   errorLines = NO_LINES,
+  runtimeMark = null,
   isReadOnly = false,
-  onDiagnostics,
+  onLint,
   onFormat,
+  commands,
   ref,
 }: MineScriptEditorProps) {
   const engine = useEngine();
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const readOnly = useRef(new Compartment());
-  const initial = useRef({ value, isReadOnly });
-  const callbacks = useRef({ onChange, onDiagnostics, onFormat });
-  callbacks.current = { onChange, onDiagnostics, onFormat };
+  const initial = useRef({ value, isReadOnly, placeholder });
+  const callbacks = useRef({ onChange, onLint, onFormat, commands });
+  callbacks.current = { onChange, onLint, onFormat, commands };
 
   useImperativeHandle(ref, () => {
     const reveal = (from: number, to: number) => {
@@ -84,6 +132,10 @@ export function MineScriptEditor({
       });
       view.focus();
     };
+    const lineStart = (line: number) => {
+      const doc = viewRef.current?.state.doc;
+      return doc && line >= 1 && line <= doc.lines ? doc.line(line).from : null;
+    };
     return {
       reveal,
       revealLine(line) {
@@ -97,6 +149,33 @@ export function MineScriptEditor({
         const view = viewRef.current;
         return view && !view.state.readOnly ? formatDocument(engine, view) : null;
       },
+      insertBlock(block) {
+        const view = viewRef.current;
+        return view ? insertInto(view, block, view.state.selection.main.head) : null;
+      },
+      insertBeforeLine(line, block) {
+        const view = viewRef.current;
+        const start = lineStart(line);
+        return view && start !== null ? insertInto(view, block, start) : null;
+      },
+      focus() {
+        viewRef.current?.focus();
+      },
+      applyEdits(edits) {
+        const view = viewRef.current;
+        if (!view || view.state.readOnly) {
+          return;
+        }
+        const length = view.state.doc.length;
+        view.dispatch({
+          changes: edits.map((edit) => ({
+            from: Math.min(edit.from, length),
+            to: Math.min(edit.to, length),
+            insert: edit.insert,
+          })),
+        });
+        view.focus();
+      },
     };
   }, [engine]);
 
@@ -105,11 +184,27 @@ export function MineScriptEditor({
     if (!host) {
       return;
     }
+    const pageKeys = Prec.highest(
+      keymap.of([
+        { key: "Mod-Enter", run: () => true },
+        {
+          key: "Mod-Shift-m",
+          run: () => {
+            callbacks.current.commands?.onToggleFaults?.();
+            return true;
+          },
+        },
+        { key: "F8", run: nextDiagnostic },
+        { key: "Shift-F8", run: previousDiagnostic },
+      ]),
+    );
     const view = new EditorView({
       parent: host,
       state: EditorState.create({
         doc: initial.current.value,
         extensions: [
+          pageKeys,
+          lineMarks(),
           lineNumbers(),
           highlightActiveLineGutter(),
           highlightActiveLine(),
@@ -119,13 +214,14 @@ export function MineScriptEditor({
           highlightTrailingWhitespace(),
           mineScriptLanguage(engine.keywords()),
           mineScriptHighlighting(),
-          mineScriptLinter(engine, (diagnostics) => callbacks.current.onDiagnostics?.(diagnostics)),
+          mineScriptLinter(engine, (report) => callbacks.current.onLint?.(report)),
           mineScriptCompletion(engine),
           mineScriptHover(engine),
-          lineMarks(),
+          errorLens(),
           mineScriptKeymap(engine, (result) => callbacks.current.onFormat?.(result)),
-          keymap.of([...defaultKeymap, ...historyKeymap, ...lintKeymap]),
+          keymap.of([...defaultKeymap, ...historyKeymap]),
           readOnly.current.of(readOnlyExtension(initial.current.isReadOnly)),
+          initial.current.placeholder ? placeholderExtension(initial.current.placeholder) : [],
           EditorView.contentAttributes.of({
             "aria-label": label,
             ...(describedBy ? { "aria-describedby": describedBy } : {}),
@@ -172,6 +268,10 @@ export function MineScriptEditor({
   useEffect(() => {
     viewRef.current?.dispatch({ effects: setErrorLines.of(errorLines) });
   }, [errorLines]);
+
+  useEffect(() => {
+    viewRef.current?.dispatch({ effects: setRuntimeMark.of(runtimeMark) });
+  }, [runtimeMark]);
 
   return <div ref={hostRef} className="code-host" data-readonly={isReadOnly} />;
 }

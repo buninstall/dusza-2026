@@ -1,25 +1,11 @@
 import { useMemo } from "react";
+import { InlineText } from "../components/InlineText.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
 import { tokenizeLine } from "../editor/language.ts";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
 import type { ManualBlock, ManualSection } from "../i18n/hu-manual.ts";
 import "./ManualPage.css";
-
-const CODE_MARK = "`";
-
-export function InlineText({ text }: { text: string }) {
-  const parts = text.split(CODE_MARK);
-  return parts.map((part, index) =>
-    index % 2 === 1 ? (
-      <code key={`${index.toString()}-${part}`} className="manual-inline-code">
-        {part}
-      </code>
-    ) : (
-      part
-    ),
-  );
-}
 
 function CodeSample({ code, caption }: { code: string; caption: string }) {
   const engine = useEngine();

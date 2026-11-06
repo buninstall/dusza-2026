@@ -33,7 +33,7 @@ describe("deriveFrame", () => {
     expect(mined.gold).toBe(1);
     const end = deriveFrame(walkTrace, corridorStart, 5);
     expect(end.atEnd).toBe(true);
-    expect(end.console).toEqual([{ step: 4, text: "1" }]);
+    expect(end.console).toEqual([{ index: 4, step: 4, text: "1" }]);
     expect(end.robot.dir).toBe("north");
     expect(end.lastMined).toBeNull();
   });
@@ -144,7 +144,7 @@ describe("időzítés és animáció", () => {
   test("a lejátszó időzítő lejátszás közben léptet", () => {
     vi.useFakeTimers();
     usePlayback.getState().clear();
-    usePlayback.getState().setSpeed(10);
+    usePlayback.getState().setSpeed(8);
     usePlayback.getState().load(walkTrace, corridorStart, "");
     renderHook(() => usePlaybackTimer());
     act(() => {
