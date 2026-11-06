@@ -45,7 +45,7 @@ setup_swap() {
     log "2 GiB swap (a fordítás ne szorítsa ki a MySQL-t)"
     sudo fallocate -l 2G "$SWAPFILE"
     sudo chmod 600 "$SWAPFILE"
-    sudo mkswap -q "$SWAPFILE"
+    sudo mkswap "$SWAPFILE" >/dev/null
     sudo swapon "$SWAPFILE"
     grep -q "^$SWAPFILE " /etc/fstab || echo "$SWAPFILE none swap sw 0 0" | sudo tee -a /etc/fstab >/dev/null
     printf 'vm.swappiness=10\n' | sudo tee /etc/sysctl.d/90-minescript.conf >/dev/null
