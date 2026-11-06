@@ -33,8 +33,8 @@ export function isModified(draft: ProgramDraft): boolean {
   return draft.linked !== null && draft.linked.savedSource !== draft.source;
 }
 
-export function useProgramDraft(mapId: number) {
-  const [draft, setDraft] = useState(() => readDraft(mapId));
+export function useProgramDraft(mapId: number, initial?: ProgramDraft) {
+  const [draft, setDraft] = useState(() => initial ?? readDraft(mapId));
   useEffect(() => writeStorage(draftKey(mapId), JSON.stringify(draft)), [mapId, draft]);
   return [draft, setDraft] as const;
 }

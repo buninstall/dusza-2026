@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
+import type { BoardInteraction } from "../src/mine/board-input.ts";
 import { MapPreview } from "../src/mine/MapPreview.tsx";
 import { MineBoard } from "../src/mine/MineBoard.tsx";
 import { SpriteSheet } from "../src/pixel/SpriteSheet.tsx";
@@ -52,59 +53,83 @@ describe("MineBoard", () => {
     expect(screen.getByRole("gridcell", { name: "1. sor, 3. oszlop: felderítetlen" })).toBeTruthy();
     expect(screen.getByRole("gridcell", { name: "1. sor, 2. oszlop: üres kamra" })).toBeTruthy();
     expect(container.querySelector('use[href="#ms-fringe-west"]')).not.toBeNull();
-    expect(container.querySelector('use[href="#ms-sparkle"]')).not.toBeNull();
+    expect(container.querySelector('use[href="#ms-burst-0"]')).not.toBeNull();
   });
 
-  test("szerkesztéskor Enter és Szóköz fest, a számbillentyű eszközt vált", () => {
-    const onPaint = vi.fn();
-    const onShortcut = vi.fn((key: string) => key === "2");
+  function interaction(overrides: Partial<BoardInteraction> = {}): BoardInteraction {
+    return {
+      cursor: { row: 0, col: 0 },
+      onCursorChange: vi.fn(),
+      onKey: vi.fn(() => false),
+      onNavigate: vi.fn(),
+      onKeyUp: vi.fn(),
+      onStrokeStart: vi.fn(),
+      onStrokeMove: vi.fn(),
+      onStrokeEnd: vi.fn(),
+      onHover: vi.fn(),
+      ...overrides,
+    };
+  }
+
+  test("szerkesztéskor a billentyűt előbb a szerkesztő kapja, a nyíl a kurzort viszi", () => {
+    const onKey = vi.fn((event: { key: string }) => event.key === "Enter");
+    const handlers = interaction({ onKey });
     render(
       <MineBoard
         map={corridorMap}
         robot={robot}
         label="Szerkesztő"
         size="editor"
-        onPaint={onPaint}
-        onShortcut={onShortcut}
+        interaction={handlers}
+        edges={{ end: <span>vég</span>, bottom: <span>alj</span> }}
+        rulerMarks={{ rows: new Set([0]), cols: new Set([2]) }}
       />,
     );
     const grid = screen.getByRole("grid", { name: "Szerkesztő" });
     expect(grid.getAttribute("aria-readonly")).toBe("false");
     const first = screen.getAllByRole("gridcell")[0] as HTMLElement;
     first.focus();
-    fireEvent.keyDown(first, { key: "ArrowRight" });
-    fireEvent.keyDown(document.activeElement as HTMLElement, { key: "Enter" });
-    expect(onPaint).toHaveBeenLastCalledWith({ row: 0, col: 1 });
-    fireEvent.keyDown(document.activeElement as HTMLElement, { key: " " });
-    expect(onPaint).toHaveBeenCalledTimes(2);
-    fireEvent.keyDown(document.activeElement as HTMLElement, { key: "2" });
-    expect(onShortcut).toHaveBeenCalledWith("2");
-    expect(onPaint).toHaveBeenCalledTimes(2);
+    fireEvent.keyDown(first, { key: "Enter" });
+    expect(onKey).toHaveBeenCalledOnce();
+    fireEvent.keyDown(first, { key: "ArrowRight", shiftKey: true });
+    expect(handlers.onNavigate).toHaveBeenCalledWith({ row: 0, col: 1 }, true);
+    expect(handlers.onCursorChange).toHaveBeenCalledWith({ row: 0, col: 1 });
+    fireEvent.keyUp(first, { key: "Shift" });
+    expect(handlers.onKeyUp).toHaveBeenCalled();
+    expect(screen.getByText("vég")).toBeTruthy();
+    expect(document.querySelector('[data-flag="true"]')?.textContent).toBe("3");
   });
 
-  test("egérrel húzva több mezőt fest, mindegyiket egyszer", () => {
-    const onPaint = vi.fn();
-    render(<MineBoard map={corridorMap} robot={robot} label="Húzás" onPaint={onPaint} />);
+  test("egérrel húzva a vonás minden mezőt egyszer jelent, a jobb gomb töröl", () => {
+    const handlers = interaction();
+    render(<MineBoard map={corridorMap} robot={robot} label="Húzás" interaction={handlers} />);
     const cells = screen.getAllByRole("gridcell");
     const target = cells[2] as HTMLElement;
     document.elementFromPoint = vi.fn(() => target);
     fireEvent.pointerDown(cells[1] as HTMLElement, { button: 0 });
+    expect(handlers.onStrokeStart).toHaveBeenCalledWith({ row: 0, col: 1 }, "paint", false);
     fireEvent.pointerMove(target, { clientX: 5, clientY: 5 });
     fireEvent.pointerMove(target, { clientX: 6, clientY: 5 });
     fireEvent.pointerUp(window);
-    fireEvent.pointerMove(cells[3] as HTMLElement, { clientX: 9, clientY: 5 });
-    expect(onPaint.mock.calls).toEqual([[{ row: 0, col: 1 }], [{ row: 0, col: 2 }]]);
+    expect(handlers.onStrokeMove).toHaveBeenCalledOnce();
+    expect(handlers.onStrokeEnd).toHaveBeenCalledOnce();
+    fireEvent.pointerDown(cells[3] as HTMLElement, { button: 2 });
+    expect(handlers.onStrokeStart).toHaveBeenLastCalledWith({ row: 0, col: 3 }, "erase", false);
+    fireEvent.pointerUp(window);
+    fireEvent.pointerLeave(screen.getByRole("grid"));
+    expect(handlers.onHover).toHaveBeenLastCalledWith(null);
+    fireEvent.contextMenu(cells[1] as HTMLElement);
   });
 
-  test("olvasható nézetben a mutató nem fest, a jobb gomb sem", async () => {
-    const onPaint = vi.fn();
+  test("olvasható nézetben a mutató nem jelent vonást, a nyíl mozgat", async () => {
     const user = userEvent.setup();
     render(<MineBoard map={corridorMap} robot={robot} label="Csak nézet" />);
     await user.click(screen.getAllByRole("gridcell")[2] as HTMLElement);
-    render(<MineBoard map={corridorMap} robot={robot} label="Jobb gomb" onPaint={onPaint} />);
-    const grid = screen.getByRole("grid", { name: "Jobb gomb" });
-    fireEvent.pointerDown(grid.querySelector("td") as HTMLElement, { button: 2 });
-    expect(onPaint).not.toHaveBeenCalled();
+    const cell = screen.getAllByRole("gridcell")[0] as HTMLElement;
+    cell.focus();
+    fireEvent.keyDown(cell, { key: "End" });
+    expect(document.activeElement?.getAttribute("data-col")).toBe("3");
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: "x" });
   });
 });
 

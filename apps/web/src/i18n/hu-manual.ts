@@ -22,7 +22,7 @@ const sections: readonly ManualSection[] = [
     blocks: [
       {
         kind: "paragraph",
-        text: "Egy elhagyott bánya sötét kamráiban aranyrögök várnak. A kincskereső robot sorról sorra hajtja végre a MineScriptben írt programodat: csak azt érzékeli, ami közvetlenül előtte van, és ahol aranyra bukkan, ott kibányászhatja.",
+        text: "A robot sorról sorra végrehajtja a MineScript-programot. Csak a közvetlenül előtte lévő mezőt érzékeli (`isThere`), és azon a mezőn bányászhat, amelyen áll (`mine here`).",
       },
       {
         kind: "paragraph",
@@ -31,7 +31,7 @@ const sections: readonly ManualSection[] = [
       {
         kind: "list",
         items: [
-          "Válassz egy térképet a `Térképek` oldalon, és nyomd meg a `Játék` gombot.",
+          "Válassz pályát a `Pályák` oldalon, és nyomd meg a `Játék` gombot.",
           "Írd meg a programot a szerkesztőben, vagy importáld egy `.ms` / `.txt` fájlból.",
           "A `Futtatás` gomb ellenőrzi a programot. Hibás programot nem indít el, hanem megjelöli a hibás sorokat.",
           "Helyes program esetén a térkép és a robot alaphelyzetbe kerül, és a futás lassítva lejátszódik.",
@@ -270,14 +270,30 @@ const sections: readonly ManualSection[] = [
         caption: "Billentyűparancsok",
         head: ["Hol", "Billentyű", "Hatás"],
         rows: [
+          ["Játék", "`Ctrl+Enter`, `F5`", "futtatás"],
+          ["Játék", "`Shift+F5`", "leállítás"],
+          ["Bánya", "`Szóköz`", "szünet, folytatás"],
+          ["Bánya", "`←`, `→`", "egy sor vissza, előre"],
+          ["Bánya", "`Home`, `End`", "ugrás a futás elejére, végére"],
+          ["Bánya", "`L`", "lámpafény és teljes térkép váltása"],
+          ["Bánya", "`+`, `−`", "gyorsabb, lassabb lejátszás"],
+          ["Játék", "`Ctrl+S`", "a program mentése"],
+          ["Játék", "`Ctrl+O`", "programtár"],
+          ["Szerkesztő", "`F8`, `Shift+F8`", "következő, előző hiba"],
+          ["Szerkesztő", "`Ctrl+Shift+M`", "hibalista nyitása, zárása"],
           ["Szerkesztő", "`Tab`", "4 szóköz beszúrása"],
           ["Szerkesztő", "`Esc`, majd `Tab`", "kilépés a szerkesztőből"],
           ["Szerkesztő", "`Shift+Alt+F`", "formázás"],
           ["Szerkesztő", "`Ctrl+Szóköz`", "kódkiegészítés"],
           ["Térkép", "nyilak, `Home`, `End`", "mozgás a cellák között"],
           ["Térkép", "`Ctrl+Home`, `Ctrl+End`", "ugrás az első vagy az utolsó cellára"],
-          ["Térképszerkesztő", "`Enter`, `Szóköz`", "festés a kiválasztott eszközzel"],
-          ["Térképszerkesztő", "`1`–`4`", "eszközváltás: üres kamra, arany, fal, robot"],
+          ["Térképszerkesztő", "`Enter`, `Szóköz`", "festés a kijelölt mezőre"],
+          ["Térképszerkesztő", "`Delete`, `Backspace`", "mező törlése"],
+          ["Térképszerkesztő", "`1`–`4`", "festőeszköz: üres kamra, arany, fal, robot"],
+          ["Térképszerkesztő", "`E`, `T`, `K`", "festésmód: ecset, téglalap, kitöltés"],
+          ["Térképszerkesztő", "`R`, `Shift+R`", "a robot forgatása balra, jobbra"],
+          ["Térképszerkesztő", "`Ctrl+Z`, `Ctrl+Shift+Z`", "visszavonás, újra"],
+          ["Térképszerkesztő", "`Ctrl+S`", "a térkép mentése"],
         ],
       },
     ],
@@ -285,9 +301,7 @@ const sections: readonly ManualSection[] = [
 ];
 
 export const manual = {
-  eyebrow: "Kézikönyv",
-  title: "A MineScript kézikönyve",
-  lead: "Minden, amit a robot programozásához tudnod kell: a térkép, az utasítások, a típusok, a lépésszámlálás és a hibák.",
+  title: "Kézikönyv",
   tocLabel: "Tartalom",
   sections,
 } as const;

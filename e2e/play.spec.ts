@@ -1,5 +1,16 @@
-import { expect, test } from "@playwright/test";
-import { editor, login, openPlay, replaceProgram, runProgram } from "./helpers.ts";
+import { expect, type Page, test } from "@playwright/test";
+import {
+  editor,
+  expectFinished,
+  importProgramFile,
+  login,
+  mapGrid,
+  openPlay,
+  replaceProgram,
+  runProgram,
+  setSpeed,
+} from "./helpers.ts";
+import { recipeText } from "./recipes.ts";
 
 const LONG_PROGRAM = [
   "set i to 0",
@@ -22,7 +33,11 @@ test("szintaktikailag hibás program nem fut, a hibás sor jelölve", async ({ p
   const banner = page.getByRole("alert").filter({ hasText: "szintaktikailag hibás" });
   await expect(banner).toBeVisible();
   await expect(banner).toContainText(/Hibás sor: \d/);
-  await expect(page.locator(".cm-error-line").first()).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: /^Hibalista/ })
+      .getByRole("button", { name: /^Ugrás a\(z\) 2\. sorra, hiba/ }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: /Hibalista/ })).toBeVisible();
 });
 
@@ -62,15 +77,14 @@ test("a programtár receptje végigfut, és a szerver rögzíti a pontos eredmé
 
 test("programfájl importja: a hibás program is betöltődik, a bináris nem", async ({ page }) => {
   await openPlay(page, "3. Kis labirintus");
-  const input = page.locator('input[type="file"]').first();
-  await input.setInputFiles({
+  await importProgramFile(page, {
     name: "probalkozas.ms",
     mimeType: "text/plain",
     buffer: Buffer.from("set arany to isThere 2\r\nprint  arany\r\n", "utf8"),
   });
   await expect(page.getByText("A(z) probalkozas.ms program betöltve.")).toBeVisible();
   await expect(editor(page)).toContainText("print  arany");
-  await input.setInputFiles({
+  await importProgramFile(page, {
     name: "kep.ms",
     mimeType: "application/octet-stream",
     buffer: Buffer.from([0x00, 0xff, 0xfe]),
@@ -79,13 +93,37 @@ test("programfájl importja: a hibás program is betöltődik, a bináris nem", 
   await expect(editor(page)).toContainText("print  arany");
 });
 
+async function recordedRunCount(page: Page, mapTitle: string): Promise<number> {
+  const response = await page.request.get("/api/me/runs");
+  const body = (await response.json()) as { runs: { mapTitle: string }[] };
+  return body.runs.filter((run) => run.mapTitle === mapTitle).length;
+}
+
 test("a leállított futás nem kerül a ranglistára", async ({ page }) => {
   await openPlay(page, "5. Kígyó");
+  const before = await recordedRunCount(page, "5. Kígyó");
   await replaceProgram(page, LONG_PROGRAM);
   await runProgram(page);
   await page.getByRole("button", { name: "Leállítás" }).click();
   await expect(page.getByText("A leállított futás nem kerül a ranglistára.").first()).toBeVisible();
-  const runs = await page.request.get("/api/me/runs");
-  const body = (await runs.json()) as { runs: { mapTitle: string }[] };
-  expect(body.runs.filter((run) => run.mapTitle === "5. Kígyó")).toHaveLength(0);
+  expect(await recordedRunCount(page, "5. Kígyó")).toBe(before);
+});
+
+test("375 px-en a bánya és a program külön fülön van, a vezérlőpult mindkettőn kéznél", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openPlay(page, "1. Egyenes folyosó");
+  const stageTab = page.getByRole("tab", { name: "Bánya" });
+  await expect(stageTab).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "Program" }).click();
+  await expect(editor(page)).toBeVisible();
+  await expect(mapGrid(page)).toBeHidden();
+  await replaceProgram(page, recipeText("01-egyenes-folyoso.ms"));
+  await setSpeed(page, "max");
+  await page.getByRole("button", { name: "Futtatás" }).click();
+  await expect(stageTab).toHaveAttribute("aria-selected", "true");
+  await expect(mapGrid(page)).toBeVisible();
+  await expectFinished(page, 2, 4);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });

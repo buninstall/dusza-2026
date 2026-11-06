@@ -2,13 +2,14 @@ import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import "../components/DataTable.css";
+import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
-import { PageHeader } from "../components/PageHeader.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { ConfirmDialog } from "../components/ui/Dialog.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import "./AdminPage.css";
 
 const fetchUsers = () => call(api.admin.users.$get());
@@ -57,6 +58,10 @@ function AccountActions({
   );
 }
 
+function countAdmins(accounts: readonly Account[]): number {
+  return accounts.filter((account) => account.role === "admin").length;
+}
+
 export function AdminPage({ me }: { me: SessionUser }) {
   const queryClient = useQueryClient();
   const { data, error } = useQuery(usersQuery);
@@ -86,7 +91,10 @@ export function AdminPage({ me }: { me: SessionUser }) {
 
   return (
     <div className="admin-page">
-      <PageHeader eyebrow={hu.admin.eyebrow} title={hu.admin.title} lead={hu.admin.lead} />
+      <LocationPlate
+        name={hu.signs.admin}
+        meta={data ? hu.admin.meta(data.users.length, countAdmins(data.users)) : undefined}
+      />
       {error ? (
         <Notice tone="error" title={errorMessage(error, hu.admin.loadFailed)} live="alert" />
       ) : null}
@@ -113,11 +121,14 @@ export function AdminPage({ me }: { me: SessionUser }) {
                     ) : null}
                   </th>
                   <td data-role={account.role} className="admin-role">
+                    <PixelIcon name={account.role === "admin" ? "key" : "helmet"} />
                     {ROLE_LABEL[account.role]}
                   </td>
                   <td className="data-table-muted">{formatTime(account.createdAt)}</td>
                   <td>
-                    {account.id === me.id ? null : (
+                    {account.id === me.id ? (
+                      <span className="data-table-muted">{hu.admin.ownAccount}</span>
+                    ) : (
                       <AccountActions
                         account={account}
                         onRole={(role) => void setRole(account, role)}

@@ -12,9 +12,8 @@ function RegisterPage() {
   const navigate = useNavigate();
   return (
     <AuthScreen
-      eyebrow={hu.auth.registerEyebrow}
+      plate={hu.signs.register}
       title={hu.auth.registerTitle}
-      lead={hu.auth.registerLead}
       footer={<Link to="/login">{hu.auth.toLogin}</Link>}
     >
       <CredentialsForm

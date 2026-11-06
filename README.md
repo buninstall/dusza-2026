@@ -1,4 +1,9 @@
-# MineScript
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/brand/minescript-dark.svg">
+    <img src="apps/web/public/brand/minescript-light.svg" alt="MineScript" width="480" height="96">
+  </picture>
+</h1>
 
 Webes játék a Dusza Árpád Országos Programozói Emlékverseny 2026/27 I. fordulójára. Egy elhagyott bányában a kincskereső robotot egy saját programnyelven, MineScriptben írt program vezérli: a játékos megírja a programot, a robot végrehajtja, a felület lassítva mutatja a mozgását, a felfedezett területet és a kibányászott aranyat, a ranglista pedig térképenként rangsorolja a játékosokat. Saját térképek is készíthetők.
 

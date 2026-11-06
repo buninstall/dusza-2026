@@ -1,23 +1,26 @@
 import { type Sprite, toneFill } from "./pixel-art.ts";
 
-type SpriteLayersProps = { sprite: Sprite; animatedTone?: string; animatedClassName?: string };
+export type ToneClasses = Readonly<Partial<Record<string, string>>>;
 
-export function SpriteLayers({ sprite, animatedTone, animatedClassName }: SpriteLayersProps) {
-  return sprite.layers.map((layer) => (
-    <path
-      key={layer.tone}
-      d={layer.path}
-      style={{ fill: toneFill(layer.tone) }}
-      {...(layer.tone === animatedTone && animatedClassName
-        ? { className: animatedClassName }
-        : {})}
-    />
-  ));
+type SpriteLayersProps = { sprite: Sprite; animated?: ToneClasses };
+
+export function SpriteLayers({ sprite, animated }: SpriteLayersProps) {
+  return sprite.layers.map((layer) => {
+    const className = animated?.[layer.tone];
+    return (
+      <path
+        key={layer.tone}
+        d={layer.path}
+        style={{ fill: toneFill(layer.tone) }}
+        {...(className ? { className } : {})}
+      />
+    );
+  });
 }
 
-type PixelSpriteProps = { sprite: Sprite; className?: string };
+type PixelSpriteProps = { sprite: Sprite; className?: string; animated?: ToneClasses };
 
-export function PixelSprite({ sprite, className }: PixelSpriteProps) {
+export function PixelSprite({ sprite, className, animated }: PixelSpriteProps) {
   return (
     <svg
       aria-hidden="true"
@@ -26,7 +29,7 @@ export function PixelSprite({ sprite, className }: PixelSpriteProps) {
       shapeRendering="crispEdges"
       className={className}
     >
-      <SpriteLayers sprite={sprite} />
+      <SpriteLayers sprite={sprite} {...(animated ? { animated } : {})} />
     </svg>
   );
 }

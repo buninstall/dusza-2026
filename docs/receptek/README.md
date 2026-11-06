@@ -5,11 +5,11 @@ Ebben a mappában minden oktató pályához van egy hibátlanul lefutó MineScri
 ## Hogyan használd
 
 1. Indítsd el az alkalmazást (`just dev`, vagy a kész binárist), és lépj be: `demo1` / `demo2026`.
-2. Nyisd meg a pályát a **Térképek** oldalon (**Játék**).
-3. Töltsd be a receptet a két mód egyikével:
+2. A leggyorsabb út a **Kézikönyv** oldal: a tartalomjegyzék alján egy csendes **Receptek** bejárat (kőzetsáv aranyröggel) vezet a `/manual/receptek` oldalra. Ott minden recept mellett **Megnyitás** gomb van: a megfelelő pályát nyitja meg, a programmal a szerkesztőben. A programok, a pályák és a hibás térképek ugyanott le is tölthetők.
+3. Kézzel is mehet: nyisd meg a pályát a **Pályák** oldalon (**Játék**), és töltsd be a receptet a két mód egyikével:
    - **Programtár**: minden demó-fiók programtárában megvan az összes recept („Recept – …” és „Hibapróba – …” néven);
-   - **Importálás**: válaszd ki a megfelelő `.ms` fájlt ebből a mappából.
-4. **Futtatás**, majd figyeld a robotot. A sebesség csúszkával állítható, a futás bármikor leállítható.
+   - **Fájl** menü, **Importálás fájlból…**: válaszd ki a megfelelő `.ms` fájlt ebből a mappából.
+4. **Futtatás** (Ctrl+Enter), majd figyeld a robotot. A sebesség a vezérlőpulton állítható, a futás bármikor leállítható.
 
 A demó-adatok bármikor visszaállíthatók: `--reset-demo` (például `bun run --filter @minescript/server dev -- --reset-demo`).
 
@@ -50,7 +50,7 @@ Mindegyik az **1. Egyenes folyosó** pályán futtatandó. A felületnek a hibak
 
 ## Hibás térképek
 
-A **Térképszerkesztő** **Térkép importálása** gombjával próbáld betölteni őket: egyik sem töltődhet be, és mindegyikre érthető magyar hibaüzenetet kell kapnod.
+A **Térképszerkesztő** **Importálás** gombjával (vagy a fájl rácsra húzásával) próbáld betölteni őket: egyik sem töltődhet be, és mindegyikre érthető magyar hibaüzenetet kell kapnod.
 
 | Fájl                                                                   | Várt hiba             |
 | ---------------------------------------------------------------------- | --------------------- |

@@ -1,4 +1,4 @@
-import { type Diagnostic as CmDiagnostic, linter, lintGutter } from "@codemirror/lint";
+import { type Diagnostic as CmDiagnostic, linter } from "@codemirror/lint";
 import type { Extension } from "@codemirror/state";
 import type { EditorView } from "@codemirror/view";
 import type { Diagnostic, Engine, Severity } from "@minescript/engine";
@@ -32,20 +32,24 @@ export function toCodeMirror(diagnostic: Diagnostic, docLength: number): CmDiagn
   };
 }
 
+export type LintReport = { diagnostics: Diagnostic[]; hasFailed: boolean };
+
 export function mineScriptLinter(
   engine: Engine,
-  onDiagnostics?: (diagnostics: Diagnostic[]) => void,
+  onReport?: (report: LintReport) => void,
 ): Extension {
-  return [
-    lintGutter(),
-    linter(
-      (view) => {
-        const text = view.state.doc.toString();
+  return linter(
+    (view) => {
+      const text = view.state.doc.toString();
+      try {
         const { diagnostics } = engine.analyze(text);
-        onDiagnostics?.(diagnostics);
+        onReport?.({ diagnostics, hasFailed: false });
         return diagnostics.map((diagnostic) => toCodeMirror(diagnostic, text.length));
-      },
-      { delay: LINT_DELAY_MS },
-    ),
-  ];
+      } catch {
+        onReport?.({ diagnostics: [], hasFailed: true });
+        return [];
+      }
+    },
+    { delay: LINT_DELAY_MS },
+  );
 }

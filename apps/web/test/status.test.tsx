@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
 import { apiError, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
@@ -18,7 +18,7 @@ describe("hibaképernyők", () => {
     expect(await screen.findByText("Üzemzavar", undefined, { timeout: 5000 })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Újrapróbálás" }));
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Térképek" }, { timeout: 5000 }),
+      await screen.findByRole("heading", { level: 1, name: "Pályák" }, { timeout: 5000 }),
     ).toBeTruthy();
   });
 
@@ -34,8 +34,18 @@ describe("hibaképernyők", () => {
     expect(await screen.findByText("A térkép nem tölthető be.")).toBeTruthy();
   });
 
-  test("az ismeretlen térkép lejátszása hibaüzenetet ad", async () => {
+  test("az ismeretlen vagy hibás azonosítójú pálya a beomlott járatot mutatja", async () => {
     renderApp("/play/404");
-    await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("GET /maps/404"));
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "404: nincs ilyen oldal" }),
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Vissza a pályákhoz" })).toBeTruthy();
+  });
+
+  test.each(["/play/abc", "/play/0", "/play/99999"])("%s nem létező pálya", async (path) => {
+    renderApp(path);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "404: nincs ilyen oldal" }),
+    ).toBeTruthy();
   });
 });

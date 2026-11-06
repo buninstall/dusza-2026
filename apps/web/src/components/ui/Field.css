@@ -6,15 +6,12 @@
 }
 
 .field-label {
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font: var(--type-label);
   color: var(--c-text);
 }
 
 .field-description {
-  font-size: var(--text-xs);
+  font: var(--type-help);
   color: var(--c-text-muted);
 }
 
@@ -22,9 +19,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--c-rust);
+  font: var(--type-help-strong);
+  color: var(--c-danger-ink);
 }
 
 .field-input {
@@ -35,8 +31,7 @@
   background: var(--c-screen);
   color: var(--c-text);
   box-shadow: inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-lo);
-  font-family: var(--font-text);
-  font-size: var(--text-base);
+  font: var(--type-body);
 }
 
 .field-input::placeholder {
@@ -48,7 +43,7 @@
 }
 
 .field-input[data-focused] {
-  border-color: var(--c-gold);
+  border-color: var(--c-current);
   outline: none;
 }
 
@@ -58,7 +53,7 @@
 }
 
 .field-input[data-invalid] {
-  border-color: var(--c-rust);
+  border-color: var(--c-danger-ink);
   border-left-width: calc(var(--border-thin) * 3);
 }
 
@@ -76,7 +71,7 @@
 }
 
 .field-stepper[data-focus-within] {
-  border-color: var(--c-gold);
+  border-color: var(--c-current);
 }
 
 .field-stepper .field-input {
@@ -84,8 +79,7 @@
   border: 0;
   box-shadow: none;
   text-align: center;
-  font-family: var(--font-code);
-  font-variant-numeric: tabular-nums;
+  font: var(--type-mono);
 }
 
 .field-stepper-button {
@@ -108,7 +102,7 @@
 
 .field-stepper-button[data-hovered] {
   background: var(--c-surface);
-  color: var(--c-gold);
+  color: var(--c-reward);
 }
 
 .field-stepper-button[data-pressed] {
@@ -136,6 +130,8 @@
   background: var(--c-surface-raised);
   color: var(--c-text);
   box-shadow: var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow);
+  font: var(--type-control);
+  letter-spacing: var(--track-control);
   text-align: left;
   cursor: pointer;
 }
@@ -163,6 +159,8 @@
 }
 
 .field-option {
+  font: var(--type-control);
+  letter-spacing: var(--track-control);
   display: flex;
   align-items: center;
   gap: var(--space-2);

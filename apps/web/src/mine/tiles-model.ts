@@ -98,6 +98,7 @@ function kindToCell(kind: TileKind): Cell {
   return "empty";
 }
 
-export function describeTile(view: TileView, robot: RobotState | null): string {
-  return hu.mine.cell(view.pos.row + 1, view.pos.col + 1, contentLabel(view, robot));
+export function describeTile(view: TileView, robot: RobotState | null, note?: string): string {
+  const content = contentLabel(view, robot);
+  return hu.mine.cell(view.pos.row + 1, view.pos.col + 1, note ? `${content}, ${note}` : content);
 }

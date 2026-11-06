@@ -13,18 +13,14 @@
 }
 
 .slider-label {
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: var(--tracking-stencil);
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
   text-transform: uppercase;
   color: var(--c-text-muted);
 }
 
 .slider-output {
-  font-family: var(--font-code);
-  font-size: var(--text-xs);
-  font-variant-numeric: tabular-nums;
+  font: var(--type-mono-sm);
   color: var(--c-text);
 }
 
@@ -57,8 +53,8 @@
 
 .slider-thumb {
   top: 50%;
-  width: 16px;
-  height: 24px;
+  width: var(--target-min);
+  height: calc(var(--target-min) + var(--space-1));
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface-raised);
   box-shadow:

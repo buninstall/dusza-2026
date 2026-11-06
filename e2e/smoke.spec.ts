@@ -9,7 +9,7 @@ test("bejelentkezés → térképlista → játék → kijelentkezés", async ({
   await expect(page.getByRole("heading", { level: 2, name: "1. Egyenes folyosó" })).toBeVisible();
   await openPlay(page, "1. Egyenes folyosó");
   await expect(editor(page)).toBeVisible();
-  await expect(page.getByText("Műszerek")).toBeAttached();
+  await expect(page.getByRole("region", { name: "Műszerek" })).toBeVisible();
 
   await page.getByRole("button", { name: /^Felhasználói menü/ }).click();
   await page.getByRole("menuitem", { name: "Kijelentkezés" }).click();
@@ -21,9 +21,7 @@ test("bejelentkezés → térképlista → játék → kijelentkezés", async ({
 test("a kézikönyv és a futásnapló elérhető a navigációból", async ({ page }) => {
   await login(page);
   await page.getByRole("link", { name: "Kézikönyv" }).click();
-  await expect(
-    page.getByRole("heading", { level: 1, name: "A MineScript kézikönyve" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Kézikönyv" })).toBeVisible();
   await page.getByRole("link", { name: "Lépésszámlálás" }).click();
   await expect(page).toHaveURL(/#lepesek$/);
   await page.getByRole("link", { name: "Futásaim" }).click();

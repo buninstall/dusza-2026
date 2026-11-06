@@ -18,26 +18,41 @@ export function announcementFor(frame: Frame | null): string {
   );
 }
 
-type LiveAnnouncerProps = { frame: Frame | null; final?: string | undefined };
+type LiveAnnouncerProps = {
+  frame: Frame | null;
+  final?: string | undefined;
+  urgent?: string | undefined;
+  note?: string | undefined;
+};
 
-export function LiveAnnouncer({ frame, final }: LiveAnnouncerProps) {
+export function LiveAnnouncer({ frame, final, urgent, note }: LiveAnnouncerProps) {
   const [message, setMessage] = useState("");
   const lastAnnounced = useRef(0);
-  const text = final ?? announcementFor(frame);
+  const text = note ?? final ?? announcementFor(frame);
 
   useEffect(() => {
     const elapsed = Date.now() - lastAnnounced.current;
-    const delay = final || elapsed >= ANNOUNCE_INTERVAL_MS ? 0 : ANNOUNCE_INTERVAL_MS - elapsed;
-    const timer = window.setTimeout(() => {
-      lastAnnounced.current = Date.now();
-      setMessage(text);
-    }, delay);
+    const isNow = Boolean(final || note) || elapsed >= ANNOUNCE_INTERVAL_MS;
+    const timer = window.setTimeout(
+      () => {
+        lastAnnounced.current = Date.now();
+        setMessage(text);
+      },
+      isNow ? 0 : ANNOUNCE_INTERVAL_MS - elapsed,
+    );
     return () => window.clearTimeout(timer);
-  }, [text, final]);
+  }, [text, final, note]);
 
   return (
-    <output aria-live="polite" className="visually-hidden">
-      {message}
-    </output>
+    <>
+      <output aria-live="polite" className="visually-hidden">
+        {message}
+      </output>
+      {urgent ? (
+        <div role="alert" className="visually-hidden">
+          {urgent}
+        </div>
+      ) : null}
+    </>
   );
 }

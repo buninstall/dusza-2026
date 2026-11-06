@@ -15,6 +15,7 @@ import "./Overlay.css";
 type ModalShellProps = {
   title: string;
   role?: "dialog" | "alertdialog";
+  size?: "default" | "wide";
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   children: (close: () => void) => ReactNode;
@@ -23,6 +24,7 @@ type ModalShellProps = {
 export function ModalShell({
   title,
   role = "dialog",
+  size = "default",
   isOpen,
   onOpenChange,
   children,
@@ -31,7 +33,11 @@ export function ModalShell({
   const listener = onOpenChange === undefined ? {} : { onOpenChange };
   return (
     <ModalOverlay isDismissable {...control} {...listener} className="overlay-backdrop">
-      <Modal className="overlay-modal" data-tone={role === "alertdialog" ? "danger" : "neutral"}>
+      <Modal
+        className="overlay-modal"
+        data-size={size}
+        data-tone={role === "alertdialog" ? "danger" : "neutral"}
+      >
         {role === "alertdialog" ? <HazardStripe /> : null}
         <AriaDialog role={role} className="overlay-dialog">
           {({ close }) => (

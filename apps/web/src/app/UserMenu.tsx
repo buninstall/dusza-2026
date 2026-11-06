@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { SessionUser } from "../auth/session.ts";
 import { Menu, MenuItem, MenuSeparator } from "../components/ui/Menu.tsx";
-import { toast } from "../components/ui/Toast.tsx";
+import { toast, toastQueue } from "../components/ui/Toast.tsx";
 import { hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
 
@@ -11,6 +11,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
   const navigate = useNavigate();
 
   const logout = async () => {
+    toastQueue.clear();
     try {
       await call(api.auth.logout.$post());
     } catch (error) {

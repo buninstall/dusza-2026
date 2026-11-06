@@ -76,7 +76,7 @@ describe("bejelentkezés és regisztráció", () => {
     await user.clear(screen.getByLabelText(/Jelszó/));
     await user.type(screen.getByLabelText(/Jelszó/), "hosszujelszo");
     await user.click(screen.getByRole("button", { name: "Fiók létrehozása" }));
-    expect(await screen.findByRole("heading", { level: 1, name: "Térképek" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { level: 1, name: "Pályák" })).toBeTruthy();
     await waitFor(() => expect(callsTo("POST", "/auth/register")).toHaveLength(1));
   });
 });

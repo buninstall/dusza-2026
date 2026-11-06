@@ -2,8 +2,9 @@ import { type Palette, type PixelRows, pixelPath, type Sprite } from "../pixel/p
 
 export const PREVIEW_TILE = 4;
 export const PREVIEW_BOX = 120;
-const MIN_SCALE = 2;
+const MIN_SCALE = 1;
 const MAX_SCALE = 6;
+const SCALE_PER_BOX = 24;
 
 type MicroTile = { rows: PixelRows; palette: Palette };
 
@@ -69,7 +70,8 @@ export function previewSprite(content: string): Sprite {
   };
 }
 
-export function previewScale(sprite: Sprite): number {
+export function previewScale(sprite: Sprite, box: number = PREVIEW_BOX): number {
   const longest = Math.max(sprite.width, sprite.height, 1);
-  return Math.min(Math.max(Math.floor(PREVIEW_BOX / longest), MIN_SCALE), MAX_SCALE);
+  const ceiling = Math.max(MAX_SCALE, Math.floor(box / SCALE_PER_BOX));
+  return Math.min(Math.max(Math.floor(box / longest), MIN_SCALE), ceiling);
 }

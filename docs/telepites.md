@@ -4,18 +4,18 @@ Az alkalmazás a `https://csapat13.dusza.cloudsyso.com` címen fut, a szervezők
 
 ## Röviden
 
-| Mit akarsz                                   | Parancs (a saját gépedről)          | Parancs (a szerveren)                 |
-| -------------------------------------------- | ----------------------------------- | ------------------------------------- |
-| a main legfrissebb állapotát élesíteni       | `just deploy`                       | `minescriptctl deploy`                |
-| egy ágat vagy commitot élesíteni             | `just deploy --ref futozs`          | `minescriptctl deploy --ref <ág>`     |
-| ugyanazt a commitot újraépíteni              | `just deploy --force`               | `minescriptctl deploy --force`        |
-| visszaállni az előző kiadásra                | `just remote rollback`              | `minescriptctl rollback`              |
-| állapot (verzió, health, kapu, kiadások)     | `just remote status`                | `minescriptctl status`                |
-| naplók                                       | `just remote logs`                  | `minescriptctl logs -f`               |
-| a jelszavas kapu ki- és bekapcsolása         | `just remote gate off` / `gate on`  | `minescriptctl gate off` / `gate on`  |
-| új kapu-jelszó                               | `just remote gate passwd csapat13`  | `minescriptctl gate passwd csapat13`  |
-| automatikus telepítés a main-ről (2 percenként) | `just remote autodeploy on`      | `minescriptctl autodeploy on`         |
-| adatbázis-mentés                             | `just remote backup`                | `minescriptctl backup`                |
+| Mit akarsz                                      | Parancs (a saját gépedről)         | Parancs (a szerveren)                |
+| ----------------------------------------------- | ---------------------------------- | ------------------------------------ |
+| a main legfrissebb állapotát élesíteni          | `just deploy`                      | `minescriptctl deploy`               |
+| egy ágat vagy commitot élesíteni                | `just deploy --ref futozs`         | `minescriptctl deploy --ref <ág>`    |
+| ugyanazt a commitot újraépíteni                 | `just deploy --force`              | `minescriptctl deploy --force`       |
+| visszaállni az előző kiadásra                   | `just remote rollback`             | `minescriptctl rollback`             |
+| állapot (verzió, health, kapu, kiadások)        | `just remote status`               | `minescriptctl status`               |
+| naplók                                          | `just remote logs`                 | `minescriptctl logs -f`              |
+| a jelszavas kapu ki- és bekapcsolása            | `just remote gate off` / `gate on` | `minescriptctl gate off` / `gate on` |
+| új kapu-jelszó                                  | `just remote gate passwd csapat13` | `minescriptctl gate passwd csapat13` |
+| automatikus telepítés a main-ről (2 percenként) | `just remote autodeploy on`        | `minescriptctl autodeploy on`        |
+| adatbázis-mentés                                | `just remote backup`               | `minescriptctl backup`               |
 
 A `just deploy` és a `just remote` SSH-n át a szerveren futtatja a `minescriptctl`-t. Belépés: `ssh -p 2200 csapat13@csapat13.dusza.cloudsyso.com`. Az SSH a szervezők sshpiper-átjáróján megy, ami csak jelszót fogad el, kulcsot nem. A jelszó a szervezőktől jött, és nem kerül a repóba. Ha be van állítva a `SSHPASS` környezeti változó, és telepítve van az `sshpass`, akkor a parancs nem kéri be a jelszót.
 
@@ -36,22 +36,22 @@ flowchart LR
 
 ## Fájlok a szerveren
 
-| Útvonal                                                   | Tartalom                                                                                       |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `/srv/minescript/repo`                                    | a GitHub-repó klónja; itt fordul a kód (a `target/`, `node_modules/` cache megmarad)           |
-| `/srv/minescript/releases/<idő>-<commit>/`                | kiadások: `minescript` bináris és `REVISION` (commit, ág, idő); az utolsó 5 marad meg          |
-| `/srv/minescript/current`                                 | szimbolikus link az élő kiadásra (atomi csere)                                                 |
-| `/srv/minescript/backups/`                                | tömörített `mysqldump`-ok (minden telepítés előtt; az utolsó 20 marad meg; 700-as jog)         |
-| `/srv/minescript/www/karbantartas.html`                   | ezt mutatja az Apache, amíg az alkalmazás újraindul (502/503/504)                              |
-| `/usr/local/bin/minescriptctl`                            | a vezérlő (a `scripts/deploy/minescriptctl` másolata; frissítés: `minescriptctl self-update`)  |
-| `/etc/minescript/minescript.env`                          | `DATABASE_URL`, `HOST`, `PORT`, `TRUST_PROXY`; `root:minescript`, 640-es jog                   |
-| `/etc/systemd/system/minescript.service`                  | az alkalmazás szolgáltatása                                                                    |
-| `/etc/systemd/system/minescript-autodeploy.{service,timer}` | automatikus telepítés (alapból ki van kapcsolva)                                             |
-| `/etc/apache2/sites-available/minescript.conf`            | a virtuális hoszt                                                                              |
-| `/etc/apache2/conf-available/zz-minescript-hardening.conf` | globális Apache-szigorítás                                                                   |
-| `/etc/apache2/minescript/gate.conf`, `htpasswd`           | a kapu; ha a `gate.conf` hiányzik, az oldal nyilvános                                          |
-| `/etc/mysql/mysql.conf.d/zz-minescript.cnf`               | a MySQL csak a localhoston figyel                                                              |
-| `~csapat13/.ssh/minescript_deploy`                        | csak olvasó GitHub deploy key (a `futozs/dusza-2026` repó „Deploy keys” listájában)            |
+| Útvonal                                                     | Tartalom                                                                                      |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `/srv/minescript/repo`                                      | a GitHub-repó klónja; itt fordul a kód (a `target/`, `node_modules/` cache megmarad)          |
+| `/srv/minescript/releases/<idő>-<commit>/`                  | kiadások: `minescript` bináris és `REVISION` (commit, ág, idő); az utolsó 5 marad meg         |
+| `/srv/minescript/current`                                   | szimbolikus link az élő kiadásra (atomi csere)                                                |
+| `/srv/minescript/backups/`                                  | tömörített `mysqldump`-ok (minden telepítés előtt; az utolsó 20 marad meg; 700-as jog)        |
+| `/srv/minescript/www/karbantartas.html`                     | ezt mutatja az Apache, amíg az alkalmazás újraindul (502/503/504)                             |
+| `/usr/local/bin/minescriptctl`                              | a vezérlő (a `scripts/deploy/minescriptctl` másolata; frissítés: `minescriptctl self-update`) |
+| `/etc/minescript/minescript.env`                            | `DATABASE_URL`, `HOST`, `PORT`, `TRUST_PROXY`; `root:minescript`, 640-es jog                  |
+| `/etc/systemd/system/minescript.service`                    | az alkalmazás szolgáltatása                                                                   |
+| `/etc/systemd/system/minescript-autodeploy.{service,timer}` | automatikus telepítés (alapból ki van kapcsolva)                                              |
+| `/etc/apache2/sites-available/minescript.conf`              | a virtuális hoszt                                                                             |
+| `/etc/apache2/conf-available/zz-minescript-hardening.conf`  | globális Apache-szigorítás                                                                    |
+| `/etc/apache2/minescript/gate.conf`, `htpasswd`             | a kapu; ha a `gate.conf` hiányzik, az oldal nyilvános                                         |
+| `/etc/mysql/mysql.conf.d/zz-minescript.cnf`                 | a MySQL csak a localhoston figyel                                                             |
+| `~csapat13/.ssh/minescript_deploy`                          | csak olvasó GitHub deploy key (a `futozs/dusza-2026` repó „Deploy keys” listájában)           |
 
 A forrásban mindez a `scripts/deploy/` alatt van: `minescriptctl` (vezérlő), `provision.sh` (egyszeri telepítés) és `templates/` (systemd, Apache, MySQL, karbantartási oldal).
 
@@ -136,27 +136,30 @@ Ha a „Demó-adatok létrehozva” sor megjelent, állítsd le Ctrl+C-vel, majd
 
 ## Naplók és hibaelhárítás
 
-| Tünet                                  | Teendő                                                                                                  |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| a karbantartási oldal nem tűnik el     | `minescriptctl status`, `minescriptctl logs`; ha az új verzió a hibás: `minescriptctl rollback`         |
-| a `deploy` „korábban már elbukott”     | javítsd a hibát a main-en (új commit), vagy próbáld újra: `minescriptctl deploy --force`                |
-| a build elfogy a memóriából            | van 2 GiB swap; `free -h`; a build `nice` alatt fut                                                     |
-| Apache-hiba                            | `sudo apachectl configtest`, `minescriptctl logs --apache`, `sudo journalctl -u apache2`                |
-| MySQL-hiba                             | `sudo systemctl status mysql`, `sudo journalctl -u mysql`; az alkalmazás magyarul írja ki a teendőt     |
-| a `git fetch` nem megy                 | `ssh -T git@github.com` (a deploy key-nek szerepelnie kell a repó beállításaiban)                       |
-| elfogyott a hely                       | `df -h`; a kiadások (egyenként kb. 94 MiB) és a mentések maguktól forognak; `cargo clean` a repóban     |
+| Tünet                              | Teendő                                                                                              |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------- |
+| a karbantartási oldal nem tűnik el | `minescriptctl status`, `minescriptctl logs`; ha az új verzió a hibás: `minescriptctl rollback`     |
+| a `deploy` „korábban már elbukott” | javítsd a hibát a main-en (új commit), vagy próbáld újra: `minescriptctl deploy --force`            |
+| a build elfogy a memóriából        | van 2 GiB swap; `free -h`; a build `nice` alatt fut                                                 |
+| Apache-hiba                        | `sudo apachectl configtest`, `minescriptctl logs --apache`, `sudo journalctl -u apache2`            |
+| MySQL-hiba                         | `sudo systemctl status mysql`, `sudo journalctl -u mysql`; az alkalmazás magyarul írja ki a teendőt |
+| a `git fetch` nem megy             | `ssh -T git@github.com` (a deploy key-nek szerepelnie kell a repó beállításaiban)                   |
+| elfogyott a hely                   | `df -h`; a kiadások (egyenként kb. 94 MiB) és a mentések maguktól forognak; `cargo clean` a repóban |
 
 ## Telepítés nulláról
 
 Egy friss szerveren, a `csapat13` felhasználóval (jelszó nélküli sudo kell):
 
 1. Deploy key és klón:
+
    ```bash
    ssh-keygen -t ed25519 -N '' -C minescript-deploy -f ~/.ssh/minescript_deploy
    printf 'Host github.com\n  IdentityFile ~/.ssh/minescript_deploy\n  IdentitiesOnly yes\n' >> ~/.ssh/config
    cat ~/.ssh/minescript_deploy.pub
    ```
+
    A kiírt kulcsot csak olvasási joggal vedd fel a GitHubon (Settings → Deploy keys, vagy a saját gépedről: `gh repo deploy-key add kulcs.pub --title csapat13`). A GitHub ED25519 ujjlenyomata: `SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU`. Utána:
+
    ```bash
    sudo install -d -o csapat13 -g csapat13 /srv/minescript
    git clone git@github.com:futozs/dusza-2026.git /srv/minescript/repo
@@ -169,13 +172,13 @@ Egy friss szerveren, a `csapat13` felhasználóval (jelszó nélküli sudo kell)
 
 A szervezői Ansible-beállításokhoz (SSH, `dusza-remoteip.conf`, node exporter, Alloy) nem nyúltunk. Amit módosítottunk, és ahogy visszaállítható:
 
-| Változás                                         | Visszaállítás                                                                   |
-| ------------------------------------------------ | ------------------------------------------------------------------------------- |
-| `000-default` ki, `minescript` be                | `sudo a2dissite minescript && sudo a2ensite 000-default`                        |
-| `php8.3` + `mpm_prefork` → `mpm_event`           | `sudo a2dismod mpm_event && sudo a2enmod mpm_prefork php8.3`                    |
-| `status`, `autoindex`, `cgi`, `serve-cgi-bin` ki | `sudo a2enmod status autoindex && sudo a2enconf serve-cgi-bin`                  |
-| `zz-minescript-hardening` konfiguráció           | `sudo a2disconf zz-minescript-hardening`                                        |
+| Változás                                         | Visszaállítás                                                                       |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `000-default` ki, `minescript` be                | `sudo a2dissite minescript && sudo a2ensite 000-default`                            |
+| `php8.3` + `mpm_prefork` → `mpm_event`           | `sudo a2dismod mpm_event && sudo a2enmod mpm_prefork php8.3`                        |
+| `status`, `autoindex`, `cgi`, `serve-cgi-bin` ki | `sudo a2enmod status autoindex && sudo a2enconf serve-cgi-bin`                      |
+| `zz-minescript-hardening` konfiguráció           | `sudo a2disconf zz-minescript-hardening`                                            |
 | MySQL csak localhoston                           | `sudo rm /etc/mysql/mysql.conf.d/zz-minescript.cnf && sudo systemctl restart mysql` |
-| 2 GiB `/swapfile`                                | `sudo swapoff /swapfile`, a sor törlése az `/etc/fstab`-ból                     |
+| 2 GiB `/swapfile`                                | `sudo swapoff /swapfile`, a sor törlése az `/etc/fstab`-ból                         |
 
 Mindegyik után: `sudo apachectl configtest && sudo systemctl restart apache2`.

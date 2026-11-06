@@ -1,201 +1,270 @@
-import type { Diagnostic, Dir, Pos } from "@minescript/engine";
-import { type ReactNode, useId, useMemo, useState } from "react";
-import { Panel } from "../components/Panel.tsx";
-import { Button } from "../components/ui/Button.tsx";
-import { NumberField } from "../components/ui/NumberField.tsx";
+import type { Pos } from "@minescript/engine";
+import { useId, useMemo, useReducer, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { toast } from "../components/ui/Toast.tsx";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
-import { downloadText, firstFile, safeFilename } from "../lib/files.ts";
-import { MineBoard } from "../mine/MineBoard.tsx";
+import { downloadText, safeFilename } from "../lib/files.ts";
+import { hasVisibleText } from "../lib/text.ts";
+import { canvasOverlay } from "./canvas-overlay.tsx";
+import { EditorBar, type SaveState } from "./EditorBar.tsx";
+import { EditorCanvas } from "./EditorCanvas.tsx";
 import {
-  DetailsFields,
-  FileControls,
-  type MapDetails,
-  ValidationReadout,
-  type VersionInfo,
-  VersionNote,
-} from "./EditorPanels.tsx";
-import {
+  changedCells,
   type DraftMap,
   draftFromMap,
   draftGrid,
   draftRobot,
   draftToText,
-  MAX_SIZE,
-  MIN_SIZE,
-  paint,
+  type Mode,
   resizeDraft,
   type Tool,
-  toolForKey,
   turnRobot,
 } from "./editor-state.ts";
+import { historyReducer, initialHistory } from "./history.ts";
+import {
+  CheckList,
+  DetailsBlock,
+  type ImportError,
+  ImportErrorNotice,
+  type MapDetails,
+  VersionBlock,
+  type VersionInfo,
+} from "./Inspector.tsx";
+import { LeaveGuard } from "./LeaveGuard.tsx";
 import "./MapEditor.css";
+import {
+  doomNotes,
+  rectTag,
+  shroudedCells,
+  splitDiagnostics,
+  unreachableMarks,
+} from "./editor-issues.ts";
 import { parseMapFile } from "./map-file.ts";
-import { DirectionPad, TOOL_LABEL, ToolRack } from "./ToolRack.tsx";
+import { ToolRail } from "./ToolRail.tsx";
+import { MODE_LABEL, TOOL_LABEL } from "./tool-labels.ts";
+import { useCanvasTools } from "./useCanvasTools.ts";
+import { useEditorKeys } from "./useEditorKeys.ts";
 
 export type MapFormValues = MapDetails & { content: string };
 
 type MapEditorProps = {
+  mapId: number | null;
   initialDraft: DraftMap;
   initialDetails: MapDetails;
-  version?: VersionInfo | null;
-  onSave: (values: MapFormValues) => Promise<void>;
-  dangerZone?: ReactNode;
+  version: VersionInfo | null;
+  onSave: (values: MapFormValues) => Promise<boolean>;
+  onDelete?: (() => void) | undefined;
 };
 
-type ImportError = { message: string; diagnostics: readonly Diagnostic[] };
-
-function splitDiagnostics(diagnostics: readonly Diagnostic[]) {
-  return {
-    errors: diagnostics.filter((diagnostic) => diagnostic.severity === "error"),
-    warnings: diagnostics.filter((diagnostic) => diagnostic.severity !== "error"),
-  };
-}
+type Baseline = { text: string; details: MapDetails };
 
 export function MapEditor({
+  mapId,
   initialDraft,
   initialDetails,
-  version = null,
+  version,
   onSave,
-  dangerZone,
+  onDelete,
 }: MapEditorProps) {
   const engine = useEngine();
   const helpId = useId();
-  const [draft, setDraft] = useState(initialDraft);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const checkRef = useRef<HTMLHeadingElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const isLeaving = useRef(false);
+  const [history, dispatch] = useReducer(historyReducer, initialDraft, initialHistory);
   const [details, setDetails] = useState(initialDetails);
+  const [baseline, setBaseline] = useState<Baseline>({
+    text: draftToText(initialDraft),
+    details: initialDetails,
+  });
   const [tool, setTool] = useState<Tool>("wall");
-  const [announcement, setAnnouncement] = useState("");
+  const [mode, setMode] = useState<Mode>("brush");
+  const [showReach, setShowReach] = useState(false);
+  const [isDropping, setDropping] = useState(false);
   const [importError, setImportError] = useState<ImportError | null>(null);
-  const [isSaving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>(mapId === null ? "new" : "clean");
+  const [flash, setFlash] = useState<{ cells: readonly Pos[]; key: number } | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const draft = history.present;
+  const tools = useCanvasTools({
+    draft,
+    dispatch,
+    tool,
+    mode,
+    setTool,
+    setMode,
+    announce: setAnnouncement,
+  });
 
   const text = useMemo(() => draftToText(draft), [draft]);
   const parsed = useMemo(() => engine.parseMap(text), [engine, text]);
+  const info = useMemo(
+    () => (parsed.map ? engine.mapInfo(parsed.map) : null),
+    [engine, parsed.map],
+  );
   const { errors, warnings } = splitDiagnostics(parsed.diagnostics);
-  const isTitleMissing = details.title.trim().length === 0;
-  const canSave = parsed.map !== null && !isTitleMissing;
+  const isTitleMissing = !hasVisibleText(details.title);
+  const isValid = parsed.map !== null && !isTitleMissing;
+  const isDirty =
+    text !== baseline.text || JSON.stringify(details) !== JSON.stringify(baseline.details);
+  const isFork = version !== null && version.runCount > 0 && text !== baseline.text;
+  const unreachable = info?.unreachable ?? [];
+  const grid = draftGrid(draft);
 
-  const handlePaint = (pos: Pos) => {
-    setDraft((current) => paint(current, pos, tool, current.dir));
-    setAnnouncement(hu.mapEditor.painted(TOOL_LABEL[tool], pos.row + 1, pos.col + 1));
-  };
-
-  const handleShortcut = (key: string) => {
-    const next = toolForKey(key);
-    if (next) {
-      setTool(next);
-      setAnnouncement(TOOL_LABEL[next]);
-    }
-    return next !== null;
-  };
-
-  const handleImport = async (files: FileList | null) => {
-    const file = firstFile(files);
-    if (!file) {
+  const step = (type: "undo" | "redo") => {
+    const target = type === "undo" ? history.past[history.past.length - 1] : history.future[0];
+    if (!target) {
       return;
     }
+    setFlash({ cells: changedCells(draft, target), key: Date.now() });
+    dispatch({ type });
+    setAnnouncement(type === "undo" ? hu.mapEditor.undone : hu.mapEditor.redone);
+  };
+
+  const importFile = async (file: File) => {
     const result = parseMapFile(engine, await file.arrayBuffer());
     if (!result.ok) {
-      setImportError({ message: result.message, diagnostics: result.diagnostics });
+      setImportError({ file: file.name, message: result.message, diagnostics: result.diagnostics });
       return;
     }
     setImportError(null);
-    setDraft(draftFromMap(result.map));
+    dispatch({ type: "commit", next: draftFromMap(result.map) });
     toast.success(hu.mapEditor.imported);
   };
 
-  const handleExport = () => {
-    if (parsed.map) {
-      downloadText(`${safeFilename(details.title)}.txt`, engine.serializeMap(parsed.map));
+  const exportMap = () => {
+    if (!parsed.map) {
+      toast.error(hu.mapEditor.exportBlocked);
+      return;
+    }
+    downloadText(`${safeFilename(details.title)}.txt`, engine.serializeMap(parsed.map));
+  };
+
+  const save = async () => {
+    if (!isValid) {
+      requestAnimationFrame(() => checkRef.current?.focus());
+      setAnnouncement(hu.mapEditor.saveBlocked(errors.length + (isTitleMissing ? 1 : 0)));
+      return;
+    }
+    setSaveState("saving");
+    isLeaving.current = true;
+    const values = { ...details, title: details.title.trim(), content: text };
+    const isSaved = await onSave(values);
+    isLeaving.current = false;
+    setSaveState(isSaved ? "saved" : "dirty");
+    if (isSaved) {
+      setBaseline({ text, details });
     }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await onSave({ ...details, title: details.title.trim(), content: text });
-    } finally {
-      setSaving(false);
-    }
+  const goTo = (pos: Pos) => {
+    flushSync(() => tools.setCursor(pos));
+    rootRef.current
+      ?.querySelector<HTMLElement>(`[data-row="${pos.row}"][data-col="${pos.col}"]`)
+      ?.focus();
+  };
+
+  useEditorKeys(rootRef, {
+    undo: () => step("undo"),
+    redo: () => step("redo"),
+    save: () => void save(),
+    letter: tools.onLetter,
+  });
+
+  const shownState: SaveState = saveState === "saving" || !isDirty ? saveState : "dirty";
+  const marks = unreachableMarks(unreachable);
+  const overlay = canvasOverlay({
+    draft,
+    tool,
+    cursor: tools.cursor,
+    hover: tools.hover,
+    rect: tools.rect,
+    rectTag: rectTag(tools.rect),
+    unreachable,
+    shrouded: showReach ? shroudedCells(draft) : [],
+    flash,
+  });
+  const toolText =
+    tool === "robot"
+      ? `${TOOL_LABEL[tool]} · ${hu.mapEditor.robotSingle}`
+      : `${TOOL_LABEL[tool]} · ${MODE_LABEL[mode]}`;
+  const leave = () => {
+    isLeaving.current = true;
+    onDelete?.();
   };
 
   return (
-    <div className="editor-workbench">
-      <Panel title={hu.mapEditor.toolsHeading} className="editor-tools">
-        <ToolRack tool={tool} dir={draft.dir} onToolChange={setTool} />
-        <DirectionPad
-          dir={draft.dir}
-          onDirChange={(dir: Dir) => setDraft((current) => turnRobot(current, dir))}
+    <div ref={rootRef} className="ed" data-tool={tool}>
+      <EditorBar
+        mapId={mapId}
+        title={details.title}
+        version={version?.current ?? null}
+        forkVersion={isFork && version ? version.next : null}
+        saveState={shownState}
+        isSaveBlocked={!isValid}
+        isExportBlocked={parsed.map === null}
+        titleRef={titleRef}
+        onTitleChange={(title) => setDetails({ ...details, title })}
+        onImport={(file) => void importFile(file)}
+        onExport={exportMap}
+        onSave={() => void save()}
+      />
+      <ToolRail
+        tool={tool}
+        mode={mode}
+        dir={draft.dir}
+        hasRobot={draft.robot !== null}
+        onToolChange={setTool}
+        onModeChange={setMode}
+        onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
+      />
+      <EditorCanvas
+        map={grid}
+        robot={draftRobot(draft)}
+        helpId={helpId}
+        interaction={tools.interaction}
+        overlay={overlay}
+        cellNotes={marks.notes}
+        rulerMarks={marks.rulers}
+        isDropping={isDropping}
+        onDropChange={setDropping}
+        onDropFile={(file) => void importFile(file)}
+        onRows={(rows) => dispatch({ type: "commit", next: resizeDraft(draft, rows, draft.cols) })}
+        onCols={(cols) => dispatch({ type: "commit", next: resizeDraft(draft, draft.rows, cols) })}
+        doomNotes={doomNotes(draft)}
+        cursorText={hu.mapEditor.cursorAt(tools.cursor.row + 1, tools.cursor.col + 1)}
+        toolText={toolText}
+        canUndo={history.past.length > 0}
+        canRedo={history.future.length > 0}
+        showReach={showReach}
+        onUndo={() => step("undo")}
+        onRedo={() => step("redo")}
+        onReachChange={setShowReach}
+      />
+      <div className="ed-inspect">
+        {importError ? (
+          <ImportErrorNotice error={importError} onClose={() => setImportError(null)} />
+        ) : null}
+        <CheckList
+          errors={errors}
+          warnings={warnings}
+          isTitleMissing={isTitleMissing}
+          unreachable={unreachable}
+          headingRef={checkRef}
+          onFixTitle={() => titleRef.current?.focus()}
+          onPickRobot={() => setTool("robot")}
+          onPickGold={() => setTool("gold")}
+          onGoTo={goTo}
         />
-      </Panel>
-
-      <Panel title={hu.mapEditor.gridLabel} className="editor-canvas" tone="screen">
-        <MineBoard
-          map={draftGrid(draft)}
-          robot={draftRobot(draft)}
-          label={hu.mapEditor.gridLabel}
-          describedBy={helpId}
-          size="editor"
-          onPaint={handlePaint}
-          onShortcut={handleShortcut}
-        />
-        <p id={helpId} className="editor-help">
-          {hu.mapEditor.gridHelp}
-        </p>
-        <output className="visually-hidden">{announcement}</output>
-      </Panel>
-
-      <div className="editor-side">
-        <Panel title={hu.mapEditor.detailsHeading}>
-          <DetailsFields details={details} onChange={setDetails} />
-          <div className="editor-size-row">
-            <NumberField
-              label={hu.mapEditor.rows}
-              minValue={MIN_SIZE}
-              maxValue={MAX_SIZE}
-              value={draft.rows}
-              onChange={(rows) => setDraft((current) => resizeDraft(current, rows, current.cols))}
-            />
-            <NumberField
-              label={hu.mapEditor.cols}
-              minValue={MIN_SIZE}
-              maxValue={MAX_SIZE}
-              value={draft.cols}
-              onChange={(cols) => setDraft((current) => resizeDraft(current, current.rows, cols))}
-            />
-          </div>
-          <p className="editor-muted">{hu.mapEditor.sizeHelp}</p>
-        </Panel>
-
-        <Panel title={hu.mapEditor.checkHeading}>
-          <ValidationReadout errors={errors} warnings={warnings} isTitleMissing={isTitleMissing} />
-          <Button
-            variant="primary"
-            icon="save"
-            isDisabled={!canSave}
-            isPending={isSaving}
-            onPress={() => void handleSave()}
-          >
-            {isSaving ? hu.mapEditor.saving : hu.mapEditor.save}
-          </Button>
-        </Panel>
-
-        <Panel title={hu.mapEditor.fileHeading}>
-          <FileControls
-            canExport={parsed.map !== null}
-            importError={importError}
-            onImport={(files) => void handleImport(files)}
-            onExport={handleExport}
-          />
-        </Panel>
-
-        {version ? (
-          <Panel title={hu.mapEditor.versionHeading}>
-            <VersionNote version={version} />
-            {dangerZone}
-          </Panel>
+        <DetailsBlock details={details} onChange={setDetails} />
+        {version && mapId !== null ? (
+          <VersionBlock mapId={mapId} title={details.title} version={version} onDelete={leave} />
         ) : null}
       </div>
+      <output className="visually-hidden">{announcement}</output>
+      <LeaveGuard shouldBlock={() => isDirty && !isLeaving.current} />
     </div>
   );
 }

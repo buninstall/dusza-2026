@@ -4,6 +4,7 @@ import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { MineBoard } from "../mine/MineBoard.tsx";
 import type { Exploration } from "../mine/tiles-model.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
+import { PixelText } from "../pixel/PixelText.tsx";
 import { deriveFrame } from "../play/derive.ts";
 import "./AuthScreen.css";
 import { DEMO_MAP, DEMO_PROGRAM, DEMO_RUN, DEMO_START } from "./demo-run.ts";
@@ -63,10 +64,14 @@ export function AttractScene() {
         ))}
       </ol>
       <figcaption className="auth-scene-caption">
-        <span className="auth-scene-gold">
-          {hu.play.gold} {frame.gold}
+        <span className="auth-scene-counter">
+          <span className="label">{hu.play.gold}</span>
+          <PixelText text={String(frame.gold)} scale={2} className="auth-scene-gold" />
         </span>
-        {hu.auth.sceneCaption}
+        <span className="auth-scene-counter">
+          <span className="label">{hu.play.steps}</span>
+          <PixelText text={String(frame.steps)} scale={2} />
+        </span>
       </figcaption>
     </figure>
   );

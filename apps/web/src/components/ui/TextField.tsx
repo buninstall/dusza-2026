@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import type { Ref } from "react";
 import {
   TextField as AriaTextField,
   type TextFieldProps as AriaTextFieldProps,
@@ -17,6 +18,7 @@ type TextFieldProps = Omit<AriaTextFieldProps, "className"> & {
   isMultiline?: boolean;
   rows?: number;
   className?: string | undefined;
+  inputRef?: Ref<HTMLInputElement> | undefined;
 };
 
 const DEFAULT_ROWS = 3;
@@ -28,6 +30,7 @@ export function TextField({
   isMultiline = false,
   rows = DEFAULT_ROWS,
   className,
+  inputRef,
   ...props
 }: TextFieldProps) {
   const inputProps = placeholder === undefined ? {} : { placeholder };
@@ -37,7 +40,7 @@ export function TextField({
       {isMultiline ? (
         <TextArea {...inputProps} rows={rows} className={clsx("field-input", "field-textarea")} />
       ) : (
-        <Input {...inputProps} className="field-input" />
+        <Input {...inputProps} {...(inputRef ? { ref: inputRef } : {})} className="field-input" />
       )}
       {description ? (
         <Text slot="description" className="field-description">

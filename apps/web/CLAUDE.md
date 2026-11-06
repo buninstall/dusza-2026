@@ -2,23 +2,26 @@
 
 ## Felépítés
 
-| Mappa            | Tartalom                                                                                |
-| ---------------- | --------------------------------------------------------------------------------------- |
-| `src/styles`     | `tokens.css` (paletta mindkét témára, méretek, mozgás), `base.css`, `codemirror.css`    |
-| `src/pixel`      | ASCII pixel art: csempék, robot, ikonok, logó; SVG-útvonallá fordítás, közös sprite-lap |
-| `src/components` | `ui/` React Aria wrapperek, továbbá `Panel`, `Notice`, `Led`, `PageHeader`              |
-| `src/mine`       | a térképrács (`MineBoard`), a csempemodell, a rácsnavigáció és a mini előnézet          |
-| `src/play`       | játék oldal, `playback-store.ts`, `derive.ts`, futás és beküldés (`useRunSession.ts`)   |
-| `src/map-editor` | térképszerkesztő és állapota                                                            |
-| `src/editor`     | CodeMirror-bővítmények                                                                  |
-| `src/routes`     | vékony TanStack fájl-route-ok, a lapok a feature-mappákban vannak                       |
-| `src/i18n`       | `hu.ts` a felület szövegei, `hu-manual.ts` a kézikönyv                                  |
+| Mappa                         | Tartalom                                                                                                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/styles`                  | `tokens.css` (paletta mindkét témára, típus-, méret- és mozgástokenek), `base.css`, `codemirror.css`                                                     |
+| `src/pixel`                   | ASCII pixel art: csempék, robot, ikonok, logó, az „Aknajel” pixelbetűk; SVG-útvonallá fordítás, közös sprite-lap                                         |
+| `src/components`              | `ui/` React Aria wrapperek, továbbá `LocationPlate` (az oldalak egyetlen fejléce), `Notice`, `Led`, `EmptyState`, `NumberedHeading`, `RegionBoundary`    |
+| `src/mine`                    | a térképrács (`MineBoard`, `board-input.ts`), a csempemodell, a rácsnavigáció és a mini előnézet                                                         |
+| `src/play`                    | játék oldal: `stage/` (bánya, műszerek, vezérlőpult, napló), `sheet/` (programlap, fiókok, tippek), `playback-store.ts`, `derive.ts`, `useRunSession.ts` |
+| `src/runs`                    | futásnapló és visszajátszás                                                                                                                              |
+| `src/map-editor`              | térképszerkesztő: eszközsáv, rács, ellenőrzés, előzmények (`history.ts`)                                                                                 |
+| `src/maps`, `src/leaderboard` | pályaválasztó és ranglista                                                                                                                               |
+| `src/manual`, `src/recipes`   | kézikönyv és a `docs/receptek` fájljaiból épülő receptoldal                                                                                              |
+| `src/editor`                  | CodeMirror-bővítmények                                                                                                                                   |
+| `src/routes`                  | vékony TanStack fájl-route-ok, a lapok a feature-mappákban vannak                                                                                        |
+| `src/i18n`                    | `hu.ts` a felület szövegei, `hu-manual.ts` a kézikönyv                                                                                                   |
 
 ## Komponens-konvenciók
 
 - Interaktív elem csak React Aria Components alapú wrapper (`src/components/ui/`) vagy natív `button`/`a` lehet. Nincs `div onClick`.
 - Navigáció: `src/components/ui/Link.tsx` (TanStack `createLink` + React Aria `Link`); gomb kinézetű linkhez `variant="primary" | "secondary" | "ghost" | "danger"`.
-- Stílus: komponensenként egy sima CSS-fájl (`Panel.tsx` mellett `Panel.css`), előtagos kebab-case osztálynevekkel (`panel-head`, `play-gauge`). Szín, méret és időzítés csak `tokens.css`-változóból jöhet; nyers színkód komponensben nincs. Állapotot `data-*` attribútum jelöl.
+- Stílus: komponensenként egy sima CSS-fájl (`Led.tsx` mellett `Led.css`), előtagos kebab-case osztálynevekkel (`plate-sign`, `hud-gauge`). Szín, méret és időzítés csak `tokens.css`-változóból jöhet; nyers színkód komponensben nincs. Állapotot `data-*` attribútum jelöl.
 - Gradient, blur, lekerekített kártyarács és emoji nincs. Ikon csak `PixelIcon` lehet, játékelem csak a `src/pixel` sprite-jaiból.
 - Minden felhasználói szöveg a `src/i18n`-ben van; komponensben nincs beégetett magyar mondat.
 - Szerver-állapot: TanStack Query (`src/maps/queries.ts`, `src/auth/session.ts`, `src/play/programs.ts`), API-hívás csak a típusos `api` + `call` párossal (`src/lib/api.ts`).

@@ -1,10 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { Loading } from "../app/StatusScreens.tsx";
 import { Notice } from "../components/Notice.tsx";
-import { PageHeader } from "../components/PageHeader.tsx";
-import { ConfirmDialog } from "../components/ui/Dialog.tsx";
-import { Link } from "../components/ui/Link.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
@@ -12,32 +10,37 @@ import { api, call, errorMessage } from "../lib/api.ts";
 import { type MapDetail, mapQuery } from "../maps/queries.ts";
 import { draftFromMap, emptyDraft } from "./editor-state.ts";
 import { MapEditor, type MapFormValues } from "./MapEditor.tsx";
-import "./MapEditor.css";
 
 export function NewMapPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [initialDraft] = useState(() => emptyDraft());
 
   const create = async (values: MapFormValues) => {
     try {
       const { map } = await call(api.maps.$post({ json: values }));
       await queryClient.invalidateQueries({ queryKey: ["maps"] });
       toast.success(hu.mapEditor.saved);
-      await navigate({ to: "/play/$mapId", params: { mapId: String(map.id) } });
+      await navigate({
+        to: "/maps/$mapId/edit",
+        params: { mapId: String(map.id) },
+        replace: true,
+      });
+      return true;
     } catch (error) {
       toast.error(errorMessage(error, hu.app.unexpected));
+      return false;
     }
   };
 
   return (
-    <div className="editor-page">
-      <PageHeader eyebrow={hu.mapEditor.newEyebrow} title={hu.mapEditor.newTitle} />
-      <MapEditor
-        initialDraft={emptyDraft()}
-        initialDetails={{ title: "", description: "", visibility: "public" }}
-        onSave={create}
-      />
-    </div>
+    <MapEditor
+      mapId={null}
+      initialDraft={initialDraft}
+      initialDetails={{ title: "", description: "", visibility: "public" }}
+      version={null}
+      onSave={create}
+    />
   );
 }
 
@@ -49,13 +52,13 @@ function EditMapForm({ mapId, detail }: { mapId: number; detail: MapDetail }) {
   const engine = useEngine();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const parsed = engine.parseMap(detail.version.content).map;
+  const [initial] = useState(() => engine.parseMap(detail.version.content).map);
   const id = String(mapId);
 
   if (!detail.canEdit) {
     return <Notice tone="error" title={hu.mapEditor.forbidden} live="alert" />;
   }
-  if (!parsed) {
+  if (!initial) {
     return <Notice tone="error" title={hu.play.loadFailed} live="alert" />;
   }
 
@@ -70,8 +73,10 @@ function EditMapForm({ mapId, detail }: { mapId: number; detail: MapDetail }) {
           ? hu.mapEditor.savedNewVersion(nextVersion(detail))
           : hu.mapEditor.saved,
       );
+      return true;
     } catch (error) {
       toast.error(errorMessage(error, hu.app.unexpected));
+      return false;
     }
   };
 
@@ -89,8 +94,8 @@ function EditMapForm({ mapId, detail }: { mapId: number; detail: MapDetail }) {
 
   return (
     <MapEditor
-      key={detail.version.id}
-      initialDraft={draftFromMap(parsed)}
+      mapId={mapId}
+      initialDraft={draftFromMap(initial)}
       initialDetails={{
         title: detail.map.title,
         description: detail.map.description,
@@ -102,47 +107,15 @@ function EditMapForm({ mapId, detail }: { mapId: number; detail: MapDetail }) {
         runCount: detail.runCount,
       }}
       onSave={update}
-      dangerZone={
-        <div className="editor-danger">
-          <ConfirmDialog
-            triggerLabel={hu.mapEditor.deleteMap}
-            triggerIcon="trash"
-            title={hu.mapEditor.deleteTitle}
-            body={hu.mapEditor.deleteConfirm(detail.map.title)}
-            confirmLabel={hu.mapEditor.confirmDelete}
-            onConfirm={() => void remove()}
-          />
-        </div>
-      }
+      onDelete={() => void remove()}
     />
   );
 }
 
 export function EditMapPage({ mapId }: { mapId: number }) {
   const { data, error } = useQuery(mapQuery(mapId));
-  return (
-    <div className="editor-page">
-      <PageHeader
-        eyebrow={hu.mapEditor.editEyebrow}
-        title={data ? hu.mapEditor.editTitle(data.map.title) : hu.mapEditor.editEyebrow}
-        actions={
-          data ? (
-            <Link
-              to="/play/$mapId"
-              params={{ mapId: String(mapId) }}
-              variant="secondary"
-              icon="play"
-            >
-              {hu.maps.play}
-            </Link>
-          ) : null
-        }
-      />
-      {error ? (
-        <Notice tone="error" title={errorMessage(error, hu.play.loadFailed)} live="alert" />
-      ) : null}
-      {data ? <EditMapForm mapId={mapId} detail={data} /> : null}
-      {!data && !error ? <Loading /> : null}
-    </div>
-  );
+  if (error) {
+    return <Notice tone="error" title={errorMessage(error, hu.play.loadFailed)} live="alert" />;
+  }
+  return data ? <EditMapForm mapId={mapId} detail={data} /> : <Loading />;
 }

@@ -4,9 +4,10 @@ import { clampIndex } from "./derive.ts";
 
 export type PlaybackStatus = "idle" | "playing" | "paused" | "finished" | "stopped";
 
-export const SPEED_MIN = 1;
-export const SPEED_MAX = 30;
+export const SPEED_STEPS = [1, 2, 4, 8, 15, 30] as const;
 export const SPEED_DEFAULT = 4;
+export const SPEED_MIN = SPEED_STEPS[0];
+export const SPEED_MAX = SPEED_STEPS[SPEED_STEPS.length - 1] ?? SPEED_DEFAULT;
 
 type PlaybackData = {
   result: RunResult | null;
@@ -15,6 +16,7 @@ type PlaybackData = {
   runId: number;
   index: number;
   status: PlaybackStatus;
+  hasEnded: boolean;
   speed: number;
 };
 
@@ -27,8 +29,10 @@ type PlaybackActions = {
   back: () => void;
   seek: (index: number) => void;
   restart: () => void;
+  replay: () => void;
   tick: () => void;
   setSpeed: (speed: number) => void;
+  shiftSpeed: (delta: number) => void;
   clear: () => void;
 };
 
@@ -41,25 +45,41 @@ const initialData: PlaybackData = {
   runId: 0,
   index: 0,
   status: "idle",
+  hasEnded: false,
   speed: SPEED_DEFAULT,
 };
 
-function isActive(status: PlaybackStatus): boolean {
+export function isPlaybackActive(status: PlaybackStatus): boolean {
   return status === "playing" || status === "paused";
 }
 
-function statusAt(result: RunResult, index: number): PlaybackStatus {
-  return index >= result.events.length ? "finished" : "paused";
+export function isScrubbable(status: PlaybackStatus): boolean {
+  return isPlaybackActive(status) || status === "finished";
+}
+
+export function isLiveRun(status: PlaybackStatus, hasEnded: boolean): boolean {
+  return isPlaybackActive(status) && !hasEnded;
+}
+
+export function speedIndex(speed: number): number {
+  const exact = SPEED_STEPS.findIndex((step) => step >= speed);
+  return exact === -1 ? SPEED_STEPS.length - 1 : exact;
+}
+
+export function speedAt(index: number): number {
+  const safe = Math.min(Math.max(Math.round(index), 0), SPEED_STEPS.length - 1);
+  return SPEED_STEPS[safe] ?? SPEED_DEFAULT;
 }
 
 export const usePlayback = create<PlaybackState>()((set, get) => {
   const moveTo = (target: number) => {
-    const { result, status } = get();
-    if (!result || !isActive(status)) {
+    const { result, status, hasEnded } = get();
+    if (!result || !isScrubbable(status)) {
       return;
     }
     const index = clampIndex(result, target);
-    set({ index, status: statusAt(result, index) });
+    const atEnd = index >= result.events.length;
+    set({ index, status: atEnd ? "finished" : "paused", hasEnded: hasEnded || atEnd });
   };
 
   return {
@@ -72,6 +92,7 @@ export const usePlayback = create<PlaybackState>()((set, get) => {
         runId: state.runId + 1,
         index: 0,
         status: "playing",
+        hasEnded: false,
       })),
     play: () => {
       if (get().status === "paused") {
@@ -84,7 +105,8 @@ export const usePlayback = create<PlaybackState>()((set, get) => {
       }
     },
     stop: () => {
-      if (isActive(get().status)) {
+      const { status, hasEnded } = get();
+      if (isLiveRun(status, hasEnded)) {
         set({ status: "stopped" });
       }
     },
@@ -92,20 +114,23 @@ export const usePlayback = create<PlaybackState>()((set, get) => {
     back: () => moveTo(get().index - 1),
     seek: (target) => moveTo(target),
     restart: () => moveTo(0),
+    replay: () => {
+      const { result, status } = get();
+      if (result && isScrubbable(status)) {
+        set({ index: 0, status: "playing" });
+      }
+    },
     tick: () => {
       const { result, index, status } = get();
       if (!result || status !== "playing") {
         return;
       }
       const next = clampIndex(result, index + 1);
-      set({ index: next, status: next >= result.events.length ? "finished" : "playing" });
+      const atEnd = next >= result.events.length;
+      set(atEnd ? { index: next, status: "finished", hasEnded: true } : { index: next });
     },
-    setSpeed: (speed) =>
-      set({ speed: Math.min(Math.max(Math.round(speed), SPEED_MIN), SPEED_MAX) }),
+    setSpeed: (speed) => set({ speed: speedAt(speedIndex(speed)) }),
+    shiftSpeed: (delta) => set({ speed: speedAt(speedIndex(get().speed) + delta) }),
     clear: () => set((state) => ({ ...initialData, speed: state.speed, runId: state.runId })),
   };
 });
-
-export function isPlaybackActive(status: PlaybackStatus): boolean {
-  return isActive(status);
-}

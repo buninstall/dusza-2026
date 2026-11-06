@@ -1,0 +1,109 @@
+.report {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-1) var(--space-3) var(--space-2) var(--space-3);
+  border-left: 6px solid var(--c-line-strong);
+  outline: none;
+  font: var(--type-help);
+  animation: report-enter var(--motion-enter) var(--ease-px3);
+}
+
+.report[data-tone="ok"] {
+  border-left-color: var(--c-success);
+}
+
+.report[data-tone="error"] {
+  border-left-color: var(--c-danger-ink);
+}
+
+.report:focus-visible {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: calc(var(--focus-width) * -1);
+}
+
+.report-stamp {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-2);
+  padding: 2px var(--space-1) var(--space-1);
+  border: var(--border-thin) solid currentColor;
+  color: var(--c-text-muted);
+  animation: stamp-drop var(--motion-enter) var(--ease-px2) 120ms backwards;
+}
+
+.report[data-tone="ok"] .report-stamp {
+  color: var(--c-success);
+}
+
+.report[data-kind="ok"] .report-stamp {
+  color: var(--c-success);
+}
+
+.report[data-tone="error"] .report-stamp {
+  color: var(--c-danger-ink);
+}
+
+.report-title {
+  padding-right: 7rem;
+  font: var(--type-body-strong);
+}
+
+.report-code {
+  font: var(--type-mono);
+  font-weight: 700;
+  color: var(--c-danger-ink);
+  overflow-wrap: anywhere;
+}
+
+.report-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--c-text-muted);
+}
+
+.report-body strong {
+  color: var(--c-text);
+}
+
+.report-reward {
+  color: var(--c-reward);
+  font-weight: 700;
+}
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.report-footer {
+  padding-top: var(--space-1);
+  border-top: var(--border-thin) dashed var(--c-line);
+}
+
+@keyframes report-enter {
+  from {
+    translate: 0 8px;
+    opacity: 0;
+  }
+}
+
+@keyframes stamp-drop {
+  from {
+    translate: 0 -10px;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report,
+  .report-stamp {
+    animation: none;
+  }
+}

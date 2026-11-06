@@ -43,6 +43,23 @@ export async function call<R extends ResponseLike>(request: Promise<R>): Promise
   return (await response.json()) as SuccessBody<R>;
 }
 
+const MAX_DETAILS = 3;
+
+function detailMessages(details: unknown): string[] {
+  if (!Array.isArray(details)) {
+    return [];
+  }
+  const messages = details.flatMap((item: unknown) => {
+    const message = (item as { message?: unknown } | null)?.message;
+    return typeof message === "string" ? [message] : [];
+  });
+  return [...new Set(messages)].slice(0, MAX_DETAILS);
+}
+
 export function errorMessage(error: unknown, fallback: string): string {
-  return error instanceof ApiError ? error.message : fallback;
+  if (!(error instanceof ApiError)) {
+    return fallback;
+  }
+  const details = detailMessages(error.details).filter((detail) => detail !== error.message);
+  return details.length === 0 ? error.message : `${error.message} ${details.join(" ")}`;
 }
