@@ -31,8 +31,6 @@
     "well"
     "timeline"
     "log";
-  border-top: 0;
-  box-shadow: none;
 }
 
 @media (max-width: 80rem) {
@@ -160,6 +158,6 @@
 @container plate (width < 46rem) {
   .stage-bezel .plate-actions {
     flex: 1 0 100%;
-    overflow-x: auto;
+    flex-wrap: wrap;
   }
 }

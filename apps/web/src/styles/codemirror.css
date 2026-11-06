@@ -48,10 +48,13 @@
   border-left: 2px solid var(--c-current);
 }
 
-.cm-editor .cm-selectionBackground,
-.cm-editor.cm-focused .cm-selectionBackground,
-.cm-editor .cm-content ::selection {
+.code-host .cm-editor .cm-selectionLayer .cm-selectionBackground,
+.code-host .cm-editor.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
   background: var(--c-selection);
+}
+
+.code-host .cm-editor .cm-content ::selection {
+  background: transparent;
 }
 
 .cm-editor .cm-exec-line {

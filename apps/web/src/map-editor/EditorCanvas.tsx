@@ -133,19 +133,21 @@ export function EditorCanvas(props: EditorCanvasProps) {
           }
         }}
       >
-        <MineBoard
-          map={map}
-          robot={props.robot}
-          label={hu.mapEditor.gridLabel}
-          describedBy={props.helpId}
-          size="editor"
-          fit="both"
-          interaction={props.interaction}
-          overlay={props.overlay}
-          cellNotes={props.cellNotes}
-          rulerMarks={props.rulerMarks}
-          edges={edges}
-        />
+        <div className="ed-scroll">
+          <MineBoard
+            map={map}
+            robot={props.robot}
+            label={hu.mapEditor.gridLabel}
+            describedBy={props.helpId}
+            size="editor"
+            fit="both"
+            interaction={props.interaction}
+            overlay={props.overlay}
+            cellNotes={props.cellNotes}
+            rulerMarks={props.rulerMarks}
+            edges={edges}
+          />
+        </div>
         <p className="ed-drop-hint" aria-hidden="true">
           {hu.mapEditor.dropHint}
         </p>

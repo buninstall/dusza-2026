@@ -1,6 +1,5 @@
 import type { MineMap, RobotState } from "@minescript/engine";
-import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { Tab, TabList, TabPanel, Tabs } from "react-aria-components";
+import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef } from "react";
 import { RegionBoundary } from "../components/RegionBoundary.tsx";
 import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
@@ -20,7 +19,7 @@ import { ShiftReport } from "./stage/ShiftReport.tsx";
 import { isTurbo, segmentDuration, stepDuration, usePrevious } from "./step-animation.ts";
 import "./stage/Stage.css";
 import { usePlaybackTimer } from "./usePlaybackTimer.ts";
-import { type PlayLayout, usePlayLayout } from "./usePlayLayout.ts";
+import { usePlayLayout } from "./usePlayLayout.ts";
 import { type PlayCommands, usePlayShortcuts } from "./usePlayShortcuts.ts";
 import { lineTextOf, type PlayView } from "./usePlayView.ts";
 
@@ -122,7 +121,6 @@ export function PlayScreen(props: PlayScreenProps) {
   const leverRef = useRef<HTMLButtonElement>(null);
   const centerRef = useRef<HTMLButtonElement>(null);
   const reportRef = useRef<HTMLDivElement>(null);
-  const [paneNote, setPaneNote] = useState<string | undefined>(undefined);
   const status = usePlayback((state) => state.status);
   const result = usePlayback((state) => state.result);
   const runId = usePlayback((state) => state.runId);
@@ -140,9 +138,8 @@ export function PlayScreen(props: PlayScreenProps) {
   const afterRun = (isStarted: boolean, isFromLever: boolean) => {
     ui.markRun();
     if (isStarted) {
-      if (layout === "panes" && ui.pane !== "stage") {
-        ui.setPane("stage");
-        setPaneNote(hu.play.paneAnnounce);
+      if (layout === "panes") {
+        stageRef.current?.scrollIntoView({ block: "start" });
       }
       if (isFromLever) {
         requestAnimationFrame(() => centerRef.current?.focus());
@@ -150,10 +147,6 @@ export function PlayScreen(props: PlayScreenProps) {
       return;
     }
     ui.setFaultBarOpen(true);
-    if (layout === "panes" && ui.pane !== "sheet") {
-      ui.setPane("sheet");
-      setPaneNote(hu.play.paneSheetAnnounce);
-    }
   };
 
   const run = (isFromLever: boolean) => afterRun(props.onRun(), isFromLever);
@@ -277,23 +270,12 @@ export function PlayScreen(props: PlayScreenProps) {
       <button
         type="button"
         className="play-skip"
-        onClick={() => {
-          if (layout === "panes") {
-            ui.setPane("sheet");
-          }
-          requestAnimationFrame(props.focusEditor);
-        }}
+        onClick={() => requestAnimationFrame(props.focusEditor)}
       >
         {hu.play.toProgram}
       </button>
-      {layout === "cab" ? (
-        <>
-          {stage}
-          {sheet}
-        </>
-      ) : (
-        <PlayPanes layout={layout} stage={stage} sheet={sheet} />
-      )}
+      {stage}
+      {sheet}
       {layout === "panes" ? (
         <ControlDeck
           mode={mode}
@@ -305,39 +287,7 @@ export function PlayScreen(props: PlayScreenProps) {
         />
       ) : null}
       <GoldFlight flight={motion.flight} rootRef={rootRef} />
-      <LiveAnnouncer
-        frame={frame}
-        final={finalAnnouncement(view)}
-        urgent={urgent}
-        note={paneNote}
-      />
+      <LiveAnnouncer frame={frame} final={finalAnnouncement(view)} urgent={urgent} />
     </div>
-  );
-}
-
-function PlayPanes({ stage, sheet }: { layout: PlayLayout; stage: ReactNode; sheet: ReactNode }) {
-  const pane = usePlayUi((state) => state.pane);
-  const setPane = usePlayUi((state) => state.setPane);
-  return (
-    <Tabs
-      selectedKey={pane}
-      onSelectionChange={(key) => setPane(key === "sheet" ? "sheet" : "stage")}
-      className="panes"
-    >
-      <TabList aria-label={hu.play.paneLabel} className="panes-tabs">
-        <Tab id="stage" className="panes-tab">
-          {hu.play.paneStage}
-        </Tab>
-        <Tab id="sheet" className="panes-tab">
-          {hu.play.paneSheet}
-        </Tab>
-      </TabList>
-      <TabPanel id="stage" shouldForceMount className="panes-panel">
-        {stage}
-      </TabPanel>
-      <TabPanel id="sheet" shouldForceMount className="panes-panel">
-        {sheet}
-      </TabPanel>
-    </Tabs>
   );
 }

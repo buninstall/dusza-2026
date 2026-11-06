@@ -22,7 +22,6 @@
 
 .play[data-layout="panes"] {
   grid-template-columns: minmax(0, 1fr);
-  gap: 0;
 }
 
 .play-skip {
@@ -41,63 +40,6 @@
 
 .play-skip:focus-visible {
   clip-path: none;
-}
-
-.panes {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.panes-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 8;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-screen);
-}
-
-.panes-tab {
-  display: grid;
-  place-items: center;
-  min-height: var(--control-height);
-  color: var(--c-text-muted);
-  font: var(--type-nav);
-  letter-spacing: var(--track-nav);
-  text-transform: uppercase;
-  cursor: pointer;
-  outline: none;
-}
-
-.panes-tab + .panes-tab {
-  border-left: var(--border-thin) solid var(--c-line);
-}
-
-.panes-tab[data-selected] {
-  background: var(--c-surface-raised);
-  color: var(--c-text);
-  box-shadow: inset 0 calc(var(--border-thin) * -2) 0 var(--c-current);
-}
-
-.panes-tab[data-focus-visible] {
-  outline: var(--focus-width) solid var(--c-focus);
-  outline-offset: calc(var(--focus-width) * -1);
-}
-
-.panes-panel {
-  min-width: 0;
-  outline: none;
-}
-
-.panes-panel[inert] {
-  display: none;
-}
-
-.panes-panel[data-focus-visible] {
-  outline: var(--focus-width) solid var(--c-focus);
-  outline-offset: calc(var(--focus-width) * -1);
 }
 
 .gold-flight {

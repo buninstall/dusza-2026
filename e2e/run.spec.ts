@@ -6,6 +6,7 @@ import {
   expectFinished,
   expectReadings,
   expectRuntimeError,
+  finishedReport,
   gotoPlay,
   importProgramFile,
   instruments,
@@ -161,7 +162,7 @@ test.describe("3.4 futtatás a bemutató fiókkal", () => {
 
     await setSpeed(page, "max");
     await expect(speedSlider(page)).toHaveAttribute("aria-valuetext", "30 sor/s");
-    await expect(page.getByRole("status").filter({ hasText: "A program hiba nélkül lefutott" })).toBeVisible({
+    await expect(finishedReport(page)).toBeVisible({
       timeout: FAST_FINISH_MS,
     });
     await expectFinished(page, LOOP_RECIPE.gold, LOOP_RECIPE.steps);
@@ -297,7 +298,8 @@ test.describe("3.4 futtatás új fiókkal", () => {
     await transport(page, "Leállítás").click();
     await expect(stoppedReport(page)).toContainText("A leállított futás nem kerül a ranglistára.");
     await expectReadings(page, { status: "Leállítva" });
-    await expect(transport(page, "Leállítás")).toBeDisabled();
+    await expect(transport(page, "Leállítás")).toHaveCount(0);
+    await expect(transport(page, "Futtatás")).toBeEnabled();
     await expect(editor(page)).not.toHaveAttribute("aria-readonly", "true");
     await expect(page.getByText(/A szerver rögzítette/)).toHaveCount(0);
 

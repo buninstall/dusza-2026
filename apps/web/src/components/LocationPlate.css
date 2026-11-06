@@ -97,11 +97,9 @@
 @container plate (width < 46rem) {
   .plate-actions {
     flex: 1 0 100%;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: flex-start;
     margin-left: 0;
-    overflow-x: auto;
-    padding-bottom: var(--space-1);
   }
 
   .plate-actions > * {

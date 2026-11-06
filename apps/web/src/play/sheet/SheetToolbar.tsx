@@ -69,20 +69,20 @@ export function DocumentTab({
 }) {
   if (isLocked) {
     return (
-      <span className="sheet-tab" data-state="locked">
+      <p className="sheet-tab" data-state="locked">
         <PixelIcon name="lock" size="sm" />
         {lockText}
-      </span>
+      </p>
     );
   }
   if (draft.linked === null) {
     return null;
   }
   return (
-    <span className="sheet-tab">
+    <p className="sheet-tab">
       <span className="sheet-tab-title">{hu.programs.current(draft.linked.title)}</span>
       {isModified(draft) ? <em className="sheet-pill">{hu.programs.modified}</em> : null}
-    </span>
+    </p>
   );
 }
 
@@ -91,7 +91,6 @@ type SheetToolbarProps = FileActions & {
   onFormat: () => void;
   onSave: () => void;
   isSaving: boolean;
-  status?: ReactNode;
 };
 
 export function SheetToolbar({
@@ -99,7 +98,6 @@ export function SheetToolbar({
   onFormat,
   onSave,
   isSaving,
-  status,
   ...file
 }: SheetToolbarProps) {
   return (
@@ -108,7 +106,7 @@ export function SheetToolbar({
       <Button size="sm" icon="book" aria-keyshortcuts="Control+O" onPress={onOpenLibrary}>
         {hu.programs.library}
       </Button>
-      <span className="sheet-spacer">{status}</span>
+      <span className="sheet-spacer" />
       <IconButton
         size="sm"
         icon="format"

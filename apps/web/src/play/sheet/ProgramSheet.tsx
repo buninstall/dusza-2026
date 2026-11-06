@@ -77,8 +77,8 @@ export function ProgramSheet(props: ProgramSheetProps) {
         onOpenLibrary={() => persistence.setPanel("library")}
         onFormat={() => reportFormat(editorRef.current?.format() ?? null)}
         onSave={persistence.saveCurrent}
-        status={<DocumentTab draft={draft} isLocked={isLocked} lockText={hu.play.locked} />}
       />
+      <DocumentTab draft={draft} isLocked={isLocked} lockText={hu.play.locked} />
       <BlockDrawers isDisabled={isLocked} onInsert={insert} />
       <div className="sheet-editor">
         <MineScriptEditor

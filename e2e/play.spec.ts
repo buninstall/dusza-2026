@@ -45,7 +45,9 @@ test("az üres program lefut, és a szerver rögzíti az eredményt a ranglistá
   await openPlay(page, "1. Egyenes folyosó");
   await replaceProgram(page, "");
   await page.getByRole("button", { name: "Futtatás" }).click();
-  await expect(page.getByText("A program hiba nélkül lefutott: 0 arany, 0 lépés.").first()).toBeVisible();
+  await expect(
+    page.getByText("A program hiba nélkül lefutott: 0 arany, 0 lépés.").first(),
+  ).toBeVisible();
   await expect(page.getByText("A szerver rögzítette: 0 arany, 0 lépés.")).toBeVisible();
 
   await page.getByRole("link", { name: "Ranglista" }).click();
@@ -109,21 +111,17 @@ test("a leállított futás nem kerül a ranglistára", async ({ page }) => {
   expect(await recordedRunCount(page, "5. Kígyó")).toBe(before);
 });
 
-test("375 px-en a bánya és a program külön fülön van, a vezérlőpult mindkettőn kéznél", async ({
-  page,
-}) => {
+test("375 px-en a bánya és a program egymás alatt van, a vezérlőpult kéznél", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await openPlay(page, "1. Egyenes folyosó");
-  const stageTab = page.getByRole("tab", { name: "Bánya" });
-  await expect(stageTab).toHaveAttribute("aria-selected", "true");
-  await page.getByRole("tab", { name: "Program" }).click();
+  await expect(page.getByRole("tab", { name: "Bánya" })).toHaveCount(0);
+  await expect(mapGrid(page)).toBeVisible();
+  await editor(page).scrollIntoViewIfNeeded();
   await expect(editor(page)).toBeVisible();
-  await expect(mapGrid(page)).toBeHidden();
   await replaceProgram(page, recipeText("01-egyenes-folyoso.ms"));
   await setSpeed(page, "max");
   await page.getByRole("button", { name: "Futtatás" }).click();
-  await expect(stageTab).toHaveAttribute("aria-selected", "true");
-  await expect(mapGrid(page)).toBeVisible();
+  await expect(mapGrid(page)).toBeInViewport();
   await expectFinished(page, 2, 4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });

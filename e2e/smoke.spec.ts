@@ -22,8 +22,9 @@ test("a kézikönyv és a futásnapló elérhető a navigációból", async ({ p
   await login(page);
   await page.getByRole("link", { name: "Kézikönyv" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Kézikönyv" })).toBeVisible();
-  await page.getByRole("link", { name: "Lépésszámlálás" }).click();
+  await page.getByRole("tab", { name: /Lépésszámlálás/ }).click();
   await expect(page).toHaveURL(/#lepesek$/);
+  await expect(page.getByRole("heading", { level: 2, name: /Lépésszámlálás/ })).toBeVisible();
   await page.getByRole("link", { name: "Futásaim" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Futásaim" })).toBeVisible();
 });

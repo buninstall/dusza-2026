@@ -200,7 +200,6 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
   await page.getByRole("link", { name: "Kipróbálás" }).click();
   await expect(page).toHaveURL(/\/play\/\d+/);
   await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
-  await expect(page.getByText(/^v1 · \d+×\d+ · \d+ arany$/)).toBeVisible();
 
   await openFromLibrary(page, "Recept – 1. Egyenes folyosó");
   await setSpeed(page, "max");

@@ -236,12 +236,19 @@
 
 .ed-drop {
   position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-3);
+  outline: none;
+}
+
+.ed-scroll {
   min-width: 0;
   min-height: 0;
   overflow-x: auto;
-  padding: var(--space-3);
   container-type: inline-size;
-  outline: none;
 }
 
 .ed-drop[data-drop-target] {
