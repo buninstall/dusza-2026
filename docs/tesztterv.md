@@ -141,30 +141,30 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 
 ## 6. Futtatás és lépésszámlálás (spec 3.4)
 
-| ID    | Spec     | Szabály                                                                       | Teszteset(ek)                                                                                                        | Állapot                       |
-| ----- | -------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| T6.1  | 3.4, D16 | Csak szintaktikailag helyes program fut; a hiba és a sor látszik              | r102, r103, `e2e:smoke`, `e2e:run` (minden hibás sor a hibalistán)                                                   | zöld (Rust, WASM, referencia) |
-| T6.2  | 3.4      | Indításkor a térkép és a robot alaphelyzetben                                 | r102, `web:playback-store.test`, `e2e:run` (kétszeri futtatás)                                                       | zöld (Rust, WASM, referencia) |
-| T6.3  | 3.4, D20 | Az aktuális sor és a print kimenete követhető (eseménysor)                    | r092–r096, `web:derive.test`, `e2e:run` (`aria-current` sor, konzol)                                                 | zöld (Rust, WASM, referencia) |
-| T6.4  | 3.4, D20 | A robot helyzete és iránya minden sor után                                    | r088, r046, r083, `e2e:run` (cellacímkék, műszerek)                                                                  | zöld (Rust, WASM, referencia) |
-| T6.5  | 3.4, D11 | Felfedezett mezők: amin járt és amire isThere hívódott, sorrendben            | r023–r027, r041, r045, r077, r078, r083, r087, r088, `e2e:run` (isThere felfedez)                                    | zöld (Rust, WASM, referencia) |
-| T6.6  | 3.4      | A kibányászott arany helyét nem kell jelölni (üres kamra lesz)                | r042                                                                                                                 | zöld (Rust, WASM, referencia) |
-| T6.7  | 3.4, D7  | Minden végrehajtott sor egy lépés, a hibát okozó sor is                       | r018, r036, r003, r033                                                                                               | zöld (Rust, WASM, referencia) |
-| T6.8  | 3.4, D7  | A törzs sorai minden lefutáskor, a while sora minden kiértékeléskor számít    | r018, r035, r094, r032                                                                                               | zöld (Rust, WASM, referencia) |
-| T6.9  | 3.4, D7  | Az else sora csak akkor számít, ha az else-ág fut                             | r016, r017, r038, r039, r093, r031                                                                                   | zöld (Rust, WASM, referencia) |
-| T6.10 | 3.4, D7  | Pontosan 1000 sor hibátlan; az 1001. előtt `INSTRUCTION_COUNT_LIMIT_EXCEEDED` | r028, r029, r015, `e2e:run` (1000 lépés után)                                                                        | zöld (Rust, WASM, referencia) |
-| T6.11 | 3.4, D7  | A limit az else során és az ismételt while soron is                           | r030, r032                                                                                                           | zöld (Rust, WASM, referencia) |
-| T6.12 | 3.4, D7  | Az 1000. sor futásidejű hibája nyer; az 1001. hibás sor helyett a limit       | r033, r034                                                                                                           | zöld (Rust, WASM, referencia) |
-| T6.13 | 3.4      | Vége: hiba nélkül, futásidejű hibával vagy a limittel; a kód és a sor         | r001, r003, r015, minden `runtimeError` eset, `e2e:run` (minden hibapróba kódja és sora)                             | zöld (Rust, WASM, referencia) |
-| T6.14 | 3.4, 3.5 | Kibányászott arany és lépésszám minden futásnál                               | minden runtime eset `gold`/`steps` mezője, `server:runs.test`, `e2e:run` (minden recept pontos arany- és lépésszáma) | zöld (Rust, WASM, referencia) |
-| T6.15 | 3.4      | A futás leállítható                                                           | `web:playback-store.test` (stop), `e2e:run` (leállítás, nem kerül a ranglistára)                                     | zöld                          |
-| T6.16 | 3.4      | Felfedezett és felderítetlen mezők megkülönböztetve a felületen               | `web:MapGrid.test` (köd mód), `e2e:run` (lámpafény és teljes térkép cellacímkéi)                                     | zöld                          |
-| T6.17 | D20      | A referencia és a motor eseménysora mezőről mezőre egyezik                    | `diff`                                                                                                               | zöld (Rust, WASM, referencia) |
-| T6.18 | 2, 3.4   | A spec 2. fejezetének programja a `>.@.@#` térképen: 35 lépés, 2 arany             | r116                                                          | zöld (Rust, WASM, referencia) |
-| T6.19 | 3.4      | Invariánsok minden generált futásra (lépés ≤ 1000, robot a pályán, arany ≤ térkép) | `prop`                                                        | zöld                          |
-| T6.20 | 3.4, D9  | `turn by n` ≡ `turn by (n mod 4)`; `step a` + `step b` ≡ `step a+b`; determinizmus | `prop`                                                        | zöld                          |
-| T6.21 | 3.4      | Óriási, mélyen beágyazott és szokatlan karakteres bemenetre sincs összeomlás       | `rob`                                                         | zöld                          |
-| T6.22 | 3.4      | A felület minden kulcsszélességen (320, 768, 1024, 1440) túlcsordulás nélkül       | `e2e:responsive`                                              | zöld                          |
+| ID    | Spec     | Szabály                                                                            | Teszteset(ek)                                                                                                        | Állapot                       |
+| ----- | -------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| T6.1  | 3.4, D16 | Csak szintaktikailag helyes program fut; a hiba és a sor látszik                   | r102, r103, `e2e:smoke`, `e2e:run` (minden hibás sor a hibalistán)                                                   | zöld (Rust, WASM, referencia) |
+| T6.2  | 3.4      | Indításkor a térkép és a robot alaphelyzetben                                      | r102, `web:playback-store.test`, `e2e:run` (kétszeri futtatás)                                                       | zöld (Rust, WASM, referencia) |
+| T6.3  | 3.4, D20 | Az aktuális sor és a print kimenete követhető (eseménysor)                         | r092–r096, `web:derive.test`, `e2e:run` (`aria-current` sor, konzol)                                                 | zöld (Rust, WASM, referencia) |
+| T6.4  | 3.4, D20 | A robot helyzete és iránya minden sor után                                         | r088, r046, r083, `e2e:run` (cellacímkék, műszerek)                                                                  | zöld (Rust, WASM, referencia) |
+| T6.5  | 3.4, D11 | Felfedezett mezők: amin járt és amire isThere hívódott, sorrendben                 | r023–r027, r041, r045, r077, r078, r083, r087, r088, `e2e:run` (isThere felfedez)                                    | zöld (Rust, WASM, referencia) |
+| T6.6  | 3.4      | A kibányászott arany helyét nem kell jelölni (üres kamra lesz)                     | r042                                                                                                                 | zöld (Rust, WASM, referencia) |
+| T6.7  | 3.4, D7  | Minden végrehajtott sor egy lépés, a hibát okozó sor is                            | r018, r036, r003, r033                                                                                               | zöld (Rust, WASM, referencia) |
+| T6.8  | 3.4, D7  | A törzs sorai minden lefutáskor, a while sora minden kiértékeléskor számít         | r018, r035, r094, r032                                                                                               | zöld (Rust, WASM, referencia) |
+| T6.9  | 3.4, D7  | Az else sora csak akkor számít, ha az else-ág fut                                  | r016, r017, r038, r039, r093, r031                                                                                   | zöld (Rust, WASM, referencia) |
+| T6.10 | 3.4, D7  | Pontosan 1000 sor hibátlan; az 1001. előtt `INSTRUCTION_COUNT_LIMIT_EXCEEDED`      | r028, r029, r015, `e2e:run` (1000 lépés után)                                                                        | zöld (Rust, WASM, referencia) |
+| T6.11 | 3.4, D7  | A limit az else során és az ismételt while soron is                                | r030, r032                                                                                                           | zöld (Rust, WASM, referencia) |
+| T6.12 | 3.4, D7  | Az 1000. sor futásidejű hibája nyer; az 1001. hibás sor helyett a limit            | r033, r034                                                                                                           | zöld (Rust, WASM, referencia) |
+| T6.13 | 3.4      | Vége: hiba nélkül, futásidejű hibával vagy a limittel; a kód és a sor              | r001, r003, r015, minden `runtimeError` eset, `e2e:run` (minden hibapróba kódja és sora)                             | zöld (Rust, WASM, referencia) |
+| T6.14 | 3.4, 3.5 | Kibányászott arany és lépésszám minden futásnál                                    | minden runtime eset `gold`/`steps` mezője, `server:runs.test`, `e2e:run` (minden recept pontos arany- és lépésszáma) | zöld (Rust, WASM, referencia) |
+| T6.15 | 3.4      | A futás leállítható                                                                | `web:playback-store.test` (stop), `e2e:run` (leállítás, nem kerül a ranglistára)                                     | zöld                          |
+| T6.16 | 3.4      | Felfedezett és felderítetlen mezők megkülönböztetve a felületen                    | `web:MapGrid.test` (köd mód), `e2e:run` (lámpafény és teljes térkép cellacímkéi)                                     | zöld                          |
+| T6.17 | D20      | A referencia és a motor eseménysora mezőről mezőre egyezik                         | `diff`                                                                                                               | zöld (Rust, WASM, referencia) |
+| T6.18 | 2, 3.4   | A spec 2. fejezetének programja a `>.@.@#` térképen: 35 lépés, 2 arany             | r116                                                                                                                 | zöld (Rust, WASM, referencia) |
+| T6.19 | 3.4      | Invariánsok minden generált futásra (lépés ≤ 1000, robot a pályán, arany ≤ térkép) | `prop`                                                                                                               | zöld                          |
+| T6.20 | 3.4, D9  | `turn by n` ≡ `turn by (n mod 4)`; `step a` + `step b` ≡ `step a+b`; determinizmus | `prop`                                                                                                               | zöld                          |
+| T6.21 | 3.4      | Óriási, mélyen beágyazott és szokatlan karakteres bemenetre sincs összeomlás       | `rob`                                                                                                                | zöld                          |
+| T6.22 | 3.4      | A felület minden kulcsszélességen (320, 768, 1024, 1440) túlcsordulás nélkül       | `e2e:responsive`                                                                                                     | zöld                          |
 
 ## 7. D-döntések
 
@@ -211,23 +211,23 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 
 ## 9. Akadálymentesség és biztonság
 
-| ID   | Forrás        | Szabály                                                           | Teszteset(ek)                                            | Állapot |
-| ---- | ------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------- |
-| T9.1 | 4 (értékelés) | Nincs serious/critical axe-találat (világos és sötét téma)        | `e2e:a11y` (minden oldal és állapot)                     | zöld    |
-| T9.2 | 4             | Teljes belépés és navigáció billentyűzettel                       | `e2e:keyboard`, `e2e:keyboard` (teljes recept futtatása) | zöld    |
-| T9.3 | 4             | A térképrács szerepkörei és nyílbillentyűs navigációja            | `web:MapGrid.test`                                       | zöld    |
-| T9.4 | –             | CSRF Origin-ellenőrzés                                            | `server:csrf.test`                                       | zöld    |
-| T9.5 | –             | Bejelentkezési korlát                                             | `server:auth.test`                                       | zöld    |
-| T9.6 | –             | Minden kód magyar szöveggel                                       | `web:i18n.test`, `core:every_code_has_a_message`         | zöld    |
-| T9.7 | 4             | 320–1440 px, mindkét téma: nincs kilógás, takarás, 24 px-es célok | `e2e:responsive`                                         | zöld    |
-| T9.8 | 4             | `prefers-reduced-motion`: nincs futó animáció                     | `e2e:a11y` (csökkentett mozgás)                          | zöld    |
-| T9.9 | 4             | Látható fókusz minden tabulátor-megállón                          | `e2e:keyboard`                                           | zöld    |
-| ----- | ------------- | ---------------------------------------------------------- | ------------------------------------------------ | ------- |
-| T9.10 | –             | A süti HttpOnly és SameSite=Lax, kilépés után érvénytelen  | `e2e:security`                                   | zöld    |
-| T9.11 | –             | Jelszó és hash sehol a válaszban és a böngészőtárolóban    | `e2e:security`                                   | zöld    |
-| T9.12 | –             | Injektálás-jellegű bemenet 400, stack trace nélkül         | `e2e:security`                                   | zöld    |
-| T9.13 | –             | HTML a címben és a leírásban szövegként jelenik meg        | `e2e:security` (XSS)                             | zöld    |
-| T9.14 | –             | Biztonsági fejlécek (CSP, X-Frame-Options, nosniff)        | `e2e:security`                                   | zöld    |
+| ID    | Forrás        | Szabály                                                           | Teszteset(ek)                                            | Állapot |
+| ----- | ------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------- |
+| T9.1  | 4 (értékelés) | Nincs serious/critical axe-találat (világos és sötét téma)        | `e2e:a11y` (minden oldal és állapot)                     | zöld    |
+| T9.2  | 4             | Teljes belépés és navigáció billentyűzettel                       | `e2e:keyboard`, `e2e:keyboard` (teljes recept futtatása) | zöld    |
+| T9.3  | 4             | A térképrács szerepkörei és nyílbillentyűs navigációja            | `web:MapGrid.test`                                       | zöld    |
+| T9.4  | –             | CSRF Origin-ellenőrzés                                            | `server:csrf.test`                                       | zöld    |
+| T9.5  | –             | Bejelentkezési korlát                                             | `server:auth.test`                                       | zöld    |
+| T9.6  | –             | Minden kód magyar szöveggel                                       | `web:i18n.test`, `core:every_code_has_a_message`         | zöld    |
+| T9.7  | 4             | 320–1440 px, mindkét téma: nincs kilógás, takarás, 24 px-es célok | `e2e:responsive`                                         | zöld    |
+| T9.8  | 4             | `prefers-reduced-motion`: nincs futó animáció                     | `e2e:a11y` (csökkentett mozgás)                          | zöld    |
+| T9.9  | 4             | Látható fókusz minden tabulátor-megállón                          | `e2e:keyboard`                                           | zöld    |
+| ----- | ------------- | ----------------------------------------------------------        | ------------------------------------------------         | ------- |
+| T9.10 | –             | A süti HttpOnly és SameSite=Lax, kilépés után érvénytelen         | `e2e:security`                                           | zöld    |
+| T9.11 | –             | Jelszó és hash sehol a válaszban és a böngészőtárolóban           | `e2e:security`                                           | zöld    |
+| T9.12 | –             | Injektálás-jellegű bemenet 400, stack trace nélkül                | `e2e:security`                                           | zöld    |
+| T9.13 | –             | HTML a címben és a leírásban szövegként jelenik meg               | `e2e:security` (XSS)                                     | zöld    |
+| T9.14 | –             | Biztonsági fejlécek (CSP, X-Frame-Options, nosniff)               | `e2e:security`                                           | zöld    |
 
 ## Futtatás
 
