@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { editor, login, openPlay, replaceProgram, runValidProgramOnStub } from "./helpers.ts";
+import { editor, login, openPlay, replaceProgram, runProgram } from "./helpers.ts";
 
 const LONG_PROGRAM = [
   "set i to 0",
   "set tovabb to true",
   "while tovabb",
   "    set i to i + 1",
-  "    set tovabb to i < 200",
+  "    set tovabb to i < 100",
   "print i",
   "",
 ].join("\n");
@@ -41,6 +41,25 @@ test("az üres program lefut, és a szerver rögzíti az eredményt a ranglistá
   await expect(own).toContainText("te");
 });
 
+test("a programtár receptje végigfut, és a szerver rögzíti a pontos eredményt", async ({
+  page,
+}) => {
+  await openPlay(page, "2. Az első kanyar");
+  await page.getByRole("button", { name: "Programtár" }).click();
+  await page.getByRole("button", { name: "Megnyitás: Recept – 2. Az első kanyar" }).click();
+  await page
+    .getByRole("alert")
+    .filter({ hasText: "Felülírod a szerkesztő tartalmát?" })
+    .getByRole("button", { name: "Megnyitás", exact: true })
+    .click();
+  await expect(editor(page)).toContainText("turn by 3");
+  await page.getByRole("button", { name: "Futtatás" }).click();
+  await expect(
+    page.getByText("A program hiba nélkül lefutott: 2 arany, 5 lépés.").first(),
+  ).toBeVisible();
+  await expect(page.getByText("A szerver rögzítette: 2 arany, 5 lépés.")).toBeVisible();
+});
+
 test("programfájl importja: a hibás program is betöltődik, a bináris nem", async ({ page }) => {
   await openPlay(page, "3. Kis labirintus");
   const input = page.locator('input[type="file"]').first();
@@ -63,10 +82,7 @@ test("programfájl importja: a hibás program is betöltődik, a bináris nem", 
 test("a leállított futás nem kerül a ranglistára", async ({ page }) => {
   await openPlay(page, "5. Kígyó");
   await replaceProgram(page, LONG_PROGRAM);
-  test.skip(
-    await runValidProgramOnStub(page),
-    "A Rust-értelmező még nem futtat nem üres programot.",
-  );
+  await runProgram(page);
   await page.getByRole("button", { name: "Leállítás" }).click();
   await expect(page.getByText("A leállított futás nem kerül a ranglistára.").first()).toBeVisible();
   const runs = await page.request.get("/api/me/runs");

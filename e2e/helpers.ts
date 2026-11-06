@@ -40,11 +40,9 @@ export async function replaceProgram(page: Page, source: string): Promise<void> 
   await expect(box).toHaveText(source.replaceAll("\n", ""));
 }
 
-export async function runValidProgramOnStub(page: Page): Promise<boolean> {
+export async function runProgram(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Futtatás" }).click();
-  const syntaxBanner = page.getByRole("alert").filter({ hasText: "szintaktikailag hibás" });
-  await expect(syntaxBanner.or(page.getByText("Fut", { exact: true }))).toBeVisible();
-  return syntaxBanner.isVisible();
+  await expect(page.getByText("Fut", { exact: true })).toBeVisible();
 }
 
 export async function tabUntil(
