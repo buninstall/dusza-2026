@@ -1,28 +1,26 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 
+use super::compile::{Calc, Code, Instr, Op, Operand, compile};
 use super::error::{RuntimeError, RuntimeErrorCode};
 use super::eval;
 use super::robot::RobotState;
 use super::trace::{Assignment, Event, MAX_STEPS, Outcome, RunResult};
 use super::value::Value;
 use crate::map::{Cell, Map, Pos};
-use crate::syntax::ast::{BinOp, ElseBranch, Expr, Ident, Program, Simple, Stmt, StmtKind};
+use crate::syntax::ast::{BinOp, Program};
 
 type Evaluated<T> = Result<T, RuntimeErrorCode>;
 
+const GRID_LIMIT: usize = 1 << 16;
+
 pub(super) fn execute(program: &Program, map: &Map) -> RunResult {
-    let mut machine = Machine::new(map);
-    let outcome = match machine.run(&program.body) {
+    let code = compile(program);
+    let mut machine = Machine::new(map, &code);
+    let outcome = match machine.run(&code.instrs) {
         Ok(()) => Outcome::Ok,
         Err(error) => Outcome::from(error),
     };
     machine.finish(outcome)
-}
-
-enum Next<'p> {
-    Continue,
-    Enter(&'p [Stmt]),
-    Repeat(&'p [Stmt]),
 }
 
 #[derive(Default)]
@@ -35,20 +33,39 @@ struct LineEffects {
 }
 
 struct Discovery {
-    seen: BTreeSet<Pos>,
+    rows: usize,
+    cols: usize,
+    grid: Vec<bool>,
+    elsewhere: BTreeSet<Pos>,
     order: Vec<Pos>,
 }
 
 impl Discovery {
-    fn starting_at(start: Pos) -> Self {
-        Self {
-            seen: BTreeSet::from([start]),
-            order: vec![start],
-        }
+    fn starting_at(map: &Map, start: Pos) -> Self {
+        let cells = map
+            .rows
+            .checked_mul(map.cols)
+            .filter(|cells| *cells <= GRID_LIMIT)
+            .unwrap_or(0);
+        let mut discovery = Self {
+            rows: map.rows,
+            cols: map.cols,
+            grid: vec![false; cells],
+            elsewhere: BTreeSet::new(),
+            order: Vec::new(),
+        };
+        discovery.reveal(start);
+        discovery
     }
 
     fn reveal(&mut self, cell: Pos) -> bool {
-        let is_new = self.seen.insert(cell);
+        let slot = (cell.row < self.rows && cell.col < self.cols)
+            .then(|| cell.row * self.cols + cell.col)
+            .and_then(|index| self.grid.get_mut(index));
+        let is_new = match slot {
+            Some(seen) => !std::mem::replace(seen, true),
+            None => self.elsewhere.insert(cell),
+        };
         if is_new {
             self.order.push(cell);
         }
@@ -59,7 +76,8 @@ impl Discovery {
 struct Machine<'p> {
     world: Map,
     robot: RobotState,
-    variables: BTreeMap<&'p str, Value>,
+    names: &'p [&'p str],
+    variables: Vec<Option<Value>>,
     discovery: Discovery,
     gold: u32,
     steps: u32,
@@ -68,17 +86,18 @@ struct Machine<'p> {
 }
 
 impl<'p> Machine<'p> {
-    fn new(map: &Map) -> Self {
+    fn new(map: &Map, code: &'p Code<'p>) -> Self {
         let robot = RobotState::start_of(map);
         Self {
             world: map.clone(),
             robot,
-            variables: BTreeMap::new(),
-            discovery: Discovery::starting_at(robot.pos),
+            names: &code.names,
+            variables: vec![None; code.names.len()],
+            discovery: Discovery::starting_at(map, robot.pos),
             gold: 0,
             steps: 0,
             console: Vec::new(),
-            events: Vec::new(),
+            events: Vec::with_capacity(usize::try_from(MAX_STEPS).unwrap_or(0)),
         }
     }
 
@@ -94,90 +113,53 @@ impl<'p> Machine<'p> {
         }
     }
 
-    fn run(&mut self, body: &'p [Stmt]) -> Result<(), RuntimeError> {
-        let mut pending: Vec<&'p [Stmt]> = vec![body];
-        while let Some(remaining) = pending.last_mut() {
-            let current: &'p [Stmt] = remaining;
-            let Some((stmt, rest)) = current.split_first() else {
-                pending.pop();
-                continue;
-            };
-            match self.statement(stmt)? {
-                Next::Continue => *remaining = rest,
-                Next::Enter(block) => {
-                    *remaining = rest;
-                    pending.push(block);
+    fn run(&mut self, code: &[Instr]) -> Result<(), RuntimeError> {
+        let mut pc = 0;
+        while let Some(instr) = code.get(pc) {
+            let line = instr.line;
+            pc = match instr.op {
+                Op::Jump(target) => target,
+                Op::Branch { cond, otherwise } => {
+                    if self.process(line, |machine, _| machine.condition(cond))? {
+                        pc + 1
+                    } else {
+                        otherwise
+                    }
                 }
-                Next::Repeat(block) => pending.push(block),
-            }
+                Op::Loop { cond, exit } => {
+                    if self.process(line, |machine, _| machine.condition(cond))? {
+                        pc + 1
+                    } else {
+                        exit
+                    }
+                }
+                Op::Else => {
+                    self.process(line, |_, _| Ok(()))?;
+                    pc + 1
+                }
+                Op::Step(count) => {
+                    self.process(line, |machine, effects| machine.step(count, effects))?;
+                    pc + 1
+                }
+                Op::Turn(quarters) => {
+                    self.process(line, |machine, _| machine.turn(quarters))?;
+                    pc + 1
+                }
+                Op::Mine => {
+                    self.process(line, Self::mine)?;
+                    pc + 1
+                }
+                Op::Print(value) => {
+                    self.process(line, |machine, effects| machine.print(value, effects))?;
+                    pc + 1
+                }
+                Op::Set(slot, calc) => {
+                    self.process(line, |machine, effects| machine.assign(slot, calc, effects))?;
+                    pc + 1
+                }
+            };
         }
         Ok(())
-    }
-
-    fn statement(&mut self, stmt: &'p Stmt) -> Result<Next<'p>, RuntimeError> {
-        let line = stmt.line;
-        match &stmt.kind {
-            StmtKind::Step { count } => {
-                self.simple_line(line, |machine, effects| machine.step(count, effects))
-            }
-            StmtKind::Turn { quarters } => {
-                self.simple_line(line, |machine, _| machine.turn(quarters))
-            }
-            StmtKind::Mine => self.simple_line(line, Self::mine),
-            StmtKind::Print { value } => {
-                self.simple_line(line, |machine, effects| machine.print(value, effects))
-            }
-            StmtKind::Set { name, value } => self.simple_line(line, |machine, effects| {
-                machine.assign(name, value, effects)
-            }),
-            StmtKind::If {
-                cond,
-                then_body,
-                else_branch,
-            } => self.branch(line, cond, then_body, else_branch.as_ref()),
-            StmtKind::While { cond, body } => self.repeat(line, cond, body),
-        }
-    }
-
-    fn simple_line(
-        &mut self,
-        line: u32,
-        action: impl FnOnce(&mut Self, &mut LineEffects) -> Evaluated<()>,
-    ) -> Result<Next<'p>, RuntimeError> {
-        self.process(line, action).map(|()| Next::Continue)
-    }
-
-    fn branch(
-        &mut self,
-        line: u32,
-        cond: &Simple,
-        then_body: &'p [Stmt],
-        else_branch: Option<&'p ElseBranch>,
-    ) -> Result<Next<'p>, RuntimeError> {
-        if self.process(line, |machine, _| machine.condition(cond))? {
-            return Ok(Next::Enter(then_body));
-        }
-        match else_branch {
-            Some(branch) => {
-                self.process(branch.line, |_, _| Ok(()))?;
-                Ok(Next::Enter(&branch.body))
-            }
-            None => Ok(Next::Continue),
-        }
-    }
-
-    fn repeat(
-        &mut self,
-        line: u32,
-        cond: &Simple,
-        body: &'p [Stmt],
-    ) -> Result<Next<'p>, RuntimeError> {
-        let holds = self.process(line, |machine, _| machine.condition(cond))?;
-        Ok(if holds {
-            Next::Repeat(body)
-        } else {
-            Next::Continue
-        })
     }
 
     fn process<T>(
@@ -219,32 +201,33 @@ impl<'p> Machine<'p> {
         }
     }
 
-    fn read(&self, simple: &Simple) -> Evaluated<Value> {
-        match simple {
-            Simple::Int { value, .. } => Ok(Value::Int(*value)),
-            Simple::Bool { value, .. } => Ok(Value::Bool(*value)),
-            Simple::Ident { name, .. } => self
+    fn read(&self, operand: Operand) -> Evaluated<Value> {
+        match operand {
+            Operand::Int(value) => Ok(Value::Int(value)),
+            Operand::Bool(value) => Ok(Value::Bool(value)),
+            Operand::Var(slot) => self
                 .variables
-                .get(name.as_str())
+                .get(slot)
                 .copied()
+                .flatten()
                 .ok_or(RuntimeErrorCode::EUninitialized),
         }
     }
 
-    fn count_argument(&self, simple: &Simple) -> Evaluated<u64> {
-        self.read(simple)?
+    fn count_argument(&self, operand: Operand) -> Evaluated<u64> {
+        self.read(operand)?
             .as_int()
             .and_then(|count| u64::try_from(count).ok())
             .ok_or(RuntimeErrorCode::EBadArg)
     }
 
-    fn condition(&self, cond: &Simple) -> Evaluated<bool> {
+    fn condition(&self, cond: Operand) -> Evaluated<bool> {
         self.read(cond)?
             .as_bool()
             .ok_or(RuntimeErrorCode::ENonBoolCondition)
     }
 
-    fn step(&mut self, count: &Simple, effects: &mut LineEffects) -> Evaluated<()> {
+    fn step(&mut self, count: Operand, effects: &mut LineEffects) -> Evaluated<()> {
         let distance = self.count_argument(count)?;
         let walk = self.robot.step_forward(&self.world, distance);
         self.robot = walk.state;
@@ -259,7 +242,7 @@ impl<'p> Machine<'p> {
         }
     }
 
-    fn turn(&mut self, quarters: &Simple) -> Evaluated<()> {
+    fn turn(&mut self, quarters: Operand) -> Evaluated<()> {
         let quarters = self.count_argument(quarters)?;
         self.robot = self.robot.turned_left(quarters);
         Ok(())
@@ -276,40 +259,39 @@ impl<'p> Machine<'p> {
         Ok(())
     }
 
-    fn print(&mut self, value: &Simple, effects: &mut LineEffects) -> Evaluated<()> {
+    fn print(&mut self, value: Operand, effects: &mut LineEffects) -> Evaluated<()> {
         let text = self.read(value)?.to_string();
         self.console.push(text.clone());
         effects.print = Some(text);
         Ok(())
     }
 
-    fn assign(&mut self, name: &'p Ident, expr: &Expr, effects: &mut LineEffects) -> Evaluated<()> {
-        let value = self.evaluate(expr, effects)?;
-        let fixed_type = self
-            .variables
-            .get(name.name.as_str())
-            .map(|current| current.value_type());
-        if fixed_type.is_some_and(|fixed| fixed != value.value_type()) {
+    fn assign(&mut self, slot: usize, calc: Calc, effects: &mut LineEffects) -> Evaluated<()> {
+        let value = self.evaluate(calc, effects)?;
+        let Some(variable) = self.variables.get_mut(slot) else {
+            return Err(RuntimeErrorCode::EUninitialized);
+        };
+        if variable.is_some_and(|current| current.value_type() != value.value_type()) {
             return Err(RuntimeErrorCode::ETypeMismatch);
         }
-        self.variables.insert(name.name.as_str(), value);
+        *variable = Some(value);
         effects.assigned = Some(Assignment {
-            name: name.name.clone(),
+            name: self.names.get(slot).copied().unwrap_or_default().to_owned(),
             value,
         });
         Ok(())
     }
 
-    fn evaluate(&mut self, expr: &Expr, effects: &mut LineEffects) -> Evaluated<Value> {
-        match expr {
-            Expr::Simple { value } => self.read(value),
-            Expr::IsThere { arg } => self.probe(arg, effects),
-            Expr::Not { operand } => eval::negate(self.read(operand)?),
-            Expr::Binary { op, lhs, rhs } => self.binary(*op, lhs, rhs),
+    fn evaluate(&mut self, calc: Calc, effects: &mut LineEffects) -> Evaluated<Value> {
+        match calc {
+            Calc::Simple(value) => self.read(value),
+            Calc::IsThere(arg) => self.probe(arg, effects),
+            Calc::Not(operand) => eval::negate(self.read(operand)?),
+            Calc::Binary(op, lhs, rhs) => self.binary(op, lhs, rhs),
         }
     }
 
-    fn binary(&self, op: BinOp, lhs: &Simple, rhs: &Simple) -> Evaluated<Value> {
+    fn binary(&self, op: BinOp, lhs: Operand, rhs: Operand) -> Evaluated<Value> {
         let left = self.read(lhs)?;
         eval::check_left(op, left)?;
         let right = self.read(rhs)?;
@@ -317,7 +299,7 @@ impl<'p> Machine<'p> {
         eval::apply(op, left, right)
     }
 
-    fn probe(&mut self, arg: &Simple, effects: &mut LineEffects) -> Evaluated<Value> {
+    fn probe(&mut self, arg: Operand, effects: &mut LineEffects) -> Evaluated<Value> {
         let wanted = self
             .read(arg)?
             .as_int()

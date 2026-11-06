@@ -3,7 +3,7 @@ use ts_rs::TS;
 
 use super::{Cell, Dir, MAX_DIMENSION, MIN_DIMENSION, Map, Pos, map_info};
 use crate::diagnostics::{DiagCode, Diagnostic, has_errors, messages};
-use crate::source::{LineIndex, normalize, split_lines};
+use crate::source::{LineIndex, normalized, split_lines};
 use crate::span::Span;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -23,7 +23,16 @@ struct RobotMark {
 }
 
 pub fn parse_map(text: &str) -> MapParseResult {
-    let normalized = normalize(text);
+    parse_map_with(text, true)
+}
+
+pub(crate) fn map_only(text: &str) -> Result<Map, Vec<Diagnostic>> {
+    let parsed = parse_map_with(text, false);
+    parsed.map.ok_or(parsed.diagnostics)
+}
+
+fn parse_map_with(text: &str, warnings: bool) -> MapParseResult {
+    let normalized = normalized(text);
     let index = LineIndex::new(&normalized);
     let lines = split_lines(&normalized);
     let Some((header, row_lines)) = lines.split_first() else {
@@ -107,7 +116,9 @@ pub fn parse_map(text: &str) -> MapParseResult {
         robot,
         dir,
     };
-    diagnostics.extend(map_warnings(&map, &index));
+    if warnings {
+        diagnostics.extend(map_warnings(&map, &index));
+    }
     MapParseResult {
         map: Some(map),
         diagnostics,

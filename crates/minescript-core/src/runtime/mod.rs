@@ -1,3 +1,4 @@
+mod compile;
 mod error;
 mod eval;
 mod machine;

@@ -1,6 +1,7 @@
-use super::names::{NameMap, Names};
+use super::names::Names;
 use super::types::{Assignment, Types, assignments, static_type, type_name};
 use crate::diagnostics::{DiagCode, Diagnostic, messages};
+use crate::names::NameMap;
 use crate::span::Span;
 use crate::syntax::ast::{LineNode, Program, Simple, StmtKind};
 
