@@ -2,17 +2,17 @@
 
 ## Felépítés
 
-| Mappa                | Tartalom                                                                                    |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `src/styles`         | `tokens.css` (paletta mindkét témára, méretek, mozgás), `base.css`, `codemirror.css`        |
-| `src/pixel`          | ASCII pixel art: csempék, robot, ikonok, logó; SVG-útvonallá fordítás, közös sprite-lap     |
-| `src/components`     | `ui/` React Aria wrapperek, továbbá `Panel`, `Notice`, `Led`, `PageHeader`                  |
-| `src/mine`           | a térképrács (`MineBoard`), a csempemodell, a rácsnavigáció és a mini előnézet              |
-| `src/play`           | játék oldal, `playback-store.ts`, `derive.ts`, futás és beküldés (`useRunSession.ts`)      |
-| `src/map-editor`     | térképszerkesztő és állapota                                                                |
-| `src/editor`         | CodeMirror-bővítmények                                                                      |
-| `src/routes`         | vékony TanStack fájl-route-ok, a lapok a feature-mappákban vannak                           |
-| `src/i18n`           | `hu.ts` a felület szövegei, `hu-manual.ts` a kézikönyv                                      |
+| Mappa            | Tartalom                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `src/styles`     | `tokens.css` (paletta mindkét témára, méretek, mozgás), `base.css`, `codemirror.css`    |
+| `src/pixel`      | ASCII pixel art: csempék, robot, ikonok, logó; SVG-útvonallá fordítás, közös sprite-lap |
+| `src/components` | `ui/` React Aria wrapperek, továbbá `Panel`, `Notice`, `Led`, `PageHeader`              |
+| `src/mine`       | a térképrács (`MineBoard`), a csempemodell, a rácsnavigáció és a mini előnézet          |
+| `src/play`       | játék oldal, `playback-store.ts`, `derive.ts`, futás és beküldés (`useRunSession.ts`)   |
+| `src/map-editor` | térképszerkesztő és állapota                                                            |
+| `src/editor`     | CodeMirror-bővítmények                                                                  |
+| `src/routes`     | vékony TanStack fájl-route-ok, a lapok a feature-mappákban vannak                       |
+| `src/i18n`       | `hu.ts` a felület szövegei, `hu-manual.ts` a kézikönyv                                  |
 
 ## Komponens-konvenciók
 
