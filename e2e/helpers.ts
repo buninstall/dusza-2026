@@ -1,6 +1,15 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 export const DEMO = { username: "demo1", password: "demo2026" } as const;
+
+export type Theme = "tarna" | "felszin";
+
+export async function useTheme(page: Page, theme: Theme): Promise<void> {
+  await page.addInitScript(
+    (value) => window.localStorage.setItem("minescript.theme", value),
+    theme,
+  );
+}
 
 export async function login(page: Page): Promise<void> {
   await page.goto("/login");
@@ -10,10 +19,38 @@ export async function login(page: Page): Promise<void> {
   await expect(page.getByRole("heading", { level: 1, name: "Térképek" })).toBeVisible();
 }
 
+export async function openPlay(page: Page, title: string): Promise<void> {
+  await page.getByRole("link", { name: `Játék: ${title}` }).click();
+  await expect(page).toHaveURL(/\/play\/\d+/);
+  await expect(page.getByRole("grid", { name: `${title} térképe` })).toBeVisible();
+}
+
+export function editor(page: Page): Locator {
+  return page.getByRole("textbox", { name: "MineScript program" });
+}
+
+export async function replaceProgram(page: Page, source: string): Promise<void> {
+  const box = editor(page);
+  await box.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.press("Delete");
+  if (source.length > 0) {
+    await page.keyboard.insertText(source);
+  }
+  await expect(box).toHaveText(source.replaceAll("\n", ""));
+}
+
+export async function runValidProgramOnStub(page: Page): Promise<boolean> {
+  await page.getByRole("button", { name: "Futtatás" }).click();
+  const syntaxBanner = page.getByRole("alert").filter({ hasText: "szintaktikailag hibás" });
+  await expect(syntaxBanner.or(page.getByText("Fut", { exact: true }))).toBeVisible();
+  return syntaxBanner.isVisible();
+}
+
 export async function tabUntil(
   page: Page,
   matches: () => Promise<boolean>,
-  maxPresses = 60,
+  maxPresses = 80,
 ): Promise<void> {
   for (let press = 0; press < maxPresses; press += 1) {
     if (await matches()) {
