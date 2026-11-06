@@ -12,6 +12,7 @@ import type {
   Pos,
   RunResult,
 } from "./generated/index.ts";
+import { type AnalysisSummary, decodeAnalysis, decodeRun, type RunSummary } from "./packed.ts";
 
 export type * from "./generated/index.ts";
 
@@ -35,14 +36,28 @@ export type SyntaxErrorOutcome = Extract<Outcome, { kind: "syntaxError" }>;
 const engine: Engine = {
   version: () => bindings.version(),
   keywords: () => bindings.keywords(),
-  analyze: (src) => bindings.analyze(src) as Analysis,
+  analyze: (src) => {
+    const packed = bindings.analyzePacked(src);
+    try {
+      return decodeAnalysis(packed.summary as AnalysisSummary, packed.takeTokens());
+    } finally {
+      packed.free();
+    }
+  },
   format: (src, options) => bindings.format(src, options) as FormatResult,
   complete: (src, offset) => bindings.complete(src, offset) as CompletionItem[],
   hover: (src, offset) => bindings.hover(src, offset) as Hover | undefined,
   parseMap: (text) => bindings.parseMap(text) as MapParseResult,
   serializeMap: (map) => bindings.serializeMap(map),
   mapInfo: (map) => bindings.mapInfo(map) as MapInfo,
-  run: (src, mapText) => bindings.run(src, mapText) as RunResult,
+  run: (src, mapText) => {
+    const packed = bindings.runPacked(src, mapText);
+    try {
+      return decodeRun(packed.summary as RunSummary, packed.takeEvents());
+    } finally {
+      packed.free();
+    }
+  },
   astDump: (src) => bindings.astDump(src),
 };
 
