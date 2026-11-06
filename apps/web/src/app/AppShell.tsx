@@ -1,5 +1,5 @@
 import { useMatches, useRouterState } from "@tanstack/react-router";
-import { createContext, type ReactNode, useContext } from "react";
+import { createContext, type ReactNode, useContext, useEffect, useRef } from "react";
 import type { SessionUser } from "../auth/session.ts";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -53,6 +53,14 @@ function useShellLayout(): ShellLayout {
 export function AppShell({ user, children }: { user: SessionUser; children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const layout = useShellLayout();
+  const navRef = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    const list = navRef.current;
+    const current = list?.querySelector<HTMLElement>('[data-current="true"]');
+    if (list && current && list.scrollWidth > list.clientWidth) {
+      list.scrollTo({ left: current.offsetLeft - list.offsetLeft });
+    }
+  }, [pathname]);
   return (
     <div className="shell" data-layout={layout}>
       <header className="shell-header">
@@ -66,7 +74,7 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
             </span>
           </Link>
           <nav aria-label={hu.nav.label} className="shell-nav">
-            <ul className="shell-nav-list">
+            <ul ref={navRef} className="shell-nav-list">
               {navItems(user).map((item) => (
                 <li key={item.to}>
                   <Link

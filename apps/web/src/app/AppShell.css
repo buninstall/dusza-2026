@@ -160,6 +160,12 @@
     display: block;
   }
 
+  .shell-nav-list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
   .shell-nav-link {
     padding: 0 var(--space-2);
   }
