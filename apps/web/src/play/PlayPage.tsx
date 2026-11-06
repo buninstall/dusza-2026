@@ -1,5 +1,5 @@
 import type { MineMap, RobotState } from "@minescript/engine";
-import { useId, useMemo, useRef } from "react";
+import { useEffect, useId, useMemo, useRef } from "react";
 import { Link } from "../components/ui/Link.tsx";
 import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -16,7 +16,12 @@ import { SubmissionLine } from "./stage/ShiftReport.tsx";
 import { usePlayView } from "./usePlayView.ts";
 import { useEngineRun, useRunSubmission } from "./useRunSession.ts";
 
-type PlayPageProps = { detail: MapDetail; map: MineMap; initialDraft?: ProgramDraft | undefined };
+type PlayPageProps = {
+  detail: MapDetail;
+  map: MineMap;
+  initialDraft?: ProgramDraft | undefined;
+  shouldFocusEditor?: boolean;
+};
 
 function useLastRun(isTraceOfEditor: boolean): LastRun | null {
   const result = usePlayback((state) => state.result);
@@ -31,12 +36,17 @@ function useLastRun(isTraceOfEditor: boolean): LastRun | null {
   };
 }
 
-export function PlayPage({ detail, map, initialDraft }: PlayPageProps) {
+export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false }: PlayPageProps) {
   const mapId = detail.map.id;
   const descriptionId = useId();
   const start = useMemo<RobotState>(() => ({ pos: map.robot, dir: map.dir }), [map]);
   const [draft, setDraft] = useProgramDraft(mapId, initialDraft);
   const editorRef = useRef<EditorHandle>(null);
+  useEffect(() => {
+    if (shouldFocusEditor) {
+      requestAnimationFrame(() => editorRef.current?.focus());
+    }
+  }, [shouldFocusEditor]);
   const engineRun = useEngineRun(detail.version.content, start);
   const { submission, retrySubmit } = useRunSubmission({
     mapId,

@@ -1,136 +1,99 @@
-import { useMemo } from "react";
-import { InlineText } from "../components/InlineText.tsx";
+import { Button, Disclosure, DisclosurePanel, Heading } from "react-aria-components";
 import { LocationPlate } from "../components/LocationPlate.tsx";
-import { tokenizeLine } from "../editor/language.ts";
-import { useEngine } from "../engine/useEngine.ts";
+import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
-import type { ManualBlock, ManualSection } from "../i18n/hu-manual.ts";
+import { useMediaQuery } from "../lib/useMediaQuery.ts";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
+import { PixelSprite } from "../pixel/SpriteLayers.tsx";
+import { TILE_SPRITES } from "../pixel/tiles.ts";
+import { Section } from "./ManualBlocks.tsx";
 import "./ManualPage.css";
+import { useScrollSpy } from "./useScrollSpy.ts";
 
-function CodeSample({ code, caption }: { code: string; caption: string }) {
-  const engine = useEngine();
-  const keywords = useMemo(() => new Set(engine.keywords()), [engine]);
-  const lines = code.split("\n");
+const SECTION_IDS = hu.manual.sections.map((section) => section.id);
+const ORE_GLINT = { "ore-hi": "px-glint" } as const;
+
+function RecipesEntry() {
+  const [wall, wallAlt] = TILE_SPRITES.wall;
   return (
-    <figure className="manual-sample">
-      <figcaption className="manual-caption">{caption}</figcaption>
-      <pre className="manual-code">
-        <code>
-          {lines.map((line, row) => (
-            <span key={`${row.toString()}-${line}`} className="manual-code-line">
-              <span aria-hidden="true" className="manual-line-no">
-                {row + 1}
-              </span>
-              {tokenizeLine(line, keywords).map((token, column) => (
-                <span
-                  key={`${column.toString()}-${token.text}`}
-                  data-token={token.kind ?? undefined}
-                >
-                  {token.text}
-                </span>
-              ))}
-              {"\n"}
-            </span>
-          ))}
-        </code>
-      </pre>
-    </figure>
+    <Link
+      to="/manual/receptek"
+      variant="plain"
+      className="manual-recipes"
+      aria-label={hu.recipes.entryLabel}
+    >
+      <span aria-hidden="true" className="manual-seam">
+        {wall ? <PixelSprite sprite={wall} className="manual-seam-tile" /> : null}
+        <PixelSprite sprite={TILE_SPRITES.gold} className="manual-seam-tile" animated={ORE_GLINT} />
+        {wallAlt ? <PixelSprite sprite={wallAlt} className="manual-seam-tile" /> : null}
+      </span>
+      <span className="manual-recipes-text">{hu.recipes.entry}</span>
+    </Link>
   );
 }
 
-function Block({ block }: { block: ManualBlock }) {
-  switch (block.kind) {
-    case "paragraph":
-      return (
-        <p className="manual-paragraph">
-          <InlineText text={block.text} />
-        </p>
-      );
-    case "list":
-      return (
-        <ul className="manual-list">
-          {block.items.map((item) => (
-            <li key={item}>
-              <InlineText text={item} />
-            </li>
-          ))}
-        </ul>
-      );
-    case "code":
-      return <CodeSample code={block.code} caption={block.caption} />;
-    case "table":
-      return (
-        <div className="manual-table-frame">
-          <table className="manual-table">
-            <caption>{block.caption}</caption>
-            <thead>
-              <tr>
-                {block.head.map((cell) => (
-                  <th key={cell} scope="col">
-                    {cell}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {block.rows.map((row) => (
-                <tr key={row.join("|")}>
-                  {row.map((cell, index) =>
-                    index === 0 ? (
-                      <th key={cell} scope="row">
-                        <InlineText text={cell} />
-                      </th>
-                    ) : (
-                      <td key={`${index.toString()}-${cell}`}>
-                        <InlineText text={cell} />
-                      </td>
-                    ),
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-  }
+function TocList({ active }: { active: string | null }) {
+  return (
+    <>
+      <ol className="manual-toc-list">
+        {hu.manual.sections.map((section, index) => (
+          <li key={section.id}>
+            <a
+              href={`#${section.id}`}
+              className="manual-toc-link"
+              aria-current={active === section.id ? "location" : undefined}
+            >
+              <span aria-hidden="true" className="manual-toc-no">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              {section.title}
+            </a>
+          </li>
+        ))}
+      </ol>
+      <RecipesEntry />
+    </>
+  );
 }
 
-function Section({ section, index }: { section: ManualSection; index: number }) {
+function Toc() {
+  const isWide = useMediaQuery("(min-width: 64rem)", true);
+  const active = useScrollSpy(SECTION_IDS);
+  if (isWide) {
+    return (
+      <nav aria-label={hu.manual.tocLabel} className="manual-toc">
+        <p aria-hidden="true" className="label manual-toc-title">
+          {hu.manual.tocLabel}
+        </p>
+        <TocList active={active} />
+      </nav>
+    );
+  }
   return (
-    <section id={section.id} aria-labelledby={`${section.id}-title`} className="manual-section">
-      <h2 id={`${section.id}-title`} className="manual-section-title">
-        <span aria-hidden="true" className="manual-section-no">
-          {String(index + 1).padStart(2, "0")}
-        </span>
-        {section.title}
-      </h2>
-      {section.blocks.map((block, position) => (
-        <Block key={`${section.id}-${position.toString()}`} block={block} />
-      ))}
-    </section>
+    <Disclosure className="manual-toc manual-disclosure">
+      <Heading level={2} className="manual-disclosure-heading">
+        <Button slot="trigger" className="manual-disclosure-trigger">
+          <PixelIcon name="chevronDown" />
+          {hu.manual.tocLabel}
+        </Button>
+      </Heading>
+      <DisclosurePanel>
+        <nav aria-label={hu.manual.tocLabel}>
+          <TocList active={active} />
+        </nav>
+      </DisclosurePanel>
+    </Disclosure>
   );
 }
 
 export function ManualPage() {
-  const { manual } = hu;
   return (
     <div className="manual-page">
       <LocationPlate name={hu.signs.manual} />
       <div className="manual-layout">
-        <nav aria-label={manual.tocLabel} className="manual-toc">
-          <p className="manual-toc-title">{manual.tocLabel}</p>
-          <ol className="manual-toc-list">
-            {manual.sections.map((section) => (
-              <li key={section.id}>
-                <a href={`#${section.id}`} className="manual-toc-link">
-                  {section.title}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
+        <Toc />
         <article className="manual-article">
-          {manual.sections.map((section, index) => (
+          {hu.manual.sections.map((section, index) => (
             <Section key={section.id} section={section} index={index} />
           ))}
         </article>

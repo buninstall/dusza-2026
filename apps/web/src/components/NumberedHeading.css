@@ -1,0 +1,22 @@
+.numbered {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: var(--border-thick) solid var(--c-line-strong);
+  font: var(--type-h2);
+  scroll-margin-top: var(--space-6);
+}
+
+.numbered-no {
+  display: inline-flex;
+  color: var(--c-reward);
+  line-height: 0;
+}
+
+.numbered-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
