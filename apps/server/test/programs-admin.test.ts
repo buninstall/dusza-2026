@@ -5,7 +5,7 @@ import { createTestContext, json } from "./helpers.ts";
 
 describe("programok", () => {
   test("létrehozás, módosítás, törlés csak a sajátra", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const owner = context.client();
     await owner.register("programozo");
     const created = await json<{ program: { id: number } }>(
@@ -30,14 +30,14 @@ describe("programok", () => {
 
 describe("adminisztráció", () => {
   test("csak admin éri el, és a saját szerepét nem módosíthatja", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const admin = context.client();
     const { user: adminUser } = await admin.register("fonok");
     const player = context.client();
     const { user: playerUser } = await player.register("jatekos");
     expect((await player.get("/api/admin/users")).status).toBe(403);
 
-    context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, adminUser.id)).run();
+    await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, adminUser.id));
     const list = await json<{ users: { username: string }[] }>(await admin.get("/api/admin/users"));
     expect(list.users.map((u) => u.username)).toEqual(["fonok", "jatekos"]);
 

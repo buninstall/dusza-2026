@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VISIBILITIES } from "../db/schema.ts";
+import { LIMITS, VISIBILITIES } from "../db/schema.ts";
 
 export const idParam = z.object({
   id: z.coerce.number({ message: "Az azonosító szám kell legyen." }).int().positive(),
@@ -9,8 +9,8 @@ export const credentialsSchema = z.object({
   username: z
     .string()
     .regex(
-      /^[A-Za-z0-9_]{3,24}$/,
-      "A felhasználónév 3–24 karakter lehet: betű, számjegy vagy aláhúzás.",
+      new RegExp(`^[A-Za-z0-9_]{3,${LIMITS.username}}$`),
+      `A felhasználónév 3–${LIMITS.username} karakter lehet: betű, számjegy vagy aláhúzás.`,
     ),
   password: z
     .string()
@@ -25,8 +25,11 @@ const title = z
   .string()
   .trim()
   .min(1, "A cím nem lehet üres.")
-  .max(80, "A cím legfeljebb 80 karakter lehet.");
-const description = z.string().trim().max(500, "A leírás legfeljebb 500 karakter lehet.");
+  .max(LIMITS.title, `A cím legfeljebb ${LIMITS.title} karakter lehet.`);
+const description = z
+  .string()
+  .trim()
+  .max(LIMITS.description, `A leírás legfeljebb ${LIMITS.description} karakter lehet.`);
 const content = z.string().max(MAX_MAP_TEXT, "A térkép túl hosszú.");
 
 export const createMapSchema = z.object({

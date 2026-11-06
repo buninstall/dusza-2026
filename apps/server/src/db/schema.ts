@@ -1,5 +1,17 @@
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  bigint,
+  char,
+  customType,
+  index,
+  int,
+  mediumtext,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 export const ROLES = ["admin", "user"] as const;
 export const VISIBILITIES = ["public", "private"] as const;
@@ -9,101 +21,118 @@ export type Role = (typeof ROLES)[number];
 export type Visibility = (typeof VISIBILITIES)[number];
 export type RecordedOutcome = (typeof OUTCOME_KINDS)[number];
 
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  username: text("username").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  role: text("role", { enum: ROLES }).notNull().default("user"),
-  createdAt: integer("created_at").notNull(),
+export const COLLATION = "utf8mb4_0900_ai_ci";
+
+export const LIMITS = {
+  username: 24,
+  title: 80,
+  description: 500,
+} as const;
+
+const SHA256_HEX_LENGTH = 64;
+
+const caseInsensitiveName = customType<{ data: string; notNull: true }>({
+  dataType: () => `varchar(${LIMITS.username}) collate ${COLLATION}`,
 });
 
-export const sessions = sqliteTable(
+const millis = (name: string) => bigint(name, { mode: "number" });
+const sha256 = (name: string) => char(name, { length: SHA256_HEX_LENGTH });
+
+export const users = mysqlTable("users", {
+  id: int("id").autoincrement().primaryKey(),
+  username: caseInsensitiveName("username").notNull().unique(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  role: mysqlEnum("role", ROLES).notNull().default("user"),
+  createdAt: millis("created_at").notNull(),
+});
+
+export const sessions = mysqlTable(
   "sessions",
   {
-    idHash: text("id_hash").primaryKey(),
-    userId: integer("user_id")
+    idHash: sha256("id_hash").primaryKey(),
+    userId: int("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    expiresAt: integer("expires_at").notNull(),
+    expiresAt: millis("expires_at").notNull(),
   },
   (table) => [index("sessions_user_idx").on(table.userId)],
 );
 
-export const maps = sqliteTable(
+export const maps = mysqlTable(
   "maps",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    ownerId: integer("owner_id")
+    id: int("id").autoincrement().primaryKey(),
+    ownerId: int("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    title: text("title").notNull(),
-    description: text("description").notNull().default(""),
-    visibility: text("visibility", { enum: VISIBILITIES }).notNull().default("public"),
-    currentVersionId: integer("current_version_id"),
-    createdAt: integer("created_at").notNull(),
-    updatedAt: integer("updated_at").notNull(),
+    title: varchar("title", { length: LIMITS.title }).notNull(),
+    description: varchar("description", { length: LIMITS.description }).notNull().default(""),
+    visibility: mysqlEnum("visibility", VISIBILITIES).notNull().default("public"),
+    currentVersionId: int("current_version_id"),
+    createdAt: millis("created_at").notNull(),
+    updatedAt: millis("updated_at").notNull(),
   },
   (table) => [index("maps_owner_idx").on(table.ownerId)],
 );
 
-export const mapVersions = sqliteTable(
+export const mapVersions = mysqlTable(
   "map_versions",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    mapId: integer("map_id")
+    id: int("id").autoincrement().primaryKey(),
+    mapId: int("map_id")
       .notNull()
       .references(() => maps.id, { onDelete: "cascade" }),
-    version: integer("version").notNull(),
+    version: int("version").notNull(),
     content: text("content").notNull(),
-    contentHash: text("content_hash").notNull(),
-    rows: integer("rows").notNull(),
-    cols: integer("cols").notNull(),
-    goldTotal: integer("gold_total").notNull(),
-    reachableGold: integer("reachable_gold").notNull(),
-    createdAt: integer("created_at").notNull(),
+    contentHash: sha256("content_hash").notNull(),
+    rows: int("rows").notNull(),
+    cols: int("cols").notNull(),
+    goldTotal: int("gold_total").notNull(),
+    reachableGold: int("reachable_gold").notNull(),
+    createdAt: millis("created_at").notNull(),
   },
   (table) => [uniqueIndex("map_versions_map_version_idx").on(table.mapId, table.version)],
 );
 
-export const programs = sqliteTable(
+export const programs = mysqlTable(
   "programs",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    ownerId: integer("owner_id")
+    id: int("id").autoincrement().primaryKey(),
+    ownerId: int("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    title: text("title").notNull(),
-    source: text("source").notNull(),
-    updatedAt: integer("updated_at").notNull(),
+    title: varchar("title", { length: LIMITS.title }).notNull(),
+    source: mediumtext("source").notNull(),
+    updatedAt: millis("updated_at").notNull(),
   },
   (table) => [index("programs_owner_idx").on(table.ownerId)],
 );
 
-export const runs = sqliteTable(
+export const runs = mysqlTable(
   "runs",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    userId: integer("user_id")
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    mapVersionId: integer("map_version_id")
+    mapVersionId: int("map_version_id")
       .notNull()
       .references(() => mapVersions.id, { onDelete: "cascade" }),
-    source: text("source").notNull(),
-    sourceHash: text("source_hash").notNull(),
-    gold: integer("gold").notNull(),
-    steps: integer("steps").notNull(),
-    outcomeKind: text("outcome_kind", { enum: OUTCOME_KINDS }).notNull(),
-    errorCode: text("error_code"),
-    errorLine: integer("error_line"),
-    createdAt: integer("created_at").notNull(),
+    source: mediumtext("source").notNull(),
+    sourceHash: sha256("source_hash").notNull(),
+    gold: int("gold").notNull(),
+    steps: int("steps").notNull(),
+    outcomeKind: mysqlEnum("outcome_kind", OUTCOME_KINDS).notNull(),
+    errorCode: varchar("error_code", { length: 64 }),
+    errorLine: int("error_line"),
+    createdAt: millis("created_at").notNull(),
   },
   (table) => [
     index("runs_leaderboard_idx").on(
       table.mapVersionId,
-      sql`${table.gold} DESC`,
-      sql`${table.steps} ASC`,
-      sql`${table.createdAt} ASC`,
+      sql`${table.gold} desc`,
+      table.steps,
+      table.createdAt,
     ),
     index("runs_user_idx").on(table.userId),
   ],

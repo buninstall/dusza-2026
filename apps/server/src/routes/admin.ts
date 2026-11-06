@@ -19,42 +19,37 @@ export function adminRoutes(deps: Deps) {
   return new Hono<AppEnv>()
     .use(requireUser(deps))
     .use(requireAdmin)
-    .get("/users", (c) => {
-      const list = deps.db.select(userColumns).from(users).orderBy(asc(users.id)).all();
+    .get("/users", async (c) => {
+      const list = await deps.db.select(userColumns).from(users).orderBy(asc(users.id));
       return c.json({ users: list }, 200);
     })
     .patch(
       "/users/:id",
       zValidator("param", idParam, validationHook),
       zValidator("json", roleSchema, validationHook),
-      (c) => {
+      async (c) => {
         const { id } = c.req.valid("param");
         if (id === c.var.user.id) {
           return apiError(c, 409, "SELF_CHANGE", "A saját szerepköröd nem módosíthatod.");
         }
-        const updated = deps.db
+        await deps.db
           .update(users)
           .set({ role: c.req.valid("json").role })
-          .where(eq(users.id, id))
-          .returning(userColumns)
-          .get();
+          .where(eq(users.id, id));
+        const [updated] = await deps.db.select(userColumns).from(users).where(eq(users.id, id));
         if (!updated) {
           return apiError(c, 404, "NOT_FOUND", messages.notFound);
         }
         return c.json({ user: updated }, 200);
       },
     )
-    .delete("/users/:id", zValidator("param", idParam, validationHook), (c) => {
+    .delete("/users/:id", zValidator("param", idParam, validationHook), async (c) => {
       const { id } = c.req.valid("param");
       if (id === c.var.user.id) {
         return apiError(c, 409, "SELF_CHANGE", "A saját fiókodat nem törölheted.");
       }
-      const deleted = deps.db
-        .delete(users)
-        .where(eq(users.id, id))
-        .returning({ id: users.id })
-        .get();
-      if (!deleted) {
+      const [result] = await deps.db.delete(users).where(eq(users.id, id));
+      if (result.affectedRows === 0) {
         return apiError(c, 404, "NOT_FOUND", messages.notFound);
       }
       return c.json({ ok: true }, 200);

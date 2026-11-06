@@ -5,7 +5,7 @@ import { createTestContext, type ErrorBody, json, SPEC_MAP } from "./helpers.ts"
 
 describe("futások", () => {
   test("a szintaktikailag hibás program 422, és nem kerül mentésre", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const user = context.client();
     await user.register("futtato");
     const { map } = await json<{ map: { currentVersionId: number } }>(
@@ -19,12 +19,12 @@ describe("futások", () => {
     const body = await json<ErrorBody>(response);
     expect(body.error.code).toBe("SYNTAX_ERROR");
     expect(Array.isArray(body.error.details)).toBe(true);
-    const stored = context.deps.db.select({ value: count() }).from(runs).get();
+    const [stored] = await context.deps.db.select({ value: count() }).from(runs);
     expect(stored?.value).toBe(0);
   });
 
   test("a befejezett futást a szerver számolja és menti", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const user = context.client();
     await user.register("futtato");
     const { map } = await json<{ map: { id: number; currentVersionId: number } }>(
@@ -46,7 +46,7 @@ describe("futások", () => {
   });
 
   test("nem létező térképverzió 404", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const user = context.client();
     await user.register("futtato");
     const response = await user.post("/api/runs", { mapVersionId: 9999, source: "" });
@@ -54,7 +54,7 @@ describe("futások", () => {
   });
 
   test("bejelentkezés nélkül 401", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const response = await context.client().post("/api/runs", { mapVersionId: 1, source: "" });
     expect(response.status).toBe(401);
   });

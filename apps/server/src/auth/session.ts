@@ -13,19 +13,18 @@ function isHttps(c: Context): boolean {
   return forwarded === "https" || new URL(c.req.url).protocol === "https:";
 }
 
-export function createSession(deps: Deps, userId: number): string {
+export async function createSession(deps: Deps, userId: number): Promise<string> {
   const token = randomToken();
-  deps.db
+  await deps.db
     .insert(sessions)
-    .values({ idHash: sha256Hex(token), userId, expiresAt: deps.now() + SESSION_TTL_MS })
-    .run();
+    .values({ idHash: sha256Hex(token), userId, expiresAt: deps.now() + SESSION_TTL_MS });
   return token;
 }
 
-export function findSessionUser(deps: Deps, token: string): SessionUser | null {
+export async function findSessionUser(deps: Deps, token: string): Promise<SessionUser | null> {
   const now = deps.now();
-  deps.db.delete(sessions).where(lte(sessions.expiresAt, now)).run();
-  const row = deps.db
+  await deps.db.delete(sessions).where(lte(sessions.expiresAt, now));
+  const [row] = await deps.db
     .select({
       id: users.id,
       username: users.username,
@@ -35,15 +34,12 @@ export function findSessionUser(deps: Deps, token: string): SessionUser | null {
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
     .where(and(eq(sessions.idHash, sha256Hex(token)), gt(sessions.expiresAt, now)))
-    .get();
+    .limit(1);
   return row ?? null;
 }
 
-export function deleteSession(deps: Deps, token: string): void {
-  deps.db
-    .delete(sessions)
-    .where(eq(sessions.idHash, sha256Hex(token)))
-    .run();
+export async function deleteSession(deps: Deps, token: string): Promise<void> {
+  await deps.db.delete(sessions).where(eq(sessions.idHash, sha256Hex(token)));
 }
 
 export function readSessionToken(c: Context): string | undefined {

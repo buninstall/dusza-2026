@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { requireUser } from "../auth/middleware.ts";
 import { hashPassword, verifyPassword } from "../auth/password.ts";
@@ -10,7 +10,9 @@ import {
   readSessionToken,
   setSessionCookie,
 } from "../auth/session.ts";
-import { users } from "../db/schema.ts";
+import { isDuplicateEntry } from "../db/errors.ts";
+import { firstRow } from "../db/rows.ts";
+import { type User, users } from "../db/schema.ts";
 import type { AppEnv, Deps, SessionUser } from "../env.ts";
 import { apiError } from "../lib/errors.ts";
 import { clientAddress } from "../lib/request.ts";
@@ -21,19 +23,10 @@ function publicUser(user: SessionUser) {
   return { id: user.id, username: user.username, role: user.role, createdAt: user.createdAt };
 }
 
-export function authRoutes(deps: Deps) {
-  return new Hono<AppEnv>()
-    .post("/register", zValidator("json", credentialsSchema, validationHook), async (c) => {
-      const { username, password } = c.req.valid("json");
-      const taken = deps.db
-        .select({ id: users.id })
-        .from(users)
-        .where(sql`lower(${users.username}) = lower(${username})`)
-        .get();
-      if (taken) {
-        return apiError(c, 409, "USERNAME_TAKEN", "Ez a felhasználónév már foglalt.");
-      }
-      const created = deps.db
+async function registerUser(deps: Deps, username: string, password: string): Promise<User | null> {
+  try {
+    const { id } = firstRow(
+      await deps.db
         .insert(users)
         .values({
           username,
@@ -41,9 +34,26 @@ export function authRoutes(deps: Deps) {
           role: "user",
           createdAt: deps.now(),
         })
-        .returning()
-        .get();
-      setSessionCookie(c, createSession(deps, created.id));
+        .$returningId(),
+    );
+    return firstRow(await deps.db.select().from(users).where(eq(users.id, id)));
+  } catch (error) {
+    if (isDuplicateEntry(error)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export function authRoutes(deps: Deps) {
+  return new Hono<AppEnv>()
+    .post("/register", zValidator("json", credentialsSchema, validationHook), async (c) => {
+      const { username, password } = c.req.valid("json");
+      const created = await registerUser(deps, username, password);
+      if (!created) {
+        return apiError(c, 409, "USERNAME_TAKEN", "Ez a felhasználónév már foglalt.");
+      }
+      setSessionCookie(c, await createSession(deps, created.id));
       return c.json({ user: publicUser(created) }, 201);
     })
     .post("/login", zValidator("json", credentialsSchema, validationHook), async (c) => {
@@ -58,18 +68,18 @@ export function authRoutes(deps: Deps) {
         );
       }
       deps.limiter.record(limiterKey);
-      const user = deps.db.select().from(users).where(eq(users.username, username)).get();
+      const [user] = await deps.db.select().from(users).where(eq(users.username, username));
       if (!user || !(await verifyPassword(password, user.passwordHash))) {
         return apiError(c, 401, "INVALID_CREDENTIALS", "Hibás felhasználónév vagy jelszó.");
       }
       deps.limiter.reset(limiterKey);
-      setSessionCookie(c, createSession(deps, user.id));
+      setSessionCookie(c, await createSession(deps, user.id));
       return c.json({ user: publicUser(user) }, 200);
     })
-    .post("/logout", (c) => {
+    .post("/logout", async (c) => {
       const token = readSessionToken(c);
       if (token) {
-        deleteSession(deps, token);
+        await deleteSession(deps, token);
       }
       clearSessionCookie(c);
       return c.json({ ok: true }, 200);

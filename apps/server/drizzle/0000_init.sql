@@ -1,73 +1,79 @@
 CREATE TABLE `map_versions` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`map_id` integer NOT NULL,
-	`version` integer NOT NULL,
+	`id` int AUTO_INCREMENT NOT NULL,
+	`map_id` int NOT NULL,
+	`version` int NOT NULL,
 	`content` text NOT NULL,
-	`content_hash` text NOT NULL,
-	`rows` integer NOT NULL,
-	`cols` integer NOT NULL,
-	`gold_total` integer NOT NULL,
-	`reachable_gold` integer NOT NULL,
-	`created_at` integer NOT NULL,
-	FOREIGN KEY (`map_id`) REFERENCES `maps`(`id`) ON UPDATE no action ON DELETE cascade
+	`content_hash` char(64) NOT NULL,
+	`rows` int NOT NULL,
+	`cols` int NOT NULL,
+	`gold_total` int NOT NULL,
+	`reachable_gold` int NOT NULL,
+	`created_at` bigint NOT NULL,
+	CONSTRAINT `map_versions_id` PRIMARY KEY(`id`),
+	CONSTRAINT `map_versions_map_version_idx` UNIQUE(`map_id`,`version`)
 );
 
-CREATE UNIQUE INDEX `map_versions_map_version_idx` ON `map_versions` (`map_id`,`version`);
 CREATE TABLE `maps` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`owner_id` integer NOT NULL,
-	`title` text NOT NULL,
-	`description` text DEFAULT '' NOT NULL,
-	`visibility` text DEFAULT 'public' NOT NULL,
-	`current_version_id` integer,
-	`created_at` integer NOT NULL,
-	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+	`id` int AUTO_INCREMENT NOT NULL,
+	`owner_id` int NOT NULL,
+	`title` varchar(80) NOT NULL,
+	`description` varchar(500) NOT NULL DEFAULT '',
+	`visibility` enum('public','private') NOT NULL DEFAULT 'public',
+	`current_version_id` int,
+	`created_at` bigint NOT NULL,
+	`updated_at` bigint NOT NULL,
+	CONSTRAINT `maps_id` PRIMARY KEY(`id`)
 );
 
-CREATE INDEX `maps_owner_idx` ON `maps` (`owner_id`);
 CREATE TABLE `programs` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`owner_id` integer NOT NULL,
-	`title` text NOT NULL,
-	`source` text NOT NULL,
-	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+	`id` int AUTO_INCREMENT NOT NULL,
+	`owner_id` int NOT NULL,
+	`title` varchar(80) NOT NULL,
+	`source` mediumtext NOT NULL,
+	`updated_at` bigint NOT NULL,
+	CONSTRAINT `programs_id` PRIMARY KEY(`id`)
 );
 
-CREATE INDEX `programs_owner_idx` ON `programs` (`owner_id`);
 CREATE TABLE `runs` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`user_id` integer NOT NULL,
-	`map_version_id` integer NOT NULL,
-	`source` text NOT NULL,
-	`source_hash` text NOT NULL,
-	`gold` integer NOT NULL,
-	`steps` integer NOT NULL,
-	`outcome_kind` text NOT NULL,
-	`error_code` text,
-	`error_line` integer,
-	`created_at` integer NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`map_version_id`) REFERENCES `map_versions`(`id`) ON UPDATE no action ON DELETE cascade
+	`id` int AUTO_INCREMENT NOT NULL,
+	`user_id` int NOT NULL,
+	`map_version_id` int NOT NULL,
+	`source` mediumtext NOT NULL,
+	`source_hash` char(64) NOT NULL,
+	`gold` int NOT NULL,
+	`steps` int NOT NULL,
+	`outcome_kind` enum('ok','runtimeError') NOT NULL,
+	`error_code` varchar(64),
+	`error_line` int,
+	`created_at` bigint NOT NULL,
+	CONSTRAINT `runs_id` PRIMARY KEY(`id`)
 );
 
-CREATE INDEX `runs_leaderboard_idx` ON `runs` (`map_version_id`,"gold" DESC,"steps" ASC,"created_at" ASC);
-CREATE INDEX `runs_user_idx` ON `runs` (`user_id`);
 CREATE TABLE `sessions` (
-	`id_hash` text PRIMARY KEY NOT NULL,
-	`user_id` integer NOT NULL,
-	`expires_at` integer NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+	`id_hash` char(64) NOT NULL,
+	`user_id` int NOT NULL,
+	`expires_at` bigint NOT NULL,
+	CONSTRAINT `sessions_id_hash` PRIMARY KEY(`id_hash`)
 );
 
-CREATE INDEX `sessions_user_idx` ON `sessions` (`user_id`);
 CREATE TABLE `users` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`username` text NOT NULL,
-	`password_hash` text NOT NULL,
-	`role` text DEFAULT 'user' NOT NULL,
-	`created_at` integer NOT NULL
+	`id` int AUTO_INCREMENT NOT NULL,
+	`username` varchar(24) collate utf8mb4_0900_ai_ci NOT NULL,
+	`password_hash` varchar(255) NOT NULL,
+	`role` enum('admin','user') NOT NULL DEFAULT 'user',
+	`created_at` bigint NOT NULL,
+	CONSTRAINT `users_id` PRIMARY KEY(`id`),
+	CONSTRAINT `users_username_unique` UNIQUE(`username`)
 );
 
-CREATE UNIQUE INDEX `users_username_unique` ON `users` (`username`);
+ALTER TABLE `map_versions` ADD CONSTRAINT `map_versions_map_id_maps_id_fk` FOREIGN KEY (`map_id`) REFERENCES `maps`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `maps` ADD CONSTRAINT `maps_owner_id_users_id_fk` FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `programs` ADD CONSTRAINT `programs_owner_id_users_id_fk` FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `runs` ADD CONSTRAINT `runs_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `runs` ADD CONSTRAINT `runs_map_version_id_map_versions_id_fk` FOREIGN KEY (`map_version_id`) REFERENCES `map_versions`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `sessions` ADD CONSTRAINT `sessions_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;
+CREATE INDEX `maps_owner_idx` ON `maps` (`owner_id`);
+CREATE INDEX `programs_owner_idx` ON `programs` (`owner_id`);
+CREATE INDEX `runs_leaderboard_idx` ON `runs` (`map_version_id`,`gold` desc,`steps`,`created_at`);
+CREATE INDEX `runs_user_idx` ON `runs` (`user_id`);
+CREATE INDEX `sessions_user_idx` ON `sessions` (`user_id`);

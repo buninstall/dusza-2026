@@ -19,6 +19,7 @@
     "@minescript/engine": "workspace:*",
     "drizzle-orm": "^0.45.4",
     "hono": "^4.13.16",
+    "mysql2": "^3.24.6",
     "zod": "^4.6.7"
   },
   "devDependencies": {

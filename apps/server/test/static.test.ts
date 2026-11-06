@@ -17,7 +17,8 @@ function file(name: string, content: string): string {
 
 describe("statikus kiszolgálás", () => {
   test("MIME-típusok, cache és SPA-fallback", async () => {
-    const { deps } = await createTestContext();
+    await using context = await createTestContext();
+    const { deps } = context;
     const handler = createStaticHandler({
       "/index.html": file("index.html", "<!doctype html><title>MineScript</title>"),
       "/assets/engine-abc123.wasm": file("engine.wasm", "wasm"),

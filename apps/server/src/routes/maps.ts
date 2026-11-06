@@ -32,9 +32,9 @@ import {
 const invalidMapMessage = "A térkép nem felel meg a szabályoknak.";
 
 export function mapRoutes(deps: Deps) {
-  const detail = (mapId: number) => {
-    const map = findMap(deps.db, mapId);
-    const version = map ? currentVersion(deps.db, map) : undefined;
+  const detail = async (mapId: number) => {
+    const map = await findMap(deps.db, mapId);
+    const version = map ? await currentVersion(deps.db, map) : undefined;
     if (!map || !version) {
       return null;
     }
@@ -44,24 +44,24 @@ export function mapRoutes(deps: Deps) {
       version,
       info: parsed.map ? deps.engine.mapInfo(parsed.map) : null,
       warnings: parsed.diagnostics,
-      versions: versionList(deps.db, map.id),
-      runCount: runCount(deps.db, version.id),
+      versions: await versionList(deps.db, map.id),
+      runCount: await runCount(deps.db, version.id),
     };
   };
 
   return new Hono<AppEnv>()
     .use(requireUser(deps))
-    .get("/", zValidator("query", listMapsQuery, validationHook), (c) => {
+    .get("/", zValidator("query", listMapsQuery, validationHook), async (c) => {
       const { scope } = c.req.valid("query");
-      return c.json({ maps: listMaps(deps.db, c.var.user, scope) }, 200);
+      return c.json({ maps: await listMaps(deps.db, c.var.user, scope) }, 200);
     })
-    .post("/", zValidator("json", createMapSchema, validationHook), (c) => {
+    .post("/", zValidator("json", createMapSchema, validationHook), async (c) => {
       const input = c.req.valid("json");
       const valid = validateMapContent(deps.engine, input.content);
       if (!valid.ok) {
         return apiError(c, 422, "MAP_INVALID", invalidMapMessage, valid.diagnostics);
       }
-      const created = createMapWithVersion(deps.db, {
+      const created = await createMapWithVersion(deps.db, {
         ownerId: c.var.user.id,
         title: input.title,
         description: input.description,
@@ -71,8 +71,8 @@ export function mapRoutes(deps: Deps) {
       });
       return c.json({ map: created, warnings: valid.warnings }, 201);
     })
-    .get("/:id", zValidator("param", idParam, validationHook), (c) => {
-      const found = detail(c.req.valid("param").id);
+    .get("/:id", zValidator("param", idParam, validationHook), async (c) => {
+      const found = await detail(c.req.valid("param").id);
       if (!found || !canView(c.var.user, found.map)) {
         return apiError(c, 404, "NOT_FOUND", messages.notFound);
       }
@@ -82,8 +82,8 @@ export function mapRoutes(deps: Deps) {
       "/:id",
       zValidator("param", idParam, validationHook),
       zValidator("json", updateMapSchema, validationHook),
-      (c) => {
-        const map = findMap(deps.db, c.req.valid("param").id);
+      async (c) => {
+        const map = await findMap(deps.db, c.req.valid("param").id);
         if (!map || !canView(c.var.user, map)) {
           return apiError(c, 404, "NOT_FOUND", messages.notFound);
         }
@@ -98,9 +98,10 @@ export function mapRoutes(deps: Deps) {
           if (!valid.ok) {
             return apiError(c, 422, "MAP_INVALID", invalidMapMessage, valid.diagnostics);
           }
-          createdNewVersion = replaceContent(deps.db, map, valid, now).createdNewVersion;
+          const replaced = await replaceContent(deps.db, map, valid, now);
+          createdNewVersion = replaced.createdNewVersion;
         }
-        const updated = deps.db
+        await deps.db
           .update(maps)
           .set({
             ...(input.title === undefined ? {} : { title: input.title }),
@@ -108,25 +109,27 @@ export function mapRoutes(deps: Deps) {
             ...(input.visibility === undefined ? {} : { visibility: input.visibility }),
             updatedAt: now,
           })
-          .where(eq(maps.id, map.id))
-          .returning()
-          .get();
+          .where(eq(maps.id, map.id));
+        const updated = await findMap(deps.db, map.id);
+        if (!updated) {
+          return apiError(c, 404, "NOT_FOUND", messages.notFound);
+        }
         return c.json({ map: updated, createdNewVersion }, 200);
       },
     )
-    .delete("/:id", zValidator("param", idParam, validationHook), (c) => {
-      const map = findMap(deps.db, c.req.valid("param").id);
+    .delete("/:id", zValidator("param", idParam, validationHook), async (c) => {
+      const map = await findMap(deps.db, c.req.valid("param").id);
       if (!map || !canView(c.var.user, map)) {
         return apiError(c, 404, "NOT_FOUND", messages.notFound);
       }
       if (!canEdit(c.var.user, map)) {
         return apiError(c, 403, "FORBIDDEN", messages.forbidden);
       }
-      deps.db.delete(maps).where(eq(maps.id, map.id)).run();
+      await deps.db.delete(maps).where(eq(maps.id, map.id));
       return c.json({ ok: true }, 200);
     })
-    .get("/:id/export", zValidator("param", idParam, validationHook), (c) => {
-      const found = detail(c.req.valid("param").id);
+    .get("/:id/export", zValidator("param", idParam, validationHook), async (c) => {
+      const found = await detail(c.req.valid("param").id);
       if (!found || !canView(c.var.user, found.map)) {
         return apiError(c, 404, "NOT_FOUND", messages.notFound);
       }
@@ -138,13 +141,13 @@ export function mapRoutes(deps: Deps) {
       "/:id/leaderboard",
       zValidator("param", idParam, validationHook),
       zValidator("query", leaderboardQuery, validationHook),
-      (c) => {
-        const found = detail(c.req.valid("param").id);
+      async (c) => {
+        const found = await detail(c.req.valid("param").id);
         if (!found || !canView(c.var.user, found.map)) {
           return apiError(c, 404, "NOT_FOUND", messages.notFound);
         }
         const versionId = c.req.valid("query").version ?? found.version.id;
-        if (!mapBelongsToVersion(deps.db, found.map.id, versionId)) {
+        if (!(await mapBelongsToVersion(deps.db, found.map.id, versionId))) {
           return apiError(c, 404, "NOT_FOUND", "Ehhez a térképhez nincs ilyen verzió.");
         }
         return c.json(
@@ -154,7 +157,7 @@ export function mapRoutes(deps: Deps) {
             versionId,
             currentVersionId: found.version.id,
             versions: found.versions,
-            entries: leaderboard(deps.db, versionId),
+            entries: await leaderboard(deps.db, versionId),
           },
           200,
         );

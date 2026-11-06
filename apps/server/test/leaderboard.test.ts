@@ -6,7 +6,7 @@ type Entry = { rank: number; username: string; gold: number; steps: number };
 
 describe("ranglista", () => {
   test("felhasználónként a legjobb futás, arany DESC, lépés ASC, idő ASC", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const owner = context.client();
     const anna = await owner.register("anna");
     const { map } = await json<{ map: { id: number; currentVersionId: number } }>(
@@ -16,25 +16,22 @@ describe("ranglista", () => {
     const csaba = await context.client().register("csaba");
 
     const insert = (userId: number, gold: number, steps: number, createdAt: number) =>
-      context.deps.db
-        .insert(runs)
-        .values({
-          userId,
-          mapVersionId: map.currentVersionId,
-          source: "",
-          sourceHash: "",
-          gold,
-          steps,
-          outcomeKind: "ok",
-          createdAt,
-        })
-        .run();
+      context.deps.db.insert(runs).values({
+        userId,
+        mapVersionId: map.currentVersionId,
+        source: "",
+        sourceHash: "",
+        gold,
+        steps,
+        outcomeKind: "ok",
+        createdAt,
+      });
 
-    insert(anna.user.id, 2, 10, 1);
-    insert(anna.user.id, 2, 8, 2);
-    insert(anna.user.id, 1, 3, 3);
-    insert(bela.user.id, 3, 50, 4);
-    insert(csaba.user.id, 2, 8, 5);
+    await insert(anna.user.id, 2, 10, 1);
+    await insert(anna.user.id, 2, 8, 2);
+    await insert(anna.user.id, 1, 3, 3);
+    await insert(bela.user.id, 3, 50, 4);
+    await insert(csaba.user.id, 2, 8, 5);
 
     const board = await json<{ entries: Entry[] }>(
       await owner.get(`/api/maps/${map.id}/leaderboard`),
@@ -47,7 +44,7 @@ describe("ranglista", () => {
   });
 
   test("idegen verzióazonosító 404", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const owner = context.client();
     await owner.register("dora");
     const first = await json<{ map: { id: number } }>(

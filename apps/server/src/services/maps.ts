@@ -1,6 +1,7 @@
 import type { Diagnostic, Engine, MapInfo, MineMap } from "@minescript/engine";
-import { and, asc, count, eq, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, max, or, type SQL, sql } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
+import { firstRow } from "../db/rows.ts";
 import { type MapRow, type MapVersionRow, maps, mapVersions, runs, users } from "../db/schema.ts";
 import type { SessionUser } from "../env.ts";
 import { sha256Hex } from "../lib/crypto.ts";
@@ -61,15 +62,17 @@ export function visibleTo(user: SessionUser, scope: "all" | "mine"): SQL | undef
   return or(eq(maps.visibility, "public"), eq(maps.ownerId, user.id));
 }
 
-export function findMap(db: Db, id: number): MapRow | undefined {
-  return db.select().from(maps).where(eq(maps.id, id)).get();
+export async function findMap(db: Db, id: number): Promise<MapRow | undefined> {
+  const [map] = await db.select().from(maps).where(eq(maps.id, id)).limit(1);
+  return map;
 }
 
-export function findVersion(db: Db, id: number): MapVersionRow | undefined {
-  return db.select().from(mapVersions).where(eq(mapVersions.id, id)).get();
+export async function findVersion(db: Db, id: number): Promise<MapVersionRow | undefined> {
+  const [version] = await db.select().from(mapVersions).where(eq(mapVersions.id, id)).limit(1);
+  return version;
 }
 
-export function currentVersion(db: Db, map: MapRow): MapVersionRow | undefined {
+export async function currentVersion(db: Db, map: MapRow): Promise<MapVersionRow | undefined> {
   if (map.currentVersionId === null) {
     return undefined;
   }
@@ -85,16 +88,14 @@ export function versionList(db: Db, mapId: number) {
     })
     .from(mapVersions)
     .where(eq(mapVersions.mapId, mapId))
-    .orderBy(asc(mapVersions.version))
-    .all();
+    .orderBy(asc(mapVersions.version));
 }
 
-export function runCount(db: Db, mapVersionId: number): number {
-  const row = db
+export async function runCount(db: Db, mapVersionId: number): Promise<number> {
+  const [row] = await db
     .select({ value: count() })
     .from(runs)
-    .where(eq(runs.mapVersionId, mapVersionId))
-    .get();
+    .where(eq(runs.mapVersionId, mapVersionId));
   return row?.value ?? 0;
 }
 
@@ -121,8 +122,7 @@ export function listMaps(db: Db, user: SessionUser, scope: "all" | "mine") {
     .innerJoin(users, eq(users.id, maps.ownerId))
     .innerJoin(mapVersions, eq(mapVersions.id, maps.currentVersionId))
     .where(visibleTo(user, scope))
-    .orderBy(asc(maps.createdAt), asc(maps.id))
-    .all();
+    .orderBy(asc(maps.createdAt), asc(maps.id));
 }
 
 export function createMapWithVersion(
@@ -135,67 +135,61 @@ export function createMapWithVersion(
     valid: ValidMapContent;
     now: number;
   },
-): MapRow {
-  return db.transaction((tx) => {
-    const created = tx
-      .insert(maps)
-      .values({
-        ownerId: input.ownerId,
-        title: input.title,
-        description: input.description,
-        visibility: input.visibility,
-        createdAt: input.now,
-        updatedAt: input.now,
-      })
-      .returning()
-      .get();
-    const version = tx
-      .insert(mapVersions)
-      .values({
-        mapId: created.id,
-        version: 1,
-        createdAt: input.now,
-        ...versionValues(input.valid),
-      })
-      .returning()
-      .get();
-    return tx
-      .update(maps)
-      .set({ currentVersionId: version.id })
-      .where(eq(maps.id, created.id))
-      .returning()
-      .get();
+): Promise<MapRow> {
+  return db.transaction(async (tx) => {
+    const { id: mapId } = firstRow(
+      await tx
+        .insert(maps)
+        .values({
+          ownerId: input.ownerId,
+          title: input.title,
+          description: input.description,
+          visibility: input.visibility,
+          createdAt: input.now,
+          updatedAt: input.now,
+        })
+        .$returningId(),
+    );
+    const { id: versionId } = firstRow(
+      await tx
+        .insert(mapVersions)
+        .values({ mapId, version: 1, createdAt: input.now, ...versionValues(input.valid) })
+        .$returningId(),
+    );
+    await tx.update(maps).set({ currentVersionId: versionId }).where(eq(maps.id, mapId));
+    return firstRow(await tx.select().from(maps).where(eq(maps.id, mapId)));
   });
 }
 
-export function replaceContent(
+export async function replaceContent(
   db: Db,
   map: MapRow,
   valid: ValidMapContent,
   now: number,
-): { versionId: number; createdNewVersion: boolean } {
-  const current = currentVersion(db, map);
+): Promise<{ versionId: number; createdNewVersion: boolean }> {
+  const current = await currentVersion(db, map);
   const values = versionValues(valid);
   if (current && current.contentHash === values.contentHash) {
     return { versionId: current.id, createdNewVersion: false };
   }
-  if (current && runCount(db, current.id) === 0) {
-    db.update(mapVersions).set(values).where(eq(mapVersions.id, current.id)).run();
+  if (current && (await runCount(db, current.id)) === 0) {
+    await db.update(mapVersions).set(values).where(eq(mapVersions.id, current.id));
     return { versionId: current.id, createdNewVersion: false };
   }
-  return db.transaction((tx) => {
-    const latest = tx
-      .select({ value: sql<number>`coalesce(max(${mapVersions.version}), 0)` })
+  return db.transaction(async (tx) => {
+    await tx.select({ id: maps.id }).from(maps).where(eq(maps.id, map.id)).for("update");
+    const [latest] = await tx
+      .select({ value: max(mapVersions.version) })
       .from(mapVersions)
-      .where(eq(mapVersions.mapId, map.id))
-      .get();
-    const version = tx
-      .insert(mapVersions)
-      .values({ mapId: map.id, version: (latest?.value ?? 0) + 1, createdAt: now, ...values })
-      .returning()
-      .get();
-    tx.update(maps).set({ currentVersionId: version.id }).where(eq(maps.id, map.id)).run();
-    return { versionId: version.id, createdNewVersion: true };
+      .where(eq(mapVersions.mapId, map.id));
+    const { id: versionId } = firstRow(
+      await tx
+        .insert(mapVersions)
+        .values({ mapId: map.id, version: (latest?.value ?? 0) + 1, createdAt: now, ...values })
+        .$returningId(),
+    );
+    await tx.update(maps).set({ currentVersionId: versionId }).where(eq(maps.id, map.id));
+    return { versionId, createdNewVersion: true };
   });
 }
 
@@ -210,32 +204,49 @@ export type LeaderboardEntry = {
   createdAt: number;
 };
 
-type LeaderboardRow = Omit<LeaderboardEntry, "rank">;
-
-export function leaderboard(db: Db, mapVersionId: number): LeaderboardEntry[] {
-  const rows = db.all<LeaderboardRow>(sql`
-    SELECT ranked.id AS runId, ranked.user_id AS userId, u.username AS username,
-      ranked.gold AS gold, ranked.steps AS steps, ranked.outcome_kind AS outcomeKind,
-      ranked.created_at AS createdAt
-    FROM (
-      SELECT r.*, ROW_NUMBER() OVER (
-        PARTITION BY r.user_id ORDER BY r.gold DESC, r.steps ASC, r.created_at ASC, r.id ASC
-      ) AS best
-      FROM ${runs} r
-      WHERE r.map_version_id = ${mapVersionId}
-    ) ranked
-    JOIN ${users} u ON u.id = ranked.user_id
-    WHERE ranked.best = 1
-    ORDER BY ranked.gold DESC, ranked.steps ASC, ranked.created_at ASC, ranked.id ASC
-  `);
+export async function leaderboard(db: Db, mapVersionId: number): Promise<LeaderboardEntry[]> {
+  const ranked = db
+    .select({
+      runId: runs.id,
+      userId: runs.userId,
+      gold: runs.gold,
+      steps: runs.steps,
+      outcomeKind: runs.outcomeKind,
+      createdAt: runs.createdAt,
+      best: sql<number>`row_number() over (
+        partition by ${runs.userId}
+        order by ${runs.gold} desc, ${runs.steps} asc, ${runs.createdAt} asc, ${runs.id} asc
+      )`.as("best"),
+    })
+    .from(runs)
+    .where(eq(runs.mapVersionId, mapVersionId))
+    .as("ranked");
+  const rows = await db
+    .select({
+      runId: ranked.runId,
+      userId: ranked.userId,
+      username: users.username,
+      gold: ranked.gold,
+      steps: ranked.steps,
+      outcomeKind: ranked.outcomeKind,
+      createdAt: ranked.createdAt,
+    })
+    .from(ranked)
+    .innerJoin(users, eq(users.id, ranked.userId))
+    .where(eq(ranked.best, 1))
+    .orderBy(desc(ranked.gold), asc(ranked.steps), asc(ranked.createdAt), asc(ranked.runId));
   return rows.map((row, index) => ({ rank: index + 1, ...row }));
 }
 
-export function mapBelongsToVersion(db: Db, mapId: number, versionId: number): boolean {
-  const row = db
+export async function mapBelongsToVersion(
+  db: Db,
+  mapId: number,
+  versionId: number,
+): Promise<boolean> {
+  const [row] = await db
     .select({ id: mapVersions.id })
     .from(mapVersions)
     .where(and(eq(mapVersions.id, versionId), eq(mapVersions.mapId, mapId)))
-    .get();
+    .limit(1);
   return row !== undefined;
 }

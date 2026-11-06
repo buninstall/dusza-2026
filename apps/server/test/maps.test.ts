@@ -13,7 +13,8 @@ type DetailResponse = {
 
 describe("térképek", () => {
   test("a hibás térkép 422 a diagnosztikákkal", async () => {
-    const { client } = await createTestContext();
+    await using context = await createTestContext();
+    const { client } = context;
     const user = client();
     await user.register("terkepesz");
     const response = await user.post("/api/maps", { title: "Hibás", content: "1 2\n><" });
@@ -25,7 +26,8 @@ describe("térképek", () => {
   });
 
   test("érvényes térkép mentése, lekérése és exportja", async () => {
-    const { client } = await createTestContext();
+    await using context = await createTestContext();
+    const { client } = context;
     const user = client();
     await user.register("terkepesz");
     const created = await user.post("/api/maps", {
@@ -51,7 +53,7 @@ describe("térképek", () => {
   });
 
   test("a privát térképet csak a tulajdonos és az admin látja", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const owner = context.client();
     await owner.register("tulaj");
     const { map } = await json<MapResponse>(
@@ -66,12 +68,12 @@ describe("térképek", () => {
 
     const admin = context.client();
     const { user } = await admin.register("fonok");
-    context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, user.id)).run();
+    await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
     expect((await admin.get(`/api/maps/${map.id}`)).status).toBe(200);
   });
 
   test("más térképét nem lehet módosítani vagy törölni", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const owner = context.client();
     await owner.register("tulaj");
     const { map } = await json<MapResponse>(
@@ -86,7 +88,7 @@ describe("térképek", () => {
   });
 
   test("D14: futás nélkül helyben módosul, futás után új verzió jön létre", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const owner = context.client();
     const { user } = await owner.register("verziozo");
     const { map } = await json<MapResponse>(
@@ -101,19 +103,16 @@ describe("térképek", () => {
     expect(detail.version.id).toBe(firstVersionId);
     expect(detail.version.content).toBe("1 3\n>.@\n");
 
-    context.deps.db
-      .insert(runs)
-      .values({
-        userId: user.id,
-        mapVersionId: firstVersionId,
-        source: "",
-        sourceHash: "",
-        gold: 0,
-        steps: 0,
-        outcomeKind: "ok",
-        createdAt: context.deps.now(),
-      })
-      .run();
+    await context.deps.db.insert(runs).values({
+      userId: user.id,
+      mapVersionId: firstVersionId,
+      source: "",
+      sourceHash: "",
+      gold: 0,
+      steps: 0,
+      outcomeKind: "ok",
+      createdAt: context.deps.now(),
+    });
 
     const versioned = await owner.put(`/api/maps/${map.id}`, { content: "1 4\n>..@" });
     expect((await json<{ createdNewVersion: boolean }>(versioned)).createdNewVersion).toBe(true);
@@ -132,7 +131,7 @@ describe("térképek", () => {
   });
 
   test("az azonos tartalmú mentés nem hoz létre új verziót", async () => {
-    const context = await createTestContext();
+    await using context = await createTestContext();
     const owner = context.client();
     await owner.register("ismetlo");
     const { map } = await json<MapResponse>(
@@ -143,7 +142,8 @@ describe("térképek", () => {
   });
 
   test("a hibás azonosító 400", async () => {
-    const { client } = await createTestContext();
+    await using context = await createTestContext();
+    const { client } = context;
     const user = client();
     await user.register("azonosito");
     expect((await user.get("/api/maps/abc")).status).toBe(400);
