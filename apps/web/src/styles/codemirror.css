@@ -1,0 +1,179 @@
+.cm-editor {
+  height: 100%;
+  background: var(--c-screen);
+  color: var(--c-text);
+  font-family: var(--font-code);
+  font-size: var(--text-sm);
+}
+
+.cm-editor .cm-scroller {
+  font-family: inherit;
+  line-height: 1.7;
+}
+
+.cm-editor .cm-content {
+  padding: var(--space-2) 0;
+  caret-color: var(--c-gold);
+}
+
+.cm-editor.cm-focused {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: calc(var(--focus-width) * -1);
+}
+
+.cm-editor .cm-gutters {
+  border-right: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+  color: var(--c-text-faint);
+}
+
+.cm-editor .cm-lineNumbers .cm-gutterElement {
+  min-width: 3ch;
+  padding: 0 var(--space-2) 0 var(--space-3);
+}
+
+.cm-editor .cm-activeLine {
+  background: var(--c-surface);
+}
+
+.cm-editor .cm-activeLineGutter {
+  background: var(--c-surface);
+  color: var(--c-text);
+}
+
+.cm-editor .cm-cursor {
+  border-left: 2px solid var(--c-gold);
+}
+
+.cm-editor .cm-selectionBackground,
+.cm-editor.cm-focused .cm-selectionBackground,
+.cm-editor .cm-content ::selection {
+  background: var(--c-selection);
+}
+
+.cm-editor .cm-exec-line {
+  background: var(--c-exec-line);
+  box-shadow: inset 4px 0 0 var(--c-gold);
+}
+
+.cm-editor .cm-error-line {
+  background: var(--c-error-line);
+  box-shadow: inset 4px 0 0 var(--c-rust);
+}
+
+.cm-editor .cm-highlightSpace {
+  background: none;
+  position: relative;
+}
+
+.cm-editor .cm-highlightSpace::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 2px;
+  translate: -50% -50%;
+  background: var(--c-line-strong);
+}
+
+.cm-editor .cm-trailingSpace {
+  background: var(--c-error-line);
+}
+
+.cm-editor .cm-lintRange-error {
+  background: none;
+  text-decoration: underline wavy var(--c-rust);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.cm-editor .cm-lintRange-warning,
+.cm-editor .cm-lintRange-info,
+.cm-editor .cm-lintRange-hint {
+  background: none;
+  text-decoration: underline dotted var(--c-warn);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.cm-editor .cm-lint-marker {
+  width: 10px;
+  height: 10px;
+  content: none;
+}
+
+.cm-editor .cm-lint-marker-error {
+  background: var(--c-rust);
+}
+
+.cm-editor .cm-lint-marker-warning,
+.cm-editor .cm-lint-marker-info {
+  background: var(--c-warn);
+}
+
+.cm-tooltip.cm-tooltip-hover,
+.cm-tooltip.cm-tooltip-lint,
+.cm-tooltip.cm-tooltip-autocomplete {
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+  color: var(--c-text);
+  box-shadow: var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow);
+  font-family: var(--font-text);
+}
+
+.cm-tooltip.cm-tooltip-autocomplete > ul {
+  font-family: var(--font-code);
+}
+
+.cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}
+
+.cm-tooltip .cm-completionDetail {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.cm-tooltip-lint .cm-diagnostic {
+  padding: var(--space-2) var(--space-3);
+  border-left-width: 4px;
+}
+
+.cm-tooltip-lint .cm-diagnostic-error {
+  border-left-color: var(--c-rust);
+}
+
+.cm-tooltip-lint .cm-diagnostic-warning {
+  border-left-color: var(--c-warn);
+}
+
+.cm-tooltip-lint .cm-diagnosticAction {
+  border: var(--border-thin) solid var(--c-line-strong);
+  border-radius: 0;
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+  font-family: var(--font-display);
+}
+
+.cm-ms-hover {
+  max-width: 26rem;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.cm-tooltip .cm-completionInfo {
+  max-width: 22rem;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+  font-family: var(--font-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-editor .cm-cursorLayer {
+    animation: none;
+  }
+}
