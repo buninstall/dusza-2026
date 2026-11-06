@@ -1,0 +1,17 @@
+{
+  "description": "Teljes szélességű számjegy a fejlécben: csak 0–9 számjegy lehet.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15",
+    "D24"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_HEADER",
+      "line": 1
+    }
+  ]
+}

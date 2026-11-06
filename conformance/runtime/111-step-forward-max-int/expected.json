@@ -1,0 +1,39 @@
+{
+  "description": "step forward 9 007 199 254 740 991 (a megengedett legnagyobb egész): a robot mezőnként halad, a térkép szélén E_BEDROCK_HIT, az utolsó érvényes mezőn marad.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D6",
+    "D8",
+    "D11"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BEDROCK_HIT",
+    "line": 7
+  },
+  "gold": 0,
+  "steps": 7,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 2,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ]
+}

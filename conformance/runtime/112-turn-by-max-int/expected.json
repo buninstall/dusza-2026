@@ -1,0 +1,31 @@
+{
+  "description": "turn by 9 007 199 254 740 991: n mod 4 = 3 negyedfordulat balra, kelet → dél; utána egy lépés délre.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D6",
+    "D9"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 8,
+  "console": [],
+  "robot": {
+    "row": 1,
+    "col": 0,
+    "dir": "south"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    }
+  ]
+}

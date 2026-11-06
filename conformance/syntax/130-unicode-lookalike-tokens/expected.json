@@ -1,0 +1,50 @@
+{
+  "description": "Hasonmás Unicode-karakterek: a nem törhető szóköz és a nulla szélességű szóköz nem választ el tokeneket, az emoji, a teljes szélességű számjegy és a sorelválasztó érvénytelen token, a kombináló jellel írt, illetve héber betűvel kezdődő szó érvénytelen azonosító.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19",
+    "D24"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_INVALID_IDENT",
+      "line": 1,
+      "col": 1
+    },
+    {
+      "code": "SYN_INVALID_IDENT",
+      "line": 2,
+      "col": 5
+    },
+    {
+      "code": "SYN_INVALID_TOKEN",
+      "line": 3,
+      "col": 7
+    },
+    {
+      "code": "SYN_INVALID_TOKEN",
+      "line": 4,
+      "col": 7
+    },
+    {
+      "code": "SYN_INVALID_IDENT",
+      "line": 5,
+      "col": 5
+    },
+    {
+      "code": "SYN_INVALID_IDENT",
+      "line": 6,
+      "col": 7
+    },
+    {
+      "code": "SYN_INVALID_TOKEN",
+      "line": 7,
+      "col": 7
+    }
+  ]
+}

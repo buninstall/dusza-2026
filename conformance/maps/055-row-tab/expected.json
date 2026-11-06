@@ -1,0 +1,17 @@
+{
+  "description": "Tabulátor a térképsorban: ismeretlen jel.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D15",
+    "D24"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_BAD_SYMBOL",
+      "line": 2
+    }
+  ]
+}
