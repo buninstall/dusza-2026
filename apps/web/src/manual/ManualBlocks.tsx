@@ -71,13 +71,13 @@ function Block({ block }: { block: ManualBlock }) {
       );
     case "tip":
       return (
-        <aside className="manual-tip">
+        <div className="manual-tip">
           <Notice tone="info" title={block.title}>
             <p>
               <InlineText text={block.text} />
             </p>
           </Notice>
-        </aside>
+        </div>
       );
     case "code":
       return block.map ? (

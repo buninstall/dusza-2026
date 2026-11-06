@@ -56,7 +56,7 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
       ? hu.game.allStars
       : hu.game.nextStar(stars.run, stars.parSteps, reachableGold);
   return (
-    <aside className="medal" aria-labelledby={headingId} data-gained={gained > 0}>
+    <section className="medal" aria-labelledby={headingId} data-gained={gained > 0}>
       <h2 id={headingId} className="visually-hidden">
         {hu.game.medalTitle}
       </h2>
@@ -84,6 +84,6 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
         size="sm"
         onPress={() => setDismissedRun(runId)}
       />
-    </aside>
+    </section>
   );
 }

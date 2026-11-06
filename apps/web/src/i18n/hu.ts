@@ -816,7 +816,7 @@ export const hu = {
     gutterTitle: "Kattints a sorszámra: töréspont ki/be (F9)",
   },
   trial: {
-    button: "Kipróbálom",
+    button: "Próbajáték",
     buttonHint: "Játssz a pályán mentés nélkül",
     blocked: "Előbb javítsd a térkép hibáit, csak érvényes térképet lehet kipróbálni.",
     sign: "Próba",

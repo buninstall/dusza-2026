@@ -1,0 +1,147 @@
+import { act, screen, waitFor, within } from "@testing-library/react";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+import { SPEED_MAX, usePlayback } from "../src/play/playback-store.ts";
+import { useTour } from "../src/tour/tour-state.ts";
+import { apiError, callsTo, onApi, respond } from "./support/api.ts";
+import { renderApp } from "./support/app.tsx";
+import { realEngine } from "./support/engine.ts";
+import { CORRIDOR, LABYRINTH, mapDetail, mapSummary, walkTrace } from "./support/fixtures.ts";
+
+const MAP_ID = 3;
+
+function editorText(): string {
+  return [...document.querySelectorAll(".cm-line")].map((line) => line.textContent).join("\n");
+}
+
+async function openPlay(options: Parameters<typeof mapDetail>[3] = {}) {
+  respond("GET", `/maps/${MAP_ID}`, mapDetail(MAP_ID, "Labirintus", LABYRINTH, options));
+  respond("GET", "/maps", {
+    maps: [mapSummary(MAP_ID, "Labirintus", LABYRINTH), mapSummary(4, "Folyosó", CORRIDOR)],
+  });
+  const app = renderApp(`/play/${MAP_ID}`);
+  await screen.findByRole("grid", { name: "Labirintus térképe" });
+  await waitFor(() => expect(document.querySelector(".cm-content")).not.toBeNull());
+  return app;
+}
+
+beforeEach(() => {
+  act(() => usePlayback.getState().setSpeed(SPEED_MAX));
+  vi.restoreAllMocks();
+});
+
+describe("eredmény és tetszés a játék oldalon", () => {
+  test("a futás végén az eredménysáv az új csillagot és a következő pályát mutatja", async () => {
+    window.localStorage.setItem(
+      `minescript.program.${MAP_ID}`,
+      JSON.stringify({ source: "step forward 2\nmine here\n", linked: null }),
+    );
+    vi.spyOn(realEngine, "run").mockReturnValue(walkTrace);
+    respond(
+      "POST",
+      "/runs",
+      {
+        run: { gold: 1, steps: 5 },
+        outcome: { kind: "ok" },
+        console: [],
+        standing: {
+          rank: 1,
+          players: 1,
+          isPersonalBest: true,
+          stars: { run: 2, best: 2, previous: 1, parSteps: 3 },
+        },
+      },
+      201,
+    );
+    const { user } = await openPlay({ parSteps: 3 });
+    expect(screen.getByText(/Célérték: 3 lépés/)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Futtatás" }));
+    const medal = await screen.findByRole("region", { name: "Eredmény" }, { timeout: 4000 });
+    expect(within(medal).getByRole("img", { name: "2 / 3 csillag" })).toBeTruthy();
+    expect(within(medal).getByText("Új csillag!")).toBeTruthy();
+    expect(within(medal).getByText("A harmadik csillaghoz legfeljebb 3 lépés kell.")).toBeTruthy();
+    expect(
+      within(medal).getByRole("link", { name: "Következő pálya: Folyosó" }).getAttribute("href"),
+    ).toBe("/play/4");
+    await user.click(within(medal).getByRole("button", { name: "Bezárás" }));
+    expect(screen.queryByRole("region", { name: "Eredmény" })).toBeNull();
+  });
+
+  test("a Tetszik futás előtt csak tippet ad, utána menti a jelölést", async () => {
+    const { user } = await openPlay();
+    await user.click(screen.getByRole("button", { name: /Tetszik/ }));
+    expect(await screen.findByText(/Előbb futtass egy programot/)).toBeTruthy();
+    expect(callsTo("POST", "/maps/:id/like")).toHaveLength(0);
+  });
+
+  test("futás után a tetszés elmentődik", async () => {
+    onApi("POST", "/maps/:id/like", () => ({ body: { likes: 1, likedByMe: true } }));
+    const { user } = await openPlay({ hasPlayed: true });
+    await user.click(screen.getByRole("button", { name: /Tetszik/ }));
+    await waitFor(() =>
+      expect(callsTo("POST", `/maps/${MAP_ID}/like`)[0]?.body).toEqual({ liked: true }),
+    );
+  });
+});
+
+describe("bevezető a játék oldalon", () => {
+  test("végigvezet: beírja a parancsot, és lépésről lépésre halad", async () => {
+    act(() => useTour.getState().start(MAP_ID));
+    const { user } = await openPlay();
+    expect(await screen.findByRole("heading", { name: "Ez a bánya" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Tovább" }));
+    await user.click(await screen.findByRole("button", { name: "Beírom: step forward 3" }));
+    await waitFor(() => expect(editorText()).toBe("step forward 3"));
+    expect(await screen.findByRole("heading", { name: "Indítsd el!" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Bevezető bezárása" }));
+    expect(screen.queryByRole("heading", { name: "Indítsd el!" })).toBeNull();
+    expect(useTour.getState().data.status).toBe("done");
+  });
+});
+
+describe("térképszerkesztő extrák", () => {
+  async function openNew() {
+    const app = renderApp("/maps/new");
+    await screen.findByRole("grid", { name: "Térképrács" });
+    return app;
+  }
+
+  test("a generálás betölti a pályát és kitölti a célértéket", async () => {
+    respond("POST", "/maps/generate", { content: "1 3\n>@.\n", parSteps: 2, seed: 5 });
+    const { user } = await openNew();
+    await user.click(screen.getByRole("button", { name: "Generálás" }));
+    const dialog = await screen.findByRole("dialog", { name: "Pálya generálása" });
+    await user.click(within(dialog).getByRole("radio", { name: "Nehéz" }));
+    await user.click(within(dialog).getByRole("button", { name: "Generálás" }));
+    await waitFor(() =>
+      expect(callsTo("POST", "/maps/generate")[0]?.body).toEqual({
+        rows: 7,
+        cols: 10,
+        difficulty: "hard",
+      }),
+    );
+    expect(await screen.findByRole("gridcell", { name: "1. sor, 2. oszlop: arany" })).toBeTruthy();
+    expect(
+      (screen.getByRole("textbox", { name: "Célérték (lépés)" }) as HTMLInputElement).value,
+    ).toBe("2");
+  });
+
+  test("a gépi megoldás a szerver számát írja a célértékbe, hibánál üzen", async () => {
+    respond("POST", "/maps/par", { parSteps: null });
+    const { user } = await openNew();
+    await user.click(screen.getByRole("button", { name: "Gépi megoldás" }));
+    expect(await screen.findByText(/nincs kibányászható arany/)).toBeTruthy();
+    onApi("POST", "/maps/par", () => apiError(500, "INTERNAL", "Váratlan szerverhiba."));
+    await user.click(screen.getByRole("button", { name: "Gépi megoldás" }));
+    expect(await screen.findByText("Váratlan szerverhiba.")).toBeTruthy();
+  });
+
+  test("a Próbajáték mentés nélkül játszik, és visszatér a szerkesztőhöz", async () => {
+    const { user } = await openNew();
+    await user.click(screen.getByRole("button", { name: "Falkeret" }));
+    await user.click(screen.getByRole("button", { name: "Próbajáték" }));
+    expect(await screen.findByText("Mentetlen térkép")).toBeTruthy();
+    expect(screen.getAllByText(/Próbafutás: az eredmény nem kerül a ranglistára/).length).toBe(1);
+    await user.click(screen.getByRole("button", { name: "Vissza a szerkesztőbe" }));
+    expect(await screen.findByRole("gridcell", { name: "1. sor, 2. oszlop: fal" })).toBeTruthy();
+  });
+});

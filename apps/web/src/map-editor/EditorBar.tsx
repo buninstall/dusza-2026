@@ -86,7 +86,18 @@ export function EditorBar(props: EditorBarProps) {
       }
       actions={
         <>
-          <Button size="sm" icon="play" onPress={props.onTry}>
+          {props.mapId === null ? null : (
+            <Link
+              to="/play/$mapId"
+              params={{ mapId: String(props.mapId) }}
+              variant="secondary"
+              size="sm"
+              icon="play"
+            >
+              {hu.mapEditor.tryOut}
+            </Link>
+          )}
+          <Button size="sm" icon="eye" onPress={props.onTry}>
             {hu.trial.button}
           </Button>
           <FileTrigger
