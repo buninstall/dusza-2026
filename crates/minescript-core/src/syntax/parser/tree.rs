@@ -27,8 +27,8 @@ pub(super) fn build(lines: Vec<PlacedLine>) -> Program {
     let mut root: Vec<Stmt> = Vec::new();
     let mut open: Vec<OpenBlock> = Vec::new();
     for line in lines {
-        while open.len() > line.depth {
-            close(&mut open, &mut root);
+        while let Some(block) = pop_deeper(&mut open, line.depth) {
+            close(block, &mut open, &mut root);
         }
         if open.len() < line.depth {
             break;
@@ -53,8 +53,8 @@ pub(super) fn build(lines: Vec<PlacedLine>) -> Program {
             body: Vec::new(),
         });
     }
-    while !open.is_empty() {
-        close(&mut open, &mut root);
+    while let Some(block) = open.pop() {
+        close(block, &mut open, &mut root);
     }
     Program { body: root }
 }
@@ -66,10 +66,11 @@ fn innermost<'a>(open: &'a mut [OpenBlock], root: &'a mut Vec<Stmt>) -> &'a mut 
     }
 }
 
-fn close(open: &mut Vec<OpenBlock>, root: &mut Vec<Stmt>) {
-    let Some(block) = open.pop() else {
-        return;
-    };
+fn pop_deeper(open: &mut Vec<OpenBlock>, depth: usize) -> Option<OpenBlock> {
+    if open.len() > depth { open.pop() } else { None }
+}
+
+fn close(block: OpenBlock, open: &mut [OpenBlock], root: &mut Vec<Stmt>) {
     let parent = innermost(open, root);
     let kind = match block.header {
         Header::If(cond) => StmtKind::If {
@@ -156,6 +157,17 @@ mod tests {
         assert_eq!(branch.line, 4);
         assert!(branch.body.is_empty());
         assert_eq!(program.body[1].line, 5);
+    }
+
+    #[test]
+    fn a_line_deeper_than_any_open_block_ends_the_tree_defensively() {
+        let program = build(vec![
+            placed(0, 1, LineSyntax::Command(StmtKind::Mine)),
+            placed(2, 2, LineSyntax::Command(StmtKind::Mine)),
+            placed(0, 3, LineSyntax::Command(StmtKind::Mine)),
+        ]);
+        assert_eq!(program.body.len(), 1);
+        assert_eq!(program.body[0].line, 1);
     }
 
     #[test]

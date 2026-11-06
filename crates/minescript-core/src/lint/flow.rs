@@ -82,19 +82,23 @@ struct Analysis<'p> {
 impl<'p> Analysis<'p> {
     fn run(&mut self, body: &'p [Stmt]) {
         let mut frames = vec![Frame::new(body, Assigned::new(), After::Root)];
-        while let Some(frame) = frames.last_mut() {
+        while let Some(mut frame) = frames.pop() {
             if let Some((stmt, rest)) = frame.rest.split_first() {
                 frame.rest = rest;
                 let flow = std::mem::replace(&mut frame.flow, Flow::Dead);
                 match self.statement(stmt, flow) {
-                    Step::Done(result) => frame.flow = result,
-                    Step::Enter(child) => frames.push(child),
+                    Step::Done(result) => {
+                        frame.flow = result;
+                        frames.push(frame);
+                    }
+                    Step::Enter(child) => {
+                        frames.push(frame);
+                        frames.push(child);
+                    }
                 }
                 continue;
             }
-            let Some(finished) = frames.pop() else {
-                return;
-            };
+            let finished = frame;
             let result = match finished.after {
                 After::Root => return,
                 After::Result => finished.flow,
