@@ -12,7 +12,7 @@ import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
 import "./PlayScreen.css";
 import { boardDressing } from "./stage/board-dressing.tsx";
-import { ControlDeck, TempoGate, Timeline } from "./stage/ControlDeck.tsx";
+import { ControlDeck } from "./stage/ControlDeck.tsx";
 import { HudRail } from "./stage/HudRail.tsx";
 import { ConsoleTape, MemoryTable, ReportCell } from "./stage/LogStrip.tsx";
 import { ShiftReport } from "./stage/ShiftReport.tsx";
@@ -232,21 +232,14 @@ export function PlayScreen(props: PlayScreenProps) {
           </div>
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
         </div>
-        {layout === "cab" ? (
-          <ControlDeck
-            mode={mode}
-            layout="cab"
-            leverRef={leverRef}
-            centerRef={centerRef}
-            shakeKey={blocked ? props.attempt : null}
-            onRun={() => run(true)}
-          />
-        ) : (
-          <div className="stage-timeline">
-            <Timeline />
-            <TempoGate />
-          </div>
-        )}
+        <ControlDeck
+          mode={mode}
+          layout="cab"
+          leverRef={leverRef}
+          centerRef={centerRef}
+          shakeKey={blocked ? props.attempt : null}
+          onRun={() => run(true)}
+        />
         <div className="log" data-report={report !== null}>
           {report}
           <ConsoleTape
@@ -276,16 +269,6 @@ export function PlayScreen(props: PlayScreenProps) {
       </button>
       {stage}
       {sheet}
-      {layout === "panes" ? (
-        <ControlDeck
-          mode={mode}
-          layout="panes"
-          leverRef={leverRef}
-          centerRef={centerRef}
-          shakeKey={blocked ? props.attempt : null}
-          onRun={() => run(true)}
-        />
-      ) : null}
       <GoldFlight flight={motion.flight} rootRef={rootRef} />
       <LiveAnnouncer frame={frame} final={finalAnnouncement(view)} urgent={urgent} />
     </div>

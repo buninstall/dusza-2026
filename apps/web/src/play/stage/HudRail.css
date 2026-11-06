@@ -180,9 +180,10 @@
   color: var(--c-text-muted);
 }
 
-@container stage (height < 40rem) {
+@container stage (height < 60rem) {
   .hud-depth > .hud-note,
-  .hud-cart > .hud-note {
+  .hud-cart > .hud-note,
+  .hud-ticker {
     display: none;
   }
 
