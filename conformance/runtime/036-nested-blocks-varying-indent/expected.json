@@ -1,0 +1,24 @@
+{
+  "description": "Egymásba ágyazott while, if és else blokkonként eltérő behúzással.",
+  "specRefs": [
+    "2.1",
+    "2.2.1",
+    "2.2.2",
+    "3.4"
+  ],
+  "decisions": [
+    "D4",
+    "D7"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 29,
+  "console": [
+    "1",
+    "0",
+    "100",
+    "3"
+  ]
+}

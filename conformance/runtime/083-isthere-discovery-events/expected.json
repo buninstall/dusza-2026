@@ -1,0 +1,161 @@
+{
+  "description": "Az isThere felfedezi a pályán belüli célmezőt (a falat is); a már felfedezett mező nem kerül újra a listába.",
+  "specRefs": [
+    "2.2.3",
+    "3.4"
+  ],
+  "decisions": [
+    "D11",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 5,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 1,
+    "dir": "west"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [
+        {
+          "row": 0,
+          "col": 1
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": {
+        "name": "a",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    {
+      "index": 1,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 1
+        },
+        "dir": "east"
+      },
+      "path": [
+        {
+          "row": 0,
+          "col": 1
+        }
+      ],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 2,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 2,
+      "line": 3,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 1
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [
+        {
+          "row": 0,
+          "col": 2
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 3,
+      "print": null,
+      "assigned": {
+        "name": "b",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    {
+      "index": 3,
+      "line": 4,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 1
+        },
+        "dir": "west"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 4,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 4,
+      "line": 5,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 1
+        },
+        "dir": "west"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 5,
+      "print": null,
+      "assigned": {
+        "name": "c",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "description": "Logikai x-nek túlcsorduló szorzatot adunk: a túlcsordulás a típusegyezés előtt jön.",
+  "specRefs": [
+    "2.2.1",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D6",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_INT_OVERFLOW",
+    "line": 5
+  },
+  "gold": 0,
+  "steps": 5,
+  "console": []
+}

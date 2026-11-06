@@ -1,0 +1,34 @@
+{
+  "description": "step forward változóval, és step forward 0 fal előtt sem hiba.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D8"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 3,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 2,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ]
+}

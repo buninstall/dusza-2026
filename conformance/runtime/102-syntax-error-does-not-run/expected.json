@@ -1,0 +1,35 @@
+{
+  "description": "Szintaktikai hibás program egyetlen sora sem fut le, a robot a kezdőmezőn marad.",
+  "specRefs": [
+    "2.1",
+    "3.4"
+  ],
+  "decisions": [
+    "D16",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "syntaxError",
+    "diagnostics": [
+      {
+        "code": "SYN_DOUBLE_SPACE",
+        "line": 3
+      }
+    ]
+  },
+  "gold": 0,
+  "steps": 0,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "events": []
+}

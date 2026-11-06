@@ -1,0 +1,20 @@
+{
+  "description": "Üres then- és else-blokk hamis feltétellel: az else sora számít.",
+  "specRefs": [
+    "2",
+    "2.2.1",
+    "3.4"
+  ],
+  "decisions": [
+    "D1",
+    "D7"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 4,
+  "console": [
+    "1"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "description": "A hibás sor az 1001. lenne: a limit előbb jön, a sor nem fut le.",
+  "specRefs": [
+    "3.4"
+  ],
+  "decisions": [
+    "D7"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "INSTRUCTION_COUNT_LIMIT_EXCEEDED",
+    "line": 10
+  },
+  "gold": 0,
+  "steps": 1000,
+  "console": [
+    "331",
+    "331"
+  ]
+}

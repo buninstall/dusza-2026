@@ -1,0 +1,23 @@
+{
+  "description": "Ugyanazon a mezőn a második bányászás E_NO_GOLD.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_NO_GOLD",
+    "line": 3
+  },
+  "gold": 1,
+  "steps": 3,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 1,
+    "dir": "east"
+  }
+}

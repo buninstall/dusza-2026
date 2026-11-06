@@ -1,0 +1,85 @@
+{
+  "description": "Az isThere célmezője a típusegyezés előtt felfedeződik, utána E_TYPE_MISMATCH; a hibás set eseményében nincs értékadás.",
+  "specRefs": [
+    "2.2.1",
+    "2.2.4",
+    "3.4"
+  ],
+  "decisions": [
+    "D11",
+    "D20",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_TYPE_MISMATCH",
+    "line": 2
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": {
+        "name": "x",
+        "value": {
+          "kind": "int",
+          "value": 1
+        }
+      }
+    },
+    {
+      "index": 1,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [
+        {
+          "row": 0,
+          "col": 1
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 2,
+      "print": null,
+      "assigned": null
+    }
+  ]
+}

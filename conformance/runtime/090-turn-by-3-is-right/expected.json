@@ -1,0 +1,20 @@
+{
+  "description": "Három negyedfordulat balra egy jobbra fordulásnak felel meg.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D9"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": [],
+  "robot": {
+    "row": 2,
+    "col": 1,
+    "dir": "south"
+  }
+}

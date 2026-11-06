@@ -1,0 +1,16 @@
+{
+  "description": "A kulcsszót tartalmazó, de nem kulcsszó azonosítók szabályosak.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 6,
+  "console": [
+    "3",
+    "true"
+  ]
+}

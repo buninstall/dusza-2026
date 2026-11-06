@@ -1,0 +1,19 @@
+{
+  "description": "Üres then-blokk igaz feltétellel: a következő sor a blokkon kívül van.",
+  "specRefs": [
+    "2",
+    "2.2.1"
+  ],
+  "decisions": [
+    "D1",
+    "D7"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 3,
+  "console": [
+    "1"
+  ]
+}

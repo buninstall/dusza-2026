@@ -1,0 +1,18 @@
+{
+  "description": "Az 1000. sor után még egy print jönne: INSTRUCTION_COUNT_LIMIT_EXCEEDED a print sorában, a print nem fut le.",
+  "specRefs": [
+    "3.4"
+  ],
+  "decisions": [
+    "D7",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "INSTRUCTION_COUNT_LIMIT_EXCEEDED",
+    "line": 7
+  },
+  "gold": 0,
+  "steps": 1000,
+  "console": []
+}

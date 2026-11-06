@@ -1,0 +1,221 @@
+{
+  "description": "step forward 100 egy 15 széles térképen: 14 lépés után a 15. lelépne, E_BEDROCK_HIT; a bejárt mezők felfedezettek.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D8",
+    "D11",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BEDROCK_HIT",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 14,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 4
+    },
+    {
+      "row": 0,
+      "col": 5
+    },
+    {
+      "row": 0,
+      "col": 6
+    },
+    {
+      "row": 0,
+      "col": 7
+    },
+    {
+      "row": 0,
+      "col": 8
+    },
+    {
+      "row": 0,
+      "col": 9
+    },
+    {
+      "row": 0,
+      "col": 10
+    },
+    {
+      "row": 0,
+      "col": 11
+    },
+    {
+      "row": 0,
+      "col": 12
+    },
+    {
+      "row": 0,
+      "col": 13
+    },
+    {
+      "row": 0,
+      "col": 14
+    }
+  ],
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 14
+        },
+        "dir": "east"
+      },
+      "path": [
+        {
+          "row": 0,
+          "col": 1
+        },
+        {
+          "row": 0,
+          "col": 2
+        },
+        {
+          "row": 0,
+          "col": 3
+        },
+        {
+          "row": 0,
+          "col": 4
+        },
+        {
+          "row": 0,
+          "col": 5
+        },
+        {
+          "row": 0,
+          "col": 6
+        },
+        {
+          "row": 0,
+          "col": 7
+        },
+        {
+          "row": 0,
+          "col": 8
+        },
+        {
+          "row": 0,
+          "col": 9
+        },
+        {
+          "row": 0,
+          "col": 10
+        },
+        {
+          "row": 0,
+          "col": 11
+        },
+        {
+          "row": 0,
+          "col": 12
+        },
+        {
+          "row": 0,
+          "col": 13
+        },
+        {
+          "row": 0,
+          "col": 14
+        }
+      ],
+      "discovered": [
+        {
+          "row": 0,
+          "col": 1
+        },
+        {
+          "row": 0,
+          "col": 2
+        },
+        {
+          "row": 0,
+          "col": 3
+        },
+        {
+          "row": 0,
+          "col": 4
+        },
+        {
+          "row": 0,
+          "col": 5
+        },
+        {
+          "row": 0,
+          "col": 6
+        },
+        {
+          "row": 0,
+          "col": 7
+        },
+        {
+          "row": 0,
+          "col": 8
+        },
+        {
+          "row": 0,
+          "col": 9
+        },
+        {
+          "row": 0,
+          "col": 10
+        },
+        {
+          "row": 0,
+          "col": 11
+        },
+        {
+          "row": 0,
+          "col": 12
+        },
+        {
+          "row": 0,
+          "col": 13
+        },
+        {
+          "row": 0,
+          "col": 14
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": null
+    }
+  ]
+}

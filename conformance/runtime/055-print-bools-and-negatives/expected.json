@@ -1,0 +1,21 @@
+{
+  "description": "A print a logikai értéket true/false, a negatív egészet előjellel írja ki.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D12"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 9,
+  "console": [
+    "true",
+    "false",
+    "-100",
+    "-10000",
+    "0"
+  ]
+}

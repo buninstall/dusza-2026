@@ -1,0 +1,27 @@
+{
+  "description": "Csak egy újsorból álló program üres: 0 lépés.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 0,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "events": []
+}

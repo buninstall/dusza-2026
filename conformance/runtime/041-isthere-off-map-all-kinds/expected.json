@@ -1,0 +1,30 @@
+{
+  "description": "A térképen kívül az isThere falat lát: 0 és 2 hamis, 1 igaz, és semmit nem fed fel.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D11"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 6,
+  "console": [
+    "false",
+    "true",
+    "false"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "north"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "description": "isThere egész változóval: az arany a robot előtt van.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D11"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 3,
+  "console": [
+    "true"
+  ],
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "description": "Logikai változónak egész érték: E_TYPE_MISMATCH.",
+  "specRefs": [
+    "2.2.2",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_TYPE_MISMATCH",
+    "line": 2
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": []
+}

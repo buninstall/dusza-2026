@@ -1,0 +1,103 @@
+{
+  "description": "A while sorához feltétel-kiértékelésenként egy esemény tartozik, a záró hamisnál is.",
+  "specRefs": [
+    "2.2.1",
+    "3.4"
+  ],
+  "decisions": [
+    "D7",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 4,
+  "console": [],
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": {
+        "name": "go",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    {
+      "index": 1,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 2,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 2,
+      "line": 3,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 3,
+      "print": null,
+      "assigned": {
+        "name": "go",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 3,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 4,
+      "print": null,
+      "assigned": null
+    }
+  ]
+}

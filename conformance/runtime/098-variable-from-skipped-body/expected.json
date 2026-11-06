@@ -1,0 +1,16 @@
+{
+  "description": "A le nem futott blokkban szereplő változó nem jön létre: E_UNINITIALIZED.",
+  "specRefs": [
+    "2.2.2",
+    "2.2.4"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_UNINITIALIZED",
+    "line": 4
+  },
+  "gold": 0,
+  "steps": 3,
+  "console": []
+}

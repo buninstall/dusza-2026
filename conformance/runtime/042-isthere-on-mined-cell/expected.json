@@ -1,0 +1,38 @@
+{
+  "description": "A kibányászott mező üres kamrának számít: isThere 2 hamis, isThere 0 igaz.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D11",
+    "D9"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 1,
+  "steps": 8,
+  "console": [
+    "false",
+    "true"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 2,
+    "dir": "west"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ]
+}

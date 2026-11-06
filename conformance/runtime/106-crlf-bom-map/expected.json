@@ -1,0 +1,21 @@
+{
+  "description": "BOM-mal és CRLF-fel mentett térképen fut a program.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2",
+    "D15"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 1,
+  "steps": 2,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 1,
+    "dir": "east"
+  }
+}

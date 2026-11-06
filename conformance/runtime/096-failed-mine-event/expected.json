@@ -1,0 +1,133 @@
+{
+  "description": "A sikertelen bányászás eseményében a mined null, az arany nem nő.",
+  "specRefs": [
+    "2.2.4",
+    "3.4"
+  ],
+  "decisions": [
+    "D20"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_NO_GOLD",
+    "line": 5
+  },
+  "gold": 1,
+  "steps": 5,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "west"
+  },
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 1
+        },
+        "dir": "east"
+      },
+      "path": [
+        {
+          "row": 0,
+          "col": 1
+        }
+      ],
+      "discovered": [
+        {
+          "row": 0,
+          "col": 1
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 1,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 1
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": {
+        "row": 0,
+        "col": 1
+      },
+      "gold": 1,
+      "steps": 2,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 2,
+      "line": 3,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 1
+        },
+        "dir": "west"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 1,
+      "steps": 3,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 3,
+      "line": 4,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "west"
+      },
+      "path": [
+        {
+          "row": 0,
+          "col": 0
+        }
+      ],
+      "discovered": [],
+      "mined": null,
+      "gold": 1,
+      "steps": 4,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 4,
+      "line": 5,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "west"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 1,
+      "steps": 5,
+      "print": null,
+      "assigned": null
+    }
+  ]
+}

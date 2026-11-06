@@ -1,0 +1,18 @@
+{
+  "description": "Az and és az or igazságtáblája.",
+  "specRefs": [
+    "2.2.1"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 10,
+  "console": [
+    "false",
+    "true",
+    "false",
+    "true"
+  ]
+}

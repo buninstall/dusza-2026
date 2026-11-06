@@ -1,0 +1,99 @@
+{
+  "description": "Hamis if után az else sorának saját eseménye van, közvetlenül az if eseménye után.",
+  "specRefs": [
+    "2.2.1",
+    "3.4"
+  ],
+  "decisions": [
+    "D7",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 4,
+  "console": [
+    "2"
+  ],
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": {
+        "name": "a",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 1,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 2,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 2,
+      "line": 4,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 3,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 3,
+      "line": 5,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 4,
+      "print": "2",
+      "assigned": null
+    }
+  ]
+}

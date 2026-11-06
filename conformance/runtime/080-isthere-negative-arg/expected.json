@@ -1,0 +1,23 @@
+{
+  "description": "Negatív paraméterű isThere: E_BAD_ARG.",
+  "specRefs": [
+    "2.2.4"
+  ],
+  "decisions": [
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BAD_ARG",
+    "line": 2
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": [],
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ]
+}

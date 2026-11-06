@@ -1,0 +1,18 @@
+{
+  "description": "while 0: szintaktikailag helyes, futáskor E_NON_BOOL_CONDITION.",
+  "specRefs": [
+    "2.2.2",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_NON_BOOL_CONDITION",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": []
+}

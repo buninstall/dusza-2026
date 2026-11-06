@@ -1,0 +1,21 @@
+{
+  "description": "A v jelű robot dél felé indul, két lépés után bányászik.",
+  "specRefs": [
+    "1",
+    "2.2.3"
+  ],
+  "decisions": [
+    "D18"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 1,
+  "steps": 2,
+  "console": [],
+  "robot": {
+    "row": 2,
+    "col": 0,
+    "dir": "south"
+  }
+}

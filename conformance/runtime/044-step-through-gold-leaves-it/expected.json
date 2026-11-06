@@ -1,0 +1,22 @@
+{
+  "description": "Az aranyon áthaladva az arany a helyén marad, később kibányászható.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D8"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 1,
+  "steps": 6,
+  "console": [
+    "true"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 1,
+    "dir": "west"
+  }
+}

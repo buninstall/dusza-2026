@@ -1,0 +1,16 @@
+{
+  "description": "Az ARANY nem azonos az arany változóval: E_UNINITIALIZED.",
+  "specRefs": [
+    "2",
+    "2.2.4"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_UNINITIALIZED",
+    "line": 2
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": []
+}

@@ -1,0 +1,29 @@
+{
+  "description": "A bányászó program 1×1-es térképen: a térkép széle falnak számít, semmi új nem lesz felfedezve.",
+  "specRefs": [
+    "2",
+    "2.2.3"
+  ],
+  "decisions": [
+    "D11"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 5,
+  "console": [
+    "0"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ]
+}

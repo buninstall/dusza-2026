@@ -1,0 +1,19 @@
+{
+  "description": "Az if feltétele inicializálatlan: E_UNINITIALIZED (nem E_NON_BOOL_CONDITION).",
+  "specRefs": [
+    "2.2.2",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D10",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_UNINITIALIZED",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": []
+}

@@ -1,0 +1,21 @@
+{
+  "description": "A kezdőmezőn soha nincs arany: visszatérve oda a bányászás E_NO_GOLD.",
+  "specRefs": [
+    "1",
+    "2.2.4"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_NO_GOLD",
+    "line": 5
+  },
+  "gold": 1,
+  "steps": 5,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 1,
+    "dir": "west"
+  }
+}

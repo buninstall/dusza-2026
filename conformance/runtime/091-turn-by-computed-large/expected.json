@@ -1,0 +1,20 @@
+{
+  "description": "10001 negyedfordulat (10001 mod 4 = 1): kelet → észak.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D9"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 4,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "north"
+  }
+}

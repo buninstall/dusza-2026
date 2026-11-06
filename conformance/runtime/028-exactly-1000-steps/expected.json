@@ -1,0 +1,15 @@
+{
+  "description": "Pontosan 1000 feldolgozott sor: a futás hiba nélkül véget ér.",
+  "specRefs": [
+    "3.4"
+  ],
+  "decisions": [
+    "D7"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 1000,
+  "console": []
+}

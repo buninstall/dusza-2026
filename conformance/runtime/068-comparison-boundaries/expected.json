@@ -1,0 +1,22 @@
+{
+  "description": "Az összehasonlító műveletek határértékei.",
+  "specRefs": [
+    "2.2.1"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 16,
+  "console": [
+    "false",
+    "true",
+    "false",
+    "true",
+    "true",
+    "true",
+    "-1",
+    "true"
+  ]
+}

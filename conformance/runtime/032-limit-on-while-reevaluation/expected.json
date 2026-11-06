@@ -1,0 +1,25 @@
+{
+  "description": "A while sorának ismételt kiértékelése az 1001. sor lenne: a limithiba a while sorában keletkezik; 333 negyedfordulat után a robot északra néz.",
+  "specRefs": [
+    "3.4",
+    "2.2.3"
+  ],
+  "decisions": [
+    "D7",
+    "D9",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "INSTRUCTION_COUNT_LIMIT_EXCEEDED",
+    "line": 2
+  },
+  "gold": 0,
+  "steps": 1000,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "north"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "description": "2^48 · 31 még belefér, 2^48 · 32 = 2^53 már E_INT_OVERFLOW.",
+  "specRefs": [
+    "2.2.1"
+  ],
+  "decisions": [
+    "D6",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_INT_OVERFLOW",
+    "line": 6
+  },
+  "gold": 0,
+  "steps": 6,
+  "console": [
+    "8725724278030336"
+  ]
+}

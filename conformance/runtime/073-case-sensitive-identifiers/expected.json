@@ -1,0 +1,16 @@
+{
+  "description": "Az arany és az Arany két különböző változó, eltérő típussal is.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 4,
+  "console": [
+    "1",
+    "true"
+  ]
+}

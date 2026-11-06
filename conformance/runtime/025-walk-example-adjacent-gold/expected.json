@@ -1,0 +1,47 @@
+{
+  "description": "A bányászó program két egymás melletti aranyat bányász ki, majd a fal előtt megáll.",
+  "specRefs": [
+    "2",
+    "2.2.1",
+    "2.2.3"
+  ],
+  "decisions": [
+    "D7",
+    "D11"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 2,
+  "steps": 28,
+  "console": [
+    "2"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 3,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 4
+    }
+  ]
+}

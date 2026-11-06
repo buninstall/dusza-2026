@@ -1,0 +1,47 @@
+{
+  "description": "A spec 2. fejezetének bányászó programja a spec példatérképén: három lépés keletre a térkép széléig, arany nélkül.",
+  "specRefs": [
+    "1",
+    "2",
+    "2.2.1",
+    "2.2.3",
+    "3.4"
+  ],
+  "decisions": [
+    "D7",
+    "D8",
+    "D11",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 26,
+  "console": [
+    "0"
+  ],
+  "robot": {
+    "row": 2,
+    "col": 14,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 2,
+      "col": 11
+    },
+    {
+      "row": 2,
+      "col": 12
+    },
+    {
+      "row": 2,
+      "col": 13
+    },
+    {
+      "row": 2,
+      "col": 14
+    }
+  ]
+}

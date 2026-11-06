@@ -1,0 +1,18 @@
+{
+  "description": "A vezető nullás literál érvényes: 007 = 7, 0100 = 100, 000 = 0.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D5"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 5,
+  "console": [
+    "107",
+    "0"
+  ]
+}

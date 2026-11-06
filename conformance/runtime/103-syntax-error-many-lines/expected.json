@@ -1,0 +1,38 @@
+{
+  "description": "Több szintaktikai hiba: a futás eredménye mindet tartalmazza.",
+  "specRefs": [
+    "2.1",
+    "3.4"
+  ],
+  "decisions": [
+    "D16",
+    "D17"
+  ],
+  "outcome": {
+    "kind": "syntaxError",
+    "diagnostics": [
+      {
+        "code": "SYN_NUMBER_RANGE",
+        "line": 1
+      },
+      {
+        "code": "SYN_UNKNOWN_COMMAND",
+        "line": 3
+      }
+    ]
+  },
+  "gold": 0,
+  "steps": 0,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ]
+}

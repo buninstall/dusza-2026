@@ -1,0 +1,78 @@
+{
+  "description": "A falba ütköző step eseménye a részleges utat tartalmazza; a fal nem lesz felfedezve.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4",
+    "3.4"
+  ],
+  "decisions": [
+    "D8",
+    "D11",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BEDROCK_HIT",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 2,
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 2
+        },
+        "dir": "east"
+      },
+      "path": [
+        {
+          "row": 0,
+          "col": 1
+        },
+        {
+          "row": 0,
+          "col": 2
+        }
+      ],
+      "discovered": [
+        {
+          "row": 0,
+          "col": 1
+        },
+        {
+          "row": 0,
+          "col": 2
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": null
+    }
+  ]
+}

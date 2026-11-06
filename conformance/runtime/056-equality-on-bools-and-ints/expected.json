@@ -1,0 +1,20 @@
+{
+  "description": "Az = és a <> egészre és logikaira is működik.",
+  "specRefs": [
+    "2.2.1"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 12,
+  "console": [
+    "true",
+    "true",
+    "false",
+    "true",
+    "false",
+    "true"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "description": "Negatív lépésszám: E_BAD_ARG, a robot nem mozdul.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D8",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BAD_ARG",
+    "line": 2
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "description": "true < c: az első operandus nem egész, a hiba a c beolvasása előtt keletkezik.",
+  "specRefs": [
+    "2.2.1",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D10",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BAD_OPERAND",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": []
+}

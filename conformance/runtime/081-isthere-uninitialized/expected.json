@@ -1,0 +1,24 @@
+{
+  "description": "isThere inicializálatlan változóval: E_UNINITIALIZED.",
+  "specRefs": [
+    "2.2.4"
+  ],
+  "decisions": [
+    "D10",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_UNINITIALIZED",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ]
+}

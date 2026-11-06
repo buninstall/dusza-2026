@@ -1,0 +1,21 @@
+{
+  "description": "−(2^53 − 1) még ábrázolható; a kivonás ezen túl E_INT_OVERFLOW.",
+  "specRefs": [
+    "2.2.1"
+  ],
+  "decisions": [
+    "D6",
+    "D12",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_INT_OVERFLOW",
+    "line": 9
+  },
+  "gold": 0,
+  "steps": 9,
+  "console": [
+    "-9007199254740991"
+  ]
+}

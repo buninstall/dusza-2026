@@ -1,0 +1,23 @@
+{
+  "description": "A spec példája: turn by true → E_BAD_ARG.",
+  "specRefs": [
+    "2.2.4"
+  ],
+  "decisions": [
+    "D9",
+    "D10"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BAD_ARG",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "description": "A set eseménye az értékadást, a print eseménye a kiírt szöveget tartalmazza.",
+  "specRefs": [
+    "2.2.1",
+    "2.2.3",
+    "3.4"
+  ],
+  "decisions": [
+    "D12",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 4,
+  "console": [
+    "true",
+    "5"
+  ],
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": {
+        "name": "a",
+        "value": {
+          "kind": "int",
+          "value": 5
+        }
+      }
+    },
+    {
+      "index": 1,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 2,
+      "print": null,
+      "assigned": {
+        "name": "b",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    {
+      "index": 2,
+      "line": 3,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 3,
+      "print": "true",
+      "assigned": null
+    },
+    {
+      "index": 3,
+      "line": 4,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 4,
+      "print": "5",
+      "assigned": null
+    }
+  ]
+}

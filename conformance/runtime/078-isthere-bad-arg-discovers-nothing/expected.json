@@ -1,0 +1,45 @@
+{
+  "description": "Az E_BAD_ARG-ot adó isThere semmit nem fed fel.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D11",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BAD_ARG",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": null
+    }
+  ]
+}

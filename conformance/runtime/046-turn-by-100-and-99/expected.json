@@ -1,0 +1,59 @@
+{
+  "description": "turn by 100 nem változtat (100 mod 4 = 0), turn by 99 három negyedfordulat balra: kelet → dél.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D9",
+    "D20"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "south"
+  },
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 1,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 0,
+          "col": 0
+        },
+        "dir": "south"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 2,
+      "print": null,
+      "assigned": null
+    }
+  ]
+}

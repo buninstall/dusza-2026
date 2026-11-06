@@ -1,0 +1,17 @@
+{
+  "description": "Egy záró újsor nem számít üres sornak.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [
+    "1"
+  ]
+}

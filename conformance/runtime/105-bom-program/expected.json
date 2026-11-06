@@ -1,0 +1,17 @@
+{
+  "description": "BOM-mal kezdődő program: a BOM nem része az első tokennek.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [
+    "7"
+  ]
+}

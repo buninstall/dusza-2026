@@ -1,0 +1,19 @@
+{
+  "description": "c and true inicializálatlan c-vel: E_UNINITIALIZED az első operandusnál.",
+  "specRefs": [
+    "2.2.1",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D10",
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_UNINITIALIZED",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": []
+}

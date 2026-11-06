@@ -1,0 +1,17 @@
+{
+  "description": "Azonos típusú újraértékadás szabályos.",
+  "specRefs": [
+    "2.2.1",
+    "2.2.2"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 6,
+  "console": [
+    "2",
+    "false"
+  ]
+}

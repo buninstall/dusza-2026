@@ -1,0 +1,18 @@
+{
+  "description": "not c inicializálatlan c-vel: E_UNINITIALIZED.",
+  "specRefs": [
+    "2.2.1",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D21"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_UNINITIALIZED",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": []
+}
