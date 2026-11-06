@@ -1,0 +1,18 @@
+{
+  "description": "not után egyetlen simpleval állhat.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EXTRA_TOKEN",
+      "line": 1,
+      "col": 19
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "description": "Az ismeretlen utasítás balrább van, mint a dupla szóköz.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNKNOWN_COMMAND",
+      "line": 1,
+      "col": 1
+    }
+  ]
+}

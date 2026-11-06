@@ -1,0 +1,21 @@
+{
+  "description": "Az első feldolgozott sor a tabos sor utáni: SYN_TOPLEVEL_INDENT.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_TAB",
+      "line": 1
+    },
+    {
+      "code": "SYN_TOPLEVEL_INDENT",
+      "line": 2
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "description": "Egy záró újsor megengedett, kettő már üres sort jelent.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EMPTY_LINE",
+      "line": 2
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "description": "Ha egy sorban \\r és tab is van, a SYN_LONE_CR nyer.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_LONE_CR",
+      "line": 1
+    }
+  ]
+}

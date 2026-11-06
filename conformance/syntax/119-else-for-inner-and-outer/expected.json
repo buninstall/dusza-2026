@@ -1,0 +1,11 @@
+{
+  "description": "Belső és külső if-else egymásban.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

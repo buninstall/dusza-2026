@@ -1,0 +1,3 @@
+if true
+else
+print 1

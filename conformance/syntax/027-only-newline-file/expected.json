@@ -1,0 +1,11 @@
+{
+  "description": "Egyetlen újsorból álló fájl üres program, érvényes.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

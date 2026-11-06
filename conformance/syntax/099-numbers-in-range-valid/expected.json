@@ -1,0 +1,11 @@
+{
+  "description": "0, 100, 0100 és 007 érvényes literál.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D5"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

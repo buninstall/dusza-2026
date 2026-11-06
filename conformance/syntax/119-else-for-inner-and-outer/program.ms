@@ -1,0 +1,7 @@
+if true
+    if false
+        print 1
+    else
+        print 2
+else
+    print 3

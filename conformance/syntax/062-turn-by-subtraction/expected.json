@@ -1,0 +1,19 @@
+{
+  "description": "turn by 0 - 1: a paraméter egyetlen simpleval, a kivonás nem írható ide.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D5",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EXTRA_TOKEN",
+      "line": 1,
+      "col": 11
+    }
+  ]
+}

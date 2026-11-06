@@ -1,0 +1,11 @@
+{
+  "description": "Minden utasításfajta és minden operátor szabályos alakban.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

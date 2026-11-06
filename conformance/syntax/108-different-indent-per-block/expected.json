@@ -1,0 +1,11 @@
+{
+  "description": "Blokkonként eltérő behúzás szabályos.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

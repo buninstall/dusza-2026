@@ -1,0 +1,17 @@
+{
+  "description": "isthere: az isThere kisbetűs alakja sem lehet azonosító.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 1,
+      "col": 5
+    }
+  ]
+}

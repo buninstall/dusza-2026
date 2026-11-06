@@ -1,0 +1,31 @@
+{
+  "description": "Minden hibás sor külön diagnosztikát kap.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_TRAILING_SPACE",
+      "line": 1,
+      "col": 8
+    },
+    {
+      "code": "SYN_MISSING_TOKEN",
+      "line": 2
+    },
+    {
+      "code": "SYN_UNKNOWN_COMMAND",
+      "line": 3,
+      "col": 1
+    },
+    {
+      "code": "SYN_UNEXPECTED_INDENT",
+      "line": 4
+    }
+  ]
+}

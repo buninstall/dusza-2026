@@ -1,0 +1,16 @@
+{
+  "description": "Csak szóközből és tabból álló sor: SYN_TAB, nem SYN_EMPTY_LINE.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_TAB",
+      "line": 2
+    }
+  ]
+}

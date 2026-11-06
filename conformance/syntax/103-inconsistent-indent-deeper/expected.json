@@ -1,0 +1,17 @@
+{
+  "description": "A blokkon belül mélyebb sor: SYN_INCONSISTENT_INDENT.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_INCONSISTENT_INDENT",
+      "line": 3
+    }
+  ]
+}

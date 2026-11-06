@@ -1,0 +1,17 @@
+{
+  "description": "print True: kulcsszó más írásmóddal simpleval helyén.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 1,
+      "col": 7
+    }
+  ]
+}

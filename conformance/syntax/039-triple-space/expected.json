@@ -1,0 +1,18 @@
+{
+  "description": "Három szóköz is egyetlen SYN_DOUBLE_SPACE.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D3",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_DOUBLE_SPACE",
+      "line": 1,
+      "col": 7
+    }
+  ]
+}

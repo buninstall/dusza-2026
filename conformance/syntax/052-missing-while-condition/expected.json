@@ -1,0 +1,18 @@
+{
+  "description": "while feltétel nélkül; a hibás fejléc is blokkot nyit.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_MISSING_TOKEN",
+      "line": 1
+    }
+  ]
+}

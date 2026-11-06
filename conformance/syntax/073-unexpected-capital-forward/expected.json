@@ -1,0 +1,18 @@
+{
+  "description": "step Forward 1: a rögzített kulcsszó kis- és nagybetűérzékeny.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNEXPECTED_TOKEN",
+      "line": 1,
+      "col": 6
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "description": "Az if és az else között más utasítás áll.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_ELSE_WITHOUT_IF",
+      "line": 4
+    }
+  ]
+}

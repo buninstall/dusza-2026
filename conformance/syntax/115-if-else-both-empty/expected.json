@@ -1,0 +1,12 @@
+{
+  "description": "Üres then- és else-blokk.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D1",
+    "D19"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

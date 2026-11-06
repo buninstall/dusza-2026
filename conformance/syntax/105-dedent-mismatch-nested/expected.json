@@ -1,0 +1,17 @@
+{
+  "description": "Visszahúzás két nyitott szint közé.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_DEDENT_MISMATCH",
+      "line": 4
+    }
+  ]
+}

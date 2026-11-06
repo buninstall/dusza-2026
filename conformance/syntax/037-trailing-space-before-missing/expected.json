@@ -1,0 +1,17 @@
+{
+  "description": "print után sorvégi szóköz: a sorvégi szóköz az első tokenszintű hiba.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_TRAILING_SPACE",
+      "line": 1,
+      "col": 6
+    }
+  ]
+}

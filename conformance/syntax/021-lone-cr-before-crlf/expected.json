@@ -1,0 +1,17 @@
+{
+  "description": "A \\r\\r\\n első \\r-je magányos marad a normalizálás után.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D2",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_LONE_CR",
+      "line": 1
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "description": "a+1 betűvel kezdődik, ezért SYN_INVALID_IDENT.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_INVALID_IDENT",
+      "line": 1,
+      "col": 10
+    }
+  ]
+}

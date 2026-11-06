@@ -1,0 +1,17 @@
+{
+  "description": "Az isThere függvény, nem utasítás.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNKNOWN_COMMAND",
+      "line": 1,
+      "col": 1
+    }
+  ]
+}

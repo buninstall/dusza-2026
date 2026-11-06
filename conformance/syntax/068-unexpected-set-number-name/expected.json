@@ -1,0 +1,18 @@
+{
+  "description": "set 5 to 1: a set után nem azonosító áll.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNEXPECTED_TOKEN",
+      "line": 1,
+      "col": 5
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "description": "If nem utasítás, a kulcsszavak kis- és nagybetűérzékenyek.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNKNOWN_COMMAND",
+      "line": 1,
+      "col": 1
+    }
+  ]
+}

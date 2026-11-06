@@ -1,0 +1,18 @@
+{
+  "description": "else x: fölösleges token az else után.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EXTRA_TOKEN",
+      "line": 3,
+      "col": 6
+    }
+  ]
+}

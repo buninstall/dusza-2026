@@ -1,0 +1,18 @@
+{
+  "description": "Több sorvégi szóköz egyetlen SYN_TRAILING_SPACE, nem dupla szóköz.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D3",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_TRAILING_SPACE",
+      "line": 1,
+      "col": 8
+    }
+  ]
+}

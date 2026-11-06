@@ -1,0 +1,18 @@
+{
+  "description": "Soronként csak az első tokenszintű hiba: a dupla szóköz a 101 előtt áll.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_DOUBLE_SPACE",
+      "line": 1,
+      "col": 7
+    }
+  ]
+}

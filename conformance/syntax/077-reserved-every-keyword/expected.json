@@ -1,0 +1,102 @@
+{
+  "description": "Mind a 18 kulcsszó más írásmóddal sem lehet azonosító.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 1,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 2,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 3,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 4,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 5,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 6,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 7,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 8,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 9,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 10,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 11,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 12,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 13,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 14,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 15,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 16,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 17,
+      "col": 5
+    },
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 18,
+      "col": 5
+    }
+  ]
+}

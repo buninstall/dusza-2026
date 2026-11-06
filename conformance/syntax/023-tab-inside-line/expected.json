@@ -1,0 +1,18 @@
+{
+  "description": "Tab a tokenek között: SYN_TAB.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D3",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_TAB",
+      "line": 1,
+      "col": 6
+    }
+  ]
+}

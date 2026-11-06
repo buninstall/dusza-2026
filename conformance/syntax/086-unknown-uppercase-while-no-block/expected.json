@@ -1,0 +1,23 @@
+{
+  "description": "WHILE nem blokkfejléc, ezért a következő behúzott sor váratlan behúzás.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNKNOWN_COMMAND",
+      "line": 1,
+      "col": 1
+    },
+    {
+      "code": "SYN_UNEXPECTED_INDENT",
+      "line": 2
+    }
+  ]
+}

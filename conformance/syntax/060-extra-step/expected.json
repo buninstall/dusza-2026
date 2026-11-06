@@ -1,0 +1,18 @@
+{
+  "description": "step forward 1 1: fölösleges token.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EXTRA_TOKEN",
+      "line": 1,
+      "col": 16
+    }
+  ]
+}

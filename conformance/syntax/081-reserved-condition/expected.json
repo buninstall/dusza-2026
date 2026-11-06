@@ -1,0 +1,18 @@
+{
+  "description": "if NOT: a feltétel kulcsszó-változat; a fejléc blokkot nyit.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 1,
+      "col": 4
+    }
+  ]
+}

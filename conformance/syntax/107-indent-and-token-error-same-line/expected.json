@@ -1,0 +1,22 @@
+{
+  "description": "Egy sorban egy behúzás- és egy tokenszintű hiba is megjelenik.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNEXPECTED_INDENT",
+      "line": 2
+    },
+    {
+      "code": "SYN_DOUBLE_SPACE",
+      "line": 2,
+      "col": 11
+    }
+  ]
+}

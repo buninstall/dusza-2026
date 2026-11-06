@@ -1,0 +1,11 @@
+{
+  "description": "BOM-mal kezdődő, záró újsoros program érvényes.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

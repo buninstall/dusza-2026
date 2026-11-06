@@ -1,0 +1,23 @@
+{
+  "description": "Az árva else x egy sorban két hibát ad: behúzás- és tokenszintűt.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_ELSE_WITHOUT_IF",
+      "line": 1,
+      "col": 1
+    },
+    {
+      "code": "SYN_EXTRA_TOKEN",
+      "line": 1,
+      "col": 6
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Csak BOM-ot tartalmazó fájl üres program.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Az else közvetlenül az üres blokkú if után szabályos.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D1",
+    "D19"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

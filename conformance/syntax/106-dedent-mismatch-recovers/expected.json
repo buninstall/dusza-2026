@@ -1,0 +1,17 @@
+{
+  "description": "A rossz visszahúzás után a következő sor a legfelső szinten szabályos.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_DEDENT_MISMATCH",
+      "line": 3
+    }
+  ]
+}

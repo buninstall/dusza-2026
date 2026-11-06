@@ -1,0 +1,17 @@
+{
+  "description": "1a: számjeggyel kezdődő azonosító érvénytelen token.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_INVALID_TOKEN",
+      "line": 1,
+      "col": 7
+    }
+  ]
+}

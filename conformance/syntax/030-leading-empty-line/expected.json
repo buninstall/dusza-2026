@@ -1,0 +1,16 @@
+{
+  "description": "Üres első sor.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D3"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EMPTY_LINE",
+      "line": 1
+    }
+  ]
+}

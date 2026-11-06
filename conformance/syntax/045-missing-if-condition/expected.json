@@ -1,0 +1,18 @@
+{
+  "description": "if feltétel nélkül; az üres blokk nem hiba.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D1",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_MISSING_TOKEN",
+      "line": 1
+    }
+  ]
+}

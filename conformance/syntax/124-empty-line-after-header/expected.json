@@ -1,0 +1,17 @@
+{
+  "description": "A fejléc utáni üres sor nem zárja le a blokkot.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EMPTY_LINE",
+      "line": 2
+    }
+  ]
+}

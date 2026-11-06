@@ -1,0 +1,17 @@
+{
+  "description": "CRLF-es fájlban az üres sor hiba.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D2",
+    "D3"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EMPTY_LINE",
+      "line": 2
+    }
+  ]
+}

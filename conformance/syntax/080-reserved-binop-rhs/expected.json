@@ -1,0 +1,17 @@
+{
+  "description": "1 + Mine: kulcsszó-változat a jobb operandusban.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_RESERVED_IDENT",
+      "line": 1,
+      "col": 14
+    }
+  ]
+}

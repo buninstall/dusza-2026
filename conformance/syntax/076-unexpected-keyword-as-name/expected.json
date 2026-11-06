@@ -1,0 +1,28 @@
+{
+  "description": "Pontos kulcsszó a set után: SYN_UNEXPECTED_TOKEN.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNEXPECTED_TOKEN",
+      "line": 1,
+      "col": 5
+    },
+    {
+      "code": "SYN_UNEXPECTED_TOKEN",
+      "line": 2,
+      "col": 5
+    },
+    {
+      "code": "SYN_UNEXPECTED_TOKEN",
+      "line": 3,
+      "col": 5
+    }
+  ]
+}

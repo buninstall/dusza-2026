@@ -1,0 +1,11 @@
+{
+  "description": "Négy szint mélyről egyszerre a legfelső szintre.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

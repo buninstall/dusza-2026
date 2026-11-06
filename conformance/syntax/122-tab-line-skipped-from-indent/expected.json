@@ -1,0 +1,17 @@
+{
+  "description": "A tabos sor kimarad a behúzás-elemzésből: a következő sor a while blokkját nyitja.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17",
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_TAB",
+      "line": 2
+    }
+  ]
+}

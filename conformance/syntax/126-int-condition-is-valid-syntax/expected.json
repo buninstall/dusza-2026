@@ -1,0 +1,11 @@
+{
+  "description": "A nem logikai feltétel futásidejű hiba, szintaktikailag helyes.",
+  "specRefs": [
+    "2.2.2"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

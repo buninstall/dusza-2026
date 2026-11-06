@@ -1,0 +1,12 @@
+{
+  "description": "A visszahúzott else a külső if-hez tartozik.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4",
+    "D19"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

@@ -1,0 +1,16 @@
+{
+  "description": "Soronként egy behúzáshiba: a váratlanul behúzott árva else csak SYN_UNEXPECTED_INDENT.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNEXPECTED_INDENT",
+      "line": 2
+    }
+  ]
+}

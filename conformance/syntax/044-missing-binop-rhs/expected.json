@@ -1,0 +1,17 @@
+{
+  "description": "Hiányzik a művelet jobb oldala.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D19"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_MISSING_TOKEN",
+      "line": 1
+    }
+  ]
+}
