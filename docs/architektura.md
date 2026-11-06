@@ -29,7 +29,7 @@ flowchart LR
   end
   subgraph Server["apps/server (Bun)"]
     hono["Hono API"]
-    db[("SQLite<br/>Drizzle")]
+    db[("MySQL<br/>Drizzle + mysql2")]
     rerun["runs: újrafuttatás"]
   end
   api --> editor
@@ -64,7 +64,7 @@ A `minescript-core` tiszta: nincs IO, nincs véletlen, nincs wasm-bindgen, és s
 | `crates/minescript-wasm`      | wasm-bindgen exportok, JSON-kompatibilis szerializálás                                              | rust                          |
 | `crates/minescript-cli`       | `minescript` parancssori eszköz                                                                     | rust                          |
 | `packages/engine`             | `@minescript/engine`: típusos TS-burok a WASM köré, generált típusok                                | rust (kötés), web (használat) |
-| `apps/server`                 | `@minescript/server`: Hono API, Drizzle + bun:sqlite, auth, seed, statikus kiszolgálás              | web                           |
+| `apps/server`                 | `@minescript/server`: Hono API, Drizzle ORM + mysql2 (MySQL), auth, seed, statikus kiszolgálás      | web                           |
 | `apps/web`                    | `@minescript/web`: Vite + React SPA                                                                 | web                           |
 | `conformance`                 | nyelvfüggetlen elvárt viselkedés (runtime, syntax, maps)                                            | testing                       |
 | `tools/reference-interpreter` | független TS-interpreter a differenciális teszteléshez                                              | testing                       |
@@ -72,26 +72,41 @@ A `minescript-core` tiszta: nincs IO, nincs véletlen, nincs wasm-bindgen, és s
 | `scripts`                     | cross-platform Bun-scriptek a `justfile` mögött                                                     | web                           |
 | `docs`                        | dokumentáció (csak a listázott fájlok kerülnek fel)                                                 | közös                         |
 
+## Adattár: MySQL
+
+A szerver közvetlenül egy MySQL-szerverhez kapcsolódik (MySQL 8.0 vagy újabb; fejlesztve és tesztelve 9.7-tel). Helyi adatbázisfájl nincs.
+
+- **Kapcsolat**: `DATABASE_URL` környezeti változó vagy `--database-url` kapcsoló (a kapcsoló az erősebb). Alapértelmezés: `mysql://minescript:minescript@127.0.0.1:3306/minescript`, ez fejlesztői fiók, nem titok. Minta: `.env.example`.
+- **Indulás**: `src/db/url.ts` értelmezi az URL-t, `src/db/client.ts` létrehozza az adatbázist, ha hiányzik és van rá jog (`CREATE DATABASE IF NOT EXISTS … CHARACTER SET utf8mb4`), majd poolt nyit és ellenőrzi a kapcsolatot. Utána migráció, végül seed.
+- **Hibák**: az elérhetetlen szerver, az elutasított belépés és a hiányzó adatbázis magyar üzenetet és teendőt ad (`src/db/errors.ts`): MySQL indítása Homebrew-val vagy `docker compose up -d mysql`-lel, a `DATABASE_URL` beállítása, `just db-setup`.
+- **Kódolás**: `utf8mb4` karakterkészlet és `utf8mb4_0900_ai_ci` kolláció. Ez a MySQL 8+ alapértelmezése: teljes Unicode, kis- és nagybetű-, illetve ékezetfüggetlen összehasonlítás. A `users.username` oszlop kifejezetten ezt a kollációt kapja, így az egyediség adatbázisszinten is betűméret-független.
+- **Séma**: `src/db/schema.ts` (`mysqlTable`): `int` automatikus kulcsok, ezredmásodperces időbélyegek `bigint`-ként, `varchar` a validációs korlátokkal egyező hosszal, `mediumtext` a programforrásoknak, `text` a térképeknek, `char(64)` a SHA-256 hasheknek, `enum` a szerepkörre, láthatóságra és kimenetre.
+- **Migráció**: `drizzle-kit` generálja (`breakpoints: false`, így az SQL komment nélküli). A migrátor dedikált, több utasítást engedő kapcsolaton, `GET_LOCK` alatt futtatja az új fájlokat, és a `__migrations` táblába írja őket. A MySQL a DDL-t azonnal véglegesíti: hibás migráció nem kerül nyilvántartásba, és a hibaüzenet jelzi, hogy részben lefuthatott.
+- **Tranzakciók**: új térkép és első verziója, illetve új verzió és az aktuális mutató egy tranzakcióban; az új verzió sorszámát a térkép sorának zárolása (`SELECT … FOR UPDATE`) védi a párhuzamos mentéstől.
+- **Életciklus**: egy pool (10 kapcsolat); `SIGINT`/`SIGTERM` esetén a szerver leáll, a pool bezárul.
+- **Teszt és e2e**: minden tesztkörnyezet saját `minescript_test_<véletlen>` adatbázist kap a `TEST_DATABASE_URL` szerverén (alapból `mysql://root@127.0.0.1:3306`), és `await using` szabadítja fel. A `--test-mode` friss `minescript_e2e_<pid>_<idő>` adatbázist hoz létre, és leálláskor törli.
+- **Fejlesztői MySQL**: `docker-compose.yml` (`mysql:9.7`, utf8mb4, healthcheck, névvel ellátott kötet, csak a `127.0.0.1:3306`-on), `just db-up` / `just db-down`; helyi szerverhez `just db-setup` hozza létre az adatbázist és a fiókot.
+
 ## Build és release
 
 - `just wasm`: `cargo build -p minescript-wasm --target wasm32-unknown-unknown --release`, majd `wasm-bindgen --target web` a `packages/engine/pkg`-be, végül `wasm-opt -Os`, ha elérhető.
 - `just types`: az ignorált `export_bindings` teszt a ts-rs-sel egy ideiglenes könyvtárba exportál, a `scripts/gen-types.ts` eltávolítja a ts-rs fejléc-kommentjét, átmásolja a `packages/engine/src/generated`-be, barrel `index.ts`-t ír, és Biome-mal formáz.
 - `just build`: wasm, `vite build`, majd a `scripts/gen-static-manifest.ts` a `apps/web/dist` minden fájlját `with { type: "file" }` importtal egy `static-manifest.gen.js`-be gyűjti, a `scripts/gen-migrations.ts` pedig a Drizzle SQL-migrációkat `with { type: "text" }` importtal a `migrations.gen.ts`-be.
-- `just release`: `bun build --compile --minify` három célra (`bun-windows-x64`, `bun-linux-x64`, `bun-darwin-arm64`). A bináris tartalmazza a SPA-t, a `.wasm`-ot és a migrációkat; első indításkor létrehozza az SQLite-adatbázist a bináris mellett, és feltölti a demó-adatokkal.
-- `just smoke`: az aktuális platform binárisát ideiglenes adatbázissal elindítja, és ellenőrzi a health, a HTML, a `.wasm` MIME-típus, az SPA-fallback és a demó-belépés működését.
+- `just release`: `bun build --compile --minify` három célra (`bun-windows-x64`, `bun-linux-x64`, `bun-darwin-arm64`). A bináris tartalmazza a SPA-t, a `.wasm`-ot, a migrációkat és a `mysql2` meghajtót; induláskor a `DATABASE_URL` szerinti MySQL-hez kapcsolódik, szükség esetén létrehozza az adatbázist, migrál, és üres adatbázist feltölt a demó-adatokkal.
+- `just smoke`: az aktuális platform binárisát egy ideiglenes `minescript_smoke_*` MySQL-adatbázissal (a `TEST_DATABASE_URL` szerverén) elindítja, ellenőrzi a health, a HTML, a `.wasm` MIME-típus, az SPA-fallback, a demó-belépés és a `SIGTERM`-re történő leállás működését, végül törli az adatbázist.
 
 ## Generált fájlok és a .gitignore
 
-| Fájl                                                         | Commitolva?             | Indok                                                                                                                                                                                                    |
-| ------------------------------------------------------------ | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/engine/src/generated/*`                            | igen                    | A szerződés a Rustban él; a web és a szerver típusellenőrzése Rust-fordítás nélkül is működjön. A CI ellenőrzi, hogy naprakész (`just types` után `git diff --exit-code`).                               |
-| `apps/server/src/db/migrations.gen.ts`                       | igen                    | Determinisztikusan a commitolt `drizzle/*.sql`-ből készül, csak `db:generate` után változik; friss klónon is típushelyes a szerver.                                                                      |
-| `apps/server/src/static-manifest.gen.js`                     | nem                     | A hashelt buildfájlneveket tartalmazza, minden buildnél más. A szerver csak prod módban, dinamikus importtal tölti be; a típusa a commitolt `static-manifest.gen.d.ts`.                                  |
-| `apps/web/src/routeTree.gen.ts`                              | nem                     | A TanStack Router generátora mindig fix fejléc-kommentet ír bele, ami ütközik a nulla-komment szabállyal. A Vite-plugin fejlesztéskor és buildkor, a `tsr generate` pedig a typecheck előtt állítja elő. |
-| `packages/engine/pkg/`                                       | nem                     | Buildtermék (`just wasm`).                                                                                                                                                                               |
-| `Cargo.lock`, `bun.lock`                                     | igen                    | Reprodukálható build; a `wasm-bindgen-cli` verzióját is a `Cargo.lock` határozza meg.                                                                                                                    |
-| `docs/*`                                                     | csak a listázott fájlok | A `docs/` többi része gépi (AI-memória, promptok), ezért alapból kizárt; a projekt-dokumentumokat egyenként engedjük vissza.                                                                             |
-| `apps/server/data/`, `*.db*`, `release/`, `target/`, `dist/` | nem                     | Futási és buildtermékek.                                                                                                                                                                                 |
+| Fájl                                     | Commitolva?             | Indok                                                                                                                                                                                                    |
+| ---------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/engine/src/generated/*`        | igen                    | A szerződés a Rustban él; a web és a szerver típusellenőrzése Rust-fordítás nélkül is működjön. A CI ellenőrzi, hogy naprakész (`just types` után `git diff --exit-code`).                               |
+| `apps/server/src/db/migrations.gen.ts`   | igen                    | Determinisztikusan a commitolt `drizzle/*.sql`-ből készül, csak `db:generate` után változik; friss klónon is típushelyes a szerver.                                                                      |
+| `apps/server/src/static-manifest.gen.js` | nem                     | A hashelt buildfájlneveket tartalmazza, minden buildnél más. A szerver csak prod módban, dinamikus importtal tölti be; a típusa a commitolt `static-manifest.gen.d.ts`.                                  |
+| `apps/web/src/routeTree.gen.ts`          | nem                     | A TanStack Router generátora mindig fix fejléc-kommentet ír bele, ami ütközik a nulla-komment szabállyal. A Vite-plugin fejlesztéskor és buildkor, a `tsr generate` pedig a typecheck előtt állítja elő. |
+| `packages/engine/pkg/`                   | nem                     | Buildtermék (`just wasm`).                                                                                                                                                                               |
+| `Cargo.lock`, `bun.lock`                 | igen                    | Reprodukálható build; a `wasm-bindgen-cli` verzióját is a `Cargo.lock` határozza meg.                                                                                                                    |
+| `docs/*`                                 | csak a listázott fájlok | A `docs/` többi része gépi (AI-memória, promptok), ezért alapból kizárt; a projekt-dokumentumokat egyenként engedjük vissza.                                                                             |
+| `.env`, `release/`, `target/`, `dist/`   | nem                     | Helyi beállítás (a minta a commitolt `.env.example`), futási és buildtermékek.                                                                                                                           |
 
 ## Biztonság
 
@@ -101,6 +116,8 @@ A `minescript-core` tiszta: nincs IO, nincs véletlen, nincs wasm-bindgen, és s
 - Bejelentkezési korlát: 5 kísérlet / perc / (IP + felhasználónév), memóriában.
 - CSP: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'`. A `'unsafe-inline'` a stílusokhoz kell, mert a CodeMirror futásidőben injektál stílust.
 - Privát térkép és a ranglistája csak a tulajdonosnak és az adminnak látszik (máshoz 404).
+- Adatbázis: minden lekérdezés paraméterezett (Drizzle, `?` helyőrzők). Az egyetlen beillesztett azonosító az adatbázisnév, amelyet a `^[A-Za-z0-9_]{1,64}$` minta validál, és backtick közé kerül. A pool nem enged több utasítást egy lekérdezésben, csak a migrátor saját kapcsolata.
+- A kapcsolati adatok környezeti változóból vagy kapcsolóból jönnek; a konzolra és a hibaüzenetekbe a jelszó nem kerül ki (`felhasználó@gép:port/adatbázis`).
 
 ## Verziók és eltérések
 
@@ -121,6 +138,8 @@ A függőségek `cargo add`/`bun add` segítségével, a legfrissebb stabil verz
 | Tailwind CSS          | 4.3                           |
 | Hono                  | 4.13                          |
 | Drizzle ORM           | 0.45                          |
+| mysql2                | 3.24                          |
+| MySQL                 | 8.0+ (tesztelve: 9.7)         |
 | zod                   | 4.6                           |
 | Vitest                | 5.1                           |
 | Playwright            | 1.65                          |
@@ -133,3 +152,6 @@ Eltérések a kiinduló tervtől:
 - **Biome a11y**: a csoport minden szabálya be van kapcsolva, kivéve a `noNoninteractiveElementToInteractiveRole`-t: a térképrács a WAI-ARIA APG „data grid” mintáját követi (`<table role="grid">`), amit ez a szabály tévesen tilt.
 - **Leaderboard `?version=`**: a paraméter a térképverzió azonosítója (`map_versions.id`), nem a sorszáma.
 - **e2e**: a `just e2e` függ a `just build`-től, mert a teszt a buildelt webet a szerver prod módjával szolgálja ki.
+- **MySQL-meghajtó**: a Drizzle 0.45 `bun-sql` adaptere csak PostgreSQL-t kezel (`PgDatabase`), MySQL-hez nincs Bun-natív Drizzle-adapter. Ezért a `drizzle-orm/mysql2` és a `mysql2` került be: kiforrott, poolt és tranzakciót ad, tisztán JavaScript, így a `bun build --compile` a binárisba csomagolja.
+- **`.returning()`**: MySQL-ben nincs `RETURNING`, ezért a beszúrás `$returningId()`-t használ, és utána olvas; a módosítások után újraolvasás következik.
+- **Bejelentkezés**: a `username` oszlop kollációja miatt a belépésnél is kis- és nagybetűtől független a név, összhangban az egyediséggel.

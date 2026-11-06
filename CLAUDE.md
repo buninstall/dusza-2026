@@ -55,7 +55,9 @@ MineScript: webes játék, amelyben egy saját nyelven (MineScript) írt program
 | Parancs            | Mit csinál                                                                                                                    |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | `just setup`       | eszközök (wasm32 target, a lockfájl szerinti wasm-bindgen-cli), `bun install`, wasm, típusok; `--with-e2e`, `--with-wasm-opt` |
-| `just dev`         | szerver (8080) + Vite (5173), a `crates/` változására wasm- és típus-újraépítés                                               |
+| `just db-up`       | MySQL Dockerben (`docker compose`); `just db-down` leállítja                                                                  |
+| `just db-setup`    | fejlesztői adatbázis és fiók egy helyi MySQL-szerveren (`--admin-url`, `--check`)                                             |
+| `just dev`         | szerver (8080, MySQL: `DATABASE_URL`) + Vite (5173), a `crates/` változására wasm- és típus-újraépítés                        |
 | `just wasm`        | a WASM-motor fordítása a `packages/engine/pkg`-be                                                                             |
 | `just types`       | ts-rs típusok újragenerálása a `packages/engine/src/generated`-be                                                             |
 | `just test`        | `cargo test --workspace` és minden workspace `test` scriptje                                                                  |
@@ -63,9 +65,9 @@ MineScript: webes játék, amelyben egy saját nyelven (MineScript) írt program
 | `just lint`        | rustfmt, clippy `-D warnings`, Biome, typecheck                                                                               |
 | `just fmt`         | rustfmt és Biome javítás                                                                                                      |
 | `just build`       | wasm, web build, statikus manifest, migrációk                                                                                 |
-| `just e2e`         | build, majd Playwright (chromium)                                                                                             |
+| `just e2e`         | build, majd Playwright (chromium) egy ideiglenes MySQL-adatbázissal                                                           |
 | `just release`     | három bináris a `release/`-be                                                                                                 |
-| `just smoke`       | a saját platform binárisának füstpróbája                                                                                      |
+| `just smoke`       | a saját platform binárisának füstpróbája egy ideiglenes MySQL-adatbázissal                                                    |
 | `just ci`          | lint, test, build, e2e                                                                                                        |
 
 ## 8. Hol mi van
@@ -75,7 +77,7 @@ MineScript: webes játék, amelyben egy saját nyelven (MineScript) írt program
 | `crates/minescript-core`                          | a nyelv: normalizálás, span, diagnosztikák, szintaxis, formázó, linter, IDE, térkép, futtató |
 | `crates/minescript-wasm`, `crates/minescript-cli` | WASM-kötés, `minescript` CLI                                                                 |
 | `packages/engine`                                 | `@minescript/engine`: TS-burok és generált típusok                                           |
-| `apps/server`                                     | Hono API, Drizzle + bun:sqlite, auth, seed, statikus kiszolgálás                             |
+| `apps/server`                                     | Hono API, Drizzle ORM + mysql2 (MySQL), auth, seed, statikus kiszolgálás                     |
 | `apps/web`                                        | React SPA: szerkesztő, térkép, lejátszó, ranglista                                           |
 | `conformance/`                                    | elvárt viselkedés (runtime, syntax, maps)                                                    |
 | `tools/reference-interpreter`, `e2e/`             | referencia-interpreter, Playwright + axe                                                     |
