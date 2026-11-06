@@ -1,8 +1,14 @@
 .data-table {
+  position: relative;
   overflow-x: auto;
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
+}
+
+.data-table:focus-visible {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: var(--focus-offset);
 }
 
 .data-table-grid {
@@ -39,6 +45,10 @@
 .data-table-grid .data-table-number {
   font: var(--type-mono);
   text-align: right;
+}
+
+.data-table-grid thead th.data-table-number {
+  font: var(--type-micro);
 }
 
 .data-table-grid th.number,

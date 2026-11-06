@@ -133,7 +133,7 @@ describe("ranglista", () => {
     const { user, router } = renderApp("/leaderboard/2");
     await user.click(await screen.findByRole("button", { name: /Verzió/ }));
     await user.click(screen.getByRole("option", { name: "1. verzió" }));
-    expect(await screen.findByText(/még senki nem futtatott/)).toBeTruthy();
+    expect(await screen.findByText("Ezen a verzión még nincs futás.")).toBeTruthy();
     expect(router.state.location.search).toEqual({ version: 21 });
   });
 });

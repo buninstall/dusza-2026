@@ -1,8 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { LeaderboardPage } from "../../leaderboard/LeaderboardPage.tsx";
+import { orNotFound, routeId } from "../../lib/route-ids.ts";
+import { leaderboardQuery } from "../../maps/queries.ts";
 
-const searchSchema = z.object({ version: z.coerce.number().int().positive().optional() });
+const searchSchema = z.object({
+  version: z.coerce.number().int().positive().optional().catch(undefined),
+});
 
 function LeaderboardRoute() {
   const { mapId } = Route.useParams();
@@ -21,5 +25,10 @@ function LeaderboardRoute() {
 
 export const Route = createFileRoute("/_app/leaderboard/$mapId")({
   validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({ version: search.version }),
+  loader: ({ context, params, deps }) =>
+    orNotFound(
+      context.queryClient.ensureQueryData(leaderboardQuery(routeId(params.mapId), deps.version)),
+    ),
   component: LeaderboardRoute,
 });

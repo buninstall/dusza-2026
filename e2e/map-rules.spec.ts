@@ -221,9 +221,7 @@ test("futással rendelkező térkép módosítása új verziót hoz létre, a ra
   await expect(page.getByRole("gridcell", { name: "1. sor, 8. oszlop: fal" })).toBeAttached();
   await page.getByRole("link", { name: "Ranglista" }).click();
   await expect(page.getByRole("heading", { level: 1, name: `Ranglista – ${title}` })).toBeVisible();
-  await expect(
-    page.getByText("Ezen a verzión még senki nem futtatott programot. Legyél te az első!"),
-  ).toBeVisible();
+  await expect(page.getByText("Ezen a verzión még nincs futás.")).toBeVisible();
   await page.getByRole("button", { name: /Verzió/ }).click();
   await page.getByRole("option", { name: "1. verzió", exact: true }).click();
   const table = page.getByRole("table", { name: `Ranglista: ${title}, 1. verzió` });

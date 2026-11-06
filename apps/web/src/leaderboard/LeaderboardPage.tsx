@@ -1,17 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { clsx } from "clsx";
-import type { CSSProperties } from "react";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
-import "../components/DataTable.css";
 import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Select } from "../components/ui/Select.tsx";
-import { formatTime, hu } from "../i18n/hu.ts";
+import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
-import { type Leaderboard, leaderboardQuery } from "../maps/queries.ts";
+import { type Leaderboard, leaderboardQuery, mapQuery } from "../maps/queries.ts";
+import { MapPreview } from "../mine/MapPreview.tsx";
+import { mapRows } from "../mine/map-preview.ts";
 import "./LeaderboardPage.css";
+import { ownEntry, ScoreBoard } from "./ScoreBoard.tsx";
 
 type LeaderboardPageProps = {
   mapId: number;
@@ -20,73 +20,64 @@ type LeaderboardPageProps = {
   onVersionChange: (versionId: number) => void;
 };
 
-const PODIUM = 3;
+function versionOf(data: Leaderboard, versionId: number): number {
+  return data.versions.find((item) => item.id === versionId)?.version ?? 1;
+}
 
-type Entry = Leaderboard["entries"][number];
+function mapFacts(content: string, version: number): string {
+  const rows = mapRows(content);
+  const cols = Math.max(0, ...rows.map((row) => row.length));
+  const gold = rows.join("").split("@").length - 1;
+  return `${hu.maps.size(rows.length, cols)} · ${hu.leaderboard.goldCount(gold)} · ${hu.maps.version(version)}`;
+}
 
-function GoldBar({ gold, best }: { gold: number; best: number }) {
-  const share = { "--share": best > 0 ? gold / best : 0 } as CSSProperties;
+function SideColumn({
+  mapId,
+  data,
+  user,
+}: {
+  mapId: number;
+  data: Leaderboard;
+  user: SessionUser;
+}) {
+  const { data: detail } = useQuery(mapQuery(mapId));
+  const isOld = data.versionId !== data.currentVersionId;
+  const version = versionOf(data, data.versionId);
+  const mine = ownEntry(data.entries, user);
   return (
-    <span className="lb-gold-cell">
-      <span className="lb-gold-bar" style={share} aria-hidden="true" />
-      <span className="data-table-number">{gold}</span>
-    </span>
+    <aside className="lb-side" aria-label={hu.leaderboard.sideLabel}>
+      {isOld ? (
+        <p className="lb-old-plate">{hu.leaderboard.olderVersion(version)}</p>
+      ) : detail ? (
+        <>
+          <MapPreview content={detail.version.content} box={224} className="lb-preview" />
+          <p className="lb-facts mono">{mapFacts(detail.version.content, version)}</p>
+        </>
+      ) : null}
+      <section className="lb-side-block">
+        <h2 className="label">{hu.leaderboard.yourBest}</h2>
+        {mine ? (
+          <p>
+            <strong className="lb-best-rank">{hu.leaderboard.rankOf(mine.rank)}</strong>
+            <span className="mono">{hu.leaderboard.summary(mine.gold, mine.steps)}</span>
+          </p>
+        ) : (
+          <p className="lb-muted">{hu.leaderboard.noOwnRun}</p>
+        )}
+      </section>
+      <section className="lb-side-block">
+        <h2 className="label">{hu.leaderboard.ruleHeading}</h2>
+        <p className="lb-muted">{hu.leaderboard.rule}</p>
+      </section>
+    </aside>
   );
 }
 
-function EntryRow({ entry, best, isMe }: { entry: Entry; best: number; isMe: boolean }) {
+function PlayLink({ mapId }: { mapId: number }) {
   return (
-    <tr className={clsx(isMe && "lb-me")} data-podium={entry.rank <= PODIUM}>
-      <td className="lb-rank">
-        <span className="lb-rank-plate">{entry.rank}.</span>
-      </td>
-      <th scope="row" className="lb-player">
-        {entry.username}
-        {isMe ? <span className="data-table-tag">{hu.leaderboard.you}</span> : null}
-      </th>
-      <td>
-        <GoldBar gold={entry.gold} best={best} />
-      </td>
-      <td className="data-table-number">{entry.steps}</td>
-      <td className="data-table-muted">
-        {entry.outcomeKind === "ok" ? hu.leaderboard.outcomeOk : hu.leaderboard.outcomeError}
-      </td>
-      <td className="data-table-muted">{formatTime(entry.createdAt)}</td>
-    </tr>
-  );
-}
-
-function Board({ data, user }: { data: Leaderboard; user: SessionUser }) {
-  const version = data.versions.find((item) => item.id === data.versionId)?.version ?? 1;
-  if (data.entries.length === 0) {
-    return <Notice tone="info" title={hu.leaderboard.empty} />;
-  }
-  const best = data.entries[0]?.gold ?? 0;
-  return (
-    <div className="data-table">
-      <table className="data-table-grid">
-        <caption className="visually-hidden">
-          {hu.leaderboard.tableLabel(data.title, version)}
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">{hu.leaderboard.rank}</th>
-            <th scope="col">{hu.leaderboard.player}</th>
-            <th scope="col">{hu.leaderboard.gold}</th>
-            <th scope="col" className="data-table-number">
-              {hu.leaderboard.steps}
-            </th>
-            <th scope="col">{hu.leaderboard.outcome}</th>
-            <th scope="col">{hu.leaderboard.when}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.entries.map((entry) => (
-            <EntryRow key={entry.runId} entry={entry} best={best} isMe={entry.userId === user.id} />
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Link to="/play/$mapId" params={{ mapId: String(mapId) }} variant="primary" icon="play">
+      {hu.leaderboard.play}
+    </Link>
   );
 }
 
@@ -108,6 +99,11 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
         detail={data?.title}
         headingPrefix={hu.leaderboard.headingPrefix}
         documentTitle={data ? `${hu.signs.leaderboard} – ${data.title}` : hu.signs.leaderboard}
+        lead={
+          <Link to="/maps" variant="ghost" size="sm" icon="arrowLeft">
+            {hu.leaderboard.back}
+          </Link>
+        }
         actions={
           <>
             {data && versionOptions.length > 1 ? (
@@ -118,16 +114,32 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
                 onChange={(next) => onVersionChange(Number(next))}
               />
             ) : null}
-            <Link to="/play/$mapId" params={{ mapId: String(mapId) }} variant="primary" icon="play">
-              {hu.leaderboard.play}
-            </Link>
+            <PlayLink mapId={mapId} />
           </>
         }
       />
       {error ? (
         <Notice tone="error" title={errorMessage(error, hu.app.unexpected)} live="alert" />
       ) : null}
-      {data ? <Board data={data} user={user} /> : null}
+      {data ? (
+        <div className="lb-layout">
+          <SideColumn mapId={mapId} data={data} user={user} />
+          <div className="lb-main">
+            {data.versionId === data.currentVersionId ? null : (
+              <Notice
+                tone="info"
+                title={hu.leaderboard.oldVersionNotice(versionOf(data, data.versionId))}
+              />
+            )}
+            <ScoreBoard
+              data={data}
+              version={versionOf(data, data.versionId)}
+              user={user}
+              playAction={<PlayLink mapId={mapId} />}
+            />
+          </div>
+        </div>
+      ) : null}
       {!data && !error ? <Loading /> : null}
     </div>
   );

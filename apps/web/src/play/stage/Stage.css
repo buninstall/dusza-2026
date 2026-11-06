@@ -66,10 +66,6 @@
   flex: 1 1 15rem;
 }
 
-.stage-bezel .plate-actions {
-  flex: none;
-}
-
 .stage-bezel .plate-meta {
   display: flex;
   flex-wrap: wrap;
@@ -77,7 +73,10 @@
 }
 
 .stage-bezel .plate-actions {
+  flex: 0 1 auto;
+  flex-wrap: wrap;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .hud {
