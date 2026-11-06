@@ -15,6 +15,15 @@ types:
 dev:
     bun scripts/dev.ts
 
+db-up:
+    docker compose up -d --wait mysql
+
+db-down:
+    docker compose down
+
+db-setup *flags:
+    bun scripts/db-setup.ts {{flags}}
+
 test:
     cargo test --workspace
     bun run --filter '*' test
