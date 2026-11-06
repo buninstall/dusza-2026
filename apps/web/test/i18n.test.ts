@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { hu } from "../src/i18n/hu.ts";
+import { articleFor, hu } from "../src/i18n/hu.ts";
 
 type Builder = (...args: unknown[]) => unknown;
 
@@ -32,5 +32,23 @@ describe("magyar szövegek", () => {
     expect(typeof text).toBe("string");
     expect(String(text).trim().length).toBeGreaterThan(0);
     expect(String(text)).not.toMatch(/undefined|NaN|\[object/);
+  });
+});
+
+describe("articleFor", () => {
+  test.each([
+    [1, "az"],
+    [2, "a"],
+    [5, "az"],
+    [10, "a"],
+    [11, "a"],
+    [50, "az"],
+    [100, "a"],
+    [500, "az"],
+    [1000, "az"],
+    [1999, "az"],
+    [2000, "a"],
+  ])("%i előtt %s", (value, article) => {
+    expect(articleFor(value)).toBe(article);
   });
 });

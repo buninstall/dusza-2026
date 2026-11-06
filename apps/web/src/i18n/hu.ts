@@ -106,6 +106,13 @@ export const dirNames: Record<Dir, string> = {
 
 const lineRef = (line: number) => `${line}. sor`;
 
+export function articleFor(value: number): "a" | "az" {
+  const digits = String(Math.abs(Math.trunc(value)));
+  const startsWithVowel =
+    digits.startsWith("5") || (digits.startsWith("1") && digits.length % 3 === 1);
+  return startsWithVowel ? "az" : "a";
+}
+
 export const hu = {
   app: {
     name: "MineScript",
@@ -370,6 +377,8 @@ export const hu = {
     formatted: "A program formázva.",
     formatFailed: "A formázás csak szintaktikailag helyes programon végezhető el.",
     imported: (name: string) => `A(z) ${name} program betöltve.`,
+    importHasErrors: (count: number, line: number) =>
+      `A betöltött program ${count} szintaktikai hibát tartalmaz, az első ${articleFor(line)} ${lineRef(line)}ban. Futtatás előtt javítsd ki: a hibás sorok a szerkesztőben és a Hibalistában láthatók.`,
     importEncoding: "A fájl nem érvényes UTF-8 szöveg, ezért nem töltöttük be.",
     importNul: "A fájl NUL karaktert tartalmaz, ezért nem programfájl.",
     importTooLong: (limit: string) =>

@@ -4,6 +4,7 @@ import { toast } from "../../components/ui/Toast.tsx";
 import type { RuntimeMark } from "../../editor/exec-line.ts";
 import type { LintReport } from "../../editor/lint.ts";
 import { type EditorHandle, MineScriptEditor } from "../../editor/MineScriptEditor.tsx";
+import { useEngine } from "../../engine/useEngine.ts";
 import { formatCount, hu } from "../../i18n/hu.ts";
 import { downloadText, safeFilename } from "../../lib/files.ts";
 import { usePlayUi } from "../play-ui-store.ts";
@@ -48,6 +49,17 @@ export function ProgramSheet(props: ProgramSheetProps) {
   const lint = useSheetDiagnostics();
   const [announcement, setAnnouncement] = useState("");
   const ui = usePlayUi();
+  const engine = useEngine();
+
+  const reportImportErrors = (source: string) => {
+    const errors = engine
+      .analyze(source)
+      .diagnostics.filter((diagnostic) => diagnostic.severity === "error");
+    const first = errors[0];
+    if (first) {
+      toast.error(hu.play.importHasErrors(errors.length, first.span.line));
+    }
+  };
 
   const importFile = async (file: File) => {
     const decoded = decodeProgramFile(await file.arrayBuffer());
@@ -57,6 +69,7 @@ export function ProgramSheet(props: ProgramSheetProps) {
     }
     onDraftChange({ source: decoded.text, linked: null });
     toast.success(hu.play.imported(file.name));
+    reportImportErrors(decoded.text);
   };
 
   const insert = (block: Block) => {

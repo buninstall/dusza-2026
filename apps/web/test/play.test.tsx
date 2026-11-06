@@ -231,6 +231,11 @@ describe("program kezelése", () => {
     };
     choose(new File(["step  forward 1\r\n"], "hibas.ms"));
     expect(await screen.findByText("A(z) hibas.ms program betöltve.")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        /A betöltött program 1 szintaktikai hibát tartalmaz, az első az 1\. sorban\./,
+      ),
+    ).toBeTruthy();
     await waitFor(() => expect(editorText()).toBe("step  forward 1\n"));
     choose(new File(["print 1\u0000"], "bin.ms"));
     expect(await screen.findByText(/NUL karaktert tartalmaz/)).toBeTruthy();
