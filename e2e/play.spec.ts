@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import {
   editor,
   importProgramFile,
@@ -89,13 +89,18 @@ test("programfájl importja: a hibás program is betöltődik, a bináris nem", 
   await expect(editor(page)).toContainText("print  arany");
 });
 
+async function recordedRunCount(page: Page, mapTitle: string): Promise<number> {
+  const response = await page.request.get("/api/me/runs");
+  const body = (await response.json()) as { runs: { mapTitle: string }[] };
+  return body.runs.filter((run) => run.mapTitle === mapTitle).length;
+}
+
 test("a leállított futás nem kerül a ranglistára", async ({ page }) => {
   await openPlay(page, "5. Kígyó");
+  const before = await recordedRunCount(page, "5. Kígyó");
   await replaceProgram(page, LONG_PROGRAM);
   await runProgram(page);
   await page.getByRole("button", { name: "Leállítás" }).click();
   await expect(page.getByText("A leállított futás nem kerül a ranglistára.").first()).toBeVisible();
-  const runs = await page.request.get("/api/me/runs");
-  const body = (await runs.json()) as { runs: { mapTitle: string }[] };
-  expect(body.runs.filter((run) => run.mapTitle === "5. Kígyó")).toHaveLength(0);
+  expect(await recordedRunCount(page, "5. Kígyó")).toBe(before);
 });
