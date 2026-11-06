@@ -8,6 +8,7 @@ import { migrate } from "./db/migrate.ts";
 import { describeTarget } from "./db/url.ts";
 import { loadEngine } from "./engine.ts";
 import type { Deps } from "./env.ts";
+import { behindProxy } from "./lib/request.ts";
 import { DEMO_ACCOUNTS, type SeedReport, seedDemo } from "./seed/index.ts";
 import { loadStaticHandler } from "./static.ts";
 
@@ -93,7 +94,9 @@ async function start(config: ServerConfig, database: Database) {
     deps,
     config.serveStatic ? { staticHandler: await loadStaticHandler() } : {},
   );
-  return serve(config, (request, bunServer) => app.fetch(request, bunServer));
+  return serve(config, (request, bunServer) =>
+    app.fetch(request, config.trustProxy ? behindProxy(bunServer) : bunServer),
+  );
 }
 
 async function main(): Promise<void> {

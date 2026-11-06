@@ -1,5 +1,20 @@
 import type { Context } from "hono";
-import type { AppEnv } from "../env.ts";
+import type { AppEnv, ConnectionInfo } from "../env.ts";
+
+export function forwardedClient(request: Request): string | null {
+  const header = request.headers.get("x-forwarded-for");
+  const nearest = header?.split(",").at(-1)?.trim();
+  return nearest ? nearest : null;
+}
+
+export function behindProxy(direct: ConnectionInfo): ConnectionInfo {
+  return {
+    requestIP: (request) => {
+      const forwarded = forwardedClient(request);
+      return forwarded ? { address: forwarded } : (direct.requestIP?.(request) ?? null);
+    },
+  };
+}
 
 export function clientAddress(c: Context<AppEnv>): string {
   try {

@@ -21,6 +21,7 @@ export type ServerConfig = {
   serveStatic: boolean;
   compiled: boolean;
   testMode: boolean;
+  trustProxy: boolean;
 };
 
 export type Environment = Readonly<Record<string, string | undefined>>;
@@ -55,11 +56,18 @@ const OPTIONS = {
   "reset-demo": { type: "boolean", default: false },
   static: { type: "boolean", default: false },
   "test-mode": { type: "boolean", default: false },
+  "trust-proxy": { type: "boolean", default: false },
 } as const;
 
 const USAGE =
   "Használható kapcsolók: --port <szám>, --host <cím>, --database-url <mysql://…>, " +
-  "--no-open, --reset-demo, --static, --test-mode.";
+  "--no-open, --reset-demo, --static, --test-mode, --trust-proxy.";
+
+const TRUTHY = new Set(["1", "true", "yes", "on"]);
+
+function isTruthy(value: string | undefined): boolean {
+  return value !== undefined && TRUTHY.has(value.trim().toLowerCase());
+}
 
 function readArguments(argv: string[]) {
   try {
@@ -87,5 +95,6 @@ export function parseConfig(argv: string[], env: Environment = process.env): Ser
     serveStatic: compiled || values.static || testMode,
     compiled,
     testMode,
+    trustProxy: values["trust-proxy"] || isTruthy(env.TRUST_PROXY),
   };
 }
