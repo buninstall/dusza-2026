@@ -1,0 +1,20 @@
+{
+  "description": "Öt negyedfordulat balra kelet felől északra fordít.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D9"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "north"
+  }
+}

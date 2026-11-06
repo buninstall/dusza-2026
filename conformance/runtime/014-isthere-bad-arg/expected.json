@@ -1,0 +1,18 @@
+{
+  "description": "Az isThere paramétere csak 0, 1 vagy 2 lehet.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D10"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BAD_ARG",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": []
+}

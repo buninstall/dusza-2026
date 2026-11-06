@@ -1,0 +1,2 @@
+set arany to isThere 2
+print arany

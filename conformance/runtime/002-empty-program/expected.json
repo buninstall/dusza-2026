@@ -1,0 +1,20 @@
+{
+  "description": "Az üres program érvényes, és 0 lépésben véget ér.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 0,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  }
+}

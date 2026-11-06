@@ -1,0 +1,16 @@
+{
+  "description": "Az else előtt nincs if.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_ELSE_WITHOUT_IF",
+      "line": 1
+    }
+  ]
+}

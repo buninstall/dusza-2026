@@ -1,0 +1,17 @@
+{
+  "description": "A változó típusa az első értékadáskor rögzül.",
+  "specRefs": [
+    "2.2.1",
+    "2.2.2",
+    "2.2.4"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_TYPE_MISMATCH",
+    "line": 2
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": []
+}

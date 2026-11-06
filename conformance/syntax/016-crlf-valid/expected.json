@@ -1,0 +1,11 @@
+{
+  "description": "A CRLF sorvég érvényes.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

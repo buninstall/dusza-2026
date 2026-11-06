@@ -1,0 +1,14 @@
+{
+  "description": "Az azonosító csak betűt és számjegyet tartalmazhat.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_INVALID_IDENT",
+      "line": 1
+    }
+  ]
+}

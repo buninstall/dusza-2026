@@ -1,0 +1,11 @@
+{
+  "description": "Az üres blokk szabályos.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D1"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

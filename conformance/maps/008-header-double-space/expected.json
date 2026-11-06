@@ -1,0 +1,17 @@
+{
+  "description": "A fejlécben pontosan egy szóköz áll.",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_HEADER",
+      "line": 1
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "description": "Üres sor a program közepén.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D2",
+    "D3"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_EMPTY_LINE",
+      "line": 2
+    }
+  ]
+}

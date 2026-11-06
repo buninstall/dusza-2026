@@ -1,0 +1,24 @@
+{
+  "description": "Minden sor ellenőrzésre kerül, nem áll meg az első hibánál.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D17"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_DOUBLE_SPACE",
+      "line": 1
+    },
+    {
+      "code": "SYN_UNKNOWN_COMMAND",
+      "line": 2
+    },
+    {
+      "code": "SYN_NUMBER_RANGE",
+      "line": 3
+    }
+  ]
+}

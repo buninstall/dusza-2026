@@ -1,0 +1,15 @@
+{
+  "description": "A kulcsszavak kis- és nagybetűérzékenyek.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNKNOWN_COMMAND",
+      "line": 1
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "description": "A tokeneket szóköz választja el.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D3",
+    "D5"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_INVALID_TOKEN",
+      "line": 1
+    }
+  ]
+}

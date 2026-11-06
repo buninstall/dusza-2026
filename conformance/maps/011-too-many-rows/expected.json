@@ -1,0 +1,16 @@
+{
+  "description": "Több sor, mint a fejlécben.",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_ROW_COUNT"
+    }
+  ]
+}

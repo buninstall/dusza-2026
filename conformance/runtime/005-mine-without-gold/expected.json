@@ -1,0 +1,21 @@
+{
+  "description": "Bányászás arany nélküli mezőn.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_NO_GOLD",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "east"
+  }
+}

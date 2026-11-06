@@ -1,0 +1,21 @@
+{
+  "description": "Egy lépés az aranyra, majd bányászás.",
+  "specRefs": [
+    "2.2.3",
+    "3.4"
+  ],
+  "decisions": [
+    "D8"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 1,
+  "steps": 2,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 1,
+    "dir": "east"
+  }
+}

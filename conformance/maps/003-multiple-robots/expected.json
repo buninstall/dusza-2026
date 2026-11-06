@@ -1,0 +1,17 @@
+{
+  "description": "Két robot.",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_MULTIPLE_ROBOTS",
+      "line": 2
+    }
+  ]
+}

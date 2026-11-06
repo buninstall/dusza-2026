@@ -1,0 +1,18 @@
+{
+  "description": "A negatív egész decimálisan íródik ki.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D5",
+    "D12"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": [
+    "-5"
+  ]
+}

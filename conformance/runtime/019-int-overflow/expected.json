@@ -1,0 +1,17 @@
+{
+  "description": "10^16 túllépi a ±9 007 199 254 740 991 tartományt.",
+  "specRefs": [
+    "2.2.1"
+  ],
+  "decisions": [
+    "D6"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_INT_OVERFLOW",
+    "line": 4
+  },
+  "gold": 0,
+  "steps": 4,
+  "console": []
+}

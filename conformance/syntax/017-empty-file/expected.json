@@ -1,0 +1,11 @@
+{
+  "description": "Az üres program érvényes.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D2"
+  ],
+  "valid": true,
+  "diagnostics": []
+}

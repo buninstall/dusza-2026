@@ -1,0 +1,17 @@
+{
+  "description": "A while sora minden feltétel-kiértékeléskor számít, az utolsó hamisnál is.",
+  "specRefs": [
+    "3.4"
+  ],
+  "decisions": [
+    "D7"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 13,
+  "console": [
+    "3"
+  ]
+}

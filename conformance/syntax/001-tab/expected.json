@@ -1,0 +1,16 @@
+{
+  "description": "Tab a behúzásban.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D3"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_TAB",
+      "line": 2
+    }
+  ]
+}

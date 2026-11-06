@@ -1,0 +1,18 @@
+{
+  "description": "Értékadás előtt olvasott változó.",
+  "specRefs": [
+    "2.2.2",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D10"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_UNINITIALIZED",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": []
+}

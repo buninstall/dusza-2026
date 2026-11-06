@@ -1,0 +1,16 @@
+{
+  "description": "A számliterál legfeljebb 100 lehet.",
+  "specRefs": [
+    "2"
+  ],
+  "decisions": [
+    "D5"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_NUMBER_RANGE",
+      "line": 1
+    }
+  ]
+}

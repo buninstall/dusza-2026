@@ -1,0 +1,15 @@
+{
+  "description": "BOM-mal és CRLF sorvégekkel mentett spec-példa.",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D2",
+    "D15"
+  ],
+  "valid": true,
+  "goldTotal": 2,
+  "reachableGold": 2,
+  "warnings": []
+}

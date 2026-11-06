@@ -1,0 +1,17 @@
+{
+  "description": "Ismeretlen jel.",
+  "specRefs": [
+    "1",
+    "3.2"
+  ],
+  "decisions": [
+    "D15"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_BAD_SYMBOL",
+      "line": 2
+    }
+  ]
+}

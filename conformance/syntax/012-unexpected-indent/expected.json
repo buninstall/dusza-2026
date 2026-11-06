@@ -1,0 +1,16 @@
+{
+  "description": "Behúzás blokkfejléc nélkül.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D4"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNEXPECTED_INDENT",
+      "line": 2
+    }
+  ]
+}

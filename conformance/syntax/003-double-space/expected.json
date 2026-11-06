@@ -1,0 +1,16 @@
+{
+  "description": "Két szóköz a tokenek között.",
+  "specRefs": [
+    "2.1"
+  ],
+  "decisions": [
+    "D3"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_DOUBLE_SPACE",
+      "line": 1
+    }
+  ]
+}

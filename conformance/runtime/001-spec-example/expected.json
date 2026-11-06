@@ -1,0 +1,21 @@
+{
+  "description": "A spec példaprogramja a példatérképen: a robot előtt nincs arany.",
+  "specRefs": [
+    "1",
+    "2.2.3"
+  ],
+  "decisions": [],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": [
+    "false"
+  ],
+  "robot": {
+    "row": 2,
+    "col": 11,
+    "dir": "east"
+  }
+}

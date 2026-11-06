@@ -1,0 +1,17 @@
+{
+  "description": "Az if feltétele simpleval; a hibás fejléc is blokkot nyit, így a 2. sor nem hibás.",
+  "specRefs": [
+    "2",
+    "2.1"
+  ],
+  "decisions": [
+    "D17"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_UNEXPECTED_TOKEN",
+      "line": 1
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "description": "A térképen kívüli mezőt az isThere falnak látja.",
+  "specRefs": [
+    "2.2.3"
+  ],
+  "decisions": [
+    "D11"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 2,
+  "console": [
+    "true"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "north"
+  }
+}

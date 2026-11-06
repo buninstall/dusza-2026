@@ -1,0 +1,23 @@
+{
+  "description": "A második lépés lelépne a térképről.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D8"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BEDROCK_HIT",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "west"
+  }
+}
