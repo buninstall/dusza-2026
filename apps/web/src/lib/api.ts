@@ -1,7 +1,8 @@
 import type { AppType } from "@minescript/server";
 import { hc } from "hono/client";
+import { resilientFetch } from "./resilient-fetch.ts";
 
-export const api = hc<AppType>("/api", { init: { credentials: "include" } });
+export const api = hc<AppType>("/api", { init: { credentials: "include" }, fetch: resilientFetch });
 
 export class ApiError extends Error {
   constructor(

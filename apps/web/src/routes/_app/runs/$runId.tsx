@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Loading } from "../../../app/StatusScreens.tsx";
+import { LoadFailed } from "../../../components/LoadFailed.tsx";
 import { Notice } from "../../../components/Notice.tsx";
 import { useEngine } from "../../../engine/useEngine.ts";
 import { hu } from "../../../i18n/hu.ts";
-import { errorMessage } from "../../../lib/api.ts";
 import { orNotFound, routeId } from "../../../lib/route-ids.ts";
 import { runDetailQuery } from "../../../runs/queries.ts";
 import { ReplayPage } from "../../../runs/ReplayPage.tsx";
@@ -12,9 +12,11 @@ import { ReplayPage } from "../../../runs/ReplayPage.tsx";
 function ReplayRoute() {
   const { runId } = Route.useParams();
   const engine = useEngine();
-  const { data, error } = useQuery(runDetailQuery(Number(runId)));
+  const { data, error, refetch } = useQuery(runDetailQuery(Number(runId)));
   if (error) {
-    return <Notice tone="error" title={errorMessage(error, hu.replay.loadFailed)} live="alert" />;
+    return (
+      <LoadFailed error={error} fallback={hu.replay.loadFailed} onRetry={() => void refetch()} />
+    );
   }
   if (!data) {
     return <Loading />;

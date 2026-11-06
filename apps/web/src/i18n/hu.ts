@@ -124,6 +124,9 @@ export const hu = {
     engineRestarted:
       "A MineScript-motor hibára futott, ezért újraindítottuk. A program nem futott le, a szerkesztő tartalma megmaradt.",
     retry: "Újrapróbálás",
+    serverTrouble: "A szerver most nem válaszol.",
+    serverTroubleBody:
+      "Valószínűleg épp újraindul. Néhány másodpercenként magától újrapróbálom, amint elérhető, folytatódik az oldal.",
     notFoundTitle: "404: nincs ilyen oldal",
     notFoundBody: "A cím elírás lehet, vagy a pályát azóta törölték.",
     backToMaps: "Vissza a pályákhoz",

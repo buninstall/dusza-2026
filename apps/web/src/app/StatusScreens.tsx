@@ -1,10 +1,11 @@
 import { type ErrorComponentProps, useRouter } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useDocumentTitle } from "../components/LocationPlate.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
+import { isServerTrouble, RECOVER_MS } from "../lib/query.ts";
 import { HazardStripe } from "../pixel/HazardStripe.tsx";
 import { LogoMark } from "../pixel/Logo.tsx";
 import { PixelText } from "../pixel/PixelText.tsx";
@@ -131,10 +132,24 @@ export function NotFound() {
 
 export function RouteError({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
+  const isTrouble = isServerTrouble(error);
+  useEffect(() => {
+    if (!isTrouble) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      reset();
+      void router.invalidate();
+    }, RECOVER_MS);
+    return () => window.clearInterval(timer);
+  }, [isTrouble, reset, router]);
   return (
     <SignBoard heading={hu.signs.error} plate={hu.signs.error} isAlert>
       <CaveIn />
-      <p className="status-text">{errorMessage(error, hu.app.unexpected)}</p>
+      <p className="status-text">
+        {isTrouble ? hu.app.serverTrouble : errorMessage(error, hu.app.unexpected)}
+      </p>
+      {isTrouble ? <p className="status-text">{hu.app.serverTroubleBody}</p> : null}
       <Button
         variant="primary"
         icon="rewind"

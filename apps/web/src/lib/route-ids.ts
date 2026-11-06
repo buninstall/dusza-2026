@@ -10,12 +10,15 @@ export function routeId(raw: string): number {
   return Number(raw);
 }
 
-export async function orNotFound<T>(request: Promise<T>): Promise<T> {
+export async function orNotFound<T>(request: Promise<T>): Promise<T | undefined> {
   try {
     return await request;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
       throw notFound();
+    }
+    if (error instanceof ApiError) {
+      return undefined;
     }
     throw error;
   }

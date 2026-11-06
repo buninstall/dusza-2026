@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
+import { LoadFailed } from "../components/LoadFailed.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { hu } from "../i18n/hu.ts";
-import { errorMessage } from "../lib/api.ts";
 import { type Leaderboard, leaderboardQuery, mapQuery } from "../maps/queries.ts";
 import { MapPreview } from "../mine/MapPreview.tsx";
 import { mapRows } from "../mine/map-preview.ts";
@@ -82,7 +82,7 @@ function PlayLink({ mapId }: { mapId: number }) {
 }
 
 export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: LeaderboardPageProps) {
-  const { data, error } = useQuery(leaderboardQuery(mapId, versionId));
+  const { data, error, refetch } = useQuery(leaderboardQuery(mapId, versionId));
   const versionOptions =
     data?.versions.map((item) => ({
       id: String(item.id),
@@ -120,7 +120,7 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
         }
       />
       {error ? (
-        <Notice tone="error" title={errorMessage(error, hu.app.unexpected)} live="alert" />
+        <LoadFailed error={error} fallback={hu.app.unexpected} onRetry={() => void refetch()} />
       ) : null}
       {data ? (
         <div className="lb-layout">
