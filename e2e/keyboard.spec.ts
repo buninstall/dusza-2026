@@ -1,5 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { DEMO, editor, focusedName, tabUntil } from "./helpers.ts";
+import {
+  DEMO,
+  editor,
+  expectFinished,
+  expectFocusVisible,
+  focusedName,
+  leaveEditor,
+  tabUntil,
+} from "./helpers.ts";
 
 test("bejelentkezés, játék és kijelentkezés csak billentyűzettel", async ({ page }) => {
   await page.goto("/login");
@@ -60,4 +68,82 @@ test("a térképszerkesztő billentyűzettel festhető", async ({ page }) => {
   await expect(
     page.getByRole("status").filter({ hasText: "1. sor, 2. oszlop: Arany" }),
   ).toBeAttached();
+});
+
+test("egy teljes recept betöltése és lefuttatása csak billentyűzettel, mindig látható fókusszal", async ({
+  page,
+}) => {
+  const tabTo = async (name: string) => {
+    await tabUntil(page, async () => (await focusedName(page)) === name);
+    await expectFocusVisible(page);
+  };
+
+  await page.goto("/login");
+  await tabUntil(page, async () =>
+    page.getByLabel("Felhasználónév").evaluate((element) => element === document.activeElement),
+  );
+  await expectFocusVisible(page);
+  await page.keyboard.type(DEMO.username);
+  await page.keyboard.press("Tab");
+  await expectFocusVisible(page);
+  await page.keyboard.type(DEMO.password);
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { level: 1, name: "Térképek" })).toBeVisible();
+
+  await tabTo("Játék: 2. Az első kanyar");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/play\/\d+/);
+
+  await tabTo("Programtár");
+  await page.keyboard.press("Enter");
+  const dialog = page.getByRole("dialog", { name: "Mentett programok" });
+  await expect(dialog).toBeVisible();
+  await tabTo("Megnyitás: Recept – 2. Az első kanyar");
+  await page.keyboard.press("Enter");
+  const confirm = dialog.getByRole("button", { name: "Megnyitás", exact: true });
+  await expect(confirm).toBeVisible();
+  await tabUntil(page, async () =>
+    confirm.evaluate((element) => element === document.activeElement),
+  );
+  await expectFocusVisible(page);
+  await page.keyboard.press("Enter");
+  await expect(dialog).toBeHidden();
+  await expect(page.getByText("Megnyitva: Recept – 2. Az első kanyar")).toBeVisible();
+
+  await tabUntil(page, async () =>
+    page
+      .getByRole("slider", { name: "Sebesség" })
+      .evaluate((element) => element === document.activeElement),
+  );
+  await expectFocusVisible(page);
+  await page.keyboard.press("End");
+  await expect(page.getByRole("slider", { name: "Sebesség" })).toHaveValue("30");
+  const run = page.getByRole("button", { name: "Futtatás" });
+  await tabUntil(
+    page,
+    async () => run.evaluate((element) => element === document.activeElement),
+    80,
+    "Shift+Tab",
+  );
+  await expect(run).toBeFocused();
+  await expectFocusVisible(page);
+  await page.keyboard.press("Enter");
+  await expectFinished(page, 2, 5);
+});
+
+test("a játék oldal minden tabulátor-megállóján látható a fókusz", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Felhasználónév").fill(DEMO.username);
+  await page.getByLabel("Jelszó").fill(DEMO.password);
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { level: 1, name: "Térképek" })).toBeVisible();
+  await page.getByRole("link", { name: "Játék: 1. Egyenes folyosó" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/play\/\d+/);
+  const STOPS = 40;
+  for (let press = 0; press < STOPS; press += 1) {
+    await leaveEditor(page);
+    await page.keyboard.press("Tab");
+    await expectFocusVisible(page);
+  }
 });

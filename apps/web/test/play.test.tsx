@@ -91,6 +91,22 @@ describe("futtatás", () => {
     expect(screen.queryByText(/Futás közben a program nem szerkeszthető/)).toBeNull();
   });
 
+  test("a rögzített futás után a térkép adatai frissülnek, így a szerkesztő látja a futást", async () => {
+    seedProgram(PROGRAM);
+    vi.spyOn(realEngine, "run").mockReturnValue(walkTrace);
+    respond(
+      "POST",
+      "/runs",
+      { run: { gold: 1, steps: 5 }, outcome: { kind: "ok" }, console: ["1"] },
+      201,
+    );
+    const { user } = await openPlay();
+    const loads = callsTo("GET", `/maps/${MAP_ID}`).length;
+    await user.click(runButton());
+    expect(await screen.findByText("A szerver rögzítette: 1 arany, 5 lépés.")).toBeTruthy();
+    await waitFor(() => expect(callsTo("GET", `/maps/${MAP_ID}`).length).toBeGreaterThan(loads));
+  });
+
   test("a leállított futás nem kerül beküldésre", async () => {
     seedProgram(PROGRAM);
     vi.spyOn(realEngine, "run").mockReturnValue(walkTrace);

@@ -57,8 +57,8 @@
 
 .slider-thumb {
   top: 50%;
-  width: 16px;
-  height: 24px;
+  width: var(--target-min);
+  height: calc(var(--target-min) + var(--space-1));
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface-raised);
   box-shadow:

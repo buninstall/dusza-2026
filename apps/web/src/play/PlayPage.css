@@ -466,11 +466,14 @@
 .play-program-title {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .play-program-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 

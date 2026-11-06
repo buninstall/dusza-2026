@@ -34,6 +34,7 @@ export function useRunSession({ mapId, mapVersionId, mapText, start }: RunSessio
           runId: id,
           value: { state: "done", gold: response.run.gold, steps: response.run.steps },
         });
+        void queryClient.invalidateQueries({ queryKey: ["map", mapId] });
         void queryClient.invalidateQueries({ queryKey: ["leaderboard", mapId] });
         void queryClient.invalidateQueries({ queryKey: ["my-runs"] });
       } catch (error) {
