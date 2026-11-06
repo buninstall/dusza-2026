@@ -1,6 +1,6 @@
 import { readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { info, paths } from "./lib.ts";
+import { info, paths, runOrFail } from "./lib.ts";
 
 const drizzleDir = join(paths.server, "drizzle");
 const output = join(paths.server, "src", "db", "migrations.gen.ts");
@@ -28,4 +28,5 @@ const source = [
 ].join("\n");
 
 writeFileSync(output, source);
+await runOrFail(["bunx", "biome", "format", "--write", output], { quiet: true });
 info(`${files.length} migráció → apps/server/src/db/migrations.gen.ts`);
