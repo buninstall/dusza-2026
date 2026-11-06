@@ -22,6 +22,8 @@ type NavTarget = "/maps" | "/maps/new" | "/runs" | "/manual" | "/admin";
 
 type NavItem = { to: NavTarget; label: string; icon: IconName; section: RegExp };
 
+const NAV_PEEK_PX = 32;
+
 const ShellContext = createContext(false);
 
 export function useIsInShell(): boolean {
@@ -58,7 +60,7 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
     const list = navRef.current;
     const current = list?.querySelector<HTMLElement>('[data-current="true"]');
     if (list && current && list.scrollWidth > list.clientWidth) {
-      list.scrollTo({ left: current.offsetLeft - list.offsetLeft });
+      list.scrollTo({ left: current.offsetLeft - list.offsetLeft - NAV_PEEK_PX });
     }
   }, [pathname]);
   return (

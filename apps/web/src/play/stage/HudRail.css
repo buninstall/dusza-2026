@@ -299,3 +299,14 @@
   display: block;
   min-width: 0;
 }
+
+.stage[data-layout="panes"] .hud-compass {
+  padding-block: var(--space-1);
+}
+
+.stage[data-layout="panes"] .hud-compass-text {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
+}
