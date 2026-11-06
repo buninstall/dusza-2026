@@ -43,39 +43,51 @@ export type AnalysisSummary = {
   symbols: SymbolInfo[];
 };
 
-function positions(data: Float64Array, at: number): [Pos[], number] {
-  const count = data[at] ?? 0;
-  const cells: Pos[] = new Array(count);
-  let cursor = at + 1;
-  for (let item = 0; item < count; item++) {
-    cells[item] = { row: data[cursor] ?? 0, col: data[cursor + 1] ?? 0 };
-    cursor += 2;
+class Reader {
+  at = 0;
+
+  constructor(private readonly data: Float64Array) {}
+
+  get done(): boolean {
+    return this.at >= this.data.length;
   }
-  return [cells, cursor];
+
+  next(): number {
+    const value = this.data[this.at] ?? 0;
+    this.at += 1;
+    return value;
+  }
+
+  pos(): Pos {
+    const row = this.next();
+    return { row, col: this.next() };
+  }
+
+  positions(): Pos[] {
+    const count = this.next();
+    const cells: Pos[] = [];
+    for (let item = 0; item < count; item++) {
+      cells.push(this.pos());
+    }
+    return cells;
+  }
 }
 
 export function decodeRun(summary: RunSummary, data: Float64Array): RunResult {
   const events: Event[] = [];
+  const reader = new Reader(data);
   let printed = 0;
-  let at = 0;
-  while (at < data.length) {
-    const index = data[at] ?? 0;
-    const line = data[at + 1] ?? 0;
-    const robot: RobotState = {
-      pos: { row: data[at + 2] ?? 0, col: data[at + 3] ?? 0 },
-      dir: DIRS[data[at + 4] ?? 0] ?? "east",
-    };
-    const gold = data[at + 5] ?? 0;
-    const steps = data[at + 6] ?? 0;
-    const flags = data[at + 7] ?? 0;
-    const [path, afterPath] = positions(data, at + 8);
-    const [discovered, afterDiscovered] = positions(data, afterPath);
-    at = afterDiscovered;
-    let mined: Pos | null = null;
-    if (flags & MINED) {
-      mined = { row: data[at] ?? 0, col: data[at + 1] ?? 0 };
-      at += 2;
-    }
+  while (!reader.done) {
+    const index = reader.next();
+    const line = reader.next();
+    const pos = reader.pos();
+    const robot: RobotState = { pos, dir: DIRS[reader.next()] ?? "east" };
+    const gold = reader.next();
+    const steps = reader.next();
+    const flags = reader.next();
+    const path = reader.positions();
+    const discovered = reader.positions();
+    const mined = flags & MINED ? reader.pos() : null;
     let print: string | null = null;
     if (flags & PRINTED) {
       print = summary.console[printed] ?? "";
@@ -83,14 +95,13 @@ export function decodeRun(summary: RunSummary, data: Float64Array): RunResult {
     }
     let assigned: Assignment | null = null;
     if (flags & ASSIGNED) {
-      const name = summary.names[data[at] ?? 0] ?? "";
-      const raw = data[at + 2] ?? 0;
+      const name = summary.names[reader.next()] ?? "";
+      const kind = reader.next();
+      const raw = reader.next();
       assigned = {
         name,
-        value:
-          data[at + 1] === 0 ? { kind: "int", value: raw } : { kind: "bool", value: raw !== 0 },
+        value: kind === 0 ? { kind: "int", value: raw } : { kind: "bool", value: raw !== 0 },
       };
-      at += 3;
     }
     events.push({ index, line, robot, path, discovered, mined, gold, steps, print, assigned });
   }
