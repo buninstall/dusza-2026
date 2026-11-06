@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.pdf binary
+*.wasm binary
+conformance/**/*crlf* -text
+conformance/**/*crlf*/** -text
+conformance/**/*.ms whitespace=-trailing-space,-tab-in-indent
+conformance/**/*.txt whitespace=-trailing-space,-tab-in-indent

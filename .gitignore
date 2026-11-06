@@ -36,8 +36,7 @@ service-account*.json
 
 node_modules/
 bower_components/
-jspm_packages/
-.pnp
+jspm_.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -82,19 +81,16 @@ ENV/
 .eggs/
 pip-wheel-metadata/
 wheels/
-site-packages/
-vendor/
+site-vendor/
 Pipfile.lock
 poetry.lock
 go.work.sum
 target/
-Cargo.lock
 .gradle/
 .m2/
 out/
 bin/
 obj/
-packages/
 *.class
 *.jar
 *.war
@@ -331,8 +327,26 @@ docker-compose.local.yml
 *.min.css.map
 Makefile.local
 
-docs/
+docs/*
+!docs/feladat.md
+!docs/feladat.pdf
+!docs/architektura.md
+!docs/dontesek.md
+!docs/contracts.md
+!docs/roadmap.md
+!docs/tesztterv.md
+!docs/a11y.md
+!docs/beadando.md
 
 !.env.example
 !.env.sample
 !.env.template
+
+packages/engine/pkg/
+apps/server/data/
+release/
+*.db-*
+*.gen.ts
+*.gen.js
+!**/routeTree.gen.ts
+!apps/server/src/db/migrations.gen.ts

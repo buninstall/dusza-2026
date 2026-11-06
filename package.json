@@ -1,0 +1,26 @@
+{
+  "name": "minescript",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*",
+    "e2e"
+  ],
+  "scripts": {
+    "setup": "just setup",
+    "dev": "just dev",
+    "test": "just test",
+    "lint": "just lint",
+    "fmt": "just fmt",
+    "build": "just build",
+    "release": "just release",
+    "ci": "just ci"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.5",
+    "@types/bun": "^1.4.4",
+    "typescript": "^7.0.2"
+  }
+}
