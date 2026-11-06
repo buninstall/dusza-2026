@@ -31,6 +31,8 @@ const engine = createEngine(await (await fetch(wasmUrl)).arrayBuffer());
 | `run(src, mapText)`     | `RunResult`          | hibás térképnél kivételt dob                                     |
 | `astDump(src)`          | `string`             | a `ParseResult` JSON-ja                                          |
 
+A futásidejű hibák `message` szövegei megegyeznek a `crates/minescript-core/src/runtime/error.rs` `message()` szövegeivel.
+
 Hibás bemenet (például ellentmondásos `MineMap`) esetén a függvény nem pánikol, hanem magyar üzenetű `Error`-t dob.
 
 ### RunResult
@@ -60,7 +62,7 @@ Hibás bemenet (például ellentmondásos `MineMap`) esetén a függvény nem p�
 }
 ```
 
-- `events[i]` az i-edik feldolgozott sor **utáni** állapot; a `steps` az addig feldolgozott sorok száma.
+- Az eseménysor pontos szabályai: [D20](dontesek.md#d20--a-futás-eseménysora-trace). Röviden: `events[i]` az i-edik feldolgozott sor **utáni** állapot; a `steps` az addig feldolgozott sorok száma.
 - `path`: az ebben a lépésben bejárt mezők sorrendben; `discovered`: az ebben a lépésben újonnan felfedezett mezők (például `isThere` célmezője).
 - `outcome.kind`: `ok` | `runtimeError` (`code`, `line`, `message`) | `syntaxError` (`diagnostics`, ilyenkor `events` üres).
 - `assigned`: `{ name, value }`, ahol `value` `{ "kind": "int", "value": 5 }` vagy `{ "kind": "bool", "value": true }`.

@@ -183,3 +183,97 @@ A szintaktikai ellenőrzés minden sort megnéz, és minden hibát visszaad, nem
 - Belül és JSON-ban minden 0-alapú (`row`, `col`); a felület 1-alapúan mutatja.
 - Az irány szerializálva `"north" | "east" | "south" | "west"`.
 - A diagnosztikák `line`/`colStart`/`colEnd` értéke 1-alapú a megjelenítéshez, mellette a `from`/`to` abszolút UTF-16 offset a CodeMirrornak.
+
+## D19 – Szintaktikai hibák pontos leképezése
+
+Spec: 2, 2.1. Ez a D3, D4, D5 és D17 pontosítása; a parser és a referencia-interpreter is ezt követi.
+
+**Sorszintű (szkenner) hibák.** Ha egy sorban ilyen hiba van, csak ez az egy diagnosztika jelenik meg a sorra, és a sor kimarad a behúzás- és a tokenelemzésből:
+
+1. `SYN_LONE_CR`: a sorban (normalizálás után) `\r` maradt.
+2. `SYN_TAB`: a sorban bárhol tab van (a behúzásban is).
+3. `SYN_EMPTY_LINE`: a sor üres vagy csak szóközből áll.
+
+A sorrend: ha több is igaz, az elsőként felsorolt nyer.
+
+**Tokenek.** A behúzás (vezető szóközök) után a sort szóközök mentén daraboljuk. Egy token osztálya:
+
+| Minta | Osztály / hiba |
+| --- | --- |
+| a 18 kulcsszó egyike pontosan (`true`, `false` logikai literál) | kulcsszó / logikai |
+| `+ - * = <> < <= > >=` | operátor |
+| `[0-9]+` | szám; ha az értéke > 100: `SYN_NUMBER_RANGE` (D5) |
+| `[A-Za-z][A-Za-z0-9]*` | azonosító; ha kis-/nagybetűtől függetlenül kulcsszó: azonosító helyén `SYN_RESERVED_IDENT` |
+| egyéb, és az első karakter Unicode-betű vagy `_` | `SYN_INVALID_IDENT` (például `a_b`, `árany`) |
+| minden más | `SYN_INVALID_TOKEN` (például `1+2`, `-5`, `1a`, `(`) |
+
+**Tokenszintű hibák egy soron belül.** Balról jobbra haladunk; a sor *első* tokenszintű hibája jelenik meg (D17), oszlop szerint. Ide tartozik: `SYN_DOUBLE_SPACE` (két vagy több szóköz két token között; a pozíció a második szóköz), `SYN_TRAILING_SPACE` (szóköz a sor végén), a fenti token-osztályhibák, és a nyelvtani hibák:
+
+- `SYN_UNKNOWN_COMMAND`: az első token nem a 8 utasítás egyike (`step`, `turn`, `mine`, `print`, `set`, `if`, `else`, `while`). A súgó a kis-/nagybetűtől független egyezést javasolja (`Step` → `step`).
+- `SYN_MISSING_TOKEN`: a sor véget ér, mielőtt az utasítás teljes lenne (`step forward`, `set x to`, `set x to 1 +`, `if`, `mine`).
+- `SYN_EXTRA_TOKEN`: az utasítás teljes, de még van token (`print 1 2`, `mine here now`, `else x`, `set x to 1 + 2 + 3`).
+- `SYN_UNEXPECTED_TOKEN`: egy pozíción nem a várt token áll: rögzített kulcsszó helyén más (`step back 1`, `turn 1`, `mine there`, `set x 1`), `simpleval` helyén kulcsszó vagy operátor (`if isThere 2`, `print while`), `set` után nem azonosító (`set 5 to 1`), a `calculatedval` első simpleval-ja után nem operátor (`set x to 1 2`).
+
+A `calculatedval` alakjai: `simpleval`, `isThere simpleval`, `not simpleval`, `simpleval binoperator simpleval`. Az `and` és az `or` binoperátor, a `not` unoperátor.
+
+**Behúzás.** Behúzásverem, kezdetben `[0]`. Minden nem kihagyott sorra (a szkennerhibás sorok kimaradnak):
+
+1. Ha az előző feldolgozott sor blokkfejléc (`if`, `while`, `else`, hibás tokenekkel is, D17) és a sor behúzása nagyobb a verem tetejénél, új blokk nyílik ezzel a mélységgel. Ha nem nagyobb, a fejléc blokkja üres (D1, szabályos).
+2. Egyébként, ha a behúzás nagyobb a verem tetejénél:
+   - a program első feldolgozott sorában: `SYN_TOPLEVEL_INDENT`;
+   - ha a verem `[0]` (legfelső szint): `SYN_UNEXPECTED_INDENT`;
+   - ha a verem mélyebb (blokkon belül): `SYN_INCONSISTENT_INDENT`.
+
+   A sor ilyenkor a verem tetején lévő blokkhoz tartozik.
+3. Ha a behúzás kisebb: amíg a verem teteje nagyobb, kiveszünk; ha így nem pontosan egy veremszintre érünk, `SYN_DEDENT_MISMATCH`, és a sor a legközelebbi kisebb szinthez tartozik.
+4. `else`: közvetlenül egy azonos mélységű `if` blokkja után (vagy üres blokkú `if` után) állhat; egyébként `SYN_ELSE_WITHOUT_IF`. Egy `if`-hez legfeljebb egy `else` tartozik. A hibás `else` is blokkfejléc.
+
+Soronként legfeljebb egy behúzáshiba és egy tokenszintű hiba jelenik meg; a diagnosztikák sor, azon belül oszlop szerint rendezettek. Ha bármilyen hiba van, a `parse` nem ad programot (`program: null`).
+
+## D20 – A futás eseménysora (trace)
+
+Spec: 3.4. A Rust-motor és a referencia-interpreter eseménysorának mezőről mezőre egyeznie kell.
+
+- Minden *feldolgozott* sorhoz pontosan egy `Event` tartozik, a feldolgozás sorrendjében: a `while` sorához feltétel-kiértékelésenként egy, az `else` sorához csak akkor, ha az else-ág fut (közvetlenül az `if` eseménye után).
+- A futásidejű hibát okozó sornak is van eseménye (a hibáig bekövetkezett hatásokkal, például a részleges `path`-szal), és utána a futás véget ér. A limit miatt fel nem dolgozott sornak nincs eseménye (D7).
+- `index`: 0-tól számozott; `steps`: `index + 1`; `line`: a sor 1-alapú száma.
+- `robot`: a robot állapota a sor *után*.
+- `path`: a sor alatt sorban belépett mezők (csak `step forward`; a kezdőmező nem).
+- `discovered`: a sor által *újonnan* felfedezett mezők a felfedezés sorrendjében (a `path` mezői, illetve az `isThere` célmezője, D11); a már felfedezett mező nem kerül bele újra.
+- `mined`: a kibányászott mező, ha a `mine here` sikeres; különben `null`.
+- `gold`: a sor utáni összes kibányászott arany.
+- `print`: a kiírt szöveg (D12), ha a `print` sikeres; különben `null`.
+- `assigned`: `{ name, value }`, ha a `set` sikeres; különben `null`.
+- A `RunResult`: `gold`, `steps` a végső értékek; `console` a kiírások sorrendben; `finalRobot`; `discovered` az összes felfedezett mező a felfedezés sorrendjében, az első a kezdőmező.
+- `outcome.runtimeError.message`: a `RuntimeErrorCode` magyar szövege változatlanul (lásd `docs/contracts.md`). Az összevetés a `message` mezőt nem vizsgálja.
+- Szintaktikai hibánál `events` üres, `steps` 0, `discovered` csak a kezdőmező.
+
+## D21 – Kiértékelés lépésről lépésre
+
+Spec: 2.2.1–2.2.4. A D10 pontosítása; minden lépés az első hibánál megáll.
+
+- **simpleval olvasása**: szám → egész; `true`/`false` → logikai; azonosító → a változó értéke, ha nincs: `E_UNINITIALIZED`.
+- **`set x to v`**: `v` olvasása; siker esetén típusegyezés a meglévő `x`-szel, eltérésnél `E_TYPE_MISMATCH`.
+- **`set x to isThere w`**: `w` olvasása; ha nem egész, vagy nem 0, 1, 2: `E_BAD_ARG`; a célmező felfedezése (pályán belül); az eredmény logikai; utána a típusegyezés.
+- **`set x to not v`**: `v` olvasása; ha nem logikai: `E_BAD_OPERAND`.
+- **`set x to a op b`**: `a` olvasása; `a` típusának ellenőrzése (`+ - * < <= > >=` egészet, `and or` logikait vár, `= <>` bármit): hibánál `E_BAD_OPERAND`; `b` olvasása; `b` típusának ellenőrzése (`= <>` esetén egyeznie kell `a` típusával): hibánál `E_BAD_OPERAND`; a művelet; egész eredménynél ha az abszolút érték > 9 007 199 254 740 991: `E_INT_OVERFLOW`; végül a típusegyezés.
+- **`if v` / `while v`**: `v` olvasása; ha nem logikai: `E_NON_BOOL_CONDITION`.
+- **`step forward n`**: `n` olvasása; ha nem egész vagy negatív: `E_BAD_ARG`; mezőnkénti lépés (D8).
+- **`turn by n`**: `n` olvasása; ha nem egész vagy negatív: `E_BAD_ARG`; `n mod 4` negyedfordulat balra.
+- **`mine here`**: ha a mező nem arany (vagy már kibányászott): `E_NO_GOLD`; különben a mező üres lesz, `gold + 1`.
+- **`print x`**: `x` olvasása, kiírás (D12).
+- A sorok feldolgozása előtt a limitellenőrzés (D7) minden sorra, az `else` és az ismételt `while` sorokra is.
+
+## D22 – Formázó
+
+A formázás (`format`, Shift+Alt+F) csak szóközhibákat javít, a program jelentését nem változtatja:
+
+1. a sorvégeket LF-re, a tabokat a behúzásban 4 szóközre cseréli, a sorvégi szóközt és az üres sorokat törli, a tokenek közötti több szóközt egyre csökkenti;
+2. ha az eredmény szintaktikailag helyes, a blokkokat mélységenként `indentWidth` (alapból 4) szóközzel húzza be, és a fájl egy záró újsorral végződik;
+3. ha a javítás után is van szintaktikai hiba, a forrás változatlan marad, és a `diagnostics` a hibákat adja.
+
+A formázott program futtatásának eredménye megegyezik az eredetiével.
+
+## D23 – Programfájl importja
+
+Spec: 1, 3.3. A program szerkesztés közben lehet hibás, ezért a szintaktikailag hibás programfájl betölthető a szerkesztőbe (a hibák azonnal látszanak). Nem tölthető be és érthető hibaüzenetet kap a fájl, ha nem érvényes UTF-8 szöveg, ha NUL karaktert tartalmaz, vagy ha nagyobb 100 000 karakternél. A térképfájl csak teljesen érvényes formában tölthető be (D15).
