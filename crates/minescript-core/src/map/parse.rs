@@ -29,7 +29,10 @@ pub fn parse_map(text: &str) -> MapParseResult {
     let Some((header, row_lines)) = lines.split_first() else {
         return MapParseResult {
             map: None,
-            diagnostics: vec![Diagnostic::new(DiagCode::MapEmpty, Span::default())],
+            diagnostics: vec![Diagnostic::new(
+                DiagCode::MapEmpty,
+                Span::whole_line(&index, HEADER_LINE),
+            )],
         };
     };
     let (rows, cols) = match parse_header(header, &index) {
@@ -84,8 +87,8 @@ pub fn parse_map(text: &str) -> MapParseResult {
             Span::whole_line(&index, HEADER_LINE),
         ));
     }
-    for extra in robots.iter().skip(1) {
-        diagnostics.push(Diagnostic::new(DiagCode::MapMultipleRobots, extra.span));
+    if let Some(second) = robots.get(1) {
+        diagnostics.push(Diagnostic::new(DiagCode::MapMultipleRobots, second.span));
     }
 
     let (Some((robot, dir)), false) = (robot, has_errors(&diagnostics)) else {
@@ -165,19 +168,10 @@ fn parse_row(
     robots: &mut Vec<RobotMark>,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<Cell> {
-    let length = context.text.chars().count();
-    if length != context.cols {
-        diagnostics.push(
-            Diagnostic::new(
-                DiagCode::MapRowLength,
-                Span::whole_line(context.index, context.line),
-            )
-            .with_message(messages::row_length(context.cols, length)),
-        );
-    }
     let mut cells = Vec::with_capacity(context.cols);
+    let mut first_bad_symbol = None;
     for (col, (byte, symbol)) in context.text.char_indices().enumerate() {
-        let span = Span::in_line(context.index, context.line, byte, byte + symbol.len_utf8());
+        let span = || Span::in_line(context.index, context.line, byte, byte + symbol.len_utf8());
         let cell = match symbol {
             '.' => Cell::Empty,
             '@' => Cell::Gold,
@@ -187,11 +181,11 @@ fn parse_row(
                     robots.push(RobotMark {
                         pos: Pos::new(context.row, col),
                         dir,
-                        span,
+                        span: span(),
                     });
-                } else {
-                    diagnostics.push(
-                        Diagnostic::new(DiagCode::MapBadSymbol, span)
+                } else if first_bad_symbol.is_none() {
+                    first_bad_symbol = Some(
+                        Diagnostic::new(DiagCode::MapBadSymbol, span())
                             .with_message(messages::bad_symbol(other)),
                     );
                 }
@@ -200,6 +194,17 @@ fn parse_row(
         };
         cells.push(cell);
     }
+    let length = cells.len();
+    let row_fault = first_bad_symbol.or_else(|| {
+        (length != context.cols).then(|| {
+            Diagnostic::new(
+                DiagCode::MapRowLength,
+                Span::whole_line(context.index, context.line),
+            )
+            .with_message(messages::row_length(context.cols, length))
+        })
+    });
+    diagnostics.extend(row_fault);
     cells
 }
 
@@ -267,10 +272,53 @@ mod tests {
     }
 
     #[test]
-    fn empty_file_is_an_error() {
-        let result = parse_map("");
-        assert!(result.map.is_none());
-        assert_eq!(result.diagnostics[0].code, DiagCode::MapEmpty);
+    fn empty_file_is_an_error_on_line_one() {
+        for text in ["", "\n", "\u{feff}"] {
+            let result = parse_map(text);
+            assert!(result.map.is_none());
+            assert_eq!(codes(&result), vec![(DiagCode::MapEmpty, 1)], "{text:?}");
+            assert_eq!(result.diagnostics[0].span.col_start, 1);
+        }
+    }
+
+    #[test]
+    fn a_row_reports_only_its_first_bad_symbol() {
+        let result = parse_map("1 4\n>xy");
+        assert_eq!(codes(&result), vec![(DiagCode::MapBadSymbol, 2)]);
+        assert_eq!(result.diagnostics[0].span.col_start, 2);
+        let unicode = parse_map("1 3\nő>😀");
+        assert_eq!(codes(&unicode), vec![(DiagCode::MapBadSymbol, 2)]);
+        assert_eq!(unicode.diagnostics[0].span.col_start, 1);
+    }
+
+    #[test]
+    fn row_length_is_reported_only_without_bad_symbols() {
+        assert_eq!(
+            codes(&parse_map("2 3\n>..\n.....")),
+            vec![(DiagCode::MapRowLength, 3)]
+        );
+        assert_eq!(
+            codes(&parse_map("2 3\n>..\n.x")),
+            vec![(DiagCode::MapBadSymbol, 3)]
+        );
+    }
+
+    #[test]
+    fn multiple_robots_are_reported_once_at_the_second() {
+        let result = parse_map("2 2\n><\n^v");
+        assert_eq!(codes(&result), vec![(DiagCode::MapMultipleRobots, 2)]);
+        assert_eq!(result.diagnostics[0].span.col_start, 2);
+    }
+
+    #[test]
+    fn header_digits_may_have_leading_zeros_but_no_sign() {
+        assert!(parse_map("01 002\n>.").map.is_some());
+        assert_eq!(codes(&parse_map("+1 1\n>")), vec![(DiagCode::MapHeader, 1)]);
+        assert_eq!(codes(&parse_map("-1 1\n>")), vec![(DiagCode::MapHeader, 1)]);
+        assert_eq!(
+            codes(&parse_map("0 16\n")),
+            vec![(DiagCode::MapDimRange, 1)]
+        );
     }
 
     #[test]
