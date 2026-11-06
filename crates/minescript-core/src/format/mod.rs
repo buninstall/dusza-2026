@@ -1,10 +1,16 @@
+mod indent;
+mod whitespace;
+
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::diagnostics::Diagnostic;
+use crate::source::normalize;
 use crate::syntax::parse;
 
 pub const DEFAULT_INDENT_WIDTH: u32 = 4;
+pub const MIN_INDENT_WIDTH: u32 = 1;
+pub const MAX_INDENT_WIDTH: u32 = 16;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", default)]
@@ -20,6 +26,13 @@ impl Default for FormatOptions {
     }
 }
 
+impl FormatOptions {
+    fn effective_indent_width(self) -> usize {
+        let width = self.indent_width.clamp(MIN_INDENT_WIDTH, MAX_INDENT_WIDTH);
+        usize::try_from(width).unwrap_or(1)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct FormatResult {
@@ -29,17 +42,32 @@ pub struct FormatResult {
 }
 
 pub fn format(src: &str, options: &FormatOptions) -> FormatResult {
-    let _ = options;
-    FormatResult {
-        text: src.to_owned(),
-        changed: false,
-        diagnostics: parse(src).diagnostics,
+    let repaired = whitespace::repair(&normalize(src));
+    match parse(&repaired).program {
+        Some(program) => {
+            let text = indent::reindent(&repaired, &program, options.effective_indent_width());
+            FormatResult {
+                changed: text != src,
+                text,
+                diagnostics: Vec::new(),
+            }
+        }
+        None => FormatResult {
+            text: src.to_owned(),
+            changed: false,
+            diagnostics: parse(src).diagnostics,
+        },
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::diagnostics::DiagCode;
+
+    fn formatted(src: &str) -> String {
+        format(src, &FormatOptions::default()).text
+    }
 
     #[test]
     fn default_indent_is_four_spaces() {
@@ -57,5 +85,88 @@ mod tests {
         let result = format("", &FormatOptions::default());
         assert_eq!(result.text, "");
         assert!(!result.changed);
+        assert!(result.diagnostics.is_empty());
+    }
+
+    #[test]
+    fn formatted_program_is_left_alone() {
+        let src = "while true\n    if a\n        mine here\n    else\n        print 1\n";
+        let result = format(src, &FormatOptions::default());
+        assert_eq!(result.text, src);
+        assert!(!result.changed);
+    }
+
+    #[test]
+    fn blocks_are_reindented_by_depth() {
+        assert_eq!(
+            formatted("while true\n  if a\n   mine here\n  else\n      print 1\nprint 2"),
+            "while true\n    if a\n        mine here\n    else\n        print 1\nprint 2\n"
+        );
+    }
+
+    #[test]
+    fn indent_width_is_configurable_and_clamped() {
+        let src = "if a\n    print 1\n";
+        let two = format(src, &FormatOptions { indent_width: 2 });
+        assert_eq!(two.text, "if a\n  print 1\n");
+        let zero = format(src, &FormatOptions { indent_width: 0 });
+        assert_eq!(zero.text, "if a\n print 1\n");
+        let huge = format(
+            src,
+            &FormatOptions {
+                indent_width: u32::MAX,
+            },
+        );
+        assert_eq!(huge.text, format!("if a\n{}print 1\n", " ".repeat(16)));
+    }
+
+    #[test]
+    fn whitespace_faults_are_repaired() {
+        assert_eq!(
+            formatted("\u{feff}print  1   \r\n\r\n   \r\nwhile t\r\n\tmine here\r\n"),
+            "print 1\nwhile t\n    mine here\n"
+        );
+    }
+
+    #[test]
+    fn missing_final_newline_is_added() {
+        let result = format("print 1", &FormatOptions::default());
+        assert_eq!(result.text, "print 1\n");
+        assert!(result.changed);
+    }
+
+    #[test]
+    fn programs_with_remaining_errors_are_returned_unchanged() {
+        for (src, code) in [
+            ("print  1\nStep forward 1\n", DiagCode::SynUnknownCommand),
+            ("print\t1\n", DiagCode::SynTab),
+            ("print 1\rprint 2", DiagCode::SynLoneCr),
+            ("  print 1\n", DiagCode::SynToplevelIndent),
+        ] {
+            let result = format(src, &FormatOptions::default());
+            assert_eq!(result.text, src);
+            assert!(!result.changed);
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .any(|diagnostic| diagnostic.code == code),
+                "{src:?}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
+    fn only_blank_lines_format_to_the_empty_program() {
+        let result = format("\n\n   \n", &FormatOptions::default());
+        assert_eq!(result.text, "");
+        assert!(result.changed);
+    }
+
+    #[test]
+    fn formatting_is_idempotent() {
+        let once = formatted("if a\n  print  1 \n\nelse\n   print 2");
+        assert_eq!(formatted(&once), once);
     }
 }
