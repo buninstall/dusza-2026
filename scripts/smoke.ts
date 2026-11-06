@@ -1,12 +1,20 @@
-import { mkdtempSync, readdirSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readdirSync } from "node:fs";
 import { join } from "node:path";
+import { dropDatabase } from "../apps/server/src/db/admin.ts";
+import {
+  DEFAULT_TEST_DATABASE_URL,
+  parseDatabaseUrl,
+  temporaryDatabaseName,
+  withDatabase,
+} from "../apps/server/src/db/url.ts";
 import { fail, info, paint, paths } from "./lib.ts";
 
 const PORT = 8099;
 const BASE = `http://127.0.0.1:${PORT}`;
 const STARTUP_TIMEOUT_MS = 30_000;
 const POLL_MS = 250;
+
+class SmokeFailure extends Error {}
 
 function binaryForPlatform(): string {
   if (process.platform === "win32" && process.arch === "x64") {
@@ -21,40 +29,30 @@ function binaryForPlatform(): string {
   return fail(`Ehhez a platformhoz nincs kiadott bináris: ${process.platform}-${process.arch}`);
 }
 
-async function waitForHealth(): Promise<Response> {
-  const deadline = Date.now() + STARTUP_TIMEOUT_MS;
-  while (Date.now() < deadline) {
-    try {
-      const response = await fetch(`${BASE}/api/health`);
-      if (response.ok) {
-        return response;
-      }
-    } catch {
-      await Bun.sleep(POLL_MS);
-      continue;
-    }
-    await Bun.sleep(POLL_MS);
-  }
-  return fail("A bináris nem válaszolt időben a /api/health végponton.");
-}
-
 function check(condition: boolean, label: string): void {
   if (!condition) {
-    fail(`Smoke-teszt hiba: ${label}`);
+    throw new SmokeFailure(label);
   }
   console.log(paint("green", `  ✓ ${label}`));
 }
 
-const binary = join(paths.release, binaryForPlatform());
-const workDir = mkdtempSync(join(tmpdir(), "minescript-smoke-"));
-const child = Bun.spawn(
-  [binary, "--no-open", "--port", String(PORT), "--db", join(workDir, "smoke.db")],
-  { stdout: "pipe", stderr: "pipe" },
-);
+async function waitForHealth(child: Bun.Subprocess): Promise<Response> {
+  const deadline = Date.now() + STARTUP_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null) {
+      throw new SmokeFailure(`a bináris idő előtt kilépett (${child.exitCode})`);
+    }
+    const response = await fetch(`${BASE}/api/health`).catch(() => null);
+    if (response?.ok) {
+      return response;
+    }
+    await Bun.sleep(POLL_MS);
+  }
+  throw new SmokeFailure("a bináris nem válaszolt időben a /api/health végponton");
+}
 
-try {
-  info(`Indítás: ${binary}`);
-  const health = await waitForHealth();
+async function runChecks(child: Bun.Subprocess): Promise<void> {
+  const health = await waitForHealth(child);
   check(health.status === 200, "/api/health 200");
 
   const index = await fetch(`${BASE}/`);
@@ -85,9 +83,35 @@ try {
   const body = (await maps.json()) as { maps?: unknown[] };
   check(maps.status === 200 && (body.maps?.length ?? 0) >= 8, "a seedelt térképek elérhetők");
 
-  info("A smoke-teszt sikeres.");
+  child.kill("SIGTERM");
+  check((await child.exited) === 0, "SIGTERM-re szabályosan leáll");
+}
+
+const binary = join(paths.release, binaryForPlatform());
+const databaseUrl = withDatabase(
+  process.env.TEST_DATABASE_URL || DEFAULT_TEST_DATABASE_URL,
+  temporaryDatabaseName("smoke"),
+);
+info(`Indítás: ${binary} (ideiglenes MySQL-adatbázissal)`);
+const child = Bun.spawn([binary, "--no-open", "--port", String(PORT)], {
+  stdout: "ignore",
+  stderr: "pipe",
+  env: { ...process.env, DATABASE_URL: databaseUrl },
+});
+const stderr = new Response(child.stderr).text();
+
+let failure: string | null = null;
+try {
+  await runChecks(child);
+} catch (error) {
+  failure = error instanceof Error ? error.message : String(error);
 } finally {
   child.kill();
   await child.exited;
-  rmSync(workDir, { recursive: true, force: true });
+  await dropDatabase(parseDatabaseUrl(databaseUrl));
 }
+
+if (failure !== null) {
+  fail(`Smoke-teszt hiba: ${failure}\n${await stderr}`);
+}
+info("A smoke-teszt sikeres, az ideiglenes adatbázis törölve.");
