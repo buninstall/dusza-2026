@@ -7,7 +7,6 @@ import { CartGauge } from "./CartGauge.tsx";
 import { Compass } from "./Compass.tsx";
 import { DepthGauge } from "./DepthGauge.tsx";
 import "./HudRail.css";
-import { WellZoom } from "./WellZoom.tsx";
 
 type LineReadoutProps = {
   line: number | null;
@@ -22,21 +21,14 @@ function LineReadout({ line, lineText, onReveal }: LineReadoutProps) {
       {line === null ? (
         <span className="hud-value hud-line-idle">–</span>
       ) : (
-        <button
-          type="button"
-          className="hud-line-button"
-          aria-label={hu.play.lineButton(line)}
-          onClick={() => onReveal(line)}
-        >
-          <PixelText text={String(line)} scale={3} />
-          <span className="visually-hidden">{line}</span>
+        <button type="button" className="hud-line-button" onClick={() => onReveal(line)}>
+          <span className="visually-hidden">{hu.play.lineJump(line)}</span>
+          <span className="hud-value" aria-hidden="true">
+            <PixelText text={String(line)} scale={3} />
+          </span>
+          {lineText === null ? null : <code className="hud-ticker">{lineText.trim()}</code>}
         </button>
-      )}{" "}
-      {line !== null && lineText !== null ? (
-        <code className="hud-ticker" aria-hidden="true">
-          {`${line}: ${lineText.trim()}`}
-        </code>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -74,10 +66,8 @@ export function HudRail({
         <Led state={lamp.led} label={lamp.label} isBlinking={lamp.blink} />
       </div>{" "}
       <CartGauge gold={gold} total={goldTotal} isRolling={isRolling} />{" "}
-      <DepthGauge steps={steps} isLimit={isLimit} />{" "}
-      <LineReadout line={line} lineText={lineText} onReveal={onRevealLine} />{" "}
-      <Compass robot={robot} />
-      <WellZoom />
+      <DepthGauge steps={steps} isLimit={isLimit} /> <Compass robot={robot} />{" "}
+      <LineReadout line={line} lineText={lineText} onReveal={onRevealLine} />
     </section>
   );
 }

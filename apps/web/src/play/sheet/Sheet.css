@@ -25,6 +25,17 @@
     inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-bevel-lo);
 }
 
+.sheet-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-1) var(--space-3);
+  border-bottom: var(--border-thin) solid var(--c-line);
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
 .sheet-spacer {
   display: flex;
   flex: 1;

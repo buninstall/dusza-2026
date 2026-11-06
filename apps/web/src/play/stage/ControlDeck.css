@@ -12,22 +12,28 @@
   box-shadow: inset 0 var(--border-thin) 0 var(--c-bevel-hi);
 }
 
-@container stage (width < 46rem) {
+@container stage (width < 58rem) {
   .deck {
     grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-areas:
-      "keys tempo extra lever"
-      "timeline timeline timeline timeline";
+      "keys timeline timeline timeline"
+      "tempo tempo extra lever";
+    column-gap: var(--space-3);
+  }
+
+  .deck-lever .btn {
+    min-width: 8rem;
   }
 }
 
-@container stage (width < 30rem) {
+@container stage (width < 34rem) {
   .deck {
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-      "keys keys keys"
-      "tempo extra lever"
-      "timeline timeline timeline";
+      "keys keys"
+      "timeline timeline"
+      "tempo extra"
+      "lever lever";
   }
 
   .deck-keys {
@@ -35,6 +41,7 @@
   }
 
   .deck-lever .btn {
+    width: 100%;
     min-width: 0;
   }
 }

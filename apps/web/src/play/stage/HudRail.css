@@ -3,9 +3,10 @@
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
+  gap: var(--border-thin);
   min-width: 0;
   border-bottom: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface-raised);
+  background: var(--c-line);
 }
 
 .hud .label {
@@ -18,11 +19,12 @@
 
 .hud-gauge {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
   padding: var(--space-1) var(--space-3);
-  border-right: var(--border-thin) solid var(--c-line);
+  background: var(--c-surface-raised);
 }
 
 .hud-lamp {
@@ -31,7 +33,7 @@
 
 .hud-value {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   gap: var(--space-1);
   color: var(--c-text);
 }
@@ -41,12 +43,18 @@
   height: 18px;
 }
 
+.hud-value .px-counter-cell {
+  height: 18px;
+}
+
 .hud-reward {
+  display: flex;
   color: var(--c-reward);
 }
 
 .hud-of {
   font: var(--type-mono-sm);
+  line-height: 1;
   color: var(--c-text-muted);
   white-space: nowrap;
 }
@@ -95,22 +103,20 @@
 }
 
 .hud-line {
-  flex: 1 1 12rem;
+  flex: 999 1 12rem;
   min-width: 0;
 }
 
 .hud-line-button {
-  display: inline-flex;
-  padding: 2px var(--space-2);
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-screen);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--c-text);
   cursor: pointer;
-}
-
-.hud-line-button:hover {
-  border-color: var(--c-current);
-  color: var(--c-current);
 }
 
 .hud-line-button[data-focus-visible],
@@ -128,13 +134,16 @@
   min-width: 0;
   overflow: hidden;
   font: var(--type-mono-sm);
+  line-height: 1;
   color: var(--c-text-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.hud-compass {
-  border-right: 0;
+.hud-line-button:hover .hud-ticker {
+  color: var(--c-current);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .hud-rose {
@@ -171,20 +180,54 @@
   color: var(--c-text-muted);
 }
 
-@container stage (width < 46rem) {
+@container stage (width < 34rem) {
+  .hud {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .hud-lamp {
+    grid-area: 1 / 1 / 2 / 4;
+  }
+
+  .hud-line {
+    grid-area: 1 / 4 / 2 / 7;
+  }
+
+  .hud-cart {
+    grid-area: 2 / 1 / 3 / 3;
+  }
+
+  .hud-depth {
+    grid-area: 2 / 3 / 3 / 5;
+  }
+
+  .hud-compass {
+    grid-area: 2 / 5 / 3 / 7;
+  }
+
   .hud-cart-art,
-  .hud-meter {
+  .hud-meter,
+  .hud-rose {
     display: none;
   }
 
   .hud-gauge {
-    padding-inline: var(--space-2);
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    min-height: 0;
+    padding: var(--space-1) var(--space-2);
   }
 
-  .hud-line {
+  .hud-compass-text {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .hud-compass-text > .label {
     flex-basis: 100%;
-    order: 10;
-    border-top: var(--border-thin) solid var(--c-line);
-    border-right: 0;
   }
 }
