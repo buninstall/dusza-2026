@@ -3,7 +3,9 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
   border-right: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface-raised);
   box-shadow: inset calc(var(--border-thin) * -1) 0 0 var(--c-bevel-lo);
