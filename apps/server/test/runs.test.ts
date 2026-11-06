@@ -45,6 +45,37 @@ describe("futások", () => {
     expect(mine.runs.map((r) => r.mapTitle)).toEqual(["Pálya"]);
   });
 
+  test("a válasz megadja a helyezést és az egyéni csúcsot", async () => {
+    await using context = await createTestContext();
+    const owner = context.client();
+    await owner.register("gazda");
+    const { map } = await json<{ map: { currentVersionId: number } }>(
+      await owner.post("/api/maps", { title: "Pálya", content: "1 3\n>@." }),
+    );
+    type Standing = { standing: { rank: number; players: number; isPersonalBest: boolean } };
+    const post = async (client: typeof owner, source: string) =>
+      json<Standing>(
+        await client.post("/api/runs", { mapVersionId: map.currentVersionId, source }),
+      );
+    expect((await post(owner, "")).standing).toEqual({
+      rank: 1,
+      players: 1,
+      isPersonalBest: true,
+    });
+    const rival = context.client();
+    await rival.register("rivalis");
+    expect((await post(rival, "step forward 1\nmine here")).standing).toEqual({
+      rank: 1,
+      players: 2,
+      isPersonalBest: true,
+    });
+    expect((await post(owner, "print 1")).standing).toEqual({
+      rank: 2,
+      players: 2,
+      isPersonalBest: false,
+    });
+  });
+
   test("nem létező térképverzió 404", async () => {
     await using context = await createTestContext();
     const user = context.client();

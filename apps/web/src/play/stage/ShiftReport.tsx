@@ -166,8 +166,22 @@ export function SubmissionLine({ submission, onRetry }: SubmissionLineProps) {
     return <Led state="busy" label={hu.play.submitting} isBlinking isSentenceCase />;
   }
   if (submission.state === "done") {
+    const { standing } = submission;
     return (
-      <Led state="ok" label={hu.play.submitted(submission.gold, submission.steps)} isSentenceCase />
+      <div className="report-submission">
+        <Led
+          state="ok"
+          label={hu.play.submitted(submission.gold, submission.steps)}
+          isSentenceCase
+        />
+        {standing ? (
+          <p className="report-standing" data-best={standing.isPersonalBest}>
+            {standing.isPersonalBest
+              ? hu.play.standingBest(standing.rank, standing.players)
+              : hu.play.standingKept(standing.rank, standing.players)}
+          </p>
+        ) : null}
+      </div>
     );
   }
   return (

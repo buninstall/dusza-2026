@@ -10,8 +10,10 @@ import { PROGRAM_MAX_CHARS } from "./program-file.ts";
 
 export type Submission =
   | { state: "pending" }
-  | { state: "done"; gold: number; steps: number }
+  | { state: "done"; gold: number; steps: number; standing: Standing | null }
   | { state: "error"; message: string };
+
+export type Standing = { rank: number; players: number; isPersonalBest: boolean };
 
 type TrackedSubmission = { runId: number; value: Submission };
 
@@ -55,6 +57,15 @@ export function useEngineRun(mapText: string, start: RobotState) {
   return { run, ...state, clearBlocked };
 }
 
+function standingOf(
+  raw: { rank: number | null; players: number; isPersonalBest: boolean } | undefined,
+): Standing | null {
+  if (!raw || raw.rank === null) {
+    return null;
+  }
+  return { rank: raw.rank, players: raw.players, isPersonalBest: raw.isPersonalBest };
+}
+
 type SubmissionInput = { mapId: number; mapVersionId: number };
 
 export function useRunSubmission({ mapId, mapVersionId }: SubmissionInput) {
@@ -72,7 +83,12 @@ export function useRunSubmission({ mapId, mapVersionId }: SubmissionInput) {
         const response = await call(api.runs.$post({ json: { mapVersionId, source } }));
         setTracked({
           runId: id,
-          value: { state: "done", gold: response.run.gold, steps: response.run.steps },
+          value: {
+            state: "done",
+            gold: response.run.gold,
+            steps: response.run.steps,
+            standing: standingOf(response.standing),
+          },
         });
         void queryClient.invalidateQueries({ queryKey: ["map", mapId] });
         void queryClient.invalidateQueries({ queryKey: ["leaderboard", mapId] });

@@ -4,7 +4,7 @@ import { requireUser } from "../auth/middleware.ts";
 import type { AppEnv, Deps } from "../env.ts";
 import { apiError, messages } from "../lib/errors.ts";
 import { validationHook } from "../lib/validation.ts";
-import { canView, findMap, findVersion } from "../services/maps.ts";
+import { canView, findMap, findVersion, leaderboard } from "../services/maps.ts";
 import { executeAndRecord, findRunDetail } from "../services/runs.ts";
 import { idParam, runSchema } from "./schemas.ts";
 
@@ -46,6 +46,13 @@ export function runRoutes(deps: Deps) {
         );
       }
       const { run, result } = recorded;
+      const entries = await leaderboard(deps.db, run.mapVersionId);
+      const own = entries.find((entry) => entry.userId === run.userId);
+      const standing = {
+        rank: own?.rank ?? null,
+        players: entries.length,
+        isPersonalBest: own?.runId === run.id,
+      };
       return c.json(
         {
           run: {
@@ -60,6 +67,7 @@ export function runRoutes(deps: Deps) {
           },
           outcome: result.outcome,
           console: result.console,
+          standing,
         },
         201,
       );

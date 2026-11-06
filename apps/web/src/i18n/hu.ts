@@ -457,6 +457,10 @@ export const hu = {
     submitting: "Rögzítés…",
     submitted: (gold: number, steps: number) =>
       `A szerver rögzítette: ${gold} arany, ${steps} lépés.`,
+    standingBest: (rank: number, players: number) =>
+      `Új egyéni csúcs: ${rank}. hely a ranglistán (${players} játékos).`,
+    standingKept: (rank: number, players: number) =>
+      `A korábbi legjobbad számít: ${rank}. hely a ranglistán (${players} játékos).`,
     submitFailed: "Az eredményt nem sikerült rögzíteni.",
     submitRetry: "Rögzítés újra",
     showLine: (line: number) => `Mutasd a(z) ${lineRef(line)}t`,

@@ -99,6 +99,23 @@
   font: var(--type-help);
 }
 
+.report-submission {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.report-standing {
+  margin: 0;
+  color: var(--c-text-muted);
+  font: var(--type-help);
+}
+
+.report-standing[data-best="true"] {
+  color: var(--c-reward);
+  font: var(--type-help-strong);
+}
+
 @keyframes report-enter {
   from {
     translate: 0 8px;

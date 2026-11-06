@@ -149,18 +149,18 @@ Content-Type: application/json
 
 ### Programok, futások, saját adatok
 
-| Metódus és útvonal         | Kérés                      | Válasz                                                                    |
-| -------------------------- | -------------------------- | ------------------------------------------------------------------------- |
-| `GET /api/programs`        | –                          | `200 { programs: { id, title, updatedAt }[] }`                            |
-| `POST /api/programs`       | `{ title, source }`        | `201 { program }`                                                         |
-| `GET /api/programs/:id`    | –                          | `200 { program }` (csak a saját)                                          |
-| `PUT /api/programs/:id`    | `{ title?, source? }`      | `200 { program }`                                                         |
-| `DELETE /api/programs/:id` | –                          | `200 { ok: true }`                                                        |
-| `POST /api/runs`           | `{ mapVersionId, source }` | `201 { run, outcome, console }`; `422 SYNTAX_ERROR` (nem mentődik); `404` |
-| `GET /api/runs/:id`        | –                          | `200 { run, map: { content } }`; `404` (nem a sajátod és nem vagy admin)  |
-| `GET /api/me/runs`         | –                          | `200 { runs }` (legutóbbi 100)                                            |
+| Metódus és útvonal         | Kérés                      | Válasz                                                                              |
+| -------------------------- | -------------------------- | ----------------------------------------------------------------------------------- |
+| `GET /api/programs`        | –                          | `200 { programs: { id, title, updatedAt }[] }`                                      |
+| `POST /api/programs`       | `{ title, source }`        | `201 { program }`                                                                   |
+| `GET /api/programs/:id`    | –                          | `200 { program }` (csak a saját)                                                    |
+| `PUT /api/programs/:id`    | `{ title?, source? }`      | `200 { program }`                                                                   |
+| `DELETE /api/programs/:id` | –                          | `200 { ok: true }`                                                                  |
+| `POST /api/runs`           | `{ mapVersionId, source }` | `201 { run, outcome, console, standing }`; `422 SYNTAX_ERROR` (nem mentődik); `404` |
+| `GET /api/runs/:id`        | –                          | `200 { run, map: { content } }`; `404` (nem a sajátod és nem vagy admin)            |
+| `GET /api/me/runs`         | –                          | `200 { runs }` (legutóbbi 100)                                                      |
 
-A `POST /api/runs` a kliens által küldött egyéb mezőket (például `gold`) figyelmen kívül hagyja: az eredményt a szerver számolja.
+A `POST /api/runs` a kliens által küldött egyéb mezőket (például `gold`) figyelmen kívül hagyja: az eredményt a szerver számolja. A `standing` a rögzítés utáni állás az adott térképverzió ranglistáján: `{ rank, players, isPersonalBest }`, ahol `rank` a játékos helyezése a legjobb futásával, `players` a ranglistán szereplő játékosok száma, `isPersonalBest` pedig igaz, ha éppen ez a futás lett a játékos legjobbja.
 
 A `GET /api/runs/:id` a visszajátszáshoz adja vissza egy futás adatait. Csak a futás gazdája és az admin olvashatja; mindenki más, illetve a nem létező azonosító `404 NOT_FOUND`. A `map.content` annak a térképverziónak a kanonikus tartalma, amelyen a futás történt (nem az aktuális verzióé), így az `engine.run(run.source, map.content)` pontosan ugyanazt az eseménysort adja:
 

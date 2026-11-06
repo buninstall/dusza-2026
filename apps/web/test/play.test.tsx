@@ -73,7 +73,12 @@ describe("futtatás", () => {
     respond(
       "POST",
       "/runs",
-      { run: { gold: 1, steps: 5 }, outcome: { kind: "ok" }, console: ["1"] },
+      {
+        run: { gold: 1, steps: 5 },
+        outcome: { kind: "ok" },
+        console: ["1"],
+        standing: { rank: 2, players: 3, isPersonalBest: true },
+      },
       201,
     );
     const { user } = await openPlay();
@@ -84,6 +89,7 @@ describe("futtatás", () => {
         .length,
     ).toBeGreaterThan(0);
     expect(await screen.findByText("A szerver rögzítette: 1 arany, 5 lépés.")).toBeTruthy();
+    expect(screen.getByText("Új egyéni csúcs: 2. hely a ranglistán (3 játékos).")).toBeTruthy();
     expect(callsTo("POST", "/runs")[0]?.body).toEqual({
       mapVersionId: VERSION_ID,
       source: PROGRAM,
