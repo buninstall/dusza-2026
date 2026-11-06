@@ -4,6 +4,7 @@ import { RegionBoundary } from "../components/RegionBoundary.tsx";
 import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { MineBoard } from "../mine/MineBoard.tsx";
+import { usePlaybackSounds } from "../sound/usePlaybackSounds.ts";
 import { deriveFault } from "./fault.ts";
 import { GoldFlight } from "./GoldFlight.tsx";
 import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
@@ -128,6 +129,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const ui = usePlayUi();
   const motion = useStageMotion(map, view, start);
   usePlaybackTimer();
+  usePlaybackSounds();
 
   useEffect(() => () => usePlayback.getState().clear(), []);
   useEffect(() => {

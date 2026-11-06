@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { IconButton } from "../components/ui/IconButton.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -7,8 +7,11 @@ import { mapsQuery } from "../maps/queries.ts";
 import { sortMaps } from "../maps/sort.ts";
 import { usePlayback } from "../play/playback-store.ts";
 import type { Submission } from "../play/useRunSession.ts";
+import { playCue } from "../sound/sfx.ts";
 import { MAX_STARS, StarRow } from "./StarRow.tsx";
 import "./RunMedal.css";
+
+const STAR_CUE_DELAY_MS = 1100;
 
 type RunMedalProps = {
   mapId: number;
@@ -36,10 +39,18 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
   );
   const [dismissedRun, setDismissedRun] = useState(0);
   const stars = submission?.state === "done" ? (submission.standing?.stars ?? null) : null;
+  const gainedNow = stars ? Math.max(stars.best - stars.previous, 0) : 0;
+  useEffect(() => {
+    if (gainedNow === 0 || runId === 0) {
+      return;
+    }
+    const timer = window.setTimeout(() => playCue("star"), STAR_CUE_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [gainedNow, runId]);
   if (!stars || !isAtEnd || dismissedRun === runId) {
     return null;
   }
-  const gained = Math.max(stars.best - stars.previous, 0);
+  const gained = gainedNow;
   const hint =
     stars.run >= MAX_STARS
       ? hu.game.allStars

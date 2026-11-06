@@ -7,6 +7,7 @@ import { HazardStripe } from "../pixel/HazardStripe.tsx";
 import type { IconName } from "../pixel/icons.ts";
 import { Logo } from "../pixel/Logo.tsx";
 import "./AppShell.css";
+import { SoundToggle, useAudioUnlock } from "../sound/SoundToggle.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 import { UserMenu } from "./UserMenu.tsx";
 
@@ -53,6 +54,7 @@ function useShellLayout(): ShellLayout {
 export function AppShell({ user, children }: { user: SessionUser; children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const layout = useShellLayout();
+  useAudioUnlock();
   return (
     <div className="shell" data-layout={layout}>
       <header className="shell-header">
@@ -84,6 +86,7 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
             </ul>
           </nav>
           <div className="shell-tools">
+            <SoundToggle />
             <ThemeToggle />
             <UserMenu user={user} />
           </div>
