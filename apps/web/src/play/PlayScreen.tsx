@@ -11,6 +11,7 @@ import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
 import { type Blocked, moodFor } from "./phase.ts";
 import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
+import { useBreakpointNotice } from "./useBreakpointNotice.ts";
 import "./PlayScreen.css";
 import { boardDressing } from "./stage/board-dressing.tsx";
 import { ControlDeck } from "./stage/ControlDeck.tsx";
@@ -130,6 +131,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const motion = useStageMotion(map, view, start);
   usePlaybackTimer();
   usePlaybackSounds();
+  useBreakpointNotice();
 
   useEffect(() => () => usePlayback.getState().clear(), []);
   useEffect(() => {

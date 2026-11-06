@@ -509,6 +509,7 @@ export const hu = {
       { keys: ["Ctrl+S"], action: "Mentés" },
       { keys: ["Ctrl+O"], action: "Programtár" },
       { keys: ["F8", "Shift+F8"], action: "Következő, előző hiba a szerkesztőben" },
+      { keys: ["F9"], action: "Töréspont ki/be a kurzor sorában (kattintás a sorszámra is)" },
       { keys: ["Ctrl+Shift+M"], action: "Hibalista nyitása, zárása" },
       { keys: ["Tab"], action: "4 szóköz a szerkesztőben" },
       { keys: ["Esc", "Tab"], action: "Kilépés a szerkesztőből" },
@@ -811,7 +812,7 @@ export const hu = {
     toggle: "Töréspont ki/be a kurzor sorában",
     added: (line: number) => `Töréspont: ${line}. sor`,
     removed: (line: number) => `Töréspont törölve: ${line}. sor`,
-    hit: (line: number) => `Megállt a(z) ${line}. sor töréspontján`,
+    hit: (line: number) => `Megállt ${articleFor(line)} ${line}. sor töréspontján.`,
     gutterTitle: "Kattints a sorszámra: töréspont ki/be (F9)",
   },
   trial: {

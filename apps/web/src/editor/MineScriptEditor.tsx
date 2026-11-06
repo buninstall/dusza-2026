@@ -16,6 +16,7 @@ import {
 import type { FormatResult, TextEdit } from "@minescript/engine";
 import { type Ref, useEffect, useImperativeHandle, useRef } from "react";
 import { useEngine } from "../engine/useEngine.ts";
+import { breakpoints, toggleBreakpoint } from "./breakpoints.ts";
 import { mineScriptCompletion } from "./completion.ts";
 import { errorLens } from "./error-lens.ts";
 import "./MineScriptEditor.css";
@@ -59,6 +60,8 @@ type MineScriptEditorProps = {
   isReadOnly?: boolean;
   onLint?: (report: LintReport) => void;
   onFormat?: (result: FormatResult) => void;
+  onBreakpointsChange?: (lines: readonly number[]) => void;
+  onBreakpointKey?: (line: number, isSet: boolean) => void;
   commands?: EditorCommands;
   ref?: Ref<EditorHandle>;
 };
@@ -107,6 +110,8 @@ export function MineScriptEditor({
   isReadOnly = false,
   onLint,
   onFormat,
+  onBreakpointsChange,
+  onBreakpointKey,
   commands,
   ref,
 }: MineScriptEditorProps) {
@@ -114,9 +119,28 @@ export function MineScriptEditor({
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const readOnly = useRef(new Compartment());
-  const initial = useRef({ value, isReadOnly, placeholder });
-  const callbacks = useRef({ onChange, onLint, onFormat, commands });
-  callbacks.current = { onChange, onLint, onFormat, commands };
+  const initial = useRef({
+    value,
+    isReadOnly,
+    placeholder,
+    hasBreakpoints: onBreakpointsChange !== undefined,
+  });
+  const callbacks = useRef({
+    onChange,
+    onLint,
+    onFormat,
+    commands,
+    onBreakpointsChange,
+    onBreakpointKey,
+  });
+  callbacks.current = {
+    onChange,
+    onLint,
+    onFormat,
+    commands,
+    onBreakpointsChange,
+    onBreakpointKey,
+  };
 
   useImperativeHandle(ref, () => {
     const reveal = (from: number, to: number) => {
@@ -205,7 +229,24 @@ export function MineScriptEditor({
         extensions: [
           pageKeys,
           lineMarks(),
-          lineNumbers(),
+          initial.current.hasBreakpoints
+            ? breakpoints({
+                onChange: (lines) => callbacks.current.onBreakpointsChange?.(lines),
+                onKeyToggle: (line, isSet) => callbacks.current.onBreakpointKey?.(line, isSet),
+              })
+            : [],
+          lineNumbers(
+            initial.current.hasBreakpoints
+              ? {
+                  domEventHandlers: {
+                    mousedown: (view, line) => {
+                      toggleBreakpoint(view, line.from);
+                      return true;
+                    },
+                  },
+                }
+              : {},
+          ),
           highlightActiveLineGutter(),
           highlightActiveLine(),
           drawSelection(),

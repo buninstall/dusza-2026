@@ -57,18 +57,9 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
       : hu.game.nextStar(stars.run, stars.parSteps, reachableGold);
   return (
     <aside className="medal" aria-labelledby={headingId} data-gained={gained > 0}>
-      <div className="medal-head">
-        <h2 id={headingId} className="medal-title">
-          {hu.game.medalTitle}
-        </h2>
-        <IconButton
-          icon="close"
-          label={hu.common.close}
-          variant="ghost"
-          size="sm"
-          onPress={() => setDismissedRun(runId)}
-        />
-      </div>
+      <h2 id={headingId} className="visually-hidden">
+        {hu.game.medalTitle}
+      </h2>
       <div className="medal-stars" role="status">
         <StarRow stars={stars.run} previous={stars.previous} size="lg" isAnimated />
         {gained > 0 ? <span className="medal-new">{hu.game.newStar(gained)}</span> : null}
@@ -82,11 +73,17 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
           size="sm"
           icon="arrowRight"
           aria-label={hu.game.nextMapFor(next.title)}
-          className="medal-next"
         >
           {hu.game.nextMap}
         </Link>
       ) : null}
+      <IconButton
+        icon="close"
+        label={hu.common.close}
+        variant="ghost"
+        size="sm"
+        onPress={() => setDismissedRun(runId)}
+      />
     </aside>
   );
 }

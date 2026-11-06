@@ -394,6 +394,7 @@ const sections: readonly ManualSection[] = [
           ["Bánya", "`L`", "váltás a lámpafény és a teljes térkép között"],
           ["Bánya", "`+`, `−`", "gyorsabb, lassabb lejátszás"],
           ["Szerkesztő", "`F8`, `Shift+F8`", "következő, előző hiba"],
+          ["Szerkesztő", "`F9`, kattintás a sorszámra", "töréspont ki/be"],
           ["Szerkesztő", "`Ctrl+Shift+M`", "a hibalista nyitása, zárása"],
           ["Szerkesztő", "`Tab`", "4 szóköz beszúrása"],
           ["Szerkesztő", "`Esc`, majd `Tab`", "kilépés a szerkesztőből"],

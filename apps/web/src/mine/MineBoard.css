@@ -522,6 +522,19 @@
   rotate: calc(var(--turns, 0) * 90deg);
 }
 
+.board-fx[data-fx="trail"] {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+}
+
+.board-fx[data-fx="trail"] .board-fx-art {
+  width: calc(var(--art-px) * 4);
+  height: calc(var(--art-px) * 4);
+  background: var(--c-discovery);
+  opacity: 0.55;
+}
+
 .board-fx[data-fx="reveal"] {
   z-index: 1;
 }

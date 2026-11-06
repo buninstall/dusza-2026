@@ -18,6 +18,8 @@ type PlaybackData = {
   status: PlaybackStatus;
   hasEnded: boolean;
   speed: number;
+  breakpoints: ReadonlySet<number>;
+  breakHit: { line: number; index: number } | null;
 };
 
 type PlaybackActions = {
@@ -33,6 +35,7 @@ type PlaybackActions = {
   tick: () => void;
   setSpeed: (speed: number) => void;
   shiftSpeed: (delta: number) => void;
+  setBreakpoints: (lines: readonly number[]) => void;
   clear: () => void;
 };
 
@@ -47,6 +50,8 @@ const initialData: PlaybackData = {
   status: "idle",
   hasEnded: false,
   speed: SPEED_DEFAULT,
+  breakpoints: new Set(),
+  breakHit: null,
 };
 
 export function isPlaybackActive(status: PlaybackStatus): boolean {
@@ -93,6 +98,7 @@ export const usePlayback = create<PlaybackState>()((set, get) => {
         index: 0,
         status: "playing",
         hasEnded: false,
+        breakHit: null,
       })),
     play: () => {
       if (get().status === "paused") {
@@ -121,16 +127,32 @@ export const usePlayback = create<PlaybackState>()((set, get) => {
       }
     },
     tick: () => {
-      const { result, index, status } = get();
+      const { result, index, status, breakpoints } = get();
       if (!result || status !== "playing") {
         return;
       }
       const next = clampIndex(result, index + 1);
       const atEnd = next >= result.events.length;
-      set(atEnd ? { index: next, status: "finished", hasEnded: true } : { index: next });
+      if (atEnd) {
+        set({ index: next, status: "finished", hasEnded: true });
+        return;
+      }
+      const line = result.events[next - 1]?.line;
+      if (line !== undefined && breakpoints.has(line)) {
+        set({ index: next, status: "paused", breakHit: { line, index: next } });
+        return;
+      }
+      set({ index: next });
     },
     setSpeed: (speed) => set({ speed: speedAt(speedIndex(speed)) }),
     shiftSpeed: (delta) => set({ speed: speedAt(speedIndex(get().speed) + delta) }),
-    clear: () => set((state) => ({ ...initialData, speed: state.speed, runId: state.runId })),
+    setBreakpoints: (lines) => set({ breakpoints: new Set(lines) }),
+    clear: () =>
+      set((state) => ({
+        ...initialData,
+        speed: state.speed,
+        runId: state.runId,
+        breakpoints: state.breakpoints,
+      })),
   };
 });

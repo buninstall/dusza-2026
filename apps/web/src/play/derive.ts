@@ -9,6 +9,7 @@ export type Frame = {
   robot: RobotState;
   event: Event | null;
   discovered: ReadonlySet<string>;
+  walked: ReadonlySet<string>;
   fresh: ReadonlySet<string>;
   mined: ReadonlySet<string>;
   scan: Pos | null;
@@ -41,6 +42,7 @@ function eventTiles(event: Event): Pos[] {
 export function deriveFrame(result: RunResult, start: RobotState, requestedIndex: number): Frame {
   const index = clampIndex(result, requestedIndex);
   const discovered = new Set<string>([posKey(start.pos)]);
+  const walked = new Set<string>([posKey(start.pos)]);
   const mined = new Set<string>();
   const consoleLines: ConsoleEntry[] = [];
   const variables = new Map<string, Value>();
@@ -58,6 +60,9 @@ export function deriveFrame(result: RunResult, start: RobotState, requestedIndex
     steps = event.steps;
     line = event.line;
     lastMined = event.mined;
+    for (const pos of [...event.path, event.robot.pos]) {
+      walked.add(posKey(pos));
+    }
     const keys = eventTiles(event).map(posKey);
     fresh = new Set(keys.filter((key) => !discovered.has(key)));
     for (const key of keys) {
@@ -81,6 +86,7 @@ export function deriveFrame(result: RunResult, start: RobotState, requestedIndex
     robot,
     event,
     discovered,
+    walked,
     fresh,
     mined,
     scan: event ? scannedTile(event) : null,

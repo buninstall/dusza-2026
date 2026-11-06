@@ -1,5 +1,5 @@
 import type { Diagnostic } from "@minescript/engine";
-import { type Ref, type RefObject, useId, useState } from "react";
+import { type Ref, type RefObject, useEffect, useId, useState } from "react";
 import { toast } from "../../components/ui/Toast.tsx";
 import type { RuntimeMark } from "../../editor/exec-line.ts";
 import type { LintReport } from "../../editor/lint.ts";
@@ -8,6 +8,7 @@ import { useEngine } from "../../engine/useEngine.ts";
 import { formatCount, hu } from "../../i18n/hu.ts";
 import { downloadText, safeFilename } from "../../lib/files.ts";
 import { usePlayUi } from "../play-ui-store.ts";
+import { usePlayback } from "../playback-store.ts";
 import type { ProgramDraft } from "../program-draft.ts";
 import { decodeProgramFile, PROGRAM_MAX_CHARS } from "../program-file.ts";
 import { BlockDrawers } from "./BlockDrawers.tsx";
@@ -50,6 +51,10 @@ export function ProgramSheet(props: ProgramSheetProps) {
   const [announcement, setAnnouncement] = useState("");
   const ui = usePlayUi();
   const engine = useEngine();
+  useEffect(() => {
+    usePlayback.getState().setBreakpoints([]);
+    return () => usePlayback.getState().setBreakpoints([]);
+  }, []);
 
   const reportImportErrors = (source: string) => {
     const errors = engine
@@ -107,6 +112,10 @@ export function ProgramSheet(props: ProgramSheetProps) {
           isReadOnly={isLocked}
           onLint={lint.setReport}
           onFormat={reportFormat}
+          onBreakpointsChange={(lines) => usePlayback.getState().setBreakpoints(lines)}
+          onBreakpointKey={(line, isSet) =>
+            setAnnouncement(isSet ? hu.breakpoints.added(line) : hu.breakpoints.removed(line))
+          }
           commands={{ onToggleFaults: () => ui.setFaultBarOpen(!ui.isFaultBarOpen) }}
         />
       </div>

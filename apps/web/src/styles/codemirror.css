@@ -263,3 +263,25 @@
     animation: none;
   }
 }
+
+.cm-breakpoint-gutter {
+  width: 12px;
+  cursor: pointer;
+}
+
+.cm-breakpoint-gutter .cm-gutterElement {
+  display: grid;
+  place-items: center;
+}
+
+.cm-breakpoint {
+  display: block;
+  width: 8px;
+  height: 8px;
+  background: var(--c-danger-ink);
+  box-shadow: 0 0 0 2px var(--c-screen);
+}
+
+.cm-gutters:has(.cm-breakpoint-gutter) .cm-lineNumbers .cm-gutterElement {
+  cursor: pointer;
+}
