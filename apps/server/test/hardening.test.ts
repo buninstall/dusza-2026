@@ -58,6 +58,7 @@ describe("hibatűrés a kérések határán", () => {
       source: "a".repeat(MAX_BODY_BYTES),
     });
     expect(response.status).toBe(413);
+    expect(response.headers.get("connection")).toBe("close");
     expect((await json<ErrorBody>(response)).error.code).toBe("PAYLOAD_TOO_LARGE");
     const fits = await user.post("/api/programs", { title: "Határ", source: "é".repeat(100_000) });
     expect(fits.status).toBe(201);

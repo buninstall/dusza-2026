@@ -29,7 +29,10 @@ export const MAX_BODY_BYTES = 1024 * 1024;
 
 const requestBodyLimit = bodyLimit({
   maxSize: MAX_BODY_BYTES,
-  onError: (c) => apiError(c, 413, "PAYLOAD_TOO_LARGE", messages.payloadTooLarge),
+  onError: (c) => {
+    c.header("Connection", "close");
+    return apiError(c, 413, "PAYLOAD_TOO_LARGE", messages.payloadTooLarge);
+  },
 });
 
 export type AppOptions = {
