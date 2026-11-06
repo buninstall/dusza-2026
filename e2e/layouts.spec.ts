@@ -108,7 +108,7 @@ const SCREENS: readonly Screen[] = [
     name: "kezikonyv",
     open: async (page) => {
       await page.goto("/manual");
-      await heading(page, "A MineScript kézikönyve");
+      await heading(page, "Kézikönyv");
     },
   },
   {

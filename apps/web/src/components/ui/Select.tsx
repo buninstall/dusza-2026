@@ -22,6 +22,7 @@ type SelectProps<K extends string> = Omit<
   options: readonly SelectOption<K>[];
   value: K;
   onChange: (value: K) => void;
+  isLabelHidden?: boolean;
 };
 
 export function Select<K extends string>({
@@ -29,6 +30,7 @@ export function Select<K extends string>({
   options,
   value,
   onChange,
+  isLabelHidden = false,
   ...props
 }: SelectProps<K>) {
   const handleChange = (key: Key | null) => {
@@ -39,7 +41,7 @@ export function Select<K extends string>({
   };
   return (
     <AriaSelect {...props} value={value} onChange={handleChange} className="field">
-      <Label className="field-label">{label}</Label>
+      <Label className={isLabelHidden ? "visually-hidden" : "field-label"}>{label}</Label>
       <Button className="field-select-button">
         <SelectValue />
         <PixelIcon name="chevronDown" />

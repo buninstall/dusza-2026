@@ -52,13 +52,13 @@ function LevelGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; user
   }
   const depthOf = new Map(sortMaps(data.maps, "order").map((map, index) => [map.id, index + 1]));
   return (
-    <ol className="lv-grid" aria-label={hu.maps.listLabel}>
+    <ol className="lv-shaft" aria-label={hu.maps.listLabel}>
       {sortMaps(data.maps, sort).map((map) => (
         <LevelTile
           key={map.id}
           map={map}
           depth={depthOf.get(map.id) ?? 1}
-          box={isWide ? 176 : 64}
+          box={isWide ? 120 : 64}
           isOwn={map.ownerId === user.id}
           canEdit={map.ownerId === user.id || user.role === "admin"}
         />
@@ -91,6 +91,7 @@ export function MapsPage({ scope, sort, user, onScopeChange, onSortChange }: Map
               </TabList>
               <Select
                 label={hu.maps.sortLabel}
+                isLabelHidden
                 value={sort}
                 options={SORT_OPTIONS}
                 onChange={onSortChange}

@@ -29,7 +29,7 @@
   margin: 0;
   padding: var(--space-4);
   border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-screen) var(--well-pattern);
+  background: var(--c-screen);
   background-size: 16px 16px;
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
 }

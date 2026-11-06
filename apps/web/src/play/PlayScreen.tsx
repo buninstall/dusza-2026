@@ -12,7 +12,6 @@ import { type Blocked, moodFor } from "./phase.ts";
 import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
 import "./PlayScreen.css";
-import { WellBar } from "./stage/Bezel.tsx";
 import { boardDressing } from "./stage/board-dressing.tsx";
 import { ControlDeck, TempoGate, Timeline } from "./stage/ControlDeck.tsx";
 import { HudRail } from "./stage/HudRail.tsx";
@@ -213,7 +212,11 @@ export function PlayScreen(props: PlayScreenProps) {
           className="stage-well"
           style={{ "--rows": map.rows, "--cols": map.cols } as CSSProperties}
         >
-          <WellBar description={facts.description} descriptionId={facts.descriptionId} />
+          {facts.description ? (
+            <p id={facts.descriptionId} className="visually-hidden">
+              {facts.description}
+            </p>
+          ) : null}
           <div className="well-view">
             <MineBoard
               map={map}

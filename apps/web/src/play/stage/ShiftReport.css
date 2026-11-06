@@ -5,7 +5,7 @@
   gap: var(--space-2);
   min-height: 0;
   overflow: auto;
-  padding: var(--space-1) var(--space-3) var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border-left: 6px solid var(--c-line-strong);
   outline: none;
   font: var(--type-help);
@@ -25,10 +25,16 @@
   outline-offset: calc(var(--focus-width) * -1);
 }
 
+.report-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
 .report-stamp {
-  position: absolute;
-  top: var(--space-1);
-  right: var(--space-2);
+  display: inline-flex;
+  flex: none;
   padding: 2px var(--space-1) var(--space-1);
   border: var(--border-thin) solid currentColor;
   color: var(--c-text-muted);
@@ -48,8 +54,8 @@
 }
 
 .report-title {
-  padding-right: 7rem;
-  font: var(--type-body-strong);
+  min-width: 0;
+  font: var(--type-help-strong);
 }
 
 .report-code {
@@ -57,6 +63,13 @@
   font-weight: 700;
   color: var(--c-danger-ink);
   overflow-wrap: anywhere;
+}
+
+.report-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
 }
 
 .report-body {
@@ -83,8 +96,7 @@
 }
 
 .report-footer {
-  padding-top: var(--space-1);
-  border-top: var(--border-thin) dashed var(--c-line);
+  font: var(--type-help);
 }
 
 @keyframes report-enter {

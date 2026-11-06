@@ -161,7 +161,7 @@ test.describe("3.4 futtatás a bemutató fiókkal", () => {
 
     await setSpeed(page, "max");
     await expect(speedSlider(page)).toHaveAttribute("aria-valuetext", "30 sor/s");
-    await expect(page.getByRole("status").filter({ hasText: "Sikeres futás" })).toBeVisible({
+    await expect(page.getByRole("status").filter({ hasText: "A program hiba nélkül lefutott" })).toBeVisible({
       timeout: FAST_FINISH_MS,
     });
     await expectFinished(page, LOOP_RECIPE.gold, LOOP_RECIPE.steps);

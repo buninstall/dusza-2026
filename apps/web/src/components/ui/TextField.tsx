@@ -19,6 +19,7 @@ type TextFieldProps = Omit<AriaTextFieldProps, "className"> & {
   rows?: number;
   className?: string | undefined;
   inputRef?: Ref<HTMLInputElement> | undefined;
+  isLabelHidden?: boolean;
 };
 
 const DEFAULT_ROWS = 3;
@@ -31,12 +32,13 @@ export function TextField({
   rows = DEFAULT_ROWS,
   className,
   inputRef,
+  isLabelHidden = false,
   ...props
 }: TextFieldProps) {
   const inputProps = placeholder === undefined ? {} : { placeholder };
   return (
     <AriaTextField {...props} className={clsx("field", className)}>
-      <Label className="field-label">{label}</Label>
+      <Label className={isLabelHidden ? "visually-hidden" : "field-label"}>{label}</Label>
       {isMultiline ? (
         <TextArea {...inputProps} rows={rows} className={clsx("field-input", "field-textarea")} />
       ) : (

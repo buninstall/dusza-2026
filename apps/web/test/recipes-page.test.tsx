@@ -1,4 +1,5 @@
-import { act, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
 import { recipeText } from "../src/recipes/catalog.ts";
 import { respond } from "./support/api.ts";
@@ -78,61 +79,24 @@ describe("recept betöltése a játékba", () => {
 });
 
 describe("kézikönyv", () => {
-  test("tartalomjegyzék és rejtett bejárat a receptekhez", async () => {
+  test("fejezetválasztó és rejtett bejárat a receptekhez", async () => {
     renderApp("/manual");
-    const toc = await screen.findByRole("navigation", { name: "Tartalom" });
-    const first = within(toc).getByRole("link", { name: /A játék röviden/ });
-    expect(first.getAttribute("aria-current")).toBe("location");
-    const entry = within(toc).getByRole("link", {
-      name: "Receptek: kész programok minden pályához",
-    });
+    const chapters = await screen.findByRole("tablist", { name: "Tartalom" });
+    const first = within(chapters).getByRole("tab", { name: /A játék röviden/ });
+    expect(first.getAttribute("aria-selected")).toBe("true");
+    const entry = screen.getByRole("link", { name: "Receptek: kész programok minden pályához" });
     expect(entry.getAttribute("href")).toBe("/manual/receptek");
     expect(screen.getByRole("heading", { level: 1, name: "Kézikönyv" })).toBeTruthy();
   });
 
-  test("görgetéskor a tartalomjegyzék a látható szakaszt jelöli", async () => {
-    const callbacks: IntersectionObserverCallback[] = [];
-    const observed: Element[] = [];
-    vi.stubGlobal(
-      "IntersectionObserver",
-      class {
-        constructor(callback: IntersectionObserverCallback) {
-          callbacks.push(callback);
-        }
-        observe(element: Element) {
-          observed.push(element);
-        }
-        disconnect() {
-          return undefined;
-        }
-      },
-    );
+  test("a fejezet próbapadja lejátssza a példát a mini pályán", async () => {
     renderApp("/manual");
-    const toc = await screen.findByRole("navigation", { name: "Tartalom" });
-    await waitFor(() => expect(observed.length).toBeGreaterThan(2));
-    const [first, second] = observed;
-    const notify = (target: Element | undefined, isIntersecting: boolean) =>
-      act(() => {
-        for (const callback of callbacks) {
-          callback(
-            [{ target, isIntersecting } as unknown as IntersectionObserverEntry],
-            {} as IntersectionObserver,
-          );
-        }
-      });
-    notify(first, false);
-    notify(second, true);
-    expect(
-      within(toc)
-        .getByRole("link", { name: /A térkép/ })
-        .getAttribute("aria-current"),
-    ).toBe("location");
-    notify(second, false);
-    expect(
-      within(toc)
-        .getByRole("link", { name: /A térkép/ })
-        .getAttribute("aria-current"),
-    ).toBe("location");
-    vi.unstubAllGlobals();
+    const chapters = await screen.findByRole("tablist", { name: "Tartalom" });
+    const user = userEvent.setup();
+    await user.click(within(chapters).getByRole("tab", { name: /Utasítások/ }));
+    expect(screen.getByRole("heading", { level: 2, name: /Utasítások/ })).toBeTruthy();
+    expect(screen.getByText("0 arany · 0 lépés")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Lejátszás" }));
+    expect(await screen.findByText("1 arany · 4 lépés", undefined, { timeout: 4000 })).toBeTruthy();
   });
 });

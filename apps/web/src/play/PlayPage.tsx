@@ -5,11 +5,9 @@ import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
 import { hu } from "../i18n/hu.ts";
 import type { MapDetail } from "../maps/queries.ts";
 import { PlayScreen } from "./PlayScreen.tsx";
-import { usePlayback } from "./playback-store.ts";
 import { type ProgramDraft, useProgramDraft } from "./program-draft.ts";
 import { GUARD_BLOCK } from "./sheet/blocks.ts";
 import { ProgramSheet } from "./sheet/ProgramSheet.tsx";
-import type { LastRun } from "./sheet/tips.ts";
 import { useProgramPersistence } from "./sheet/useProgramPersistence.ts";
 import { Bezel } from "./stage/Bezel.tsx";
 import { SubmissionLine } from "./stage/ShiftReport.tsx";
@@ -22,19 +20,6 @@ type PlayPageProps = {
   initialDraft?: ProgramDraft | undefined;
   shouldFocusEditor?: boolean;
 };
-
-function useLastRun(isTraceOfEditor: boolean): LastRun | null {
-  const result = usePlayback((state) => state.result);
-  const hasEnded = usePlayback((state) => state.hasEnded);
-  if (!result || !hasEnded) {
-    return null;
-  }
-  return {
-    isOk: result.outcome.kind === "ok",
-    gold: result.gold,
-    isCurrentSource: isTraceOfEditor,
-  };
-}
 
 export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false }: PlayPageProps) {
   const mapId = detail.map.id;
@@ -53,7 +38,6 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
     mapVersionId: detail.version.id,
   });
   const view = usePlayView(draft.source, engineRun.blocked);
-  const lastRun = useLastRun(view.isTraceOfEditor);
   const onDraftChange = (next: ProgramDraft) => {
     setDraft(next);
     engineRun.clearBlocked();
@@ -66,7 +50,6 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
     <Bezel
       name={hu.signs.play}
       title={detail.map.title}
-      meta={`${hu.play.versionChip(detail.version.version)} · ${hu.play.mapMeta(map.rows, map.cols, goldTotal)}`}
       actions={
         <>
           <Link
@@ -118,18 +101,12 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
           draft={draft}
           onDraftChange={onDraftChange}
           persistence={persistence}
-          mapId={mapId}
           mapTitle={detail.map.title}
-          reachableGold={reachableGold}
           editorRef={editorRef}
           isLocked={view.isLocked}
-          isActive={view.phase === "playing" || view.phase === "paused"}
           execLine={view.execLine}
           errorLines={view.errorLines}
           runtimeMark={view.runtimeMark}
-          lastRun={lastRun}
-          wasRefused={engineRun.wasRefused}
-          attempt={engineRun.attempt}
         />
       }
       reportFooter={<SubmissionLine submission={submission} onRetry={retrySubmit} />}

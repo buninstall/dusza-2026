@@ -1,6 +1,11 @@
 export type ManualBlock =
   | { readonly kind: "paragraph"; readonly text: string }
-  | { readonly kind: "code"; readonly code: string; readonly caption: string }
+  | {
+      readonly kind: "code";
+      readonly code: string;
+      readonly caption: string;
+      readonly map?: string;
+    }
   | { readonly kind: "list"; readonly items: readonly string[] }
   | {
       readonly kind: "table";
@@ -97,6 +102,7 @@ const sections: readonly ManualSection[] = [
       {
         kind: "code",
         caption: "Menj előre, amíg falba nem ütköznél, és bányássz ki minden aranyat",
+        map: "1 8\n>..@..@.",
         code: "set count to 0\nset fal to isThere 1\nset megy to not fal\nwhile megy\n    set arany to isThere 2\n    if arany\n        step forward 1\n        mine here\n        set count to count + 1\n    else\n        step forward 1\n    set fal to isThere 1\n    set megy to not fal\nprint count",
       },
     ],
@@ -131,6 +137,12 @@ const sections: readonly ManualSection[] = [
           ["`while v` …", "a törzs addig ismétlődik, amíg v igaz."],
         ],
       },
+      {
+        kind: "code",
+        caption: "Két lépés, jobbra fordulás, két lépés, bányászás",
+        map: "3 3\n>..\n##.\n##@",
+        code: "step forward 2\nturn by 3\nstep forward 2\nmine here",
+      },
     ],
   },
   {
@@ -160,6 +172,7 @@ const sections: readonly ManualSection[] = [
       {
         kind: "code",
         caption: "Összetett feltétel segédváltozókkal",
+        map: "1 3\n>@.",
         code: "set elol to isThere 2\nset fal to isThere 1\nset szabad to not fal\nset jo to elol or szabad\nprint jo",
       },
     ],
@@ -190,6 +203,7 @@ const sections: readonly ManualSection[] = [
       {
         kind: "code",
         caption: "Csak akkor lép, ha nincs előtte fal",
+        map: "1 3\n>..",
         code: "set fal to isThere 1\nset szabad to not fal\nif szabad\n    step forward 1",
       },
     ],
@@ -212,6 +226,7 @@ const sections: readonly ManualSection[] = [
         kind: "code",
         caption:
           "Ez a program 13 lépés: 2 értékadás, 4 while-kiértékelés (az utolsó hamis), 3 × 2 törzssor és 1 print",
+        map: "1 2\n>.",
         code: "set i to 0\nset tovabb to true\nwhile tovabb\n    set i to i + 1\n    set tovabb to i < 3\nprint i",
       },
     ],
@@ -242,6 +257,12 @@ const sections: readonly ManualSection[] = [
           ["`E_INT_OVERFLOW`", "túl nagy egész érték (±9 007 199 254 740 991 felett)"],
           ["`INSTRUCTION_COUNT_LIMIT_EXCEEDED`", "a futás elérte az 1000 feldolgozott sort"],
         ],
+      },
+      {
+        kind: "code",
+        caption: "A robot a fal előtt megáll: E_BEDROCK_HIT a 2. sorban",
+        map: "1 4\n>..@",
+        code: "step forward 3\nstep forward 1",
       },
     ],
   },
@@ -303,5 +324,10 @@ const sections: readonly ManualSection[] = [
 export const manual = {
   title: "Kézikönyv",
   tocLabel: "Tartalom",
+  benchPlay: "Lejátszás",
+  benchPause: "Szünet",
+  benchRestart: "Elölről",
+  benchBoard: (caption: string) => `Próbapad: ${caption}`,
+  benchStats: (gold: number, steps: number) => `${gold} arany · ${steps} lépés`,
   sections,
 } as const;

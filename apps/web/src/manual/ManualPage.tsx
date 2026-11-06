@@ -1,17 +1,15 @@
-import { Button, Disclosure, DisclosurePanel, Heading } from "react-aria-components";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { Tab, TabList, TabPanel, Tabs } from "react-aria-components";
 import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
-import { useMediaQuery } from "../lib/useMediaQuery.ts";
-import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { TILE_SPRITES } from "../pixel/tiles.ts";
 import { Section } from "./ManualBlocks.tsx";
 import "./ManualPage.css";
-import { useScrollSpy } from "./useScrollSpy.ts";
 
-const SECTION_IDS = hu.manual.sections.map((section) => section.id);
 const ORE_GLINT = { "ore-hi": "px-glint" } as const;
+const FIRST_ID = hu.manual.sections[0]?.id ?? "";
 
 function RecipesEntry() {
   const [wall, wallAlt] = TILE_SPRITES.wall;
@@ -32,72 +30,44 @@ function RecipesEntry() {
   );
 }
 
-function TocList({ active }: { active: string | null }) {
-  return (
-    <>
-      <ol className="manual-toc-list">
-        {hu.manual.sections.map((section, index) => (
-          <li key={section.id}>
-            <a
-              href={`#${section.id}`}
-              className="manual-toc-link"
-              aria-current={active === section.id ? "location" : undefined}
-            >
-              <span aria-hidden="true" className="manual-toc-no">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              {section.title}
-            </a>
-          </li>
-        ))}
-      </ol>
-      <RecipesEntry />
-    </>
-  );
-}
-
-function Toc() {
-  const isWide = useMediaQuery("(min-width: 64rem)", true);
-  const active = useScrollSpy(SECTION_IDS);
-  if (isWide) {
-    return (
-      <nav aria-label={hu.manual.tocLabel} className="manual-toc">
-        <p aria-hidden="true" className="label manual-toc-title">
-          {hu.manual.tocLabel}
-        </p>
-        <TocList active={active} />
-      </nav>
-    );
-  }
-  return (
-    <Disclosure className="manual-toc manual-disclosure">
-      <Heading level={2} className="manual-disclosure-heading">
-        <Button slot="trigger" className="manual-disclosure-trigger">
-          <PixelIcon name="chevronDown" />
-          {hu.manual.tocLabel}
-        </Button>
-      </Heading>
-      <DisclosurePanel>
-        <nav aria-label={hu.manual.tocLabel}>
-          <TocList active={active} />
-        </nav>
-      </DisclosurePanel>
-    </Disclosure>
-  );
+function sectionOf(hash: string): string {
+  return hu.manual.sections.some((section) => section.id === hash) ? hash : FIRST_ID;
 }
 
 export function ManualPage() {
+  const selected = sectionOf(useLocation({ select: (location) => location.hash }));
+  const navigate = useNavigate();
+  const select = (key: string) => {
+    void navigate({ to: "/manual", hash: key, replace: true, resetScroll: false });
+  };
   return (
     <div className="manual-page">
       <LocationPlate name={hu.signs.manual} />
-      <div className="manual-layout">
-        <Toc />
-        <article className="manual-article">
-          {hu.manual.sections.map((section, index) => (
-            <Section key={section.id} section={section} index={index} />
-          ))}
-        </article>
-      </div>
+      <Tabs
+        orientation="vertical"
+        selectedKey={selected}
+        onSelectionChange={(key) => select(String(key))}
+        className="manual-layout"
+      >
+        <div className="manual-lift">
+          <TabList aria-label={hu.manual.tocLabel} className="manual-lift-list">
+            {hu.manual.sections.map((section, index) => (
+              <Tab key={section.id} id={section.id} className="manual-lift-stop">
+                <span aria-hidden="true" className="manual-lift-no">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                {section.title}
+              </Tab>
+            ))}
+          </TabList>
+          <RecipesEntry />
+        </div>
+        {hu.manual.sections.map((section, index) => (
+          <TabPanel key={section.id} id={section.id} className="manual-article">
+            <Section section={section} index={index} />
+          </TabPanel>
+        ))}
+      </Tabs>
     </div>
   );
 }

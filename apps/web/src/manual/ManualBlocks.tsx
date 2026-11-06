@@ -1,40 +1,8 @@
-import { useMemo } from "react";
 import { InlineText } from "../components/InlineText.tsx";
 import { NumberedHeading } from "../components/NumberedHeading.tsx";
-import { tokenizeLine } from "../editor/language.ts";
-import { useEngine } from "../engine/useEngine.ts";
 import type { ManualBlock, ManualSection } from "../i18n/hu-manual.ts";
-
-function CodeSample({ code, caption }: { code: string; caption: string }) {
-  const engine = useEngine();
-  const keywords = useMemo(() => new Set(engine.keywords()), [engine]);
-  const lines = code.split("\n");
-  return (
-    <figure className="manual-sample">
-      <figcaption className="manual-caption">{caption}</figcaption>
-      <pre className="manual-code">
-        <code>
-          {lines.map((line, row) => (
-            <span key={`${row.toString()}-${line}`} className="manual-code-line">
-              <span aria-hidden="true" className="manual-line-no">
-                {row + 1}
-              </span>
-              {tokenizeLine(line, keywords).map((token, column) => (
-                <span
-                  key={`${column.toString()}-${token.text}`}
-                  data-token={token.kind ?? undefined}
-                >
-                  {token.text}
-                </span>
-              ))}
-              {"\n"}
-            </span>
-          ))}
-        </code>
-      </pre>
-    </figure>
-  );
-}
+import { Bench } from "./Bench.tsx";
+import { CodeListing } from "./CodeListing.tsx";
 
 function TableBlock({ block }: { block: Extract<ManualBlock, { kind: "table" }> }) {
   return (
@@ -91,7 +59,11 @@ function Block({ block }: { block: ManualBlock }) {
         </ul>
       );
     case "code":
-      return <CodeSample code={block.code} caption={block.caption} />;
+      return block.map ? (
+        <Bench code={block.code} map={block.map} caption={block.caption} />
+      ) : (
+        <CodeListing code={block.code} caption={block.caption} />
+      );
     case "table":
       return <TableBlock block={block} />;
   }

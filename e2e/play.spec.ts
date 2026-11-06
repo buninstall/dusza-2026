@@ -45,7 +45,7 @@ test("az üres program lefut, és a szerver rögzíti az eredményt a ranglistá
   await openPlay(page, "1. Egyenes folyosó");
   await replaceProgram(page, "");
   await page.getByRole("button", { name: "Futtatás" }).click();
-  await expect(page.getByText("Sikeres futás")).toBeVisible();
+  await expect(page.getByText("A program hiba nélkül lefutott: 0 arany, 0 lépés.").first()).toBeVisible();
   await expect(page.getByText("A szerver rögzítette: 0 arany, 0 lépés.")).toBeVisible();
 
   await page.getByRole("link", { name: "Ranglista" }).click();

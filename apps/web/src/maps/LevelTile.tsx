@@ -52,19 +52,18 @@ export function LevelTile({ map, depth, box, isOwn, canEdit }: LevelTileProps) {
   const level = hu.signs.level(depth);
   return (
     <li className="lv-tile">
-      <div className="lv-head">
-        <p className="lv-depth">
-          <PixelText text={level} scale={2} />
-          <span className="visually-hidden">{level}</span>
-        </p>
-        <Badges map={map} isOwn={isOwn} />
-      </div>
+      <p className="lv-depth">
+        <PixelText text={level} scale={2} />
+        <span className="visually-hidden">{level}</span>
+      </p>
       <div className="lv-window">
         <MapPreview content={map.content} box={box} className="lv-preview" />
       </div>
       <div className="lv-body">
-        <h2 className="lv-title">{map.title}</h2>
-        {map.description ? <p className="lv-description">{map.description}</p> : null}
+        <h2 className="lv-title">
+          {map.title}
+          <Badges map={map} isOwn={isOwn} />
+        </h2>
         <dl className="lv-specs">
           <Spec label={hu.maps.sizeLabel} value={hu.maps.size(map.rows, map.cols)} />
           <Spec label={hu.maps.goldLabel} value={hu.maps.gold(map.reachableGold, map.goldTotal)} />

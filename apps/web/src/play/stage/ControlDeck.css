@@ -4,7 +4,7 @@
   grid-template-columns: auto minmax(8rem, 1fr) 9.5rem auto;
   grid-template-areas: "keys timeline tempo lever";
   align-items: center;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-2) var(--space-5);
   padding: var(--space-2) var(--space-3);
   border-top: var(--border-thin) solid var(--c-line-strong);
   border-bottom: var(--border-thin) solid var(--c-line-strong);
@@ -28,8 +28,21 @@
 }
 
 .deck-keys .btn {
-  min-width: 40px;
-  min-height: 40px;
+  min-width: var(--control-height);
+  min-height: var(--control-height);
+  padding: 0;
+}
+
+.deck .slider {
+  gap: 2px;
+}
+
+.deck .slider-header {
+  line-height: 1;
+}
+
+.deck .slider-track {
+  height: var(--target-min);
 }
 
 .deck-timeline {
@@ -63,17 +76,13 @@
 }
 
 .deck-timeline .slider-rail {
-  height: 10px;
-  border-width: var(--border-thin) 0;
-  background: var(--c-screen) var(--rail-pattern);
-  background-size: 8px 10px;
+  height: 8px;
+  background: var(--c-screen);
 }
 
 .deck-timeline .slider-fill {
-  height: 10px;
-  border-width: var(--border-thin) 0;
-  background: var(--c-exec-line) var(--rail-pattern);
-  background-size: 8px 10px;
+  height: 8px;
+  background: var(--c-accent);
 }
 
 .deck-timeline .slider-thumb {

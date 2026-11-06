@@ -1,0 +1,65 @@
+.bench {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+}
+
+.bench-caption {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+  font: var(--type-help-strong);
+}
+
+.bench-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.bench-stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.bench-board {
+  max-width: 22rem;
+}
+
+.bench-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bench-stats {
+  margin-left: auto;
+  font: var(--type-mono-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.bench[data-fault="true"] .bench-stats {
+  color: var(--c-danger-ink);
+  font-weight: 700;
+}
+
+.bench-console {
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-thin) solid var(--c-line);
+  font: var(--type-mono-sm);
+  color: var(--c-success);
+}
+
+@media (min-width: 48rem) {
+  .bench-body {
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 22rem);
+    align-items: start;
+  }
+}

@@ -282,15 +282,12 @@ describe("adminisztráció", () => {
 });
 
 describe("keret, kézikönyv és hibaképernyők", () => {
-  test("a kézikönyv tartalomjegyzéke a fejezetekre ugrik, a kód kiemelt", async () => {
-    renderApp("/manual");
-    const toc = await screen.findByRole("navigation", { name: "Tartalom" });
-    const links = within(toc).getAllByRole("link");
-    expect(links.length).toBeGreaterThan(8);
-    expect(links[0]?.getAttribute("href")).toBe("#alapok");
+  test("a kézikönyv fejezetei választhatók, a kód kiemelt", async () => {
+    renderApp("/manual#lepesek");
+    const chapters = await screen.findByRole("tablist", { name: "Tartalom" });
+    expect(within(chapters).getAllByRole("tab").length).toBeGreaterThan(8);
     expect(screen.getByRole("heading", { level: 2, name: /Lépésszámlálás/ })).toBeTruthy();
     expect(document.querySelector('[data-token="keyword"]')?.textContent).toBe("set");
-    expect(screen.getByRole("table", { name: "Futásidejű hibakódok" })).toBeTruthy();
   });
 
   test("kijelentkezés a felhasználói menüből", async () => {

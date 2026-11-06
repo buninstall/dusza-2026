@@ -79,7 +79,10 @@ describe("futtatás", () => {
     const { user } = await openPlay();
     await user.click(runButton());
     expect(screen.getByText("Futás közben zárolva")).toBeTruthy();
-    expect(await screen.findByText("Sikeres futás", undefined, { timeout: 3000 })).toBeTruthy();
+    expect(
+      (await screen.findAllByText(/A program hiba nélkül lefutott/, undefined, { timeout: 3000 }))
+        .length,
+    ).toBeGreaterThan(0);
     expect(await screen.findByText("A szerver rögzítette: 1 arany, 5 lépés.")).toBeTruthy();
     expect(callsTo("POST", "/runs")[0]?.body).toEqual({
       mapVersionId: VERSION_ID,
@@ -195,7 +198,9 @@ describe("lejátszásvezérlés", () => {
     await user.click(screen.getByRole("button", { name: "Folytatás" }));
     expect(usePlayback.getState().status).toBe("playing");
     await user.click(screen.getByRole("button", { name: "Ugrás a végére" }));
-    expect(await screen.findByText("Sikeres futás")).toBeTruthy();
+    expect((await screen.findAllByText(/A program hiba nélkül lefutott/)).length).toBeGreaterThan(
+      0,
+    );
     await waitFor(() => expect(callsTo("POST", "/runs")).toHaveLength(1));
   });
 

@@ -8,7 +8,7 @@ import { KeysPopover } from "./KeysPopover.tsx";
 type BezelProps = {
   name: string;
   title: string;
-  meta: string;
+  meta?: string | undefined;
   documentTitle?: string;
   actions: ReactNode;
 };
@@ -30,27 +30,6 @@ export function ViewSwitch() {
   );
 }
 
-export function WellBar({
-  description,
-  descriptionId,
-}: {
-  description?: string | undefined;
-  descriptionId: string;
-}) {
-  return (
-    <div className="well-bar">
-      {description ? (
-        <p id={descriptionId} className="well-description">
-          {description}
-        </p>
-      ) : (
-        <span className="well-description" />
-      )}
-      <ViewSwitch />
-    </div>
-  );
-}
-
 export function Bezel({ name, title, meta, documentTitle, actions }: BezelProps) {
   return (
     <LocationPlate
@@ -59,10 +38,11 @@ export function Bezel({ name, title, meta, documentTitle, actions }: BezelProps)
       isDocked={false}
       className="stage-bezel"
       {...(documentTitle ? { documentTitle } : {})}
-      meta={meta}
+      {...(meta ? { meta } : {})}
       actions={
         <>
           {actions}
+          <ViewSwitch />
           <KeysPopover rows={hu.play.shortcuts} />
         </>
       }

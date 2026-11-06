@@ -109,6 +109,7 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
             {data && versionOptions.length > 1 ? (
               <Select
                 label={hu.leaderboard.version}
+                isLabelHidden
                 value={String(data.versionId)}
                 options={versionOptions}
                 onChange={(next) => onVersionChange(Number(next))}

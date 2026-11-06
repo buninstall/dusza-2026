@@ -4,17 +4,8 @@ import { Button } from "../../components/ui/Button.tsx";
 import { tokenizeLine } from "../../editor/language.ts";
 import { useEngine } from "../../engine/useEngine.ts";
 import { hu } from "../../i18n/hu.ts";
-import type { IconName } from "../../pixel/icons.ts";
 import { DRAWER_IDS, type DrawerId, usePlayUi } from "../play-ui-store.ts";
 import { type Block, blocksIn, plainLines } from "./blocks.ts";
-
-const DRAWER_ICON: Record<DrawerId, IconName> = {
-  robot: "robot",
-  sense: "eye",
-  variables: "variable",
-  decision: "branch",
-  loop: "loop",
-};
 
 function CodeLines({
   lines,
@@ -53,13 +44,7 @@ function Drawer({ drawer, isDisabled, keywords, onInsert }: DrawerProps) {
       isOpen={openDrawer === drawer}
       onOpenChange={(isOpen) => setOpenDrawer(isOpen ? drawer : null)}
     >
-      <Button
-        size="sm"
-        icon={DRAWER_ICON[drawer]}
-        isDisabled={isDisabled}
-        className="drawer-button"
-        data-drawer={drawer}
-      >
+      <Button size="sm" isDisabled={isDisabled} className="drawer-button" data-drawer={drawer}>
         {hu.blocks.drawer[drawer]}
       </Button>
       <Popover placement="bottom start" className="overlay-menu-popover drawer-popover">

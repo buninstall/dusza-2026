@@ -86,9 +86,7 @@ function runtimeContent(result: RunResult, isLimit: boolean, actions: ReportActi
     title: <code className="report-code">{hu.play.runtimeErrorTitle(code, line)}</code>,
     body: (
       <>
-        <p>
-          <strong>{explanation.title}.</strong> {explanation.hint}
-        </p>
+        <p>{explanation.title}.</p>
         <div className="report-actions">
           <ShowLine line={line} onShowLine={actions.onShowLine} />
           {code === "E_BEDROCK_HIT" && actions.onInsertGuard ? (
@@ -123,20 +121,14 @@ function reportContent(props: ShiftReportProps): Content {
   return {
     stamp: isTreasure ? hu.stamps.treasure : hu.stamps.ok,
     tone: "ok",
-    title: hu.play.finishedTitle,
-    body: (
-      <>
-        <p>{hu.play.finishedBody(gold, result?.steps ?? 0)}</p>
-        {isTreasure ? <p className="report-reward">{hu.play.allGold}</p> : null}
-        {props.onReplay ? (
-          <div className="report-actions">
-            <Button size="sm" icon="replay" onPress={props.onReplay}>
-              {hu.play.replay}
-            </Button>
-          </div>
-        ) : null}
-      </>
-    ),
+    title: hu.play.finishedBody(gold, result?.steps ?? 0),
+    body: props.onReplay ? (
+      <div className="report-actions">
+        <Button size="sm" icon="replay" onPress={props.onReplay}>
+          {hu.play.replay}
+        </Button>
+      </div>
+    ) : null,
   };
 }
 
@@ -152,13 +144,17 @@ export function ShiftReport(props: ShiftReportProps) {
       data-tone={content.tone}
       data-kind={props.kind}
     >
-      <span className="report-stamp" aria-hidden="true">
-        <PixelText text={content.stamp} scale={2} />
-      </span>
-      <p className="report-title">{content.title}</p>
-      <div className="report-body">{content.body}</div>
-      {props.extra}
-      {props.footer ? <div className="report-footer">{props.footer}</div> : null}
+      <div className="report-head">
+        <span className="report-stamp" aria-hidden="true">
+          <PixelText text={content.stamp} scale={2} />
+        </span>
+        <p className="report-title">{content.title}</p>
+      </div>
+      <div className="report-row">
+        {content.body ? <div className="report-body">{content.body}</div> : null}
+        {props.extra}
+        {props.footer ? <div className="report-footer">{props.footer}</div> : null}
+      </div>
     </div>
   );
 }

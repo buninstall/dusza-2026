@@ -10,7 +10,6 @@
   min-height: 0;
   grid-template-columns: minmax(0, 1fr) clamp(26rem, 34vw, 34rem);
   grid-template-areas: "stage sheet";
-  margin-top: calc(-1 * var(--main-pad-top) - var(--hazard-height) / 2);
 }
 
 .play[data-layout="cab"] > .stage {

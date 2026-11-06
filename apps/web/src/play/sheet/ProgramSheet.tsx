@@ -1,5 +1,4 @@
 import type { Diagnostic } from "@minescript/engine";
-import { useNavigate } from "@tanstack/react-router";
 import { type Ref, type RefObject, useId, useState } from "react";
 import { toast } from "../../components/ui/Toast.tsx";
 import type { RuntimeMark } from "../../editor/exec-line.ts";
@@ -13,11 +12,9 @@ import { decodeProgramFile, PROGRAM_MAX_CHARS } from "../program-file.ts";
 import { BlockDrawers } from "./BlockDrawers.tsx";
 import type { Block } from "./blocks.ts";
 import { FaultBar } from "./FaultBar.tsx";
-import { ForemanTip } from "./ForemanTip.tsx";
 import { reportFormat } from "./format-report.ts";
 import { ProgramLibraryDialog } from "./ProgramLibraryDialog.tsx";
 import { DocumentTab, SheetToolbar } from "./SheetToolbar.tsx";
-import { type LastRun, pickTip, type TipAction } from "./tips.ts";
 import "./Sheet.css";
 import type { ProgramPersistence } from "./useProgramPersistence.ts";
 
@@ -25,18 +22,12 @@ type ProgramSheetProps = {
   draft: ProgramDraft;
   onDraftChange: (draft: ProgramDraft) => void;
   persistence: ProgramPersistence;
-  mapId: number;
   mapTitle: string;
-  reachableGold: number;
   editorRef: RefObject<EditorHandle | null>;
   isLocked: boolean;
-  isActive: boolean;
   execLine: number | null;
   errorLines: readonly number[];
   runtimeMark: RuntimeMark | null;
-  lastRun: LastRun | null;
-  wasRefused: boolean;
-  attempt: number;
   ref?: Ref<HTMLElement>;
 };
 
@@ -54,10 +45,8 @@ function useSheetDiagnostics() {
 export function ProgramSheet(props: ProgramSheetProps) {
   const { draft, onDraftChange, persistence, editorRef, isLocked } = props;
   const helpId = useId();
-  const navigate = useNavigate();
   const lint = useSheetDiagnostics();
   const [announcement, setAnnouncement] = useState("");
-  const [hiddenAttempt, setHiddenAttempt] = useState(-1);
   const ui = usePlayUi();
 
   const importFile = async (file: File) => {
@@ -77,47 +66,6 @@ export function ProgramSheet(props: ProgramSheetProps) {
     }
   };
 
-  const firstError = lint.diagnostics.find((diagnostic) => diagnostic.severity === "error");
-  const tip = pickTip({
-    isActive: props.isActive,
-    diagnostics: lint.diagnostics,
-    isEmpty: draft.source.trim().length === 0,
-    wasRefused: props.wasRefused,
-    isBlockedTipHidden: hiddenAttempt === props.attempt,
-    hasRunOnce: ui.hasRunOnce,
-    lastRun: props.lastRun,
-    reachableGold: props.reachableGold,
-    dismissed: ui.dismissedTips,
-  });
-
-  const runTip = (action: TipAction) => {
-    const editor = editorRef.current;
-    const actions: Record<TipAction, () => void> = {
-      firstError: () => revealDiagnostic(editor, firstError),
-      format: () => reportFormat(editor?.format() ?? null),
-      showEmptyBlock: () =>
-        revealDiagnostic(
-          editor,
-          lint.diagnostics.find((diagnostic) => diagnostic.code === "LINT_EMPTY_BLOCK"),
-        ),
-      openRobot: () => ui.setOpenDrawer("robot"),
-      fullMap: () => ui.setFogMode("full"),
-      leaderboard: () =>
-        void navigate({ to: "/leaderboard/$mapId", params: { mapId: String(props.mapId) } }),
-    };
-    actions[action]();
-  };
-
-  const dismissTip = () => {
-    if (tip?.id === "blocked") {
-      setHiddenAttempt(props.attempt);
-      return;
-    }
-    if (tip) {
-      ui.dismissTip(tip.id);
-    }
-  };
-
   return (
     <section id="program" ref={props.ref} aria-label={hu.play.programHeading} className="sheet">
       <SheetToolbar
@@ -129,8 +77,8 @@ export function ProgramSheet(props: ProgramSheetProps) {
         onOpenLibrary={() => persistence.setPanel("library")}
         onFormat={() => reportFormat(editorRef.current?.format() ?? null)}
         onSave={persistence.saveCurrent}
+        status={<DocumentTab draft={draft} isLocked={isLocked} lockText={hu.play.locked} />}
       />
-      <DocumentTab draft={draft} isLocked={isLocked} lockText={hu.play.locked} />
       <BlockDrawers isDisabled={isLocked} onInsert={insert} />
       <div className="sheet-editor">
         <MineScriptEditor
@@ -157,7 +105,6 @@ export function ProgramSheet(props: ProgramSheetProps) {
           {hu.play.tooLong(formatCount(draft.source.length), formatCount(PROGRAM_MAX_CHARS))}
         </p>
       ) : null}
-      {tip ? <ForemanTip key={tip.id} tip={tip} onAction={runTip} onDismiss={dismissTip} /> : null}
       <FaultBar
         diagnostics={lint.diagnostics}
         hasAnalyzerFailed={lint.hasFailed}

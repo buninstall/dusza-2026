@@ -178,7 +178,7 @@ export function transport(page: Page, name: string): Locator {
 }
 
 export function finishedReport(page: Page): Locator {
-  return page.getByRole("status").filter({ hasText: "Sikeres futás" });
+  return page.getByRole("status").filter({ hasText: "A program hiba nélkül lefutott" });
 }
 
 export function stoppedReport(page: Page): Locator {

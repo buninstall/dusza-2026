@@ -18,10 +18,6 @@
   animation: enter-drop var(--motion-enter) var(--ease-px3);
 }
 
-.plate[data-docked="true"] {
-  margin-top: calc(-1 * var(--main-pad-top) - var(--hazard-height) / 2);
-}
-
 .plate::before,
 .plate::after,
 .plate-rivets::before,

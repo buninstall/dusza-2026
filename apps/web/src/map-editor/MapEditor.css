@@ -235,7 +235,7 @@
   min-width: 0;
   min-height: 0;
   border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface) var(--mat-pattern);
+  background: var(--c-surface);
   background-size: 8px 8px;
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
 }

@@ -438,10 +438,8 @@ export const hu = {
     blockedAnnounce: (count: number, line: number, title: string) =>
       `A program nem indítható: ${count} szintaktikai hiba. Első: ${lineRef(line)}, ${title}.`,
     runtimeErrorTitle: (code: string, line: number) => `${code} · ${lineRef(line)}`,
-    finishedTitle: "Sikeres futás",
     finishedBody: (gold: number, steps: number) =>
       `A program hiba nélkül lefutott: ${gold} arany, ${steps} lépés.`,
-    allGold: "Minden elérhető arany megvan.",
     stoppedTitle: "Leállítva",
     stoppedBody: "A leállított futás nem kerül a ranglistára.",
     engineCrashTitle: "A futtatómotor hibát jelzett",
@@ -557,26 +555,6 @@ export const hu = {
         hint: "Négyszer futtatja a törzset. Más számhoz mindkét 4-est írd át.",
       },
     },
-  },
-  tips: {
-    label: "Tipp",
-    dismiss: "Tipp elrejtése",
-    blocked: "A hibás program nem indul. Javítsd a jelölt sorokat; az F8 a következő hibára ugrik.",
-    blockedAction: "Első hiba",
-    spacing: "Szóköz- vagy behúzáshiba van. A Formázás rendbe teszi, ha más hiba nincs.",
-    spacingAction: "Formázás",
-    emptyBlock: "Az if, else és while alá tartozó sorokat húzd beljebb 4 szóközzel (Tab).",
-    emptyBlockAction: "Mutasd",
-    empty:
-      "Kezdd egy lépéssel: a Robot fiók step forward 1 parancsa egy mezővel viszi előre a robotot.",
-    emptyAction: "Robot fiók",
-    firstRun:
-      "Indítsd el a programot a Futtatás gombbal vagy a Ctrl+Enter billentyűvel, és figyeld a robotot.",
-    goldLeft: (count: number) =>
-      `Még ${count} elérhető arany maradt. A Teljes térkép nézetben látod, hol.`,
-    goldLeftAction: "Teljes térkép",
-    optimise: "Minden elérhető arany a tiéd. Kevesebb lépéssel előrébb kerülsz a ranglistán.",
-    optimiseAction: "Ranglista",
   },
   programs: {
     library: "Programtár",

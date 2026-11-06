@@ -131,6 +131,7 @@ export function EditorBar(props: EditorBarProps) {
       <div className="ed-title">
         <TextField
           label={hu.mapEditor.titleField}
+          isLabelHidden
           value={props.title}
           onChange={props.onTitleChange}
           isRequired
