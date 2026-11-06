@@ -1,9 +1,11 @@
 import type { Pos } from "@minescript/engine";
 import { useId, useMemo, useReducer, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { Button } from "../components/ui/Button.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
+import { api, call, errorMessage } from "../lib/api.ts";
 import { downloadText, safeFilename } from "../lib/files.ts";
 import { hasVisibleText } from "../lib/text.ts";
 import { canvasOverlay } from "./canvas-overlay.tsx";
@@ -11,16 +13,19 @@ import { EditorBar, type SaveState } from "./EditorBar.tsx";
 import { EditorCanvas } from "./EditorCanvas.tsx";
 import {
   changedCells,
+  clearDraft,
   type DraftMap,
   draftFromMap,
   draftGrid,
   draftRobot,
   draftToText,
+  frameDraft,
   type Mode,
   resizeDraft,
   type Tool,
   turnRobot,
 } from "./editor-state.ts";
+import { GeneratorDialog } from "./GeneratorDialog.tsx";
 import { historyReducer, initialHistory } from "./history.ts";
 import {
   CheckList,
@@ -42,6 +47,7 @@ import {
 } from "./editor-issues.ts";
 import { parseMapFile } from "./map-file.ts";
 import { ToolRail } from "./ToolRail.tsx";
+import { TrialPlay } from "./TrialPlay.tsx";
 import { MODE_LABEL, TOOL_LABEL } from "./tool-labels.ts";
 import { useCanvasTools } from "./useCanvasTools.ts";
 import { useEditorKeys } from "./useEditorKeys.ts";
@@ -87,6 +93,8 @@ export function MapEditor({
   const [saveState, setSaveState] = useState<SaveState>(mapId === null ? "new" : "clean");
   const [flash, setFlash] = useState<{ cells: readonly Pos[]; key: number } | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const [isTrying, setTrying] = useState(false);
+  const [isComputingPar, setComputingPar] = useState(false);
   const draft = history.present;
   const tools = useCanvasTools({
     draft,
@@ -195,6 +203,52 @@ export function MapEditor({
     onDelete?.();
   };
 
+  const commitShape = (next: DraftMap, message: string) => {
+    dispatch({ type: "commit", next });
+    setFlash({ cells: changedCells(draft, next), key: Date.now() });
+    setAnnouncement(message);
+  };
+
+  const computePar = async () => {
+    setComputingPar(true);
+    try {
+      const { parSteps } = await call(api.maps.par.$post({ json: { content: text } }));
+      if (parSteps === null) {
+        toast.info(hu.par.noSolution);
+        return;
+      }
+      setDetails((current) => ({ ...current, parSteps }));
+      toast.success(hu.par.computed(parSteps));
+    } catch (error) {
+      toast.error(errorMessage(error, hu.par.failed));
+    } finally {
+      setComputingPar(false);
+    }
+  };
+
+  const tryOut = () => {
+    if (!parsed.map) {
+      toast.error(hu.trial.blocked);
+      requestAnimationFrame(() => checkRef.current?.focus());
+      return;
+    }
+    setTrying(true);
+  };
+
+  if (isTrying && parsed.map) {
+    return (
+      <>
+        <TrialPlay
+          map={parsed.map}
+          text={text}
+          title={details.title}
+          onBack={() => setTrying(false)}
+        />
+        <LeaveGuard shouldBlock={() => isDirty && !isLeaving.current} />
+      </>
+    );
+  }
+
   return (
     <div ref={rootRef} className="ed" data-tool={tool}>
       <EditorBar
@@ -209,6 +263,7 @@ export function MapEditor({
         onTitleChange={(title) => setDetails({ ...details, title })}
         onImport={(file) => void importFile(file)}
         onExport={exportMap}
+        onTry={tryOut}
         onSave={() => void save()}
       />
       <ToolRail
@@ -219,6 +274,32 @@ export function MapEditor({
         onToolChange={setTool}
         onModeChange={setMode}
         onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
+        actions={
+          <>
+            <Button
+              size="sm"
+              icon="rect"
+              onPress={() => commitShape(frameDraft(draft), hu.shape.framed)}
+            >
+              {hu.shape.frame}
+            </Button>
+            <Button
+              size="sm"
+              icon="bucket"
+              onPress={() => commitShape(clearDraft(draft), hu.shape.cleared)}
+            >
+              {hu.shape.clear}
+            </Button>
+            <GeneratorDialog
+              rows={draft.rows}
+              cols={draft.cols}
+              onGenerated={(map, parSteps) => {
+                commitShape(draftFromMap(map), hu.generator.done(parSteps));
+                setDetails((current) => ({ ...current, parSteps }));
+              }}
+            />
+          </>
+        }
       />
       <EditorCanvas
         map={grid}
@@ -258,7 +339,13 @@ export function MapEditor({
           onPickGold={() => setTool("gold")}
           onGoTo={goTo}
         />
-        <DetailsBlock details={details} onChange={setDetails} />
+        <DetailsBlock
+          details={details}
+          onChange={setDetails}
+          canComputePar={parsed.map !== null}
+          isComputingPar={isComputingPar}
+          onComputePar={() => void computePar()}
+        />
         {version && mapId !== null ? (
           <VersionBlock mapId={mapId} title={details.title} version={version} onDelete={leave} />
         ) : null}

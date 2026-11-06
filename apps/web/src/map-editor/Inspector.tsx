@@ -5,6 +5,7 @@ import { Notice } from "../components/Notice.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { ConfirmDialog } from "../components/ui/Dialog.tsx";
 import { Link } from "../components/ui/Link.tsx";
+import { NumberField } from "../components/ui/NumberField.tsx";
 import { Segmented } from "../components/ui/Segmented.tsx";
 import { TextField } from "../components/ui/TextField.tsx";
 import { diagnosticTitles, hu } from "../i18n/hu.ts";
@@ -12,13 +13,19 @@ import { PixelText } from "../pixel/PixelText.tsx";
 
 export type Visibility = "public" | "private";
 
-export type MapDetails = { title: string; description: string; visibility: Visibility };
+export type MapDetails = {
+  title: string;
+  description: string;
+  visibility: Visibility;
+  parSteps: number | null;
+};
 
 export type VersionInfo = { current: number; next: number; runCount: number };
 
 export type ImportError = { file: string; message: string; diagnostics: readonly Diagnostic[] };
 
 export const TITLE_MAX = 80;
+export const PAR_MAX = 1000;
 export const DESCRIPTION_MAX = 500;
 
 function InspectorSection({
@@ -182,15 +189,46 @@ export function CheckList(props: CheckListProps) {
   );
 }
 
+type DetailsBlockProps = {
+  details: MapDetails;
+  onChange: (details: MapDetails) => void;
+  canComputePar: boolean;
+  isComputingPar: boolean;
+  onComputePar: () => void;
+};
+
 export function DetailsBlock({
   details,
   onChange,
-}: {
-  details: MapDetails;
-  onChange: (details: MapDetails) => void;
-}) {
+  canComputePar,
+  isComputingPar,
+  onComputePar,
+}: DetailsBlockProps) {
   return (
     <InspectorSection title={hu.mapEditor.detailsHeading}>
+      <div className="ed-par">
+        <NumberField
+          label={hu.par.field}
+          minValue={1}
+          maxValue={PAR_MAX}
+          value={details.parSteps ?? Number.NaN}
+          onChange={(value) =>
+            onChange({
+              ...details,
+              parSteps: Number.isFinite(value) ? Math.round(value) : null,
+            })
+          }
+          description={hu.par.help}
+        />
+        <Button
+          size="sm"
+          icon="robot"
+          isDisabled={!canComputePar || isComputingPar}
+          onPress={onComputePar}
+        >
+          {isComputingPar ? hu.par.computing : hu.par.compute}
+        </Button>
+      </div>
       <TextField
         label={hu.mapEditor.descriptionField}
         value={details.description}

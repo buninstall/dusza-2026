@@ -74,6 +74,26 @@
   gap: var(--space-1);
 }
 
+.ed-quick {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
+}
+
+.ed-par {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.ed-generator-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
 .ed-group[data-inactive="true"] .ed-options {
   background-image: var(--hatch-pattern);
 }

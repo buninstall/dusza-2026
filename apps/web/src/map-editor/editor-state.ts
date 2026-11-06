@@ -258,3 +258,24 @@ export function changedCells(before: DraftMap, after: DraftMap): Pos[] {
   }
   return cells;
 }
+
+function isRobotCellAt(draft: DraftMap, row: number, col: number): boolean {
+  return draft.robot?.row === row && draft.robot.col === col;
+}
+
+export function frameDraft(draft: DraftMap): DraftMap {
+  const isEdge = (row: number, col: number) =>
+    row === 0 || col === 0 || row === draft.rows - 1 || col === draft.cols - 1;
+  return {
+    ...draft,
+    cells: draft.cells.map((line, row) =>
+      line.map(
+        (cell, col): Cell => (isEdge(row, col) && !isRobotCellAt(draft, row, col) ? "wall" : cell),
+      ),
+    ),
+  };
+}
+
+export function clearDraft(draft: DraftMap): DraftMap {
+  return { ...draft, cells: draft.cells.map((line) => line.map((): Cell => "empty")) };
+}

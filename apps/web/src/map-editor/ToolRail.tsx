@@ -1,5 +1,5 @@
 import type { Dir } from "@minescript/engine";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Label, Radio, RadioGroup } from "react-aria-components";
 import { dirNames, hu } from "../i18n/hu.ts";
 import { quarterIndex } from "../mine/quarter-turns.ts";
@@ -58,6 +58,7 @@ type ToolRailProps = {
   onToolChange: (tool: Tool) => void;
   onModeChange: (mode: Mode) => void;
   onDirChange: (dir: Dir) => void;
+  actions?: ReactNode;
 };
 
 export function ToolRail({
@@ -68,6 +69,7 @@ export function ToolRail({
   onToolChange,
   onModeChange,
   onDirChange,
+  actions,
 }: ToolRailProps) {
   return (
     <aside aria-label={hu.mapEditor.toolsLabel} className="ed-rail">
@@ -136,6 +138,12 @@ export function ToolRail({
           ))}
         </div>
       </RadioGroup>
+      {actions ? (
+        <div className="ed-group">
+          <p className="label">{hu.shape.heading}</p>
+          <div className="ed-quick">{actions}</div>
+        </div>
+      ) : null}
     </aside>
   );
 }

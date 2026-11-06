@@ -269,7 +269,7 @@
   cursor: pointer;
 }
 
-.cm-breakpoint-gutter .cm-gutterElement {
+.cm-editor .cm-breakpoint-gutter .cm-gutterElement {
   display: grid;
   place-items: center;
 }

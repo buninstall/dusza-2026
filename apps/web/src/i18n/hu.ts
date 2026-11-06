@@ -825,6 +825,7 @@ export const hu = {
     note: "Próbafutás: az eredmény nem kerül a ranglistára.",
   },
   shape: {
+    heading: "Gyors műveletek",
     frame: "Falkeret",
     frameHint: "A térkép szélére falat húz",
     clear: "Mind üres",

@@ -32,6 +32,7 @@ type EditorBarProps = {
   onImport: (file: File) => void;
   onExport: () => void;
   onSave: () => void;
+  onTry: () => void;
 };
 
 function SaveButton({
@@ -85,17 +86,9 @@ export function EditorBar(props: EditorBarProps) {
       }
       actions={
         <>
-          {props.mapId === null ? null : (
-            <Link
-              to="/play/$mapId"
-              params={{ mapId: String(props.mapId) }}
-              variant="secondary"
-              size="sm"
-              icon="play"
-            >
-              {hu.mapEditor.tryOut}
-            </Link>
-          )}
+          <Button size="sm" icon="play" onPress={props.onTry}>
+            {hu.trial.button}
+          </Button>
           <FileTrigger
             acceptedFileTypes={[".txt", "text/plain"]}
             onSelect={(files) => {
