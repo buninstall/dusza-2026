@@ -44,7 +44,7 @@ A konfliktus oka mindig az, hogy két ember ugyanazt a fájlt szerkeszti. Ezért
 
 A `.gitignore` kizárja a gépi adatokat: memória, session-előzmények, lokális beállítások, a `docs/` mappa és minden `*.local.*` fájl. A felkerülő Claude-tartalom csak ez: `CLAUDE.md`, `AGENTS.md`, `.claude/agents/`, `.claude/skills/`, `.claude/commands/`, `.claude/rules/`, `.claude/roles/`, `.claude/hooks/`, `.claude/settings.json`.
 
-A `docs/` mappából kivételesen a projekt-dokumentumok felkerülnek: `feladat.md`, `feladat.pdf`, `architektura.md`, `dontesek.md`, `contracts.md`, `roadmap.md`, `tesztterv.md`, `a11y.md`, `beadando.md`, és a `receptek/` mappa (kész programok minden pályára a kézi teszteléshez). Minden más a `docs/`-ban (AI-memória, promptok) lokális marad.
+A `docs/` mappából kivételesen a projekt-dokumentumok felkerülnek: `feladat.md`, `feladat.pdf`, `architektura.md`, `dontesek.md`, `contracts.md`, `roadmap.md`, `tesztterv.md`, `a11y.md`, `beadando.md`, `megfeleles.md` (a kiírás mondatonkénti megfelelőségi táblázata), és a `receptek/` mappa (kész programok minden pályára a kézi teszteléshez). Minden más a `docs/`-ban (AI-memória, promptok) lokális marad.
 
 ## 6. Projekt röviden
 
