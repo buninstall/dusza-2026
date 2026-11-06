@@ -27,6 +27,39 @@ describe("CSRF Origin-ellenőrzés", () => {
     expect(response.status).toBe(403);
   });
 
+  test("a null, a más portú, az aldomain és a hibás Origin is elutasítva, minden nem-GET metódusnál", async () => {
+    await using context = await createTestContext();
+    const user = context.client();
+    await user.register("vedekezo");
+    const origins = [
+      "null",
+      "http://localhost:8080",
+      "http://evil.localhost",
+      "http://localhost.evil.example",
+      "nem-url",
+      "file://",
+    ];
+    for (const origin of origins) {
+      for (const [method, path] of [
+        ["POST", "/api/programs"],
+        ["PUT", "/api/programs/1"],
+        ["PATCH", "/api/admin/users/1"],
+        ["DELETE", "/api/maps/1"],
+        ["POST", "/api/auth/logout"],
+      ] as const) {
+        const response = await user.request(
+          method,
+          path,
+          { title: "x", source: "" },
+          { Origin: origin },
+        );
+        expect(response.status).toBe(403);
+        expect((await json<ErrorBody>(response)).error.code).toBe("CSRF_ORIGIN");
+      }
+    }
+    expect((await user.get("/api/auth/me")).status).toBe(200);
+  });
+
   test("a GET kérésekhez nem kell Origin", async () => {
     await using context = await createTestContext();
     const { client } = context;
