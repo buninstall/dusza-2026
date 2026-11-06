@@ -1,4 +1,3 @@
-import { clsx } from "clsx";
 import type { ReactNode } from "react";
 import {
   Menu as AriaMenu,
@@ -6,39 +5,36 @@ import {
   type MenuItemProps,
   MenuTrigger,
   Popover,
+  Separator,
 } from "react-aria-components";
+import type { IconName } from "../../pixel/icons.ts";
 import { Button } from "./Button.tsx";
+import "./Overlay.css";
 
 type MenuProps = {
   label: ReactNode;
   ariaLabel: string;
+  icon?: IconName;
   children: ReactNode;
 };
 
-export function Menu({ label, ariaLabel, children }: MenuProps) {
+export function Menu({ label, ariaLabel, icon, children }: MenuProps) {
   return (
     <MenuTrigger>
-      <Button variant="ghost" size="sm" aria-label={ariaLabel}>
+      <Button variant="ghost" size="sm" icon={icon} aria-label={ariaLabel}>
         {label}
       </Button>
-      <Popover
-        placement="bottom end"
-        className="plate min-w-48 p-1 outline-none data-[entering]:animate-in"
-      >
-        <AriaMenu className="outline-none">{children}</AriaMenu>
+      <Popover placement="bottom end" className="overlay-menu-popover">
+        <AriaMenu className="overlay-menu">{children}</AriaMenu>
       </Popover>
     </MenuTrigger>
   );
 }
 
-export function MenuItem({ className, ...props }: MenuItemProps) {
-  return (
-    <AriaMenuItem
-      {...props}
-      className={clsx(
-        "flex cursor-default items-center gap-2 rounded-[8px] px-3 py-2 text-sm text-ink outline-none data-[focused]:bg-paper-sunken data-[disabled]:text-ink-muted",
-        typeof className === "string" ? className : null,
-      )}
-    />
-  );
+export function MenuItem(props: Omit<MenuItemProps, "className">) {
+  return <AriaMenuItem {...props} className="overlay-menu-item" />;
+}
+
+export function MenuSeparator() {
+  return <Separator className="overlay-menu-separator" />;
 }

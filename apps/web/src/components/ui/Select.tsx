@@ -1,20 +1,22 @@
-import { ChevronDown } from "lucide-react";
 import {
   Select as AriaSelect,
   type SelectProps as AriaSelectProps,
   Button,
+  type Key,
   Label,
   ListBox,
   ListBoxItem,
   Popover,
   SelectValue,
 } from "react-aria-components";
+import { PixelIcon } from "../../pixel/PixelIcon.tsx";
+import "./Field.css";
 
 export type SelectOption<K extends string> = { id: K; label: string };
 
 type SelectProps<K extends string> = Omit<
   AriaSelectProps<SelectOption<K>, "single">,
-  "children" | "value" | "onChange"
+  "children" | "value" | "onChange" | "className"
 > & {
   label: string;
   options: readonly SelectOption<K>[];
@@ -29,32 +31,31 @@ export function Select<K extends string>({
   onChange,
   ...props
 }: SelectProps<K>) {
+  const handleChange = (key: Key | null) => {
+    const match = options.find((option) => option.id === key);
+    if (match) {
+      onChange(match.id);
+    }
+  };
   return (
-    <AriaSelect
-      {...props}
-      value={value}
-      onChange={(key) => {
-        const match = options.find((option) => option.id === key);
-        if (match) {
-          onChange(match.id);
-        }
-      }}
-      className="flex flex-col gap-1.5"
-    >
-      <Label className="text-sm font-semibold text-ink">{label}</Label>
-      <Button className="flex h-10 items-center justify-between gap-2 rounded-[10px] border border-line-strong bg-paper-raised px-3 text-left text-ink outline-none data-[hovered]:border-ink data-[focus-visible]:outline-3 data-[focus-visible]:outline-lamp">
+    <AriaSelect {...props} value={value} onChange={handleChange} className="field">
+      <Label className="field-label">{label}</Label>
+      <Button className="field-select-button">
         <SelectValue />
-        <ChevronDown aria-hidden size={16} />
+        <PixelIcon name="chevronDown" />
       </Button>
-      <Popover className="plate min-w-[var(--trigger-width)] p-1 outline-none">
-        <ListBox items={options} className="outline-none">
+      <Popover className="field-popover">
+        <ListBox items={options} className="field-list-box">
           {(option) => (
-            <ListBoxItem
-              id={option.id}
-              textValue={option.label}
-              className="cursor-default rounded-[8px] px-3 py-2 text-sm outline-none data-[focused]:bg-paper-sunken data-[selected]:font-semibold"
-            >
-              {option.label}
+            <ListBoxItem id={option.id} textValue={option.label} className="field-option">
+              {({ isSelected }) => (
+                <>
+                  <span className="field-option-mark">
+                    {isSelected ? <PixelIcon name="check" size="sm" /> : null}
+                  </span>
+                  {option.label}
+                </>
+              )}
             </ListBoxItem>
           )}
         </ListBox>

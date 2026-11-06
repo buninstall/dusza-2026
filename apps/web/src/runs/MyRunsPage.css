@@ -1,0 +1,18 @@
+.runs-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.runs-outcome {
+  font-family: var(--font-code);
+  font-size: var(--text-xs);
+}
+
+.runs-outcome[data-outcome="ok"] {
+  color: var(--c-ok);
+}
+
+.runs-outcome[data-outcome="runtimeError"] {
+  color: var(--c-rust);
+}

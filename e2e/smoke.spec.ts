@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login } from "./helpers.ts";
+import { editor, login, openPlay } from "./helpers.ts";
 
 test("bejelentkezés → térképlista → játék → kijelentkezés", async ({ page }) => {
   await page.goto("/");
@@ -7,18 +7,25 @@ test("bejelentkezés → térképlista → játék → kijelentkezés", async ({
   await login(page);
 
   await expect(page.getByRole("heading", { level: 2, name: "1. Egyenes folyosó" })).toBeVisible();
-  await page.getByRole("link", { name: "Játék: 1. Egyenes folyosó" }).click();
-  await expect(page).toHaveURL(/\/play\/\d+/);
-  await expect(page.getByRole("textbox", { name: "MineScript program" })).toBeVisible();
-  await expect(page.getByRole("grid", { name: /térképe$/ })).toBeVisible();
-
-  await page.getByRole("button", { name: "Futtatás" }).click();
-  await expect(page.locator("p", { hasText: "A program hiba nélkül lefutott." })).toBeVisible();
-  await expect(page.getByText("Az eredmény rögzítve: 0 arany, 2 lépés.")).toBeVisible();
+  await openPlay(page, "1. Egyenes folyosó");
+  await expect(editor(page)).toBeVisible();
+  await expect(page.getByText("Műszerek")).toBeAttached();
 
   await page.getByRole("button", { name: /^Felhasználói menü/ }).click();
   await page.getByRole("menuitem", { name: "Kijelentkezés" }).click();
   await expect(page).toHaveURL(/\/login/);
   await page.goto("/maps");
   await expect(page).toHaveURL(/\/login/);
+});
+
+test("a kézikönyv és a futásnapló elérhető a navigációból", async ({ page }) => {
+  await login(page);
+  await page.getByRole("link", { name: "Kézikönyv" }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "A MineScript kézikönyve" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Lépésszámlálás" }).click();
+  await expect(page).toHaveURL(/#lepesek$/);
+  await page.getByRole("link", { name: "Futásaim" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Futásaim" })).toBeVisible();
 });

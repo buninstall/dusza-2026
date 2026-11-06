@@ -8,50 +8,43 @@ import {
   Text,
   TextArea,
 } from "react-aria-components";
+import "./Field.css";
 
-export const fieldInput =
-  "w-full rounded-[10px] border border-line-strong bg-paper-raised px-3 py-2 text-ink placeholder:text-ink-muted outline-none transition-colors data-[hovered]:border-ink data-[focused]:border-ink data-[focus-visible]:outline-3 data-[focus-visible]:outline-offset-1 data-[focus-visible]:outline-lamp data-[invalid]:border-rust";
-
-export type TextFieldProps = AriaTextFieldProps & {
+type TextFieldProps = Omit<AriaTextFieldProps, "className"> & {
   label: string;
-  description?: string;
-  errorMessage?: string;
-  placeholder?: string;
-  multiline?: boolean;
+  description?: string | undefined;
+  placeholder?: string | undefined;
+  isMultiline?: boolean;
   rows?: number;
+  className?: string | undefined;
 };
+
+const DEFAULT_ROWS = 3;
 
 export function TextField({
   label,
   description,
-  errorMessage,
   placeholder,
-  multiline = false,
-  rows = 3,
+  isMultiline = false,
+  rows = DEFAULT_ROWS,
   className,
   ...props
 }: TextFieldProps) {
+  const inputProps = placeholder === undefined ? {} : { placeholder };
   return (
-    <AriaTextField
-      {...props}
-      className={clsx("flex flex-col gap-1.5", typeof className === "string" ? className : null)}
-    >
-      <Label className="text-sm font-semibold text-ink">{label}</Label>
-      {multiline ? (
-        <TextArea
-          rows={rows}
-          {...(placeholder === undefined ? {} : { placeholder })}
-          className={clsx(fieldInput, "resize-y")}
-        />
+    <AriaTextField {...props} className={clsx("field", className)}>
+      <Label className="field-label">{label}</Label>
+      {isMultiline ? (
+        <TextArea {...inputProps} rows={rows} className={clsx("field-input", "field-textarea")} />
       ) : (
-        <Input {...(placeholder === undefined ? {} : { placeholder })} className={fieldInput} />
+        <Input {...inputProps} className="field-input" />
       )}
       {description ? (
-        <Text slot="description" className="text-xs text-ink-muted">
+        <Text slot="description" className="field-description">
           {description}
         </Text>
       ) : null}
-      <FieldError className="text-sm font-medium text-rust">{errorMessage}</FieldError>
+      <FieldError className="field-error" />
     </AriaTextField>
   );
 }

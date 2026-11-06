@@ -3,6 +3,7 @@ import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { Toasts } from "../components/ui/Toast.tsx";
 import { EngineProvider } from "../engine/EngineProvider.tsx";
 import { hu } from "../i18n/hu.ts";
+import { SpriteSheet } from "../pixel/SpriteSheet.tsx";
 
 export type RouterContext = { queryClient: QueryClient };
 
@@ -12,6 +13,7 @@ function RootLayout() {
       <a href="#main" className="skip-link">
         {hu.app.skipToContent}
       </a>
+      <SpriteSheet />
       <EngineProvider>
         <Outlet />
       </EngineProvider>
