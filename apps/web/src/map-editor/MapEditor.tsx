@@ -1,7 +1,7 @@
 import type { Pos } from "@minescript/engine";
 import { useId, useMemo, useReducer, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { Button } from "../components/ui/Button.tsx";
+import { Menu, MenuItem } from "../components/ui/Menu.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
@@ -48,7 +48,6 @@ import {
 import { parseMapFile } from "./map-file.ts";
 import { ToolRail } from "./ToolRail.tsx";
 import { TrialPlay } from "./TrialPlay.tsx";
-import { MODE_LABEL, TOOL_LABEL } from "./tool-labels.ts";
 import { useCanvasTools } from "./useCanvasTools.ts";
 import { useEditorKeys } from "./useEditorKeys.ts";
 
@@ -94,6 +93,7 @@ export function MapEditor({
   const [flash, setFlash] = useState<{ cells: readonly Pos[]; key: number } | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [isTrying, setTrying] = useState(false);
+  const [isGenerating, setGenerating] = useState(false);
   const [isComputingPar, setComputingPar] = useState(false);
   const draft = history.present;
   const tools = useCanvasTools({
@@ -194,10 +194,6 @@ export function MapEditor({
     shrouded: showReach ? shroudedCells(draft) : [],
     flash,
   });
-  const toolText =
-    tool === "robot"
-      ? `${TOOL_LABEL[tool]} · ${hu.mapEditor.robotSingle}`
-      : `${TOOL_LABEL[tool]} · ${MODE_LABEL[mode]}`;
   const leave = () => {
     isLeaving.current = true;
     onDelete?.();
@@ -275,31 +271,32 @@ export function MapEditor({
         onModeChange={setMode}
         onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
         actions={
-          <>
-            <Button
-              size="sm"
-              icon="rect"
-              onPress={() => commitShape(frameDraft(draft), hu.shape.framed)}
-            >
+          <Menu
+            label={hu.shape.heading}
+            ariaLabel={hu.shape.heading}
+            icon="chevronDown"
+            variant="secondary"
+            placement="bottom start"
+          >
+            <MenuItem onAction={() => commitShape(frameDraft(draft), hu.shape.framed)}>
               {hu.shape.frame}
-            </Button>
-            <Button
-              size="sm"
-              icon="bucket"
-              onPress={() => commitShape(clearDraft(draft), hu.shape.cleared)}
-            >
+            </MenuItem>
+            <MenuItem onAction={() => commitShape(clearDraft(draft), hu.shape.cleared)}>
               {hu.shape.clear}
-            </Button>
-            <GeneratorDialog
-              rows={draft.rows}
-              cols={draft.cols}
-              onGenerated={(map, parSteps) => {
-                commitShape(draftFromMap(map), hu.generator.done(parSteps));
-                setDetails((current) => ({ ...current, parSteps }));
-              }}
-            />
-          </>
+            </MenuItem>
+            <MenuItem onAction={() => setGenerating(true)}>{hu.generator.menuItem}</MenuItem>
+          </Menu>
         }
+      />
+      <GeneratorDialog
+        isOpen={isGenerating}
+        onOpenChange={setGenerating}
+        rows={draft.rows}
+        cols={draft.cols}
+        onGenerated={(map, parSteps) => {
+          commitShape(draftFromMap(map), hu.generator.done(parSteps));
+          setDetails((current) => ({ ...current, parSteps }));
+        }}
       />
       <EditorCanvas
         map={grid}
@@ -316,7 +313,6 @@ export function MapEditor({
         onCols={(cols) => dispatch({ type: "commit", next: resizeDraft(draft, draft.rows, cols) })}
         doomNotes={doomNotes(draft)}
         cursorText={hu.mapEditor.cursorAt(tools.cursor.row + 1, tools.cursor.col + 1)}
-        toolText={toolText}
         canUndo={history.past.length > 0}
         canRedo={history.future.length > 0}
         showReach={showReach}

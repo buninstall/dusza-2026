@@ -1,12 +1,11 @@
-import type { Ref } from "react";
-import { FileTrigger } from "react-aria-components";
+import { type ChangeEvent, type Ref, useRef } from "react";
 import { Led, type LedState } from "../components/Led.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Link } from "../components/ui/Link.tsx";
+import { Menu, MenuItem } from "../components/ui/Menu.tsx";
 import { TextField } from "../components/ui/TextField.tsx";
 import { hu } from "../i18n/hu.ts";
-import { firstFile } from "../lib/files.ts";
 import { TITLE_MAX } from "./Inspector.tsx";
 
 export type SaveState = "new" | "dirty" | "saving" | "saved" | "clean";
@@ -68,6 +67,38 @@ function SaveButton({
   );
 }
 
+function MapFileMenu({
+  onImport,
+  onExport,
+}: {
+  onImport: (file: File) => void;
+  onExport: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.item(0);
+    event.target.value = "";
+    if (file) {
+      onImport(file);
+    }
+  };
+  return (
+    <>
+      <Menu
+        label={hu.play.fileMenu}
+        ariaLabel={hu.mapEditor.fileMenuLabel}
+        icon="folder"
+        variant="secondary"
+        placement="bottom end"
+      >
+        <MenuItem onAction={() => inputRef.current?.click()}>{hu.mapEditor.importMap}</MenuItem>
+        <MenuItem onAction={onExport}>{hu.mapEditor.exportMap}</MenuItem>
+      </Menu>
+      <input ref={inputRef} type="file" accept=".txt,text/plain" hidden onChange={handleFile} />
+    </>
+  );
+}
+
 export function EditorBar(props: EditorBarProps) {
   const chip = CHIP[props.saveState];
   const isNew = props.mapId === null;
@@ -86,7 +117,7 @@ export function EditorBar(props: EditorBarProps) {
       }
       actions={
         <>
-          {props.mapId === null ? null : (
+          {props.mapId !== null && props.saveState !== "dirty" && props.saveState !== "new" ? (
             <Link
               to="/play/$mapId"
               params={{ mapId: String(props.mapId) }}
@@ -96,31 +127,12 @@ export function EditorBar(props: EditorBarProps) {
             >
               {hu.mapEditor.tryOut}
             </Link>
-          )}
-          <Button size="sm" icon="eye" onPress={props.onTry}>
-            {hu.trial.button}
-          </Button>
-          <FileTrigger
-            acceptedFileTypes={[".txt", "text/plain"]}
-            onSelect={(files) => {
-              const file = firstFile(files);
-              if (file) {
-                props.onImport(file);
-              }
-            }}
-          >
-            <Button size="sm" icon="upload">
-              {hu.mapEditor.importMap}
+          ) : (
+            <Button size="sm" icon="play" onPress={props.onTry}>
+              {hu.mapEditor.tryOut}
             </Button>
-          </FileTrigger>
-          <Button
-            size="sm"
-            icon="download"
-            data-blocked={props.isExportBlocked}
-            onPress={props.onExport}
-          >
-            {hu.mapEditor.exportMap}
-          </Button>
+          )}
+          <MapFileMenu onImport={props.onImport} onExport={props.onExport} />
           <span className="ed-chip">
             <Led state={chip.led} label={chip.label} isBlinking={props.saveState === "saving"} />
           </span>

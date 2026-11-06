@@ -17,7 +17,6 @@ const TOOL_SPRITES: Record<Tool, readonly string[]> = {
 };
 
 const MODE_ICON: Record<Mode, IconName> = { brush: "brush", rect: "rect", fill: "bucket" };
-const MODE_KEY: Record<Mode, string> = { brush: "E", rect: "T", fill: "K" };
 
 export function Swatch({ tool, dir }: { tool: Tool; dir: Dir }) {
   const turn = { "--turns": quarterIndex(dir) } as CSSProperties;
@@ -80,7 +79,7 @@ export function ToolRail({
       >
         <Label className="label">{hu.mapEditor.toolsLabel}</Label>
         <div className="ed-options" data-kind="tools">
-          {TOOLS.map((item, index) => (
+          {TOOLS.map((item) => (
             <Radio key={item} value={item} className="ed-option">
               <Swatch tool={item} dir={dir} />
               <span className="ed-option-label">{TOOL_LABEL[item]}</span>
@@ -90,7 +89,6 @@ export function ToolRail({
                   {hu.mapEditor.toolMissing}
                 </span>
               ) : null}
-              <kbd>{index + 1}</kbd>
             </Radio>
           ))}
         </div>
@@ -133,17 +131,11 @@ export function ToolRail({
                 <PixelIcon name={MODE_ICON[item]} />
               </span>
               <span className="ed-option-label">{MODE_LABEL[item]}</span>
-              <kbd>{MODE_KEY[item]}</kbd>
             </Radio>
           ))}
         </div>
       </RadioGroup>
-      {actions ? (
-        <div className="ed-group">
-          <p className="label">{hu.shape.heading}</p>
-          <div className="ed-quick">{actions}</div>
-        </div>
-      ) : null}
+      {actions ? <div className="ed-quick">{actions}</div> : null}
     </aside>
   );
 }

@@ -225,6 +225,7 @@ export function DetailsBlock({
           icon="robot"
           isDisabled={!canComputePar || isComputingPar}
           onPress={onComputePar}
+          className="ed-par-compute"
         >
           {isComputingPar ? hu.par.computing : hu.par.compute}
         </Button>
@@ -234,19 +235,13 @@ export function DetailsBlock({
         value={details.description}
         onChange={(description) => onChange({ ...details, description })}
         isMultiline
-        rows={4}
+        rows={3}
         maxLength={DESCRIPTION_MAX}
-        description={hu.mapEditor.descriptionCount(details.description.length, DESCRIPTION_MAX)}
       />
       <Segmented
         label={hu.mapEditor.visibility}
         value={details.visibility}
         onChange={(visibility) => onChange({ ...details, visibility })}
-        description={
-          details.visibility === "public"
-            ? hu.mapEditor.visibilityPublicHint
-            : hu.mapEditor.visibilityPrivateHint
-        }
         options={[
           { id: "public", label: hu.maps.public, icon: "grid" },
           { id: "private", label: hu.maps.private, icon: "lock" },
@@ -266,16 +261,11 @@ type VersionBlockProps = {
 export function VersionBlock({ mapId, title, version, onDelete }: VersionBlockProps) {
   return (
     <InspectorSection title={hu.mapEditor.versionHeading}>
-      <p className="mono ed-version">
-        {hu.mapEditor.versionRuns(version.current, version.runCount)}
-      </p>
-      <p>{hu.mapEditor.versionCurrent(version.current)}</p>
-      <p>
+      <p className="ed-version">
         {version.runCount > 0
-          ? hu.mapEditor.versionWillFork(version.runCount, version.next)
-          : hu.mapEditor.versionInPlace}
+          ? hu.mapEditor.versionSummary(version.current, version.runCount)
+          : hu.mapEditor.versionSummaryEmpty(version.current)}
       </p>
-      <p className="ed-muted">{hu.mapEditor.versionMetaOnly}</p>
       <div className="ed-version-actions">
         <Link
           to="/leaderboard/$mapId"

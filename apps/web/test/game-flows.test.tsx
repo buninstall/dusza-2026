@@ -92,7 +92,8 @@ describe("térképszerkesztő extrák", () => {
   test("a generálás betölti a pályát és kitölti a célértéket", async () => {
     respond("POST", "/maps/generate", { content: "1 3\n>@.\n", parSteps: 2, seed: 5 });
     const { user } = await openNew();
-    await user.click(screen.getByRole("button", { name: "Generálás" }));
+    await user.click(screen.getByRole("button", { name: "Továbbiak" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Generálás…" }));
     const dialog = await screen.findByRole("dialog", { name: "Pálya generálása" });
     await user.click(within(dialog).getByRole("radio", { name: "Nehéz" }));
     await user.click(within(dialog).getByRole("button", { name: "Generálás" }));
@@ -119,10 +120,11 @@ describe("térképszerkesztő extrák", () => {
     expect(await screen.findByText("Váratlan szerverhiba.")).toBeTruthy();
   });
 
-  test("a Próbajáték mentés nélkül játszik, és visszatér a szerkesztőhöz", async () => {
+  test("a Kipróbálás mentés nélkül játszik, és visszatér a szerkesztőhöz", async () => {
     const { user } = await openNew();
-    await user.click(screen.getByRole("button", { name: "Falkeret" }));
-    await user.click(screen.getByRole("button", { name: "Próbajáték" }));
+    await user.click(screen.getByRole("button", { name: "Továbbiak" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Falkeret" }));
+    await user.click(screen.getByRole("button", { name: "Kipróbálás" }));
     expect(await screen.findByText("Mentetlen térkép")).toBeTruthy();
     expect(
       screen.getAllByText(/Próbafutás: az eredmény nem kerül a ranglistára/).length,

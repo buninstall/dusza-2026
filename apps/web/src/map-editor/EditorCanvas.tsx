@@ -42,7 +42,6 @@ function SizeStepper({
 
 type StripProps = {
   cursorText: string;
-  toolText: string;
   canUndo: boolean;
   canRedo: boolean;
   showReach: boolean;
@@ -74,7 +73,6 @@ function CanvasStrip(props: StripProps) {
       </Button>
       <span className="ed-strip-text">
         <span className="mono">{props.cursorText}</span>
-        <span className="ed-strip-tool">{props.toolText}</span>
       </span>
       <ToggleButton
         isSelected={props.showReach}

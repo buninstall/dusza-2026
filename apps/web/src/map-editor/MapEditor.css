@@ -83,9 +83,13 @@
 
 .ed-par {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: flex-end;
   gap: var(--space-2);
+}
+
+.ed-par .field {
+  flex: 1 1 auto;
 }
 
 .ed-generator-sizes {

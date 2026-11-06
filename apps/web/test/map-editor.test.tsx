@@ -24,6 +24,11 @@ async function openNew() {
   return app;
 }
 
+async function exportMap(user: ReturnType<typeof renderApp>["user"]) {
+  await user.click(screen.getByRole("button", { name: /^Fájl/ }));
+  await user.click(await screen.findByRole("menuitem", { name: "Exportálás" }));
+}
+
 function saveButton(): HTMLElement {
   return screen.getByRole("button", { name: /^Mentés/ });
 }
@@ -114,7 +119,7 @@ describe("új térkép", () => {
     await user.keyboard("k1{ArrowRight}{ArrowRight}{Enter}");
     expect(screen.getByText(/Kitöltés: \d+ mező, Üres kamra/)).toBeTruthy();
     await user.keyboard("e");
-    expect(screen.getByText(/Üres kamra · Ecset/)).toBeTruthy();
+    expect((screen.getByRole("radio", { name: /Ecset/ }) as HTMLInputElement).checked).toBe(true);
   });
 
   test("az egérvonás egy lépés, a Shift+kattintás egyenest húz", async () => {
@@ -214,12 +219,12 @@ describe("új térkép", () => {
     await chooseFile(input, textFile("jo.txt", "1 3\r\n>.@\r\n"));
     await waitFor(() => expect(screen.getAllByRole("gridcell")).toHaveLength(3));
     expect(await screen.findByText(/A térkép betöltve a fájlból\./)).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Exportálás" }));
+    await exportMap(user);
     expect(click).toHaveBeenCalledOnce();
     await user.click(screen.getByRole("radio", { name: /Fal/ }));
     cell("1. sor, 1. oszlop: robot, kelet felé").focus();
     await user.keyboard("{Enter}");
-    await user.click(screen.getByRole("button", { name: "Exportálás" }));
+    await exportMap(user);
     expect(await screen.findByText("Csak érvényes térkép exportálható.")).toBeTruthy();
     expect(click).toHaveBeenCalledOnce();
     click.mockRestore();
@@ -265,8 +270,9 @@ describe("térkép szerkesztése", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Térkép szerkesztése" }),
     ).toBeTruthy();
-    expect(screen.getByText(/már 3 futás tartozik.*új verziót hoz létre \(v3\)/)).toBeTruthy();
-    expect(screen.getByText("v2 · 3 futás")).toBeTruthy();
+    expect(
+      screen.getByText("2. verzió · 3 futás · a pálya módosítása új verziót hoz létre"),
+    ).toBeTruthy();
     await user.click(screen.getByRole("radio", { name: /Arany/ }));
     cell("2. sor, 1. oszlop: üres kamra").focus();
     await user.keyboard("{Enter}");

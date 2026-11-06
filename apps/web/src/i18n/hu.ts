@@ -292,6 +292,7 @@ export const hu = {
       `Még nem menthető: ${count} hiba. Az Ellenőrzés lista mutatja, mit kell javítani.`,
     exportBlocked: "Csak érvényes térkép exportálható.",
     tryOut: "Kipróbálás",
+    fileMenuLabel: "Fájl: térkép importálása, exportálása",
     importMap: "Importálás",
     exportMap: "Exportálás",
     importFailed: "Az importált fájl nem érvényes térkép, ezért nem töltöttük be.",
@@ -317,6 +318,10 @@ export const hu = {
       `Ehhez a verzióhoz már ${runs} futás tartozik, ezért a tartalom módosítása új verziót hoz létre (v${next}); a régi ranglista megmarad.`,
     versionInPlace: "Ehhez a verzióhoz még nincs futás, ezért a módosítás helyben mentődik.",
     versionMetaOnly: "A cím, a leírás és a láthatóság módosítása nem hoz létre új verziót.",
+    versionSummary: (version: number, runs: number) =>
+      `${version}. verzió · ${runs} futás · a pálya módosítása új verziót hoz létre`,
+    versionSummaryEmpty: (version: number) =>
+      `${version}. verzió · még nincs futás, a módosítás helyben mentődik`,
     toLeaderboard: "Ranglista",
     deleteMap: "Térkép törlése",
     deleteTitle: "Biztosan törlöd a térképet?",
@@ -829,7 +834,7 @@ export const hu = {
     note: "Próbafutás: az eredmény nem kerül a ranglistára.",
   },
   shape: {
-    heading: "Gyors műveletek",
+    heading: "Továbbiak",
     frame: "Falkeret",
     frameHint: "A térkép szélére falat húz",
     clear: "Mind üres",
@@ -839,6 +844,7 @@ export const hu = {
   },
   generator: {
     button: "Generálás",
+    menuItem: "Generálás…",
     title: "Pálya generálása",
     body: "A generált pálya mindig megoldható: minden arany elérhető, és a célértéket a gép saját megoldása adja.",
     rows: "Sorok",

@@ -1,6 +1,5 @@
 import type { MineMap } from "@minescript/engine";
-import { useState } from "react";
-import { DialogTrigger } from "react-aria-components";
+import { useEffect, useState } from "react";
 import { Button } from "../components/ui/Button.tsx";
 import { ModalShell } from "../components/ui/Dialog.tsx";
 import { NumberField } from "../components/ui/NumberField.tsx";
@@ -18,6 +17,8 @@ type Difficulty = "easy" | "medium" | "hard";
 const DIFFICULTIES: readonly Difficulty[] = ["easy", "medium", "hard"];
 
 type GeneratorDialogProps = {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
   rows: number;
   cols: number;
   onGenerated: (map: MineMap, parSteps: number | null) => void;
@@ -28,7 +29,13 @@ function clampGenerator(value: number): number {
   return Math.min(Math.max(whole, GENERATOR_MIN), GENERATOR_MAX);
 }
 
-export function GeneratorDialog({ rows, cols, onGenerated }: GeneratorDialogProps) {
+export function GeneratorDialog({
+  isOpen,
+  onOpenChange,
+  rows,
+  cols,
+  onGenerated,
+}: GeneratorDialogProps) {
   const engine = useEngine();
   const [size, setSize] = useState({ rows: clampGenerator(rows), cols: clampGenerator(cols) });
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
@@ -55,57 +62,52 @@ export function GeneratorDialog({ rows, cols, onGenerated }: GeneratorDialogProp
     }
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      setSize({ rows: clampGenerator(rows), cols: clampGenerator(cols) });
+    }
+  }, [isOpen, rows, cols]);
+
   return (
-    <DialogTrigger
-      onOpenChange={(isOpen) => {
-        if (isOpen) {
-          setSize({ rows: clampGenerator(rows), cols: clampGenerator(cols) });
-        }
-      }}
-    >
-      <Button size="sm" icon="dice">
-        {hu.generator.button}
-      </Button>
-      <ModalShell title={hu.generator.title}>
-        {(close) => (
-          <>
-            <p className="overlay-body">{hu.generator.body}</p>
-            <div className="ed-generator-sizes">
-              <NumberField
-                label={hu.generator.rows}
-                minValue={GENERATOR_MIN}
-                maxValue={GENERATOR_MAX}
-                value={size.rows}
-                onChange={(value) => setSize({ ...size, rows: clampGenerator(value) })}
-              />
-              <NumberField
-                label={hu.generator.cols}
-                minValue={GENERATOR_MIN}
-                maxValue={GENERATOR_MAX}
-                value={size.cols}
-                onChange={(value) => setSize({ ...size, cols: clampGenerator(value) })}
-              />
-            </div>
-            <Segmented
-              label={hu.generator.difficulty}
-              value={difficulty}
-              onChange={setDifficulty}
-              options={DIFFICULTIES.map((id) => ({ id, label: hu.generator.difficulties[id] }))}
+    <ModalShell title={hu.generator.title} isOpen={isOpen} onOpenChange={onOpenChange}>
+      {(close) => (
+        <>
+          <p className="overlay-body">{hu.generator.body}</p>
+          <div className="ed-generator-sizes">
+            <NumberField
+              label={hu.generator.rows}
+              minValue={GENERATOR_MIN}
+              maxValue={GENERATOR_MAX}
+              value={size.rows}
+              onChange={(value) => setSize({ ...size, rows: clampGenerator(value) })}
             />
-            <div className="overlay-actions">
-              <Button onPress={close}>{hu.common.cancel}</Button>
-              <Button
-                variant="primary"
-                icon="dice"
-                isDisabled={isBusy}
-                onPress={() => void generate(close)}
-              >
-                {isBusy ? hu.generator.generating : hu.generator.submit}
-              </Button>
-            </div>
-          </>
-        )}
-      </ModalShell>
-    </DialogTrigger>
+            <NumberField
+              label={hu.generator.cols}
+              minValue={GENERATOR_MIN}
+              maxValue={GENERATOR_MAX}
+              value={size.cols}
+              onChange={(value) => setSize({ ...size, cols: clampGenerator(value) })}
+            />
+          </div>
+          <Segmented
+            label={hu.generator.difficulty}
+            value={difficulty}
+            onChange={setDifficulty}
+            options={DIFFICULTIES.map((id) => ({ id, label: hu.generator.difficulties[id] }))}
+          />
+          <div className="overlay-actions">
+            <Button onPress={close}>{hu.common.cancel}</Button>
+            <Button
+              variant="primary"
+              icon="dice"
+              isDisabled={isBusy}
+              onPress={() => void generate(close)}
+            >
+              {isBusy ? hu.generator.generating : hu.generator.submit}
+            </Button>
+          </div>
+        </>
+      )}
+    </ModalShell>
   );
 }
