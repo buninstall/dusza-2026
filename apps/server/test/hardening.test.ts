@@ -288,9 +288,39 @@ describe("párhuzamos kérések", () => {
     const board = await json<{ entries: { runId: number }[] }>(
       await owner.get(`/api/maps/${map.id}/leaderboard`),
     );
-    const firstRun = await json<{ run: { id: number } }>(responses[0] ?? new Response("{}"));
+    const ids = await Promise.all(
+      responses.map(async (response) => (await json<{ run: { id: number } }>(response)).run.id),
+    );
+    expect(new Set(ids).size).toBe(20);
     expect(board.entries).toHaveLength(1);
-    expect(board.entries[0]?.runId).toBeLessThanOrEqual(firstRun.run.id);
+    expect(board.entries[0]?.runId).toBe(Math.min(...ids));
+  });
+
+  test("teljes holtversenyben a korábbi futás áll elöl, a sorrend minden lekérésnél azonos", async () => {
+    await using context = await createTestContext();
+    const owner = context.client();
+    await owner.register("holtverseny");
+    const { map } = await json<MapResponse>(
+      await owner.post("/api/maps", { title: "Döntetlen", content: SPEC_MAP }),
+    );
+    const players = ["elso", "masodik", "harmadik", "negyedik"];
+    for (const name of players) {
+      const player = context.client();
+      await player.register(name);
+      await player.post("/api/runs", { mapVersionId: map.currentVersionId, source: "turn by 1" });
+    }
+    const boards = await Promise.all(
+      Array.from({ length: 5 }, async () =>
+        (
+          await json<{ entries: { rank: number; username: string }[] }>(
+            await owner.get(`/api/maps/${map.id}/leaderboard`),
+          )
+        ).entries.map((entry) => `${entry.rank}:${entry.username}`),
+      ),
+    );
+    for (const board of boards) {
+      expect(board).toEqual(["1:elso", "2:masodik", "3:harmadik", "4:negyedik"]);
+    }
   });
 
   test("a futás közben törölt verzióra 404 a válasz", async () => {
@@ -323,6 +353,33 @@ describe("párhuzamos kérések", () => {
 });
 
 describe("indítási beállítások és korlátok", () => {
+  test("a bejelentkezési korlát nem kerülhető meg kis- és nagybetűvel vagy hamis IP-fejléccel", async () => {
+    await using context = await createTestContext();
+    await context.client().register("vedett");
+    const attacker = context.client();
+    for (const username of ["vedett", "VEDETT", "Vedett", "vEdEtT", "VEDETt"]) {
+      const response = await attacker.post("/api/auth/login", {
+        username,
+        password: "rossz-jelszo",
+      });
+      expect(response.status).toBe(401);
+    }
+    for (const headers of [
+      {},
+      { "X-Forwarded-For": "203.0.113.7" },
+      { "X-Real-IP": "198.51.100.1" },
+      { Forwarded: "for=192.0.2.60" },
+    ]) {
+      const blocked = await attacker.request(
+        "POST",
+        "/api/auth/login",
+        { username: "VeDeTt", password: "jelszo1234" },
+        headers,
+      );
+      expect(blocked.status).toBe(429);
+    }
+  });
+
   test("a bejelentkezési korlát memóriája korlátos", () => {
     let clock = 0;
     const limiter = createLoginLimiter({ limit: 5, windowMs: 1000, now: () => clock });
