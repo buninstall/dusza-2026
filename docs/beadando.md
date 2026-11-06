@@ -63,13 +63,14 @@ Az alábbi, tervezett plusz szolgáltatások maradtak ki:
 - Térképverziók: a módosított térkép új verzió, a régi ranglista megmarad.
 - Világos és sötét téma, teljes billentyűzetes kezelés, képernyőolvasó-támogatás.
 - Parancssori eszköz (`minescript check|fmt|lint|run|ast|map-check`).
-- Csillagok pályánként (arany, minden arany, célérték alatt), haladás és összesítés a Pályák oldalon, eredménysáv a futás végén a következő pályára vezető gombbal.
+- Rögök pályánként (arany, minden arany, célérték alatt), haladás, nehézség és összesítés a Pályák oldalon, eredménysor a futás végén a következő pályára vezető gombbal.
 - Napi kihívás: minden nap dátumból generált, mindenkinek azonos pálya saját ranglistával.
 - Pályagenerátor mindig megoldható pályával; a célértéket a beépített útvonaltervező számolja.
-- Interaktív bevezető, amely előbb rákérdez, és a választ böngészőnként megjegyzi.
-- Töréspont a sorszámra kattintva vagy `F9`-cel, a robot nyomvonala a térképen.
-- Próbajáték mentés nélkül, falkeret és kiürítés a térképszerkesztőben.
-- Megosztható visszajátszás a ranglistáról, a programmal együtt; „Tetszik” jelölés és népszerűség szerinti rendezés.
+- Interaktív bevezető, amely előbb felugró ablakban rákérdez, és a választ böngészőnként megjegyzi.
+- Töréspont a sorszámra kattintva vagy `F9`-cel; a térkép nagyítható, nagyításkor a nézet követi a robotot.
+- Tömör játéktér: vízszintes műszersáv, egysoros hibajelzés, kérésre nyíló konzol.
+- Kipróbálás mentés nélkül, falkeret és kiürítés a térképszerkesztőben.
+- Megosztható visszajátszás a ranglistáról, a programmal együtt.
 - Szintetizált 8-bites hangeffektek némító gombbal.
 
 ## Felmerült problémák és megoldásuk
@@ -84,8 +85,8 @@ Az alábbi, tervezett plusz szolgáltatások maradtak ki:
 ## Továbbfejlesztési javaslatok
 
 - VS Code-bővítmény a core-ból, LSP-vel (diagnosztika, kiegészítés, formázás).
-- Kampány-térkép: a pályák feloldása csillagok alapján, fejezetekbe rendezve.
-- Heti bajnokság a napi kihívások összesített csillagaiból.
+- Kampány-térkép: a pályák feloldása a megszerzett rögök alapján, fejezetekbe rendezve.
+- Heti bajnokság a napi kihívások összesített rögeiből.
 - Golf-mód: ugyanannyi aranyat kevesebb sorból.
 - Többszereplős verseny: azonos térkép, időkorlátos forduló, élő ranglista.
 
