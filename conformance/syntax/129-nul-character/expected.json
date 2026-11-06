@@ -1,0 +1,19 @@
+{
+  "description": "NUL karakter a programban: az import elutasítja (D23), a motor összeomlás nélkül érvénytelen tokennek látja.",
+  "specRefs": [
+    "1",
+    "2.1"
+  ],
+  "decisions": [
+    "D19",
+    "D23"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "SYN_INVALID_TOKEN",
+      "line": 2,
+      "col": 7
+    }
+  ]
+}
