@@ -223,6 +223,7 @@ export function MineScriptEditor({
           readOnly.current.of(readOnlyExtension(initial.current.isReadOnly)),
           initial.current.placeholder ? placeholderExtension(initial.current.placeholder) : [],
           EditorView.contentAttributes.of({
+            tabindex: "0",
             "aria-label": label,
             ...(describedBy ? { "aria-describedby": describedBy } : {}),
           }),

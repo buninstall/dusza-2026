@@ -91,7 +91,7 @@ test.describe("3.4 futtatás a bemutató fiókkal", () => {
         gold: recipe.gold,
         goldTotal: recipe.goldTotal,
         steps: recipe.steps,
-        status: "Vége",
+        status: "Kész",
       });
     }
     await expect(page.getByRole("log", { name: "Konzol" })).toContainText("2");
@@ -143,7 +143,7 @@ test.describe("3.4 futtatás a bemutató fiókkal", () => {
 
     await transport(page, "Folytatás").click();
     await expectFinished(page, 2, 5);
-    await expectReadings(page, { gold: 2, goldTotal: 2, steps: 5, row: 4, col: 5, status: "Vége" });
+    await expectReadings(page, { gold: 2, goldTotal: 2, steps: 5, row: 4, col: 5, status: "Kész" });
     await expect(editor(page)).not.toHaveAttribute("aria-readonly", "true");
   });
 
@@ -280,7 +280,7 @@ test.describe("3.4 futtatás új fiókkal", () => {
         }),
       ).toBeVisible();
     }
-    await expectReadings(page, { steps: 0, line: null, status: "Készenlét" });
+    await expectReadings(page, { steps: 0, line: null, status: "Hibás program" });
     await report.getByRole("button", { name: "Mutasd a(z) 1. sort" }).click();
     await expect(editor(page)).toBeFocused();
     await page.getByRole("link", { name: "Futásaim" }).click();

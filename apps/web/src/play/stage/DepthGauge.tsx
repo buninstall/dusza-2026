@@ -21,12 +21,12 @@ export function DepthGauge({ steps, isLimit }: DepthGaugeProps) {
   const meter = { "--segments": SEGMENTS } as CSSProperties;
   return (
     <div className="hud-gauge hud-depth" data-tone={depthTone(steps)} data-limit={isLimit}>
-      <span className="label">{hu.play.steps}</span>
+      <span className="label">{hu.play.steps}</span>{" "}
       <span className="hud-value">
         <PixelText text={String(steps)} scale={3} />
         <span className="visually-hidden">{steps}</span>
         <span className="hud-of">{hu.play.stepsLimit(STEP_LIMIT)}</span>
-      </span>
+      </span>{" "}
       <span className="hud-note">{hu.play.stepsLeft(Math.max(STEP_LIMIT - steps, 0))}</span>
       <span aria-hidden="true" className="hud-meter" style={meter}>
         {Array.from({ length: SEGMENTS }, (_, segment) => (

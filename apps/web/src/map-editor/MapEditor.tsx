@@ -144,7 +144,7 @@ export function MapEditor({
 
   const save = async () => {
     if (!isValid) {
-      checkRef.current?.focus();
+      requestAnimationFrame(() => checkRef.current?.focus());
       setAnnouncement(hu.mapEditor.saveBlocked(errors.length + (isTitleMissing ? 1 : 0)));
       return;
     }

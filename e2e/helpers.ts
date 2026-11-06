@@ -109,7 +109,15 @@ export type Readings = {
   row?: number;
   col?: number;
   dir?: "észak" | "kelet" | "dél" | "nyugat";
-  status?: "Készenlét" | "Fut" | "Szünet" | "Vége" | "Leállítva" | "Hiba";
+  status?:
+    | "Készenlét"
+    | "Fut"
+    | "Szünet"
+    | "Visszanézés"
+    | "Kész"
+    | "Leállítva"
+    | "Hiba"
+    | "Hibás program";
 };
 
 function readingPatterns(readings: Readings): RegExp[] {

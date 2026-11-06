@@ -181,6 +181,7 @@ export function PlayScreen(props: PlayScreenProps) {
           extra={props.reportExtra}
           onShowLine={props.revealLine}
           onInsertGuard={props.onInsertGuard}
+          onReplay={() => usePlayback.getState().replay()}
         />
       </ReportCell>
     );

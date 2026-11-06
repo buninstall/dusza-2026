@@ -18,16 +18,16 @@ export function CartGauge({ gold, total, reachable, isRolling }: CartGaugeProps)
   const sprite = TILE_SPRITES.cart[cartLevel(gold, total)] ?? TILE_SPRITES.cart[0];
   return (
     <div className="hud-gauge hud-cart" data-gold-target="true">
-      <span className="label">{hu.play.gold}</span>
+      <span className="label">{hu.play.gold}</span>{" "}
       <span className="hud-value">
         <span className="hud-reward">
           <PixelCounter value={gold} scale={3} isRolling={isRolling} />
         </span>
         <span className="visually-hidden">{gold}</span>
         <span className="hud-of">/ {total}</span>
-      </span>
+      </span>{" "}
       {sprite ? <PixelSprite sprite={sprite} className="hud-cart-art" /> : null}
-      {total === 0 ? <span className="hud-note">{hu.play.noGold}</span> : null}
+      {total === 0 ? <span className="hud-note">{hu.play.noGold}</span> : null}{" "}
       {reachable < total ? (
         <span className="hud-note">{hu.play.goldReachable(reachable)}</span>
       ) : null}

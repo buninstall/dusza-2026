@@ -12,6 +12,7 @@ import "./ShiftReport.css";
 type ReportActions = {
   onShowLine: (line: number) => void;
   onInsertGuard?: ((line: number) => void) | undefined;
+  onReplay?: (() => void) | undefined;
 };
 
 type ShiftReportProps = ReportActions & {
@@ -127,6 +128,13 @@ function reportContent(props: ShiftReportProps): Content {
       <>
         <p>{hu.play.finishedBody(gold, result?.steps ?? 0)}</p>
         {isTreasure ? <p className="report-reward">{hu.play.allGold}</p> : null}
+        {props.onReplay ? (
+          <div className="report-actions">
+            <Button size="sm" icon="replay" onPress={props.onReplay}>
+              {hu.play.replay}
+            </Button>
+          </div>
+        ) : null}
       </>
     ),
   };

@@ -24,10 +24,10 @@ export function Compass({ robot }: { robot: RobotState }) {
         ))}
       </svg>
       <span className="hud-compass-text">
-        <span className="label">{hu.play.position}</span>
+        <span className="label">{hu.play.position}</span>{" "}
         <span className="hud-place">
           {hu.play.positionValue(robot.pos.row + 1, robot.pos.col + 1)}
-        </span>
+        </span>{" "}
         <span className="hud-dir">{dirNames[robot.dir]}</span>
       </span>
     </div>

@@ -36,7 +36,7 @@ test("programfájl tallózással betölthető, szerkeszthető, és bájtra ponto
 }) => {
   await importProgramFile(page, recipePath(LOOP_RECIPE.program));
   await expect(page.getByText(`A(z) ${LOOP_RECIPE.program} program betöltve.`)).toBeVisible();
-  await expect(diagnostics(page)).toHaveAccessibleName(/0 hiba/);
+  await expect(diagnostics(page)).toHaveAccessibleName(/Nincs szintaktikai hiba/);
   const original = recipeBytes(LOOP_RECIPE.program);
   const exported = await exportProgram(page);
   expect(exported.name).toBe(EXPORT_NAME);
@@ -62,6 +62,7 @@ test("a szintaktikailag hibás program betöltődik, a hibák azonnal látszanak
   await importProgramFile(page, recipePath(SYNTAX_RECIPE.file));
   await expect(page.getByText("A(z) szintaktikai-hibak.ms program betöltve.")).toBeVisible();
   await expect(diagnostics(page)).toHaveAccessibleName(/4 hiba/);
+  await diagnostics(page).getByRole("button", { name: "Hibalista" }).click();
   for (const line of SYNTAX_RECIPE.lines) {
     await expect(
       diagnostics(page).getByRole("button", {

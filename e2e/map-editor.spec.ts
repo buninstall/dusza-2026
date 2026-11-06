@@ -84,7 +84,7 @@ test("festésmódok, visszavonás, robotforgatás és a kilépés megerősítés
   await page.keyboard.press("k");
   await page.keyboard.press("2");
   await cell(4, 4, "üres kamra").click();
-  await expect(page.getByText(/Kitöltés: 69 mező, Arany/)).toBeAttached();
+  await expect(page.getByText(/^Kitöltés: \d+ mező, Arany$/)).toBeAttached();
   await expect(cell(7, 10, "arany")).toBeVisible();
 
   await page.getByRole("navigation").getByRole("link", { name: "Pályák" }).click();

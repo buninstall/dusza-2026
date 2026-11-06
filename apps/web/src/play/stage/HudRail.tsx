@@ -17,7 +17,7 @@ type LineReadoutProps = {
 function LineReadout({ line, lineText, onReveal }: LineReadoutProps) {
   return (
     <div className="hud-gauge hud-line">
-      <span className="label">{hu.play.line}</span>
+      <span className="label">{hu.play.line}</span>{" "}
       {line === null ? (
         <span className="hud-value hud-line-idle">–</span>
       ) : (
@@ -30,7 +30,7 @@ function LineReadout({ line, lineText, onReveal }: LineReadoutProps) {
           <PixelText text={String(line)} scale={3} />
           <span className="visually-hidden">{line}</span>
         </button>
-      )}
+      )}{" "}
       {line !== null && lineText !== null ? (
         <code className="hud-ticker" aria-hidden="true">
           {`${line}: ${lineText.trim()}`}
@@ -71,12 +71,12 @@ export function HudRail({
   return (
     <section aria-label={hu.play.gauges} className="hud">
       <div className="hud-gauge hud-lamp">
-        <span className="visually-hidden">{hu.play.status}</span>
+        <span className="visually-hidden">{hu.play.status}</span>{" "}
         <Led state={lamp.led} label={lamp.label} isBlinking={lamp.blink} />
-      </div>
-      <CartGauge gold={gold} total={goldTotal} reachable={reachableGold} isRolling={isRolling} />
-      <DepthGauge steps={steps} isLimit={isLimit} />
-      <LineReadout line={line} lineText={lineText} onReveal={onRevealLine} />
+      </div>{" "}
+      <CartGauge gold={gold} total={goldTotal} reachable={reachableGold} isRolling={isRolling} />{" "}
+      <DepthGauge steps={steps} isLimit={isLimit} />{" "}
+      <LineReadout line={line} lineText={lineText} onReveal={onRevealLine} />{" "}
       <Compass robot={robot} />
     </section>
   );
