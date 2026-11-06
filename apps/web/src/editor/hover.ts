@@ -1,9 +1,9 @@
 import type { Extension } from "@codemirror/state";
-import { hoverTooltip } from "@codemirror/view";
+import { type EditorView, hoverTooltip, type Tooltip } from "@codemirror/view";
 import type { Engine } from "@minescript/engine";
 
-export function mineScriptHover(engine: Engine): Extension {
-  return hoverTooltip((view, pos) => {
+export function hoverSource(engine: Engine) {
+  return (view: EditorView, pos: number): Tooltip | null => {
     const hover = engine.hover(view.state.doc.toString(), pos);
     if (!hover) {
       return null;
@@ -19,5 +19,9 @@ export function mineScriptHover(engine: Engine): Extension {
         return { dom };
       },
     };
-  });
+  };
+}
+
+export function mineScriptHover(engine: Engine): Extension {
+  return hoverTooltip(hoverSource(engine));
 }

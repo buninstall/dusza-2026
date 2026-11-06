@@ -20,11 +20,11 @@ const errorDecoration = Decoration.line({ class: "cm-error-line" });
 
 function build(state: EditorState, marks: Marks): DecorationSet {
   const lines = new Map<number, Decoration>();
-  for (const line of marks.errors) {
-    lines.set(line, errorDecoration);
-  }
   if (marks.exec !== null) {
     lines.set(marks.exec, execDecoration);
+  }
+  for (const line of marks.errors) {
+    lines.set(line, errorDecoration);
   }
   const builder = new RangeSetBuilder<Decoration>();
   for (const number of [...lines.keys()].sort((a, b) => a - b)) {

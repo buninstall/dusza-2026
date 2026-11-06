@@ -1,0 +1,8 @@
+.code-host {
+  height: 100%;
+  min-height: 18rem;
+}
+
+.code-host[data-readonly="true"] {
+  cursor: not-allowed;
+}
