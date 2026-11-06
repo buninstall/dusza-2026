@@ -145,7 +145,9 @@ describe("futtatás", () => {
     await waitFor(() =>
       expect(document.querySelector(".cm-runtime-line")?.textContent).toMatch(/^step forward 1/),
     );
-    expect(document.querySelector(".cm-lens")?.textContent).toBe("◂ E_BEDROCK_HIT · Falba ütközés");
+    expect(document.querySelector(".cm-lens-line")?.getAttribute("data-lens")).toBe(
+      "◂ E_BEDROCK_HIT · Falba ütközés",
+    );
   });
 
   test("sikertelen beküldés újrapróbálható", async () => {

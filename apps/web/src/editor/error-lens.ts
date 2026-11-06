@@ -6,7 +6,6 @@ import {
   type EditorView,
   ViewPlugin,
   type ViewUpdate,
-  WidgetType,
 } from "@codemirror/view";
 import type { DiagCode } from "@minescript/engine";
 import { diagnosticTitles } from "../i18n/hu.ts";
@@ -17,24 +16,6 @@ const IDLE_MS = 1500;
 const LENS_MARK = "◂";
 
 const lensTick = StateEffect.define<null>();
-
-class LensWidget extends WidgetType {
-  constructor(readonly text: string) {
-    super();
-  }
-
-  override eq(other: LensWidget): boolean {
-    return other.text === this.text;
-  }
-
-  override toDOM(): HTMLElement {
-    const element = document.createElement("span");
-    element.className = "cm-lens";
-    element.setAttribute("aria-hidden", "true");
-    element.textContent = `${LENS_MARK} ${this.text}`;
-    return element;
-  }
-}
 
 function titleOf(code: string): string {
   return diagnosticTitles[code as DiagCode] ?? code;
@@ -67,8 +48,12 @@ function buildLenses(view: EditorView, quietLine: number | null): DecorationSet 
       continue;
     }
     const text = lines.get(number) ?? "";
-    const end = state.doc.line(number).to;
-    builder.add(end, end, Decoration.widget({ widget: new LensWidget(text), side: 1 }));
+    const start = state.doc.line(number).from;
+    builder.add(
+      start,
+      start,
+      Decoration.line({ class: "cm-lens-line", attributes: { "data-lens": `${LENS_MARK} ${text}` } }),
+    );
   }
   return builder.finish();
 }

@@ -98,7 +98,8 @@
   color: var(--c-text-faint);
 }
 
-.cm-lens {
+.cm-lens-line::after {
+  content: attr(data-lens) / "";
   margin-left: var(--space-4);
   padding: 0 var(--space-1);
   color: var(--c-danger-ink);
