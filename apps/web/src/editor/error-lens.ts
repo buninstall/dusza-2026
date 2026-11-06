@@ -52,7 +52,10 @@ function buildLenses(view: EditorView, quietLine: number | null): DecorationSet 
     builder.add(
       start,
       start,
-      Decoration.line({ class: "cm-lens-line", attributes: { "data-lens": `${LENS_MARK} ${text}` } }),
+      Decoration.line({
+        class: "cm-lens-line",
+        attributes: { "data-lens": `${LENS_MARK} ${text}` },
+      }),
     );
   }
   return builder.finish();
