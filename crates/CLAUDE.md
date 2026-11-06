@@ -17,7 +17,7 @@
 | `minescript-core/tests/`             | `conformance`, `properties` (proptest), `samples` (seed-programok), `export_bindings`                                                        |
 | `minescript-wasm`                    | wasm-bindgen exportok, JSON-kompatibilis szerializálás, tömörített `runPacked`/`analyzePacked`, magyar `JsError`                             |
 | `minescript-cli`                     | `minescript check`, `fmt`, `lint`, `run`, `ast`, `map-check`, ariadne-diagnosztikák                                                          |
-| `minescript-bench`                   | benchmark-korpusz, `cargo bench -p minescript-bench`, `golden` (bájtra egyező kimenet-összevetés), `profile` (egy művelet ismétlése)          |
+| `minescript-bench`                   | benchmark-korpusz, `cargo bench -p minescript-bench`, `golden` (bájtra egyező kimenet-összevetés), `profile` (egy művelet ismétlése)         |
 
 ## Invariánsok
 
