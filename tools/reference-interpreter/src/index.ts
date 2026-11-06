@@ -1,7 +1,3 @@
-import type { RunResult } from "@minescript/engine";
-
-export function run(src: string, mapText: string): RunResult {
-  throw new Error(
-    `A referencia-interpreter még nem készült el (forrás: ${src.length} karakter, térkép: ${mapText.length} karakter).`,
-  );
-}
+export { run } from "./machine.ts";
+export { type MapCheck, mapInfo, parseMapText } from "./map.ts";
+export { check, parse, type SyntaxIssue } from "./parser.ts";
