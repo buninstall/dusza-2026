@@ -214,6 +214,8 @@ export const hu = {
     version: (version: number) => `v${version}`,
     versionLong: (version: number) => `${version}. verzió`,
     ownerLabel: "Készítette",
+    by: (owner: string) => `Készítette: ${owner}`,
+    difficulty: { easy: "Könnyű", medium: "Közepes", hard: "Nehéz" },
     private: "Privát",
     public: "Nyilvános",
     play: "Játék",

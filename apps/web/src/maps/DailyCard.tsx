@@ -5,21 +5,8 @@ import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
 import { MapPreview } from "../mine/MapPreview.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
-import { Progress } from "./LevelTile.tsx";
+import { MapFacts, Progress } from "./LevelTile.tsx";
 import { dailyQuery } from "./queries.ts";
-
-function dayLabel(date: string): string {
-  const parsed = new Date(`${date}T12:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) {
-    return date;
-  }
-  return new Intl.DateTimeFormat("hu-HU", {
-    timeZone: "UTC",
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  }).format(parsed);
-}
 
 export function DailyCard() {
   const { data, error } = useQuery(dailyQuery());
@@ -41,10 +28,7 @@ export function DailyCard() {
           <PixelIcon name="calendar" />
           {hu.daily.heading}
         </h2>
-        <p className="daily-meta">
-          {hu.daily.meta(dayLabel(data.date))} · {hu.maps.size(map.rows, map.cols)}
-        </p>
-        <p className="daily-note">{map.description}</p>
+        <MapFacts map={map} />
         <Progress map={map} />
       </div>
       <div className="daily-actions">

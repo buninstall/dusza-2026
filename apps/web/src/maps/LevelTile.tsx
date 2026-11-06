@@ -2,7 +2,6 @@ import { Link } from "../components/ui/Link.tsx";
 import { NuggetRow } from "../game/NuggetRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import { MapPreview, type PreviewBox } from "../mine/MapPreview.tsx";
-import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { PixelText } from "../pixel/PixelText.tsx";
 import type { MapSummary } from "./queries.ts";
 
@@ -10,61 +9,37 @@ type LevelTileProps = {
   map: MapSummary;
   depth: number;
   box: PreviewBox;
-  isOwn: boolean;
   canEdit: boolean;
 };
 
-function Spec({ label, value }: { label: string; value: string }) {
+export function MapFacts({ map }: { map: MapSummary }) {
   return (
-    <div className="lv-spec">
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </div>
-  );
-}
-
-function Badges({ map, isOwn }: { map: MapSummary; isOwn: boolean }) {
-  const unreachable = map.goldTotal - map.reachableGold;
-  return (
-    <span className="lv-badges">
-      {unreachable > 0 ? (
-        <span className="lv-badge" data-tone="warning">
-          <PixelIcon name="warning" size="sm" />
-          {hu.maps.goldUnreachable(unreachable)}
+    <p className="lv-facts">
+      <span>{hu.maps.by(map.ownerName)}</span>
+      {map.difficulty ? (
+        <span className="lv-difficulty" data-level={map.difficulty}>
+          {hu.maps.difficulty[map.difficulty]}
         </span>
       ) : null}
-      {map.visibility === "private" ? (
-        <span className="lv-badge">
-          <PixelIcon name="lock" size="sm" />
-          {hu.maps.private}
-        </span>
-      ) : null}
-      {isOwn ? (
-        <span className="lv-badge" data-tone="own">
-          {hu.maps.own}
-        </span>
-      ) : null}
-    </span>
+    </p>
   );
 }
 
 export function Progress({ map }: { map: MapSummary }) {
+  if (map.stars === null) {
+    return null;
+  }
   return (
     <div className="lv-progress">
-      {map.stars === null ? (
-        <span className="lv-progress-note">{hu.game.noStars}</span>
-      ) : (
-        <NuggetRow earned={map.stars} size="sm" />
-      )}
-      <span className="lv-progress-best">
-        <span className="lv-progress-label">{hu.game.bestLabel}</span>
-        {map.best ? hu.game.best(map.best.gold, map.best.steps) : hu.game.notPlayed}
-      </span>
+      <NuggetRow earned={map.stars} size="sm" />
+      {map.best ? (
+        <span className="lv-progress-best">{hu.game.best(map.best.gold, map.best.steps)}</span>
+      ) : null}
     </div>
   );
 }
 
-export function LevelTile({ map, depth, box, isOwn, canEdit }: LevelTileProps) {
+export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
   const mapId = String(map.id);
   const level = hu.signs.level(depth);
   return (
@@ -78,19 +53,8 @@ export function LevelTile({ map, depth, box, isOwn, canEdit }: LevelTileProps) {
         <MapPreview content={map.content} box={box} className="lv-preview" />
       </div>
       <div className="lv-body">
-        <h2 className="lv-title">
-          {map.title}
-          <Badges map={map} isOwn={isOwn} />
-        </h2>
-        <dl className="lv-specs">
-          <Spec label={hu.maps.sizeLabel} value={hu.maps.size(map.rows, map.cols)} />
-          <Spec label={hu.maps.goldLabel} value={hu.maps.gold(map.reachableGold, map.goldTotal)} />
-          <Spec label={hu.maps.versionLabel} value={hu.maps.version(map.version)} />
-          <Spec label={hu.maps.ownerLabel} value={map.ownerName} />
-          {map.parSteps === null ? null : (
-            <Spec label={hu.game.parLabel} value={hu.game.par(map.parSteps)} />
-          )}
-        </dl>
+        <h2 className="lv-title">{map.title}</h2>
+        <MapFacts map={map} />
         <Progress map={map} />
       </div>
       <div className="lv-actions">
