@@ -1,6 +1,7 @@
 mod render;
 
 use std::fs;
+use std::io;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -59,11 +60,22 @@ struct CliError(String);
 
 type CliResult = Result<u8, CliError>;
 
+fn describe_io_error(error: &io::Error) -> String {
+    match error.kind() {
+        io::ErrorKind::NotFound => "a fájl nem létezik".to_owned(),
+        io::ErrorKind::PermissionDenied => "nincs jogosultság a fájl olvasásához".to_owned(),
+        io::ErrorKind::InvalidData => "a fájl nem érvényes UTF-8 szöveg".to_owned(),
+        io::ErrorKind::IsADirectory => "ez egy mappa, nem fájl".to_owned(),
+        _ => error.to_string(),
+    }
+}
+
 fn read(path: &Path) -> Result<String, CliError> {
     fs::read_to_string(path).map_err(|error| {
         CliError(format!(
-            "Nem olvasható a fájl ({}): {error}",
-            path.display()
+            "Nem olvasható a fájl ({}): {}",
+            path.display(),
+            describe_io_error(&error)
         ))
     })
 }

@@ -54,6 +54,21 @@ fn map_check_rejects_two_robots() {
 fn missing_file_is_a_usage_error() {
     let output = minescript(&["map-check", "tests/fixtures/does-not-exist.txt"]);
     assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("a fájl nem létezik"));
+}
+
+#[test]
+fn unreadable_inputs_are_reported_in_hungarian() {
+    let directory = minescript(&["check", "tests/fixtures"]);
+    assert_eq!(directory.status.code(), Some(2));
+    assert!(stderr(&directory).contains("ez egy mappa, nem fájl"));
+    let invalid =
+        std::env::temp_dir().join(format!("minescript-cli-{}-bad.ms", std::process::id()));
+    fs::write(&invalid, b"print 1\xff\n").unwrap();
+    let output = minescript(&["check", invalid.to_str().unwrap()]);
+    fs::remove_file(&invalid).unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(stderr(&output).contains("a fájl nem érvényes UTF-8 szöveg"));
 }
 
 #[test]
