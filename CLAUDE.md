@@ -1,6 +1,6 @@
 # Dusza-2026 — csapat szabályok
 
-Ez a fájl minden gépen betöltődik. A gépi szerepkör a `CLAUDE.local.md`-ből jön (lásd 4. pont).
+Ez a fájl minden gépen betöltődik. A gépi szerepkör a git login alapján dől el (lásd 4. pont).
 
 ## 1. Nulla komment
 
