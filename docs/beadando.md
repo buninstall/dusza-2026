@@ -67,7 +67,8 @@ Az alábbi, tervezett plusz szolgáltatások maradtak ki:
 - Napi kihívás: minden nap dátumból generált, mindenkinek azonos pálya saját ranglistával.
 - Pályagenerátor mindig megoldható pályával; a célértéket a beépített útvonaltervező számolja.
 - Interaktív bevezető, amely előbb felugró ablakban rákérdez, és a választ böngészőnként megjegyzi.
-- Töréspont a sorszámra kattintva vagy `F9`-cel; a térkép nagyítható, nagyításkor a nézet követi a robotot.
+- Töréspont a sorszámra kattintva vagy `F9`-cel; a térkép gombokkal, görgővel vagy csippentéssel nagyítható a kurzor körül, nagyítva húzható, és a nézet követi a robotot.
+- A szerkesztő és a bánya közti határ húzható, a böngésző megjegyzi.
 - Tömör játéktér: vízszintes műszersáv, egysoros hibajelzés, kérésre nyíló konzol.
 - Kipróbálás mentés nélkül, falkeret és kiürítés a térképszerkesztőben.
 - Megosztható visszajátszás a ranglistáról, a programmal együtt.

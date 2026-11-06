@@ -39,9 +39,10 @@ const sections: readonly ManualSection[] = [
         kind: "steps",
         items: [
           "Nyisd meg a `Pályák` oldalt, válassz egy térképet, és kattints a `Játék` gombra.",
-          "Írd meg a programot a jobb oldali szerkesztőben. A `Robot`, `Érzékelés`, `Változók`, `Döntés` és `Ciklus` fiókokból kész parancsmintákat szúrhatsz be, és `.ms` vagy `.txt` fájlból is importálhatsz.",
+          "Írd meg a programot a szerkesztőben (széles képernyőn bal oldalt, telefonon a térkép alatt). A `Robot`, `Érzékelés`, `Változók`, `Döntés` és `Ciklus` fiókokból kész parancsmintákat szúrhatsz be, és `.ms` vagy `.txt` fájlból is importálhatsz.",
           "Kattints a `Futtatás` gombra. A szerkesztő előbb ellenőrzi a programot: ha hibás, nem indul el, hanem megjelöli a hibás sorokat.",
           "Helyes program esetén a térkép és a robot alaphelyzetbe kerül, és a futás lassítva lejátszódik. A műszersávon látod az éppen végrehajtott sort, az aranyat és a lépéseket; a konzolt és a változókat a `Konzol` gombbal nyithatod meg.",
+          "A térképet a fejléc `+` és `−` gombjával, görgővel vagy érintőpados csippentéssel nagyíthatod a kurzor körül; nagyítva egérrel húzva mozgathatod. A szerkesztő és a bánya közti határt húzással vagy a nyílbillentyűkkel állíthatod, dupla kattintásra visszaáll.",
           "A lejátszás végén a szerver a programodból újra kiszámolja az eredményt, és rögzíti a ranglistán.",
         ],
       },
