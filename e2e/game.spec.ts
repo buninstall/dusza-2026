@@ -20,6 +20,16 @@ async function storedTour(page: Page): Promise<unknown> {
   return page.evaluate(() => JSON.parse(window.localStorage.getItem("minescript.tour") ?? "null"));
 }
 
+async function tabIntoEditor(page: Page): Promise<void> {
+  for (let press = 0; press < 30; press += 1) {
+    if (await editor(page).evaluate((element) => element === document.activeElement)) {
+      return;
+    }
+    await page.keyboard.press("Tab");
+  }
+  throw new Error("A szerkesztő billentyűzettel nem érhető el.");
+}
+
 function medal(page: Page) {
   return page.getByRole("region", { name: "Eredmény" });
 }
@@ -140,7 +150,7 @@ test.describe("töréspont és nagyítás", () => {
     const zoom = page.getByRole("toolbar", { name: "Térkép nagyítása" });
     await expect(zoom).toContainText("100%");
     await zoom.getByRole("button", { name: "Nagyítás" }).click();
-    await expect(zoom).toContainText("150%");
+    await expect(zoom).toContainText("125%");
     await zoom.getByRole("button", { name: "Kicsinyítés" }).click();
     await expect(zoom).toContainText("100%");
     await expect(page.getByRole("log", { name: "Konzol" })).toBeHidden();
@@ -164,6 +174,135 @@ test.describe("töréspont és nagyítás", () => {
     await expect(page.locator(".cm-breakpoint")).toHaveCount(2);
     await runProgram(page);
     await expectReadings(page, { status: "Szünet", steps: 2 });
+  });
+});
+
+test.describe("elrendezés és térkép", () => {
+  test("a program balra, a bánya jobbra van, és a határ húzható, újratöltés után is megmarad", async ({
+    page,
+  }) => {
+    await register(page, "split");
+    await gotoPlay(page, CORRIDOR);
+    const program = page.getByRole("region", { name: "Program" });
+    const stage = page.getByRole("region", { name: "Bánya" });
+    const programBox = await program.boundingBox();
+    const stageBox = await stage.boundingBox();
+    expect(programBox && stageBox && programBox.x + programBox.width <= stageBox.x).toBe(true);
+
+    const handle = page.getByRole("separator", { name: "A szerkesztő és a bánya határa" });
+    const before = Number(await handle.getAttribute("aria-valuenow"));
+    const box = await handle.boundingBox();
+    if (!box) throw new Error("Nincs határvonal.");
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 120, box.y + box.height / 2, { steps: 6 });
+    await page.mouse.up();
+    const after = Number(await handle.getAttribute("aria-valuenow"));
+    expect(after).toBeGreaterThan(before);
+    const widened = (await program.boundingBox())?.width ?? 0;
+    expect(widened).toBeGreaterThan(programBox?.width ?? 0);
+
+    await page.reload();
+    await expect(handle).toHaveAttribute("aria-valuenow", String(after));
+    await handle.focus();
+    await page.keyboard.press("Home");
+    await expect(handle).toHaveAttribute("aria-valuenow", "24");
+    await handle.dblclick();
+    await expect(handle).toHaveAttribute("aria-valuenow", String(before));
+  });
+
+  test("görgővel a kurzor körül nagyít, a nagyított térkép húzható", async ({ page }) => {
+    await register(page, "wheel");
+    await gotoPlay(page, "8. A nagy bánya");
+    const zoom = page.getByRole("toolbar", { name: "Térkép nagyítása" });
+    const board = await page.locator(".well-view .board").boundingBox();
+    if (!board) throw new Error("Nincs térkép.");
+    const middle = await page.evaluate(
+      ({ x, y }) => {
+        const found = document
+          .elementsFromPoint(x, y)
+          .find((element) => element.hasAttribute("data-row"));
+        return found
+          ? { row: found.getAttribute("data-row"), col: found.getAttribute("data-col") }
+          : null;
+      },
+      { x: board.x + board.width / 2, y: board.y + board.height / 2 },
+    );
+    if (!middle) throw new Error("Nincs középső mező.");
+    const target = page.locator(`.well-view [data-row="${middle.row}"][data-col="${middle.col}"]`);
+    const start = await target.boundingBox();
+    if (!start) throw new Error("Nincs középső mező.");
+    const x = start.x + start.width / 2;
+    const y = start.y + start.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.wheel(0, -300);
+    await expect(zoom).not.toContainText("100%");
+    await expect
+      .poll(async () => {
+        const moved = await target.boundingBox();
+        return moved
+          ? Math.round(Math.hypot(moved.x + moved.width / 2 - x, moved.y + moved.height / 2 - y))
+          : 999;
+      })
+      .toBeLessThanOrEqual(4);
+    expect((await target.boundingBox())?.width ?? 0).toBeGreaterThan(start.width);
+    await page.mouse.wheel(0, -300);
+    await page.mouse.wheel(0, -300);
+    const well = page.locator(".well-view");
+    const offset = () =>
+      well.evaluate((element) => Math.round(element.scrollLeft + element.scrollTop));
+    const before = await offset();
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x - 80, y - 60, { steps: 5 });
+    await page.mouse.up();
+    await expect.poll(offset).not.toBe(before);
+  });
+
+  test("a konzol és a nagyítás váltása nem játssza le újra az aranygyűjtést", async ({ page }) => {
+    await page.addInitScript(() => {
+      const original = Element.prototype.animate;
+      const counter = window as unknown as { goldFlights: number };
+      counter.goldFlights = 0;
+      Element.prototype.animate = function animate(this: Element, ...args) {
+        if (this.classList.contains("gold-flight")) {
+          counter.goldFlights += 1;
+        }
+        return original.apply(this, args);
+      };
+    });
+    await register(page, "replayfx");
+    await gotoPlay(page, CORRIDOR);
+    await setSpeed(page, "min");
+    await replaceProgram(page, "step forward 3\nmine here");
+    await runProgram(page);
+    await expectFinished(page, 1, 2);
+    const flights = () =>
+      page.evaluate(() => (window as unknown as { goldFlights: number }).goldFlights);
+    const settled = await flights();
+    expect(settled).toBe(1);
+    const toggle = page.getByRole("button", { name: /^Konzol/ });
+    await toggle.click();
+    await toggle.click();
+    const zoom = page.getByRole("toolbar", { name: "Térkép nagyítása" });
+    await zoom.getByRole("button", { name: "Nagyítás" }).click();
+    await zoom.getByRole("button", { name: "Kicsinyítés" }).click();
+    expect(await flights()).toBe(settled);
+  });
+
+  test("egérrel a szerkesztőnek nincs fókuszkerete, billentyűzettel van", async ({ page }) => {
+    await register(page, "ring");
+    await gotoPlay(page, CORRIDOR);
+    const content = editor(page);
+    const outline = () => content.evaluate((element) => getComputedStyle(element).outlineStyle);
+    await content.click();
+    await expect(content).toBeFocused();
+    await expect(page.locator(".cm-editor.cm-focused")).toHaveCount(1);
+    expect(await outline()).toBe("none");
+    await page.getByRole("button", { name: "Programtár" }).focus();
+    await page.keyboard.press("Tab");
+    await tabIntoEditor(page);
+    await expect.poll(outline).not.toBe("none");
   });
 });
 

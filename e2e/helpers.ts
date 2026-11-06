@@ -197,7 +197,10 @@ export function finishedReport(page: Page): Locator {
 }
 
 export function stoppedReport(page: Page): Locator {
-  return page.getByRole("status").filter({ hasText: "A leállított futás nem kerül a ranglistára" });
+  return page
+    .getByRole("region", { name: "Bánya" })
+    .getByRole("status")
+    .filter({ hasText: "A leállított futás nem kerül a ranglistára" });
 }
 
 export async function openConsole(page: Page): Promise<void> {

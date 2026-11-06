@@ -7,8 +7,13 @@ import {
   NEW_PASSWORD,
   readTable,
   register,
+  skipTourPrompt,
   uniqueName,
 } from "./helpers.ts";
+
+test.beforeEach(async ({ page }) => {
+  await skipTourPrompt(page);
+});
 
 const PROTECTED = [
   "/maps",

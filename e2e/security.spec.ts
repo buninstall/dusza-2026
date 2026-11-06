@@ -121,15 +121,36 @@ test.describe("hitelesítés és jogosultság", () => {
     expect((await owner.get(`/api/maps/${mapId}`)).status()).toBe(200);
   });
 
-  test("más felhasználó futásának részletei nem kérhetők le", async ({ baseURL }) => {
+  test("privát pályán futott futás részletei másnak nem kérhetők le, nyilvánoson megoszthatók", async ({
+    baseURL,
+  }) => {
+    const owner = await signedIn(baseURL ?? "", `e2efutas${suffix}`, "jelszo-futas-1", true);
+    const created = await owner.post("/api/maps", {
+      data: { title: "Privát futópálya", visibility: "private", content: "1 2\n>@\n" },
+    });
+    expect(created.status()).toBe(201);
+    const createdBody = (await created.json()) as { map: { id: number } };
+    const detail = (await (await owner.get(`/api/maps/${createdBody.map.id}`)).json()) as {
+      version: { id: number };
+    };
+    const privateRun = await owner.post("/api/runs", {
+      data: { mapVersionId: detail.version.id, source: "" },
+    });
+    expect(privateRun.status()).toBe(201);
+    const privateRunId = ((await privateRun.json()) as { run: { id: number } }).run.id;
+
     const demo = await signedIn(baseURL ?? "", DEMO.username, DEMO.password);
     const map = await mapByTitle(demo, "1. Egyenes folyosó");
-    const run = await demo.post("/api/runs", { data: { mapVersionId: map.versionId, source: "" } });
-    expect(run.status()).toBe(201);
-    const runId = ((await run.json()) as { run: { id: number } }).run.id;
+    const publicRun = await demo.post("/api/runs", {
+      data: { mapVersionId: map.versionId, source: "" },
+    });
+    expect(publicRun.status()).toBe(201);
+    const publicRunId = ((await publicRun.json()) as { run: { id: number } }).run.id;
+
     const other = await signedIn(baseURL ?? "", `e2eidegen${suffix}`, "jelszo-idegen-1", true);
-    expect((await other.get(`/api/runs/${runId}`)).status()).toBe(404);
-    expect((await demo.get(`/api/runs/${runId}`)).status()).toBe(200);
+    expect((await other.get(`/api/runs/${privateRunId}`)).status()).toBe(404);
+    expect((await owner.get(`/api/runs/${privateRunId}`)).status()).toBe(200);
+    expect((await other.get(`/api/runs/${publicRunId}`)).status()).toBe(200);
   });
 
   test("közönséges felhasználó nem éri el az adminisztrációs végpontot", async ({ baseURL }) => {

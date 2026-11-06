@@ -12,9 +12,14 @@ import {
   login,
   openFromLibrary,
   setSpeed,
+  skipTourPrompt,
   tabUntil,
   timelineSlider,
 } from "./helpers.ts";
+
+test.beforeEach(async ({ page }) => {
+  await skipTourPrompt(page);
+});
 
 test("bejelentkezés, játék és kijelentkezés csak billentyűzettel", async ({ page }) => {
   await page.goto("/login");
