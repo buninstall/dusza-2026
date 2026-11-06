@@ -1,16 +1,16 @@
 use super::Hover;
 use super::docs::keyword_doc;
-use super::outline::{code_lines, first_assignments};
+use super::outline::assignment_sites;
 use crate::diagnostics::messages;
 use crate::lint::{type_name, variable_types};
-use crate::source::{LineIndex, normalize};
+use crate::source::{LineIndex, normalized};
 use crate::span::Span;
 use crate::syntax::keywords::Keyword;
 use crate::syntax::lexeme::{Lexeme, classify};
 use crate::syntax::parse;
 
 pub fn hover(src: &str, offset: u32) -> Option<Hover> {
-    let text = normalize(src);
+    let text = normalized(src);
     let index = LineIndex::new(&text);
     let (line, byte_col) = index.position_of_utf16(offset)?;
     let line_text = index.line_text(line)?;
@@ -59,8 +59,7 @@ fn variable_description(src: &str, text: &str, name: &str) -> String {
             Some(info.first_line),
         );
     }
-    let lines = code_lines(text);
-    let first_line = first_assignments(&lines)
+    let first_line = assignment_sites(text)
         .into_iter()
         .find(|site| site.name == name)
         .map(|site| site.line);
