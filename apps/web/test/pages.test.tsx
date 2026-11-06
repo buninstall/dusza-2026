@@ -1,5 +1,6 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
+import { toast } from "../src/components/ui/Toast.tsx";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
 import { CORRIDOR, demoUser, LABYRINTH, mapSummary } from "./support/fixtures.ts";
@@ -246,6 +247,22 @@ describe("keret, kézikönyv és hibaképernyők", () => {
     await user.click(await screen.findByRole("menuitem", { name: "Kijelentkezés" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/login"));
     expect(callsTo("POST", "/auth/logout")).toHaveLength(1);
+  });
+
+  test("kijelentkezéskor az előző felhasználó értesítései eltűnnek", async () => {
+    respond("GET", "/maps", { maps: [] });
+    respond("POST", "/auth/logout", { ok: true });
+    const { user, router } = renderApp("/maps");
+    act(() => {
+      toast.success("demo2 fiókja törölve.");
+    });
+    expect(await screen.findByText("demo2 fiókja törölve.")).toBeTruthy();
+    await user.click(
+      await screen.findByRole("button", { name: `Felhasználói menü: ${demoUser.username}` }),
+    );
+    await user.click(await screen.findByRole("menuitem", { name: "Kijelentkezés" }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/login"));
+    await waitFor(() => expect(screen.queryByText("demo2 fiókja törölve.")).toBeNull());
   });
 
   test("ismeretlen útvonalon beomlott járat", async () => {
