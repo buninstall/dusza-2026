@@ -85,7 +85,7 @@ pub fn analyze(src: &str) -> Analysis {
     let parsed = parse(src);
     let mut diagnostics = parsed.diagnostics;
     if let Some(program) = &parsed.program {
-        diagnostics.extend(lint(program));
+        diagnostics.extend(lint(program, src));
     }
     Analysis {
         diagnostics,
