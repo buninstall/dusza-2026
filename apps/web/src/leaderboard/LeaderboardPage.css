@@ -248,3 +248,9 @@
     animation: none;
   }
 }
+
+.lb-watch {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}

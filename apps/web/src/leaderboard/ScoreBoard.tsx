@@ -3,6 +3,7 @@ import type { SessionUser } from "../auth/session.ts";
 import "../components/DataTable.css";
 import { EmptyState } from "../components/EmptyState.tsx";
 import { Button } from "../components/ui/Button.tsx";
+import { Link } from "../components/ui/Link.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
 import type { Leaderboard } from "../maps/queries.ts";
 
@@ -62,6 +63,18 @@ function EntryRow({ entry, best, isMe, meRef }: EntryRowProps) {
       <td className="data-table-number">{entry.steps}</td>
       <td className="data-table-muted lb-wide">{outcome}</td>
       <td className="data-table-muted lb-wide">{time}</td>
+      <td className="lb-watch">
+        <Link
+          to="/runs/$runId"
+          params={{ runId: String(entry.runId) }}
+          variant="ghost"
+          size="sm"
+          icon="replay"
+          aria-label={hu.share.watch(entry.username)}
+        >
+          {hu.share.watchShort}
+        </Link>
+      </td>
     </tr>
   );
 }
@@ -140,6 +153,9 @@ export function ScoreBoard({ data, version, user, playAction }: ScoreBoardProps)
               </th>
               <th scope="col" className="lb-wide">
                 {hu.leaderboard.when}
+              </th>
+              <th scope="col">
+                <span className="visually-hidden">{hu.runs.replay}</span>
               </th>
             </tr>
           </thead>

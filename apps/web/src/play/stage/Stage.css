@@ -76,9 +76,14 @@
 
 .stage-bezel .plate-actions {
   flex: 0 1 auto;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--space-2);
   min-width: 0;
+}
+
+.stage-bezel .plate-actions > * {
+  flex: none;
 }
 
 .stage-well {

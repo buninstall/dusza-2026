@@ -7,6 +7,7 @@ import { Notice } from "../components/Notice.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { ModalShell } from "../components/ui/Dialog.tsx";
 import { Link } from "../components/ui/Link.tsx";
+import { toast } from "../components/ui/Toast.tsx";
 import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
@@ -81,7 +82,18 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
     openInEditor();
   };
 
-  const meta = isOld ? hu.replay.oldVersion : undefined;
+  const meta = [hu.share.runBy(run.username), isOld ? hu.replay.oldVersion : null]
+    .filter((part) => part !== null)
+    .join(" · ");
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success(hu.share.copied);
+    } catch {
+      toast.error(hu.share.copyFailed);
+    }
+  };
 
   const bezel = (
     <Bezel
@@ -93,6 +105,9 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
         <>
           <Button size="sm" icon="pickaxe" onPress={requestOpen}>
             {hu.replay.openInEditor}
+          </Button>
+          <Button size="sm" icon="copy" onPress={() => void copyLink()}>
+            {hu.share.copy}
           </Button>
           <Link
             to="/leaderboard/$mapId"
