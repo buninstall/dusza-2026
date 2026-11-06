@@ -57,19 +57,19 @@ describe("futások", () => {
       json<Standing>(
         await client.post("/api/runs", { mapVersionId: map.currentVersionId, source }),
       );
-    expect((await post(owner, "")).standing).toEqual({
+    expect((await post(owner, "")).standing).toMatchObject({
       rank: 1,
       players: 1,
       isPersonalBest: true,
     });
     const rival = context.client();
     await rival.register("rivalis");
-    expect((await post(rival, "step forward 1\nmine here")).standing).toEqual({
+    expect((await post(rival, "step forward 1\nmine here")).standing).toMatchObject({
       rank: 1,
       players: 2,
       isPersonalBest: true,
     });
-    expect((await post(owner, "print 1")).standing).toEqual({
+    expect((await post(owner, "print 1")).standing).toMatchObject({
       rank: 2,
       players: 2,
       isPersonalBest: false,
@@ -106,6 +106,8 @@ type RunDetailBody = {
     errorLine: number | null;
     createdAt: number;
     source: string;
+    username: string;
+    isOwn: boolean;
   };
   map: { content: string };
 };
@@ -156,6 +158,8 @@ describe("egy futás visszajátszáshoz", () => {
         errorLine: 3,
         createdAt: 1_700_000_000_000,
         source,
+        username: "futo",
+        isOwn: true,
       },
       map: { content: firstContent },
     });
@@ -174,16 +178,24 @@ describe("egy futás visszajátszáshoz", () => {
     expect(body.run.mapVersionId).toBe(map.currentVersionId);
   });
 
-  test("az admin olvashatja, más felhasználó és a térkép gazdája nem", async () => {
+  test("nyilvános térkép futását bárki visszanézheti, privátét csak az érintettek", async () => {
     await using setup = await recordedRun();
-    const { context, owner, runId } = setup;
+    const { context, owner, runner, map, runId } = setup;
     const stranger = context.client();
     await stranger.register("kivulallo");
     for (const client of [stranger, owner]) {
       const response = await client.get(`/api/runs/${runId}`);
-      expect(response.status).toBe(404);
-      expect((await json<ErrorBody>(response)).error.code).toBe("NOT_FOUND");
+      expect(response.status).toBe(200);
+      const body = await json<RunDetailBody>(response);
+      expect(body.run.username).toBe("futo");
+      expect(body.run.isOwn).toBe(false);
     }
+    expect((await owner.put(`/api/maps/${map.id}`, { visibility: "private" })).status).toBe(200);
+    const hidden = await stranger.get(`/api/runs/${runId}`);
+    expect(hidden.status).toBe(404);
+    expect((await json<ErrorBody>(hidden)).error.code).toBe("NOT_FOUND");
+    expect((await owner.get(`/api/runs/${runId}`)).status).toBe(200);
+    expect((await runner.get(`/api/runs/${runId}`)).status).toBe(200);
     const admin = context.client();
     const { user } = await admin.register("rendszergazda");
     await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));

@@ -1,10 +1,19 @@
 import type { Diagnostic, Engine, MapInfo, MineMap } from "@minescript/engine";
-import { and, asc, count, desc, eq, max, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, max, or, type SQL, sql } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import { firstRow } from "../db/rows.ts";
-import { type MapRow, type MapVersionRow, maps, mapVersions, runs, users } from "../db/schema.ts";
+import {
+  type MapRow,
+  type MapVersionRow,
+  mapLikes,
+  maps,
+  mapVersions,
+  runs,
+  users,
+} from "../db/schema.ts";
 import type { SessionUser } from "../env.ts";
 import { sha256Hex } from "../lib/crypto.ts";
+import { bestRunsOf, likeCounts, progressOf } from "./progress.ts";
 
 export type ValidMapContent = {
   ok: true;
@@ -49,7 +58,7 @@ export function canView(user: SessionUser, map: MapRow): boolean {
 }
 
 export function canEdit(user: SessionUser, map: MapRow): boolean {
-  return map.ownerId === user.id || user.role === "admin";
+  return map.dailyDate === null && (map.ownerId === user.id || user.role === "admin");
 }
 
 export function visibleTo(user: SessionUser, scope: "all" | "mine"): SQL | undefined {
@@ -99,8 +108,10 @@ export async function runCount(db: Db, mapVersionId: number): Promise<number> {
   return row?.value ?? 0;
 }
 
-export function listMaps(db: Db, user: SessionUser, scope: "all" | "mine") {
-  return db
+export async function mapSummaries(db: Db, user: SessionUser, filter: SQL | undefined) {
+  const mine = bestRunsOf(db, user.id);
+  const liked = likeCounts(db);
+  const rows = await db
     .select({
       id: maps.id,
       title: maps.title,
@@ -108,6 +119,7 @@ export function listMaps(db: Db, user: SessionUser, scope: "all" | "mine") {
       visibility: maps.visibility,
       ownerId: maps.ownerId,
       ownerName: users.username,
+      parSteps: maps.parSteps,
       createdAt: maps.createdAt,
       updatedAt: maps.updatedAt,
       versionId: mapVersions.id,
@@ -117,12 +129,35 @@ export function listMaps(db: Db, user: SessionUser, scope: "all" | "mine") {
       cols: mapVersions.cols,
       goldTotal: mapVersions.goldTotal,
       reachableGold: mapVersions.reachableGold,
+      bestGold: mine.gold,
+      bestSteps: mine.steps,
+      likes: liked.likes,
+      likedByMe: sql<number>`exists(
+        select 1 from ${mapLikes}
+        where ${mapLikes.mapId} = ${maps.id} and ${mapLikes.userId} = ${user.id}
+      )`,
     })
     .from(maps)
     .innerJoin(users, eq(users.id, maps.ownerId))
     .innerJoin(mapVersions, eq(mapVersions.id, maps.currentVersionId))
-    .where(visibleTo(user, scope))
+    .leftJoin(mine, and(eq(mine.mapVersionId, mapVersions.id), eq(mine.position, 1)))
+    .leftJoin(liked, eq(liked.mapId, maps.id))
+    .where(filter)
     .orderBy(asc(maps.createdAt), asc(maps.id));
+  return rows.map(({ bestGold, bestSteps, likes, likedByMe, ...row }) => ({
+    ...row,
+    likes: Number(likes ?? 0),
+    likedByMe: Number(likedByMe) === 1,
+    ...progressOf(
+      bestGold === null || bestSteps === null ? null : { gold: bestGold, steps: bestSteps },
+      row.reachableGold,
+      row.parSteps,
+    ),
+  }));
+}
+
+export function listMaps(db: Db, user: SessionUser, scope: "all" | "mine") {
+  return mapSummaries(db, user, and(isNull(maps.dailyDate), visibleTo(user, scope)));
 }
 
 export function createMapWithVersion(
@@ -134,6 +169,8 @@ export function createMapWithVersion(
     visibility: MapRow["visibility"];
     valid: ValidMapContent;
     now: number;
+    parSteps?: number | null;
+    dailyDate?: string | null;
   },
 ): Promise<MapRow> {
   return db.transaction(async (tx) => {
@@ -145,6 +182,8 @@ export function createMapWithVersion(
           title: input.title,
           description: input.description,
           visibility: input.visibility,
+          parSteps: input.parSteps ?? null,
+          dailyDate: input.dailyDate ?? null,
           createdAt: input.now,
           updatedAt: input.now,
         })

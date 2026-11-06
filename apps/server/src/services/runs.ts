@@ -2,7 +2,7 @@ import type { Engine, RunResult } from "@minescript/engine";
 import { eq } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import { firstRow } from "../db/rows.ts";
-import { type MapVersionRow, maps, mapVersions, type RunRow, runs } from "../db/schema.ts";
+import { type MapVersionRow, maps, mapVersions, type RunRow, runs, users } from "../db/schema.ts";
 import type { SessionUser } from "../env.ts";
 import { sha256Hex } from "../lib/crypto.ts";
 
@@ -25,6 +25,8 @@ export type RunDetail = {
     errorLine: number | null;
     createdAt: number;
     source: string;
+    username: string;
+    isOwn: boolean;
   };
   map: { content: string };
 };
@@ -50,18 +52,24 @@ export async function findRunDetail(
       createdAt: runs.createdAt,
       source: runs.source,
       content: mapVersions.content,
+      username: users.username,
+      visibility: maps.visibility,
+      ownerId: maps.ownerId,
     })
     .from(runs)
     .innerJoin(mapVersions, eq(mapVersions.id, runs.mapVersionId))
     .innerJoin(maps, eq(maps.id, mapVersions.mapId))
+    .innerJoin(users, eq(users.id, runs.userId))
     .where(eq(runs.id, runId))
     .limit(1);
   if (!row) {
     return null;
   }
-  const { userId, content, ...run } = row;
-  const allowed = userId === viewer.id || viewer.role === "admin";
-  return allowed ? { run, map: { content } } : null;
+  const { userId, content, visibility, ownerId, ...run } = row;
+  const isOwn = userId === viewer.id;
+  const allowed =
+    isOwn || viewer.role === "admin" || visibility === "public" || ownerId === viewer.id;
+  return allowed ? { run: { ...run, isOwn }, map: { content } } : null;
 }
 
 export function executeAndRecord(

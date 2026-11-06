@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LIMITS, VISIBILITIES } from "../db/schema.ts";
+import { DIFFICULTIES, GENERATOR_MAX, GENERATOR_MIN } from "../services/generator.ts";
 
 z.config(z.locales.hu());
 
@@ -60,10 +61,20 @@ const visibility = z.enum(VISIBILITIES, {
   error: "A láthatóság „public” vagy „private” lehet.",
 });
 
+const PAR_MESSAGE = `A célérték 1 és ${LIMITS.parSteps} közötti egész szám lehet.`;
+
+const parSteps = z
+  .number({ error: PAR_MESSAGE })
+  .int(PAR_MESSAGE)
+  .min(1, PAR_MESSAGE)
+  .max(LIMITS.parSteps, PAR_MESSAGE)
+  .nullable();
+
 export const createMapSchema = z.object({
   title,
   description: description.default(""),
   visibility: visibility.default("public"),
+  parSteps: parSteps.default(null),
   content,
 });
 
@@ -72,11 +83,37 @@ export const updateMapSchema = z
     title: title.optional(),
     description: description.optional(),
     visibility: visibility.optional(),
+    parSteps: parSteps.optional(),
     content: content.optional(),
   })
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
     message: "Legalább egy mezőt módosítani kell.",
   });
+
+const SIZE_MESSAGE = `A méret ${GENERATOR_MIN} és ${GENERATOR_MAX} közötti egész szám lehet.`;
+const generatorSize = z
+  .number({ error: SIZE_MESSAGE })
+  .int(SIZE_MESSAGE)
+  .min(GENERATOR_MIN, SIZE_MESSAGE)
+  .max(GENERATOR_MAX, SIZE_MESSAGE);
+
+export const generateMapSchema = z.object({
+  rows: generatorSize,
+  cols: generatorSize,
+  difficulty: z.enum(DIFFICULTIES, { error: "A nehézség „easy”, „medium” vagy „hard” lehet." }),
+  seed: z
+    .number({ error: "A mag egész szám kell legyen." })
+    .int("A mag egész szám kell legyen.")
+    .min(0, "A mag nem lehet negatív.")
+    .max(0xffff_ffff, "A mag túl nagy.")
+    .optional(),
+});
+
+export const parSchema = z.object({ content });
+
+export const likeSchema = z.object({
+  liked: z.boolean({ error: "A „liked” mező logikai érték kell legyen." }),
+});
 
 export const listMapsQuery = z.object({
   scope: z.enum(["all", "mine"], { error: "A szűrő „all” vagy „mine” lehet." }).default("all"),

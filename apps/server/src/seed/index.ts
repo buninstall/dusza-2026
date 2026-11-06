@@ -1,8 +1,14 @@
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { hashPassword } from "../auth/password.ts";
 import { firstRow } from "../db/rows.ts";
 import { type MapRow, maps, mapVersions, programs, runs, sessions, users } from "../db/schema.ts";
 import type { Deps } from "../env.ts";
-import { createMapWithVersion, currentVersion, validateMapContent } from "../services/maps.ts";
+import {
+  createMapWithVersion,
+  currentVersion,
+  validateMapContent,
+  versionValues,
+} from "../services/maps.ts";
 import { executeAndRecord } from "../services/runs.ts";
 import { TUTORIAL_MAPS } from "./maps.ts";
 import { SAMPLE_PROGRAMS } from "./programs.ts";
@@ -52,6 +58,37 @@ async function createUsers(deps: Deps, now: number): Promise<Map<string, number>
   return ids;
 }
 
+export function tutorialPar(mapIndex: number): number | null {
+  const recipe = RECIPES.find(
+    (candidate) => candidate.mapIndex === mapIndex && candidate.expected.kind === "ok",
+  );
+  return recipe && recipe.expected.kind === "ok" ? recipe.expected.steps : null;
+}
+
+async function ensureTutorialPars(deps: Deps): Promise<void> {
+  for (const [index, tutorial] of TUTORIAL_MAPS.entries()) {
+    const valid = validateMapContent(deps.engine, tutorial.content);
+    const parSteps = tutorialPar(index);
+    if (!valid.ok || parSteps === null) {
+      continue;
+    }
+    const matching = deps.db
+      .select({ id: mapVersions.id })
+      .from(mapVersions)
+      .where(eq(mapVersions.contentHash, versionValues(valid).contentHash));
+    await deps.db
+      .update(maps)
+      .set({ parSteps })
+      .where(
+        and(
+          isNull(maps.parSteps),
+          isNull(maps.dailyDate),
+          inArray(maps.currentVersionId, matching),
+        ),
+      );
+  }
+}
+
 async function createMaps(deps: Deps, ownerId: number, now: number): Promise<MapRow[]> {
   const created: MapRow[] = [];
   for (const [index, tutorial] of TUTORIAL_MAPS.entries()) {
@@ -65,6 +102,7 @@ async function createMaps(deps: Deps, ownerId: number, now: number): Promise<Map
         title: tutorial.title,
         description: tutorial.description,
         visibility: "public",
+        parSteps: tutorialPar(index),
         valid,
         now: now + index,
       }),
@@ -98,6 +136,7 @@ export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise
   }
   const [existing] = await deps.db.select({ id: users.id }).from(users).limit(1);
   if (existing) {
+    await ensureTutorialPars(deps);
     return {
       seeded: false,
       users: 0,

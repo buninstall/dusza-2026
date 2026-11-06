@@ -8,6 +8,13 @@
       "when": 1793971954138,
       "tag": "0000_init",
       "breakpoints": false
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1794001387127,
+      "tag": "0001_game_features",
+      "breakpoints": false
     }
   ]
 }

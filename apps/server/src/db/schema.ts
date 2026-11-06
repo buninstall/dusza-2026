@@ -8,6 +8,7 @@ import {
   mediumtext,
   mysqlEnum,
   mysqlTable,
+  primaryKey,
   text,
   uniqueIndex,
   varchar,
@@ -27,7 +28,10 @@ export const LIMITS = {
   username: 24,
   title: 80,
   description: 500,
+  parSteps: 1000,
 } as const;
+
+const DAY_KEY_LENGTH = 10;
 
 const SHA256_HEX_LENGTH = 64;
 
@@ -69,10 +73,32 @@ export const maps = mysqlTable(
     description: varchar("description", { length: LIMITS.description }).notNull().default(""),
     visibility: mysqlEnum("visibility", VISIBILITIES).notNull().default("public"),
     currentVersionId: int("current_version_id"),
+    parSteps: int("par_steps"),
+    dailyDate: char("daily_date", { length: DAY_KEY_LENGTH }),
     createdAt: millis("created_at").notNull(),
     updatedAt: millis("updated_at").notNull(),
   },
-  (table) => [index("maps_owner_idx").on(table.ownerId)],
+  (table) => [
+    index("maps_owner_idx").on(table.ownerId),
+    uniqueIndex("maps_daily_date_idx").on(table.dailyDate),
+  ],
+);
+
+export const mapLikes = mysqlTable(
+  "map_likes",
+  {
+    userId: int("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    mapId: int("map_id")
+      .notNull()
+      .references(() => maps.id, { onDelete: "cascade" }),
+    createdAt: millis("created_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.mapId] }),
+    index("map_likes_map_idx").on(table.mapId),
+  ],
 );
 
 export const mapVersions = mysqlTable(

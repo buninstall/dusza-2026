@@ -5,7 +5,9 @@ import type { AppEnv, Deps } from "../env.ts";
 import { apiError, messages } from "../lib/errors.ts";
 import { validationHook } from "../lib/validation.ts";
 import { canView, findMap, findVersion, leaderboard } from "../services/maps.ts";
+import { bestScore } from "../services/progress.ts";
 import { executeAndRecord, findRunDetail } from "../services/runs.ts";
+import { starsFor } from "../services/stars.ts";
 import { idParam, runSchema } from "./schemas.ts";
 
 export function runRoutes(deps: Deps) {
@@ -48,10 +50,24 @@ export function runRoutes(deps: Deps) {
       const { run, result } = recorded;
       const entries = await leaderboard(deps.db, run.mapVersionId);
       const own = entries.find((entry) => entry.userId === run.userId);
+      const isPersonalBest = own?.runId === run.id;
+      const previous = await bestScore(deps.db, run.userId, run.mapVersionId, run.id);
+      const starsOf = (score: { gold: number; steps: number } | null) =>
+        starsFor(score, version.reachableGold, map.parSteps);
+      const runStars = starsOf(run);
       const standing = {
         rank: own?.rank ?? null,
         players: entries.length,
-        isPersonalBest: own?.runId === run.id,
+        isPersonalBest,
+        stars:
+          runStars === null
+            ? null
+            : {
+                run: runStars,
+                best: starsOf(own ?? null) ?? 0,
+                previous: starsOf(previous) ?? 0,
+                parSteps: map.parSteps,
+              },
       };
       return c.json(
         {
