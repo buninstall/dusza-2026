@@ -246,13 +246,11 @@ fn maps_conformance() {
 }
 
 #[test]
-#[ignore = "a parser elkészültéig kikapcsolva"]
 fn syntax_conformance() {
     assert_all("syntax", check_syntax);
 }
 
 #[test]
-#[ignore = "a VM elkészültéig kikapcsolva"]
 fn runtime_conformance() {
     assert_all("runtime", check_runtime);
 }

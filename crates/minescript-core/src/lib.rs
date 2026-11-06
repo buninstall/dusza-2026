@@ -18,7 +18,7 @@ pub use lint::lint;
 pub use map::{Cell, Dir, Map, MapInfo, MapParseResult, Pos, map_info, parse_map, serialize_map};
 pub use runtime::{
     Assignment, Event, INT_LIMIT, MAX_STEPS, Outcome, RobotState, RunResult, RuntimeErrorCode,
-    Value, ValueType, run, run_with_map_text,
+    Value, ValueType, run, run_program, run_with_map_text,
 };
 pub use span::Span;
 pub use syntax::{ParseResult, ast, parse};

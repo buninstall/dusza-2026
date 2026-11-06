@@ -1,0 +1,611 @@
+---
+source: crates/minescript-core/src/runtime/vm/tests.rs
+expression: "run_on(WALK_AND_MINE, SPEC_MAP)"
+---
+{
+  "outcome": {
+    "kind": "ok"
+  },
+  "events": [
+    {
+      "index": 0,
+      "line": 1,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 11
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 1,
+      "print": null,
+      "assigned": {
+        "name": "count",
+        "value": {
+          "kind": "int",
+          "value": 0
+        }
+      }
+    },
+    {
+      "index": 1,
+      "line": 2,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 11
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [
+        {
+          "row": 2,
+          "col": 12
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 2,
+      "print": null,
+      "assigned": {
+        "name": "fal",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 2,
+      "line": 3,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 11
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 3,
+      "print": null,
+      "assigned": {
+        "name": "megy",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    {
+      "index": 3,
+      "line": 4,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 11
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 4,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 4,
+      "line": 5,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 11
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 5,
+      "print": null,
+      "assigned": {
+        "name": "arany",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 5,
+      "line": 6,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 11
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 6,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 6,
+      "line": 10,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 11
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 7,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 7,
+      "line": 11,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 12
+        },
+        "dir": "east"
+      },
+      "path": [
+        {
+          "row": 2,
+          "col": 12
+        }
+      ],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 8,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 8,
+      "line": 12,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 12
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [
+        {
+          "row": 2,
+          "col": 13
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 9,
+      "print": null,
+      "assigned": {
+        "name": "fal",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 9,
+      "line": 13,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 12
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 10,
+      "print": null,
+      "assigned": {
+        "name": "megy",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    {
+      "index": 10,
+      "line": 4,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 12
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 11,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 11,
+      "line": 5,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 12
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 12,
+      "print": null,
+      "assigned": {
+        "name": "arany",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 12,
+      "line": 6,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 12
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 13,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 13,
+      "line": 10,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 12
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 14,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 14,
+      "line": 11,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 13
+        },
+        "dir": "east"
+      },
+      "path": [
+        {
+          "row": 2,
+          "col": 13
+        }
+      ],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 15,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 15,
+      "line": 12,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 13
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [
+        {
+          "row": 2,
+          "col": 14
+        }
+      ],
+      "mined": null,
+      "gold": 0,
+      "steps": 16,
+      "print": null,
+      "assigned": {
+        "name": "fal",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 16,
+      "line": 13,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 13
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 17,
+      "print": null,
+      "assigned": {
+        "name": "megy",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    {
+      "index": 17,
+      "line": 4,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 13
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 18,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 18,
+      "line": 5,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 13
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 19,
+      "print": null,
+      "assigned": {
+        "name": "arany",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 19,
+      "line": 6,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 13
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 20,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 20,
+      "line": 10,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 13
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 21,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 21,
+      "line": 11,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 14
+        },
+        "dir": "east"
+      },
+      "path": [
+        {
+          "row": 2,
+          "col": 14
+        }
+      ],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 22,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 22,
+      "line": 12,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 14
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 23,
+      "print": null,
+      "assigned": {
+        "name": "fal",
+        "value": {
+          "kind": "bool",
+          "value": true
+        }
+      }
+    },
+    {
+      "index": 23,
+      "line": 13,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 14
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 24,
+      "print": null,
+      "assigned": {
+        "name": "megy",
+        "value": {
+          "kind": "bool",
+          "value": false
+        }
+      }
+    },
+    {
+      "index": 24,
+      "line": 4,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 14
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 25,
+      "print": null,
+      "assigned": null
+    },
+    {
+      "index": 25,
+      "line": 14,
+      "robot": {
+        "pos": {
+          "row": 2,
+          "col": 14
+        },
+        "dir": "east"
+      },
+      "path": [],
+      "discovered": [],
+      "mined": null,
+      "gold": 0,
+      "steps": 26,
+      "print": "0",
+      "assigned": null
+    }
+  ],
+  "gold": 0,
+  "steps": 26,
+  "console": [
+    "0"
+  ],
+  "finalRobot": {
+    "pos": {
+      "row": 2,
+      "col": 14
+    },
+    "dir": "east"
+  },
+  "discovered": [
+    {
+      "row": 2,
+      "col": 11
+    },
+    {
+      "row": 2,
+      "col": 12
+    },
+    {
+      "row": 2,
+      "col": 13
+    },
+    {
+      "row": 2,
+      "col": 14
+    }
+  ]
+}

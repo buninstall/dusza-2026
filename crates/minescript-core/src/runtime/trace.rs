@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use super::error::RuntimeErrorCode;
+use super::error::{RuntimeError, RuntimeErrorCode};
 use super::robot::RobotState;
 use super::value::Value;
 use crate::diagnostics::Diagnostic;
@@ -44,6 +44,16 @@ pub enum Outcome {
     SyntaxError {
         diagnostics: Vec<Diagnostic>,
     },
+}
+
+impl From<RuntimeError> for Outcome {
+    fn from(error: RuntimeError) -> Self {
+        Self::RuntimeError {
+            code: error.code,
+            line: error.line,
+            message: error.code.message().to_owned(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]

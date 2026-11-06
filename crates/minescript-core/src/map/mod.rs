@@ -18,6 +18,17 @@ pub enum Cell {
     Wall,
 }
 
+impl Cell {
+    pub fn from_probe_code(code: i64) -> Option<Self> {
+        match code {
+            0 => Some(Self::Empty),
+            1 => Some(Self::Wall),
+            2 => Some(Self::Gold),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub enum Dir {
@@ -146,6 +157,15 @@ impl Map {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn probe_codes_follow_the_spec() {
+        assert_eq!(Cell::from_probe_code(0), Some(Cell::Empty));
+        assert_eq!(Cell::from_probe_code(1), Some(Cell::Wall));
+        assert_eq!(Cell::from_probe_code(2), Some(Cell::Gold));
+        assert_eq!(Cell::from_probe_code(3), None);
+        assert_eq!(Cell::from_probe_code(-1), None);
+    }
 
     #[test]
     fn turning_left_goes_counter_clockwise() {
