@@ -8,7 +8,7 @@
     "./wasm": "./pkg/minescript_wasm_bg.wasm"
   },
   "scripts": {
-    "test": "bun test test/map.test.ts test/conformance.test.ts",
+    "test": "bun test test/map.test.ts test/conformance.test.ts test/robustness.test.ts",
     "typecheck": "tsc --noEmit -p ."
   }
 }

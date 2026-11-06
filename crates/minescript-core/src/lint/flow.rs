@@ -23,6 +23,38 @@ impl Flow<'_> {
     }
 }
 
+enum After<'p> {
+    Root,
+    Result,
+    Then {
+        else_branch: Option<&'p ElseBranch>,
+        assigned: Assigned<'p>,
+    },
+    Meet(Flow<'p>),
+    Replace(Flow<'p>),
+}
+
+struct Frame<'p> {
+    rest: &'p [Stmt],
+    flow: Flow<'p>,
+    after: After<'p>,
+}
+
+impl<'p> Frame<'p> {
+    fn new(rest: &'p [Stmt], assigned: Assigned<'p>, after: After<'p>) -> Self {
+        Self {
+            rest,
+            flow: Flow::Live(assigned),
+            after,
+        }
+    }
+}
+
+enum Step<'p> {
+    Done(Flow<'p>),
+    Enter(Frame<'p>),
+}
+
 pub(super) fn check(program: &Program) -> Vec<Diagnostic> {
     let mut analysis = Analysis {
         assigned_anywhere: assignments(program)
@@ -31,7 +63,7 @@ pub(super) fn check(program: &Program) -> Vec<Diagnostic> {
             .collect(),
         findings: Vec::new(),
     };
-    analysis.block(&program.body, Flow::Live(Assigned::new()));
+    analysis.run(&program.body);
     analysis.findings
 }
 
@@ -48,14 +80,51 @@ struct Analysis<'p> {
 }
 
 impl<'p> Analysis<'p> {
-    fn block(&mut self, body: &'p [Stmt], flow: Flow<'p>) -> Flow<'p> {
-        body.iter()
-            .fold(flow, |flow, stmt| self.statement(stmt, flow))
+    fn run(&mut self, body: &'p [Stmt]) {
+        let mut frames = vec![Frame::new(body, Assigned::new(), After::Root)];
+        while let Some(frame) = frames.last_mut() {
+            if let Some((stmt, rest)) = frame.rest.split_first() {
+                frame.rest = rest;
+                let flow = std::mem::replace(&mut frame.flow, Flow::Dead);
+                match self.statement(stmt, flow) {
+                    Step::Done(result) => frame.flow = result,
+                    Step::Enter(child) => frames.push(child),
+                }
+                continue;
+            }
+            let Some(finished) = frames.pop() else {
+                return;
+            };
+            let result = match finished.after {
+                After::Root => return,
+                After::Result => finished.flow,
+                After::Then {
+                    else_branch: Some(branch),
+                    assigned,
+                } => {
+                    frames.push(Frame::new(
+                        &branch.body,
+                        assigned,
+                        After::Meet(finished.flow),
+                    ));
+                    continue;
+                }
+                After::Then {
+                    else_branch: None,
+                    assigned,
+                } => finished.flow.meet(Flow::Live(assigned)),
+                After::Meet(taken) => taken.meet(finished.flow),
+                After::Replace(flow) => flow,
+            };
+            if let Some(parent) = frames.last_mut() {
+                parent.flow = result;
+            }
+        }
     }
 
-    fn statement(&mut self, stmt: &'p Stmt, flow: Flow<'p>) -> Flow<'p> {
+    fn statement(&mut self, stmt: &'p Stmt, flow: Flow<'p>) -> Step<'p> {
         let Flow::Live(mut assigned) = flow else {
-            return Flow::Dead;
+            return Step::Done(Flow::Dead);
         };
         for operand in stmt.kind.operands() {
             self.read(operand, &mut assigned);
@@ -63,60 +132,18 @@ impl<'p> Analysis<'p> {
         match &stmt.kind {
             StmtKind::Set { name, .. } => {
                 assigned.insert(name.name.as_str());
-                Flow::Live(assigned)
+                Step::Done(Flow::Live(assigned))
             }
             StmtKind::If {
                 cond,
                 then_body,
                 else_branch,
-            } => self.branch(cond, then_body, else_branch.as_ref(), assigned),
-            StmtKind::While { cond, body } => self.loop_over(cond, body, assigned),
+            } => branch(cond, then_body, else_branch.as_ref(), assigned),
+            StmtKind::While { cond, body } => loop_over(cond, body, assigned),
             StmtKind::Step { .. }
             | StmtKind::Turn { .. }
             | StmtKind::Mine
-            | StmtKind::Print { .. } => Flow::Live(assigned),
-        }
-    }
-
-    fn branch(
-        &mut self,
-        cond: &Simple,
-        then_body: &'p [Stmt],
-        else_branch: Option<&'p ElseBranch>,
-        assigned: Assigned<'p>,
-    ) -> Flow<'p> {
-        match constant_condition(cond) {
-            Some(true) => self.block(then_body, Flow::Live(assigned)),
-            Some(false) => self.otherwise(else_branch, assigned),
-            None => {
-                let taken = self.block(then_body, Flow::Live(assigned.clone()));
-                taken.meet(self.otherwise(else_branch, assigned))
-            }
-        }
-    }
-
-    fn otherwise(
-        &mut self,
-        else_branch: Option<&'p ElseBranch>,
-        assigned: Assigned<'p>,
-    ) -> Flow<'p> {
-        match else_branch {
-            Some(branch) => self.block(&branch.body, Flow::Live(assigned)),
-            None => Flow::Live(assigned),
-        }
-    }
-
-    fn loop_over(&mut self, cond: &Simple, body: &'p [Stmt], assigned: Assigned<'p>) -> Flow<'p> {
-        match constant_condition(cond) {
-            Some(false) => Flow::Live(assigned),
-            Some(true) => {
-                self.block(body, Flow::Live(assigned));
-                Flow::Dead
-            }
-            None => {
-                self.block(body, Flow::Live(assigned.clone()));
-                Flow::Live(assigned)
-            }
+            | StmtKind::Print { .. } => Step::Done(Flow::Live(assigned)),
         }
     }
 
@@ -134,5 +161,40 @@ impl<'p> Analysis<'p> {
         };
         self.findings
             .push(Diagnostic::new(DiagCode::LintMaybeUninit, *span).with_message(message));
+    }
+}
+
+fn branch<'p>(
+    cond: &Simple,
+    then_body: &'p [Stmt],
+    else_branch: Option<&'p ElseBranch>,
+    assigned: Assigned<'p>,
+) -> Step<'p> {
+    match (constant_condition(cond), else_branch) {
+        (Some(true), _) => Step::Enter(Frame::new(then_body, assigned, After::Result)),
+        (Some(false), Some(branch)) => {
+            Step::Enter(Frame::new(&branch.body, assigned, After::Result))
+        }
+        (Some(false), None) => Step::Done(Flow::Live(assigned)),
+        (None, _) => Step::Enter(Frame::new(
+            then_body,
+            assigned.clone(),
+            After::Then {
+                else_branch,
+                assigned,
+            },
+        )),
+    }
+}
+
+fn loop_over<'p>(cond: &Simple, body: &'p [Stmt], assigned: Assigned<'p>) -> Step<'p> {
+    match constant_condition(cond) {
+        Some(false) => Step::Done(Flow::Live(assigned)),
+        Some(true) => Step::Enter(Frame::new(body, assigned, After::Replace(Flow::Dead))),
+        None => Step::Enter(Frame::new(
+            body,
+            assigned.clone(),
+            After::Replace(Flow::Live(assigned)),
+        )),
     }
 }

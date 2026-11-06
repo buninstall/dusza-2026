@@ -144,33 +144,79 @@ impl LineNode<'_> {
     }
 }
 
-impl Program {
-    pub fn for_each_line<'p>(&'p self, mut visit: impl FnMut(LineNode<'p>, usize)) {
-        visit_block(&self.body, 0, &mut visit);
-    }
-}
-
-fn visit_block<'p>(body: &'p [Stmt], depth: usize, visit: &mut impl FnMut(LineNode<'p>, usize)) {
-    for stmt in body {
-        visit(LineNode::Statement(stmt), depth);
-        match &stmt.kind {
-            StmtKind::If {
+impl StmtKind {
+    fn into_child_blocks(self) -> [Vec<Stmt>; 2] {
+        match self {
+            Self::If {
                 then_body,
                 else_branch,
                 ..
-            } => {
-                visit_block(then_body, depth + 1, visit);
-                if let Some(branch) = else_branch {
+            } => [
+                then_body,
+                else_branch.map(|branch| branch.body).unwrap_or_default(),
+            ],
+            Self::While { body, .. } => [body, Vec::new()],
+            Self::Step { .. }
+            | Self::Turn { .. }
+            | Self::Mine
+            | Self::Print { .. }
+            | Self::Set { .. } => [Vec::new(), Vec::new()],
+        }
+    }
+}
+
+enum Visit<'p> {
+    Statement(&'p Stmt, usize),
+    Else(&'p ElseBranch, usize),
+}
+
+fn push_block<'p>(pending: &mut Vec<Visit<'p>>, body: &'p [Stmt], depth: usize) {
+    pending.extend(body.iter().rev().map(|stmt| Visit::Statement(stmt, depth)));
+}
+
+impl Program {
+    pub fn for_each_line<'p>(&'p self, mut visit: impl FnMut(LineNode<'p>, usize)) {
+        let mut pending = Vec::new();
+        push_block(&mut pending, &self.body, 0);
+        while let Some(next) = pending.pop() {
+            match next {
+                Visit::Statement(stmt, depth) => {
+                    visit(LineNode::Statement(stmt), depth);
+                    match &stmt.kind {
+                        StmtKind::If {
+                            then_body,
+                            else_branch,
+                            ..
+                        } => {
+                            if let Some(branch) = else_branch {
+                                pending.push(Visit::Else(branch, depth));
+                            }
+                            push_block(&mut pending, then_body, depth + 1);
+                        }
+                        StmtKind::While { body, .. } => push_block(&mut pending, body, depth + 1),
+                        StmtKind::Step { .. }
+                        | StmtKind::Turn { .. }
+                        | StmtKind::Mine
+                        | StmtKind::Print { .. }
+                        | StmtKind::Set { .. } => {}
+                    }
+                }
+                Visit::Else(branch, depth) => {
                     visit(LineNode::Else(branch), depth);
-                    visit_block(&branch.body, depth + 1, visit);
+                    push_block(&mut pending, &branch.body, depth + 1);
                 }
             }
-            StmtKind::While { body, .. } => visit_block(body, depth + 1, visit),
-            StmtKind::Step { .. }
-            | StmtKind::Turn { .. }
-            | StmtKind::Mine
-            | StmtKind::Print { .. }
-            | StmtKind::Set { .. } => {}
+        }
+    }
+}
+
+impl Drop for Program {
+    fn drop(&mut self) {
+        let mut pending = std::mem::take(&mut self.body);
+        while let Some(stmt) = pending.pop() {
+            for block in stmt.kind.into_child_blocks() {
+                pending.extend(block);
+            }
         }
     }
 }
