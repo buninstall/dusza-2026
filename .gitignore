@@ -1,4 +1,3 @@
-
 .env
 .env.*
 *.env
@@ -274,7 +273,6 @@ Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 *.lnk
-*.stackdump
 *.cab
 *.msix
 *.partial
@@ -302,9 +300,6 @@ $RECYCLE.BIN/
 .continue/
 .codeium/
 .copilot/
-.claude/
-CLAUDE.local.md
-.claude-*
 .serena/
 .bolt/
 .tabnine
@@ -313,8 +308,15 @@ CLAUDE.local.md
 *.code-workspace
 *.launch
 
-.env.local
-.env.*.local
+.claude/*
+!.claude/agents/
+!.claude/skills/
+!.claude/commands/
+!.claude/rules/
+!.claude/roles/
+!.claude/hooks/
+!.claude/settings.json
+
 *.local
 *.local.*
 .localrc
@@ -329,16 +331,8 @@ docker-compose.local.yml
 *.min.css.map
 Makefile.local
 
-*.pem
-*.key
-*.p12
-*.keystore
-*.crt
-*.cer
-*.gpg
-*.asc
-*.env
-*.env.*
+docs/
+
 !.env.example
 !.env.sample
 !.env.template
