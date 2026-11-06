@@ -2,7 +2,7 @@ import { type CSSProperties, type Ref, useEffect, useRef } from "react";
 import { Button } from "../../components/ui/Button.tsx";
 import { Slider } from "../../components/ui/Slider.tsx";
 import { hu } from "../../i18n/hu.ts";
-import { usePrefersReducedMotion } from "../../lib/motion.ts";
+import { playOnce, usePrefersReducedMotion } from "../../lib/motion.ts";
 import { HazardStripe } from "../../pixel/HazardStripe.tsx";
 import { timelineMarks } from "../derive.ts";
 import {
@@ -93,12 +93,10 @@ function useShake(shakeKey: number | null) {
   const housing = useRef<HTMLSpanElement>(null);
   const isReduced = usePrefersReducedMotion();
   useEffect(() => {
-    const element = housing.current;
-    if (shakeKey === null || isReduced || typeof element?.animate !== "function") {
+    if (shakeKey === null || isReduced) {
       return;
     }
-    const animation = element.animate(SHAKE, { duration: SHAKE_MS, easing: "steps(1, end)" });
-    return () => animation.cancel();
+    return playOnce(housing.current, SHAKE, { duration: SHAKE_MS, easing: "steps(1, end)" });
   }, [shakeKey, isReduced]);
   return housing;
 }

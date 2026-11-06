@@ -36,7 +36,7 @@
   background: var(--c-surface-raised);
 }
 
-.data-table-number {
+.data-table-grid .data-table-number {
   font: var(--type-mono);
   text-align: right;
 }

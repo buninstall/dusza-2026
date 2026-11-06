@@ -323,11 +323,10 @@ describe("program kezelése", () => {
       symbols: [],
     });
     const { user } = await openPlay();
-    const item = await screen.findByRole(
-      "button",
-      { name: /Ugrás a\(z\) 1\. sorra, hiba/ },
-      { timeout: 3000 },
-    );
+    const toggle = await screen.findByRole("button", { name: "Hibalista" });
+    await waitFor(() => expect(toggle.hasAttribute("disabled")).toBe(false));
+    await user.click(toggle);
+    const item = await screen.findByRole("button", { name: /Ugrás a\(z\) 1\. sorra, hiba/ });
     await user.click(item);
     expect(document.activeElement?.closest(".cm-editor")).not.toBeNull();
   });

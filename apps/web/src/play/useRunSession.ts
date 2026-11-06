@@ -21,29 +21,31 @@ export function useEngineRun(mapText: string, start: RobotState) {
   const engine = useEngine();
   const [state, setState] = useState<RunAttempt>({ blocked: null, attempt: 0, wasRefused: false });
 
-  const refuse = (blocked: Blocked) => {
-    usePlayback.getState().clear();
-    setState((current) => ({ blocked, attempt: current.attempt + 1, wasRefused: true }));
-    return false;
-  };
-
-  const run = (source: string): boolean => {
-    if (source.length > PROGRAM_MAX_CHARS) {
-      return refuse({ kind: "tooLong", length: source.length });
-    }
-    let result: RunResult;
-    try {
-      result = engine.run(source, mapText);
-    } catch {
-      return refuse({ kind: "engine" });
-    }
-    if (result.outcome.kind === "syntaxError") {
-      return refuse({ kind: "syntax", diagnostics: result.outcome.diagnostics });
-    }
-    setState((current) => ({ blocked: null, attempt: current.attempt + 1, wasRefused: false }));
-    usePlayback.getState().load(result, start, source);
-    return true;
-  };
+  const run = useCallback(
+    (source: string): boolean => {
+      const refuse = (blocked: Blocked) => {
+        usePlayback.getState().clear();
+        setState((current) => ({ blocked, attempt: current.attempt + 1, wasRefused: true }));
+        return false;
+      };
+      if (source.length > PROGRAM_MAX_CHARS) {
+        return refuse({ kind: "tooLong", length: source.length });
+      }
+      let result: RunResult;
+      try {
+        result = engine.run(source, mapText);
+      } catch {
+        return refuse({ kind: "engine" });
+      }
+      if (result.outcome.kind === "syntaxError") {
+        return refuse({ kind: "syntax", diagnostics: result.outcome.diagnostics });
+      }
+      setState((current) => ({ blocked: null, attempt: current.attempt + 1, wasRefused: false }));
+      usePlayback.getState().load(result, start, source);
+      return true;
+    },
+    [engine, mapText, start],
+  );
 
   const clearBlocked = useCallback(
     () => setState((current) => (current.blocked ? { ...current, blocked: null } : current)),

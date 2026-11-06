@@ -45,7 +45,6 @@
   grid-area: bezel;
   z-index: 2;
   min-height: 0;
-  flex-wrap: nowrap;
   padding: var(--space-2) var(--space-5);
   border-width: 0 0 var(--border-thin);
   box-shadow:
@@ -64,7 +63,7 @@
 }
 
 .stage-bezel .plate-text {
-  flex: 1 1 auto;
+  flex: 1 1 15rem;
 }
 
 .stage-bezel .plate-actions {
@@ -75,12 +74,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-3);
-}
-
-@container stage (width < 48rem) {
-  .stage-bezel {
-    flex-wrap: wrap;
-  }
 }
 
 .stage-bezel .plate-actions {

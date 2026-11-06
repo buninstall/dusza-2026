@@ -1,6 +1,6 @@
 import type { Pos } from "@minescript/engine";
 import { type RefObject, useLayoutEffect, useRef } from "react";
-import { usePrefersReducedMotion } from "../lib/motion.ts";
+import { playOnce, usePrefersReducedMotion } from "../lib/motion.ts";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { TILE_SPRITES } from "../pixel/tiles.ts";
 
@@ -26,7 +26,7 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
   useLayoutEffect(() => {
     const root = rootRef.current;
     const nugget = nuggetRef.current;
-    if (key === null || !flight || isReduced || !root || typeof nugget?.animate !== "function") {
+    if (key === null || !flight || isReduced || !root || !nugget) {
       return;
     }
     const cell = root.querySelector(
@@ -38,14 +38,14 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
     if (!from || !to || to.width === 0 || from.width === 0) {
       return;
     }
-    const animation = nugget.animate(
+    return playOnce(
+      nugget,
       [
         { transform: centerOf(from), opacity: 1 },
         { transform: centerOf(to), opacity: 1 },
       ],
       { duration: FLIGHT_MS, easing: "steps(8, end)" },
     );
-    return () => animation.cancel();
   }, [key, flight, isReduced, rootRef]);
 
   return (

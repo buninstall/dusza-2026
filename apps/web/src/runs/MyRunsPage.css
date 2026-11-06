@@ -1,18 +1,27 @@
 .runs-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
 }
 
-.runs-outcome {
-  font-family: var(--font-code);
-  font-size: var(--text-xs);
+.runs-table {
+  min-width: 52rem;
 }
 
-.runs-outcome[data-outcome="ok"] {
-  color: var(--c-ok);
+.runs-when {
+  white-space: nowrap;
 }
 
-.runs-outcome[data-outcome="runtimeError"] {
-  color: var(--c-rust);
+.runs-outcome .led-label {
+  font: var(--type-mono-sm);
+}
+
+.runs-outcome[data-outcome="runtimeError"] .led-label {
+  color: var(--c-danger-ink);
+}
+
+.runs-empty {
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface);
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
 }
