@@ -1,0 +1,315 @@
+---
+source: crates/minescript-core/src/ide/mod.rs
+expression: analyze(src)
+---
+{
+  "diagnostics": [],
+  "tokens": [
+    {
+      "from": 0,
+      "to": 3,
+      "kind": "keyword"
+    },
+    {
+      "from": 4,
+      "to": 9,
+      "kind": "variable"
+    },
+    {
+      "from": 10,
+      "to": 12,
+      "kind": "keyword"
+    },
+    {
+      "from": 13,
+      "to": 14,
+      "kind": "number"
+    },
+    {
+      "from": 15,
+      "to": 18,
+      "kind": "keyword"
+    },
+    {
+      "from": 19,
+      "to": 22,
+      "kind": "variable"
+    },
+    {
+      "from": 23,
+      "to": 25,
+      "kind": "keyword"
+    },
+    {
+      "from": 26,
+      "to": 33,
+      "kind": "keyword"
+    },
+    {
+      "from": 34,
+      "to": 35,
+      "kind": "number"
+    },
+    {
+      "from": 36,
+      "to": 39,
+      "kind": "keyword"
+    },
+    {
+      "from": 40,
+      "to": 44,
+      "kind": "variable"
+    },
+    {
+      "from": 45,
+      "to": 47,
+      "kind": "keyword"
+    },
+    {
+      "from": 48,
+      "to": 51,
+      "kind": "keyword"
+    },
+    {
+      "from": 52,
+      "to": 55,
+      "kind": "variable"
+    },
+    {
+      "from": 56,
+      "to": 61,
+      "kind": "keyword"
+    },
+    {
+      "from": 62,
+      "to": 66,
+      "kind": "variable"
+    },
+    {
+      "from": 71,
+      "to": 74,
+      "kind": "keyword"
+    },
+    {
+      "from": 75,
+      "to": 80,
+      "kind": "variable"
+    },
+    {
+      "from": 81,
+      "to": 83,
+      "kind": "keyword"
+    },
+    {
+      "from": 84,
+      "to": 91,
+      "kind": "keyword"
+    },
+    {
+      "from": 92,
+      "to": 93,
+      "kind": "number"
+    },
+    {
+      "from": 98,
+      "to": 100,
+      "kind": "keyword"
+    },
+    {
+      "from": 101,
+      "to": 106,
+      "kind": "variable"
+    },
+    {
+      "from": 115,
+      "to": 119,
+      "kind": "keyword"
+    },
+    {
+      "from": 120,
+      "to": 127,
+      "kind": "keyword"
+    },
+    {
+      "from": 128,
+      "to": 129,
+      "kind": "number"
+    },
+    {
+      "from": 138,
+      "to": 142,
+      "kind": "keyword"
+    },
+    {
+      "from": 143,
+      "to": 147,
+      "kind": "keyword"
+    },
+    {
+      "from": 156,
+      "to": 159,
+      "kind": "keyword"
+    },
+    {
+      "from": 160,
+      "to": 165,
+      "kind": "variable"
+    },
+    {
+      "from": 166,
+      "to": 168,
+      "kind": "keyword"
+    },
+    {
+      "from": 169,
+      "to": 174,
+      "kind": "variable"
+    },
+    {
+      "from": 175,
+      "to": 176,
+      "kind": "operator"
+    },
+    {
+      "from": 177,
+      "to": 178,
+      "kind": "number"
+    },
+    {
+      "from": 183,
+      "to": 187,
+      "kind": "keyword"
+    },
+    {
+      "from": 196,
+      "to": 200,
+      "kind": "keyword"
+    },
+    {
+      "from": 201,
+      "to": 208,
+      "kind": "keyword"
+    },
+    {
+      "from": 209,
+      "to": 210,
+      "kind": "number"
+    },
+    {
+      "from": 215,
+      "to": 218,
+      "kind": "keyword"
+    },
+    {
+      "from": 219,
+      "to": 222,
+      "kind": "variable"
+    },
+    {
+      "from": 223,
+      "to": 225,
+      "kind": "keyword"
+    },
+    {
+      "from": 226,
+      "to": 233,
+      "kind": "keyword"
+    },
+    {
+      "from": 234,
+      "to": 235,
+      "kind": "number"
+    },
+    {
+      "from": 240,
+      "to": 243,
+      "kind": "keyword"
+    },
+    {
+      "from": 244,
+      "to": 248,
+      "kind": "variable"
+    },
+    {
+      "from": 249,
+      "to": 251,
+      "kind": "keyword"
+    },
+    {
+      "from": 252,
+      "to": 255,
+      "kind": "keyword"
+    },
+    {
+      "from": 256,
+      "to": 259,
+      "kind": "variable"
+    },
+    {
+      "from": 260,
+      "to": 265,
+      "kind": "keyword"
+    },
+    {
+      "from": 266,
+      "to": 271,
+      "kind": "variable"
+    }
+  ],
+  "folds": [
+    {
+      "from": 66,
+      "to": 259
+    },
+    {
+      "from": 106,
+      "to": 178
+    },
+    {
+      "from": 187,
+      "to": 210
+    }
+  ],
+  "symbols": [
+    {
+      "name": "count",
+      "span": {
+        "line": 1,
+        "colStart": 5,
+        "colEnd": 10,
+        "from": 4,
+        "to": 9
+      }
+    },
+    {
+      "name": "fal",
+      "span": {
+        "line": 2,
+        "colStart": 5,
+        "colEnd": 8,
+        "from": 19,
+        "to": 22
+      }
+    },
+    {
+      "name": "megy",
+      "span": {
+        "line": 3,
+        "colStart": 5,
+        "colEnd": 9,
+        "from": 40,
+        "to": 44
+      }
+    },
+    {
+      "name": "arany",
+      "span": {
+        "line": 5,
+        "colStart": 9,
+        "colEnd": 14,
+        "from": 75,
+        "to": 80
+      }
+    }
+  ]
+}

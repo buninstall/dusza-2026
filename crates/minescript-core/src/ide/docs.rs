@@ -1,3 +1,5 @@
+use crate::syntax::ast::BinOp;
+
 pub struct CommandDoc {
     pub keyword: &'static str,
     pub label: &'static str,
@@ -64,6 +66,34 @@ pub const COMMAND_DOCS: [CommandDoc; 8] = [
         documentation: "Ciklus: a mélyebbre húzott blokk addig ismétlődik, amíg a logikai feltétel igaz. A while sora minden feltétel-kiértékeléskor egy lépésnek számít.",
     },
 ];
+
+pub const VARIABLE_DETAIL: &str = "változó";
+pub const BOOL_DETAIL: &str = "logikai érték";
+pub const PROBE_DETAIL: &str = "isThere kód";
+pub const ISTHERE_SNIPPET: &str = "isThere ${w}";
+pub const NOT_SNIPPET: &str = "not ${x}";
+
+pub const PROBE_CODES: [(&str, &str); 3] = [
+    ("0", "üres kamra"),
+    ("1", "fal (vagy a térkép széle)"),
+    ("2", "aranyrög"),
+];
+
+pub fn operator_doc(op: BinOp) -> &'static str {
+    match op {
+        BinOp::Add => "összeadás (egészek)",
+        BinOp::Sub => "kivonás (egészek)",
+        BinOp::Mul => "szorzás (egészek)",
+        BinOp::Eq => "egyenlő (azonos típusú operandusok)",
+        BinOp::Ne => "nem egyenlő (azonos típusú operandusok)",
+        BinOp::Lt => "kisebb (egészek)",
+        BinOp::Le => "kisebb vagy egyenlő (egészek)",
+        BinOp::Gt => "nagyobb (egészek)",
+        BinOp::Ge => "nagyobb vagy egyenlő (egészek)",
+        BinOp::And => "logikai és",
+        BinOp::Or => "logikai vagy",
+    }
+}
 
 pub fn keyword_doc(keyword: &str) -> Option<&'static str> {
     if let Some(command) = COMMAND_DOCS.iter().find(|doc| doc.keyword == keyword) {

@@ -1,4 +1,8 @@
+mod completion;
 mod docs;
+mod hover;
+mod outline;
+mod tokens;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -7,10 +11,11 @@ use crate::diagnostics::Diagnostic;
 use crate::lint::lint;
 use crate::source::{LineIndex, normalize};
 use crate::span::Span;
-use crate::syntax::keywords::is_keyword;
 use crate::syntax::parse;
 
+pub use completion::complete;
 pub use docs::{COMMAND_DOCS, CommandDoc, keyword_doc};
+pub use hover::hover;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -82,115 +87,56 @@ pub struct Hover {
 }
 
 pub fn analyze(src: &str) -> Analysis {
+    let text = normalize(src);
+    let index = LineIndex::new(&text);
     let parsed = parse(src);
-    let mut diagnostics = parsed.diagnostics;
-    if let Some(program) = &parsed.program {
-        diagnostics.extend(lint(program, src));
-    }
+    let diagnostics = match &parsed.program {
+        Some(program) => lint(program, src),
+        None => parsed.diagnostics,
+    };
+    let lines = outline::code_lines(&text);
     Analysis {
         diagnostics,
-        tokens: Vec::new(),
-        folds: Vec::new(),
-        symbols: Vec::new(),
+        tokens: tokens::semantic_tokens(&text, &index),
+        folds: outline::folds(&lines, &index),
+        symbols: outline::symbols(&lines, &index),
     }
-}
-
-pub fn complete(src: &str, offset: u32) -> Vec<CompletionItem> {
-    let text = normalize(src);
-    let index = LineIndex::new(&text);
-    let Some((line, byte_col)) = index.position_of_utf16(offset) else {
-        return Vec::new();
-    };
-    let line_text = index.line_text(line).unwrap_or("");
-    let before_cursor = line_text.get(..byte_col).unwrap_or("");
-    if before_cursor.trim_start_matches(' ').contains(' ') {
-        return Vec::new();
-    }
-    COMMAND_DOCS
-        .iter()
-        .map(|doc| CompletionItem {
-            label: doc.label.to_owned(),
-            kind: if doc.snippet.contains("${") {
-                CompletionKind::Snippet
-            } else {
-                CompletionKind::Keyword
-            },
-            detail: doc.detail.to_owned(),
-            documentation: doc.documentation.to_owned(),
-            insert_text: doc.snippet.to_owned(),
-        })
-        .collect()
-}
-
-pub fn hover(src: &str, offset: u32) -> Option<Hover> {
-    let text = normalize(src);
-    let index = LineIndex::new(&text);
-    let (line, byte_col) = index.position_of_utf16(offset)?;
-    let line_text = index.line_text(line)?;
-    let is_word_byte = |byte: &u8| byte.is_ascii_alphanumeric();
-    let bytes = line_text.as_bytes();
-    let start = bytes
-        .get(..byte_col)?
-        .iter()
-        .rposition(|byte| !is_word_byte(byte))
-        .map_or(0, |position| position + 1);
-    let end = bytes
-        .get(byte_col..)?
-        .iter()
-        .position(|byte| !is_word_byte(byte))
-        .map_or(bytes.len(), |position| byte_col + position);
-    let word = line_text.get(start..end)?;
-    if word.is_empty() || !is_keyword(word) {
-        return None;
-    }
-    Some(Hover {
-        contents: keyword_doc(word)?.to_owned(),
-        span: Span::in_line(&index, line, start, end),
-    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::diagnostics::{DiagCode, Severity};
 
     #[test]
-    fn completes_all_commands_at_line_start() {
-        let items = complete("", 0);
-        assert_eq!(items.len(), 8);
-        assert!(
-            items
-                .iter()
-                .any(|item| item.insert_text.starts_with("while "))
-        );
-    }
-
-    #[test]
-    fn completes_commands_in_indented_first_token() {
-        let src = "while t\n    pr";
-        let items = complete(src, 14);
-        assert_eq!(items.len(), 8);
-    }
-
-    #[test]
-    fn no_command_completion_after_first_token() {
-        assert!(complete("set a", 5).is_empty());
-    }
-
-    #[test]
-    fn hover_explains_keywords() {
-        let hover = hover("set a to isThere 2", 11).unwrap();
-        assert!(hover.contents.contains("isThere"));
-        assert_eq!((hover.span.from, hover.span.to), (9, 16));
-    }
-
-    #[test]
-    fn hover_ignores_identifiers() {
-        assert!(hover("set arany to 1", 6).is_none());
-    }
-
-    #[test]
-    fn analyze_reports_parse_diagnostics() {
+    fn analyze_reports_parse_errors_instead_of_lints() {
         assert!(analyze("").diagnostics.is_empty());
-        assert!(!analyze("Step forward 1").diagnostics.is_empty());
+        let broken = analyze("set u to 1\nStep forward 1");
+        assert_eq!(broken.diagnostics.len(), 1);
+        assert_eq!(broken.diagnostics[0].code, DiagCode::SynUnknownCommand);
+    }
+
+    #[test]
+    fn analyze_reports_lints_for_valid_programs() {
+        let analysis = analyze("set u to 1\n");
+        assert_eq!(analysis.diagnostics.len(), 1);
+        assert_eq!(analysis.diagnostics[0].code, DiagCode::LintUnusedVar);
+        assert_eq!(analysis.diagnostics[0].severity, Severity::Warning);
+    }
+
+    #[test]
+    fn analyze_returns_tokens_folds_and_symbols_even_for_broken_programs() {
+        let analysis = analyze("set a to 1\nwhile a\n    print  a\n");
+        assert_eq!(analysis.tokens.len(), 8);
+        assert_eq!(analysis.folds, vec![FoldRange { from: 18, to: 31 }]);
+        assert_eq!(analysis.symbols.len(), 1);
+        assert_eq!(analysis.symbols[0].name, "a");
+        assert_eq!(analysis.diagnostics[0].code, DiagCode::SynDoubleSpace);
+    }
+
+    #[test]
+    fn analysis_of_the_spec_program_is_stable() {
+        let src = "set count to 0\nset fal to isThere 1\nset megy to not fal\nwhile megy\n    set arany to isThere 2\n    if arany\n        step forward 1\n        mine here\n        set count to count + 1\n    else\n        step forward 1\n    set fal to isThere 1\n    set megy to not fal\nprint count\n";
+        insta::assert_json_snapshot!("spec_program_analysis", analyze(src));
     }
 }
