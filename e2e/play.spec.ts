@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { editor, login, openPlay, replaceProgram, runProgram } from "./helpers.ts";
+import {
+  editor,
+  importProgramFile,
+  login,
+  openPlay,
+  replaceProgram,
+  runProgram,
+} from "./helpers.ts";
 
 const LONG_PROGRAM = [
   "set i to 0",
@@ -22,7 +29,11 @@ test("szintaktikailag hibás program nem fut, a hibás sor jelölve", async ({ p
   const banner = page.getByRole("alert").filter({ hasText: "szintaktikailag hibás" });
   await expect(banner).toBeVisible();
   await expect(banner).toContainText(/Hibás sor: \d/);
-  await expect(page.locator(".cm-error-line").first()).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: /^Hibalista/ })
+      .getByRole("button", { name: /^Ugrás a\(z\) 2\. sorra, hiba/ }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: /Hibalista/ })).toBeVisible();
 });
 
@@ -62,15 +73,14 @@ test("a programtár receptje végigfut, és a szerver rögzíti a pontos eredmé
 
 test("programfájl importja: a hibás program is betöltődik, a bináris nem", async ({ page }) => {
   await openPlay(page, "3. Kis labirintus");
-  const input = page.locator('input[type="file"]').first();
-  await input.setInputFiles({
+  await importProgramFile(page, {
     name: "probalkozas.ms",
     mimeType: "text/plain",
     buffer: Buffer.from("set arany to isThere 2\r\nprint  arany\r\n", "utf8"),
   });
   await expect(page.getByText("A(z) probalkozas.ms program betöltve.")).toBeVisible();
   await expect(editor(page)).toContainText("print  arany");
-  await input.setInputFiles({
+  await importProgramFile(page, {
     name: "kep.ms",
     mimeType: "application/octet-stream",
     buffer: Buffer.from([0x00, 0xff, 0xfe]),

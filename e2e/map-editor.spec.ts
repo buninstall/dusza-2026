@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
-import { login } from "./helpers.ts";
+import { importMapFile, login } from "./helpers.ts";
 
 test.beforeEach(async ({ page }) => {
   await login(page);
@@ -43,7 +43,7 @@ test("új térkép: festés, ellenőrzés, mentés és exportálás", async ({ p
 });
 
 test("érvénytelen térképfájl importja elutasítva, semmi nem töltődik be", async ({ page }) => {
-  await page.locator('input[type="file"]').setInputFiles({
+  await importMapFile(page, {
     name: "hibas.txt",
     mimeType: "text/plain",
     buffer: Buffer.from("2 3\n>.@\n#.\n", "utf8"),
@@ -55,7 +55,7 @@ test("érvénytelen térképfájl importja elutasítva, semmi nem töltődik be"
 });
 
 test("érvényes térképfájl betöltődik", async ({ page }) => {
-  await page.locator('input[type="file"]').setInputFiles({
+  await importMapFile(page, {
     name: "jo.txt",
     mimeType: "text/plain",
     buffer: Buffer.from("3 15\n....@..........\n.#############.\n.......@...>...\n", "utf8"),
