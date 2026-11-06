@@ -46,7 +46,7 @@ start:
 smoke:
     bun scripts/smoke.ts
 
-e2e:
+e2e: build
     bun run --filter '@minescript/e2e' e2e
 
 ci: lint test build e2e

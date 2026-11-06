@@ -1,3 +1,4 @@
+import { rmSync } from "node:fs";
 import { createApp } from "./app.ts";
 import { createLoginLimiter, LOGIN_LIMIT } from "./auth/rate-limit.ts";
 import { DEFAULT_PORT, PORT_ATTEMPTS, parseConfig, type ServerConfig } from "./config.ts";
@@ -7,6 +8,12 @@ import { loadEngine } from "./engine.ts";
 import type { Deps } from "./env.ts";
 import { DEMO_ACCOUNTS, seedDemo } from "./seed/index.ts";
 import { loadStaticHandler } from "./static.ts";
+
+function removeDatabaseFiles(path: string): void {
+  for (const file of [path, `${path}-wal`, `${path}-shm`]) {
+    rmSync(file, { force: true });
+  }
+}
 
 function isAddressInUse(error: unknown): boolean {
   return error instanceof Error && /EADDRINUSE|in use/i.test(`${error.message} ${String(error)}`);
@@ -92,6 +99,9 @@ async function main(): Promise<void> {
   const shutdown = () => {
     server.stop();
     sqlite.close();
+    if (config.testMode) {
+      removeDatabaseFiles(config.dbPath);
+    }
     process.exit(0);
   };
   process.on("SIGINT", shutdown);

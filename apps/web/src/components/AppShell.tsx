@@ -82,7 +82,7 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
         <div className="ml-auto flex items-center gap-1">
           <ThemeToggle />
           <Menu
-            ariaLabel={hu.nav.userMenu}
+            ariaLabel={hu.nav.userMenuFor(user.username)}
             label={
               <>
                 <CircleUser aria-hidden size={18} />

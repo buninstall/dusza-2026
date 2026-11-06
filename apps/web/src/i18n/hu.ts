@@ -118,6 +118,7 @@ export const hu = {
     themeLight: "Világos téma",
     themeDark: "Sötét téma",
     userMenu: "Felhasználói menü",
+    userMenuFor: (username: string) => `Felhasználói menü: ${username}`,
     signedInAs: (username: string) => `Bejelentkezve: ${username}`,
     logout: "Kijelentkezés",
   },

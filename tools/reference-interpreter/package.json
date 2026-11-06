@@ -9,5 +9,8 @@
   "scripts": {
     "test": "bun test",
     "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@minescript/engine": "workspace:*"
   }
 }
