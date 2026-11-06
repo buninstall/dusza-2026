@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(just:*)",
+      "Bash(cargo:*)",
+      "Bash(rustup:*)",
+      "Bash(bun:*)",
+      "Bash(bunx:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

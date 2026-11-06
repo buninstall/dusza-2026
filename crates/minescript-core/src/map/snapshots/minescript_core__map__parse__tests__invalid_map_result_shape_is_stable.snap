@@ -1,0 +1,51 @@
+---
+source: crates/minescript-core/src/map/parse.rs
+expression: "parse_map(\"2 3\\n><.\\n.x\")"
+---
+{
+  "map": null,
+  "diagnostics": [
+    {
+      "code": "MAP_ROW_LENGTH",
+      "severity": "error",
+      "span": {
+        "line": 3,
+        "colStart": 1,
+        "colEnd": 3,
+        "from": 8,
+        "to": 10
+      },
+      "message": "Ez a sor 2 jelből áll, de a fejléc szerint 3 kell.",
+      "help": null,
+      "fixes": []
+    },
+    {
+      "code": "MAP_BAD_SYMBOL",
+      "severity": "error",
+      "span": {
+        "line": 3,
+        "colStart": 2,
+        "colEnd": 3,
+        "from": 9,
+        "to": 10
+      },
+      "message": "Ismeretlen jel: „x”.",
+      "help": "Megengedett jelek: . @ # > < ^ v",
+      "fixes": []
+    },
+    {
+      "code": "MAP_MULTIPLE_ROBOTS",
+      "severity": "error",
+      "span": {
+        "line": 2,
+        "colStart": 2,
+        "colEnd": 3,
+        "from": 5,
+        "to": 6
+      },
+      "message": "A térképen pontosan egy robot lehet.",
+      "help": null,
+      "fixes": []
+    }
+  ]
+}

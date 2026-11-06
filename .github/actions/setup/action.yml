@@ -1,0 +1,29 @@
+name: Toolchain
+description: Rust (wasm32), Bun, just és a Cargo.lock szerinti wasm-bindgen-cli
+runs:
+  using: composite
+  steps:
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-unknown-unknown
+        components: rustfmt, clippy
+    - uses: Swatinem/rust-cache@v2
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: package.json
+    - uses: taiki-e/install-action@v2
+      with:
+        tool: just
+    - id: bindgen
+      shell: bash
+      run: echo "version=$(grep -A1 '^name = "wasm-bindgen"$' Cargo.lock | sed -n 's/^version = "\(.*\)"$/\1/p')" >> "$GITHUB_OUTPUT"
+    - id: bindgen-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/bin/wasm-bindgen*
+        key: wasm-bindgen-${{ runner.os }}-${{ steps.bindgen.outputs.version }}
+    - if: steps.bindgen-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: cargo install wasm-bindgen-cli --locked --version "${{ steps.bindgen.outputs.version }}"
+    - shell: bash
+      run: bun install --frozen-lockfile

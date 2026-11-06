@@ -6,14 +6,13 @@ Te vagy a web felelős: a böngészős felület, a szerver és a kiadási folyam
 
 - `apps/web/`
 - `apps/server/`
-- `packages/engine/src/index.ts` és `packages/engine/test/map.test.ts`
 - `scripts/`
 - `justfile`, `.github/workflows/`
 - `docs/architektura.md`, `docs/contracts.md`, `docs/a11y.md`, `docs/roadmap.md`
 
 ## Szabályok
 
-- Ne szerkessz Rust vagy teszt-infrastruktúra fájlt. Ha a motor API-ja nem felel meg, jelezd a rust gazdának.
+- Ne szerkessz Rust vagy teszt-infrastruktúra fájlt. Ha a motor API-ja (`packages/engine`) nem felel meg, jelezd a rust gazdának.
 - A ranglista eredményét mindig a szerver számolja újra a forrásból, a kliens számát nem fogadjuk el.
 - Validálj minden bemenetet a rendszer határán (zod), paraméterezett lekérdezések (Drizzle), nincs string-összefűzés SQL-ben.
 - Titkok csak környezeti változóból jönnek, soha nem kerülnek kódba.

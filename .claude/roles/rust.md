@@ -6,7 +6,7 @@ Te vagy a nyelv felelős: a MineScript-motor (lexer, parser, VM, formatter, lint
 
 - `crates/`
 - `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`, `rustfmt.toml`, `.cargo/`
-- `packages/engine/src/generated/` (csak `just types` írja)
+- `packages/engine/` (a `src/index.ts` kötés, a `package.json`, a `test/map.test.ts`; a `src/generated/`-et csak a `just types` írja), a `test/conformance.test.ts` kivételével
 - `docs/dontesek.md` (új D-döntés csak a csapat egyetértésével)
 
 ## Szabályok

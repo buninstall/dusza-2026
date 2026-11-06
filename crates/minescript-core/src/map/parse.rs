@@ -368,6 +368,11 @@ mod tests {
         assert_eq!(serialize_map(&map), SPEC_EXAMPLE);
     }
 
+    #[test]
+    fn invalid_map_result_shape_is_stable() {
+        insta::assert_json_snapshot!(parse_map("2 3\n><.\n.x"));
+    }
+
     fn arb_cell() -> impl Strategy<Value = Cell> {
         prop_oneof![Just(Cell::Empty), Just(Cell::Gold), Just(Cell::Wall)]
     }
