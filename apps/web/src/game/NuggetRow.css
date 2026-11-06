@@ -1,0 +1,63 @@
+.nuggets {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.nuggets-slot {
+  display: inline-flex;
+}
+
+.nuggets-art {
+  width: 20px;
+  height: 20px;
+}
+
+.nuggets[data-size="sm"] .nuggets-art {
+  width: 16px;
+  height: 16px;
+}
+
+.nuggets[data-size="lg"] .nuggets-art {
+  width: 32px;
+  height: 32px;
+}
+
+.nuggets-slot[data-earned="false"] .nuggets-art {
+  opacity: 0.22;
+  filter: grayscale(1);
+}
+
+.nuggets[data-animated="true"] .nuggets-slot[data-earned="true"] {
+  animation: nugget-drop var(--motion-burst) var(--ease-px4) backwards;
+  animation-delay: calc(var(--nugget-order) * 220ms + 200ms);
+}
+
+.nuggets[data-animated="true"] .nuggets-slot[data-new="true"] {
+  animation-name: nugget-new;
+}
+
+@keyframes nugget-drop {
+  from {
+    scale: 0.4;
+    opacity: 0;
+  }
+}
+
+@keyframes nugget-new {
+  0% {
+    scale: 0.4;
+    opacity: 0;
+  }
+
+  60% {
+    scale: 1.35;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nuggets[data-animated="true"] .nuggets-slot[data-earned="true"] {
+    animation: none;
+  }
+}

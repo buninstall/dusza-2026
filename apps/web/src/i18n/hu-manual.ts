@@ -114,7 +114,7 @@ const sections: readonly ManualSection[] = [
           "A térképszerkesztő csak szabályos térképet ment el. Arany nélküli vagy elérhetetlen aranyat tartalmazó térkép is menthető, de figyelmeztetést kap.",
           "Hibás térképfájl importálásakor a szerkesztő megmondja, melyik sorban mi a gond, és nem tölti be a hibás tartalmat.",
           "A `Generálás` gomb mindig megoldható pályát rajzol a megadott méretben és nehézséggel, a `Falkeret` és a `Mind üres` egy kattintással átrendezi a rácsot. A `Próbajáték` mentés nélkül, ranglista nélkül játszatja a készülő pályát.",
-          "A `Célérték (lépés)` mezőben adhatod meg, hány lépésből jár a harmadik csillag. A `Gépi megoldás` gomb kiszámolja, hány lépésből oldja meg a pályát a beépített útvonaltervező.",
+          "A `Célérték (lépés)` mezőben adhatod meg, hány lépésből jár a harmadik rög. A `Gépi megoldás` gomb kiszámolja, hány lépésből oldja meg a pályát a beépített útvonaltervező.",
         ],
       },
       {
@@ -379,17 +379,17 @@ const sections: readonly ManualSection[] = [
     ],
   },
   {
-    id: "csillagok",
-    title: "Csillagok és kihívások",
+    id: "rogok",
+    title: "Rögök és napi kihívás",
     blocks: [
       {
         kind: "paragraph",
-        text: "Minden pályán legfeljebb három csillag szerezhető. A csillagok a legjobb futásodból számolódnak, és a `Pályák` oldalon összesítve is látod őket.",
+        text: "Minden pályán legfeljebb három rög szerezhető. A rögök a legjobb futásodból számolódnak, és a `Pályák` oldalon összesítve is látod őket.",
       },
       {
         kind: "table",
-        caption: "A csillagok feltételei",
-        head: ["Csillag", "Feltétel"],
+        caption: "A rögök feltételei",
+        head: ["Rög", "Feltétel"],
         rows: [
           ["1", "a futás legalább egy aranyat kibányászott"],
           ["2", "a pálya minden elérhető aranyát kibányászta"],
@@ -402,8 +402,8 @@ const sections: readonly ManualSection[] = [
       {
         kind: "list",
         items: [
-          "A célérték a pálya adatai között látszik. Ha egy pályának nincs célértéke, ott legfeljebb 2 csillag jár.",
-          "A futás végén megjelenő eredménysáv megmutatja a megszerzett csillagokat, azt, hogy mi kell a következőhöz, és innen a következő pályára is továbbléphetsz.",
+          "A célérték a pálya adatai között látszik. Ha egy pályának nincs célértéke, ott legfeljebb 2 rög jár.",
+          "A futás végén a vezérlőpulton megjelennek a megszerzett rögök és a következő rög feltétele, innen a következő pályára is továbbléphetsz.",
           "A `Napi kihívás` minden nap új, géppel generált pálya: mindenki ugyanazt kapja, és saját ranglistája van.",
           "A ranglistán bármelyik futást megnézheted a `Megnézem` gombbal, a programjával együtt. A visszajátszás linkje megosztható.",
         ],

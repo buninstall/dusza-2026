@@ -99,8 +99,8 @@
   --c-on-danger: #160904;
   --c-ok: #97cc6e;
   --c-warn: #f2c94c;
-  --c-signal: #63d8df;
-  --c-focus: #63d8df;
+  --c-signal: #ead9ae;
+  --c-focus: #ffe7a3;
   --c-selection: #5a4314;
   --c-exec-line: #3b2d0e;
   --c-error-line: #3a1a10;
@@ -133,7 +133,7 @@
   --px-steel-edge: #15181b;
   --px-tread: #2c3034;
   --px-tread-hi: #59616a;
-  --px-visor: #52d6de;
+  --px-visor: #ffcf6b;
   --px-lamp: #fff7cf;
   --px-beam: #ffe17a;
   --px-alert: #f2c21b;
@@ -170,8 +170,8 @@
   --c-on-danger: #ffffff;
   --c-ok: #2f6a1f;
   --c-warn: #7a5600;
-  --c-signal: #0a6a73;
-  --c-focus: #0a6a73;
+  --c-signal: #5a4632;
+  --c-focus: #5c3600;
   --c-selection: #f3d58f;
   --c-exec-line: #f8e2a6;
   --c-error-line: #f9dfd3;
@@ -204,7 +204,7 @@
   --px-steel-edge: #15181b;
   --px-tread: #2c3034;
   --px-tread-hi: #59616a;
-  --px-visor: #1fb6c0;
+  --px-visor: #e09a1f;
   --px-lamp: #fff7cf;
   --px-beam: #ffd54a;
   --px-alert: #f2c21b;

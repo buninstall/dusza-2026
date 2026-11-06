@@ -7,11 +7,12 @@ import { Notice } from "../components/Notice.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { Tab, TabList, TabPanel, Tabs } from "../components/ui/Tabs.tsx";
-import { MAX_STARS } from "../game/StarRow.tsx";
+import { MAX_NUGGETS } from "../game/NuggetRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
 import { useMediaQuery } from "../lib/useMediaQuery.ts";
-import { PixelIcon } from "../pixel/PixelIcon.tsx";
+import { PixelSprite } from "../pixel/SpriteLayers.tsx";
+import { TILE_SPRITES } from "../pixel/tiles.ts";
 import { TourPrompt } from "../tour/TourPrompt.tsx";
 import { DailyCard } from "./DailyCard.tsx";
 import { LevelTile } from "./LevelTile.tsx";
@@ -78,16 +79,16 @@ function MapCount({ scope }: { scope: MapScope }) {
   }
   const rated = data.maps.filter((map) => map.stars !== null);
   const earned = rated.reduce((sum, map) => sum + (map.stars ?? 0), 0);
-  const total = rated.length * MAX_STARS;
+  const total = rated.length * MAX_NUGGETS;
   return (
     <>
       {hu.maps.count(data.maps.length)}
       {total > 0 ? (
         <>
           {" · "}
-          <span className="maps-stars" title={hu.game.starsTotalLabel}>
-            <PixelIcon name="starFull" size="sm" />
-            {hu.game.starsTotal(earned, total)}
+          <span className="maps-stars" title={hu.game.nuggetsTotalLabel}>
+            <PixelSprite sprite={TILE_SPRITES.nugget} className="maps-nugget" />
+            {hu.game.nuggetsTotal(earned, total)}
           </span>
         </>
       ) : null}

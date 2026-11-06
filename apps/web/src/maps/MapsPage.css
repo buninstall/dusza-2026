@@ -258,6 +258,11 @@
   color: var(--c-reward);
 }
 
+.maps-nugget {
+  width: 16px;
+  height: 16px;
+}
+
 .lv-actions {
   grid-area: actions;
   display: flex;

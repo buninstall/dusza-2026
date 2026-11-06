@@ -8,7 +8,7 @@ import {
   breakpoints,
   toggleBreakpoint,
 } from "../src/editor/breakpoints.ts";
-import { StarRow } from "../src/game/StarRow.tsx";
+import { NuggetRow } from "../src/game/NuggetRow.tsx";
 import { clearDraft, emptyDraft, frameDraft, paint } from "../src/map-editor/editor-state.ts";
 import { usePlayback } from "../src/play/playback-store.ts";
 import { isSoundOn, playCue, SOUND_KEY, setSoundOn } from "../src/sound/sfx.ts";
@@ -17,10 +17,10 @@ import { callsTo, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
 import { CORRIDOR, corridorStart, LABYRINTH, mapSummary, walkTrace } from "./support/fixtures.ts";
 
-describe("csillagok és rendezés", () => {
-  test("a csillagsor olvasható címkét kap", () => {
-    render(<StarRow stars={2} />);
-    expect(screen.getByRole("img", { name: "2 / 3 csillag" })).toBeTruthy();
+describe("rögök", () => {
+  test("a rögsor olvasható címkét kap", () => {
+    render(<NuggetRow earned={2} />);
+    expect(screen.getByRole("img", { name: "2 / 3 rög" })).toBeTruthy();
   });
 });
 
@@ -134,8 +134,8 @@ describe("napi kihívás a pályák oldalán", () => {
     expect(
       within(card).getByRole("link", { name: "Játék a napi pályán" }).getAttribute("href"),
     ).toBe("/play/50");
-    expect(within(card).getByRole("img", { name: "2 / 3 csillag" })).toBeTruthy();
-    expect(await screen.findByText("3 / 3 csillag")).toBeTruthy();
+    expect(within(card).getByRole("img", { name: "2 / 3 rög" })).toBeTruthy();
+    expect(await screen.findByText("3 / 3 rög")).toBeTruthy();
     expect(screen.getByText("2 arany · 4 lépés")).toBeTruthy();
     await waitFor(() => expect(callsTo("GET", "/maps/daily")).toHaveLength(1));
   });

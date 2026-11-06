@@ -550,32 +550,6 @@ const SIGNAL: PixelRows = [
   "..........",
 ];
 
-const STAR_FULL: PixelRows = [
-  "....##....",
-  "....##....",
-  "...####...",
-  "##########",
-  ".########.",
-  "..######..",
-  "..######..",
-  ".###..###.",
-  ".##....##.",
-  "..........",
-];
-
-const STAR_EMPTY: PixelRows = [
-  "....##....",
-  "....##....",
-  "...#..#...",
-  "###....###",
-  ".#......#.",
-  "..#....#..",
-  "..#....#..",
-  ".#..##..#.",
-  ".##....##.",
-  "..........",
-];
-
 const SOUND_ON: PixelRows = [
   "...#......",
   "..##...#..",
@@ -691,8 +665,6 @@ const ART = {
   turnBack: TURN_BACK,
   signal: SIGNAL,
   replay: REPLAY,
-  starFull: STAR_FULL,
-  starEmpty: STAR_EMPTY,
   soundOn: SOUND_ON,
   soundOff: SOUND_OFF,
   dice: DICE,

@@ -721,33 +721,33 @@ export const hu = {
     loaded: (title: string) => `A(z) „${title}” recept betöltve. Futtatás: a robot indul.`,
   },
   game: {
-    starsLabel: (stars: number) => `${stars} / 3 csillag`,
-    starsTotal: (earned: number, max: number) => `${earned} / ${max} csillag`,
-    starsTotalLabel: "Összegyűjtött csillagok",
+    nuggetsLabel: (earned: number) => `${earned} / 3 rög`,
+    nuggetsTotal: (earned: number, max: number) => `${earned} / ${max} rög`,
+    nuggetsTotalLabel: "Összegyűjtött rögök",
     starRule: (par: number | null) =>
       par === null
-        ? "1 csillag: arany. 2: minden elérhető arany. A 3. csillaghoz ennek a pályának nincs célértéke."
-        : `1 csillag: arany. 2: minden elérhető arany. 3: minden elérhető arany legfeljebb ${par} lépésből.`,
-    noStars: "Arany nélküli pálya, nincs csillag",
+        ? "1 rög: arany. 2 rög: minden elérhető arany. A 3. röghöz ennek a pályának nincs célértéke."
+        : `1 rög: arany. 2 rög: minden elérhető arany. 3 rög: minden elérhető arany legfeljebb ${par} lépésből.`,
+    noStars: "Arany nélküli pálya",
     bestLabel: "Legjobbad",
     best: (gold: number, steps: number) => `${gold} arany · ${steps} lépés`,
     notPlayed: "még nincs",
     parLabel: "Célérték",
     par: (steps: number) => `${steps} lépés`,
     parShort: (steps: number) => `Cél: ${steps} lépés`,
-    newStar: (count: number) => (count === 1 ? "Új csillag!" : `${count} új csillag!`),
+    newStar: (count: number) => (count === 1 ? "Új rög!" : `${count} új rög!`),
     nextStar: (stars: number, par: number | null, reachable: number) => {
       if (stars === 0) {
-        return "Az első csillaghoz bányássz ki legalább egy aranyat.";
+        return "Az első röghöz bányássz ki legalább egy aranyat.";
       }
       if (stars === 1) {
-        return `A második csillaghoz mind ${articleFor(reachable)} ${reachable} elérhető aranyat ki kell bányászni.`;
+        return `A második röghöz bányászd ki mind ${articleFor(reachable)} ${reachable} elérhető aranyat.`;
       }
       return par === null
-        ? "Ennek a pályának nincs célértéke, 2 csillag a maximum."
-        : `A harmadik csillaghoz legfeljebb ${par} lépés kell.`;
+        ? "Ennek a pályának nincs célértéke, 2 rög a maximum."
+        : `A harmadik röghöz legfeljebb ${par} lépés kell.`;
     },
-    allStars: "Mind a három csillag megvan.",
+    allStars: "Mind a három rög megvan.",
     medalTitle: "Eredmény",
     nextMap: "Következő pálya",
     nextMapFor: (title: string) => `Következő pálya: ${title}`,
@@ -799,8 +799,8 @@ export const hu = {
         body: "A futás mindig az alaphelyzetből indul. Indítsd el újra, és figyeld az Arany műszert!",
       },
       stars: {
-        title: "Csillagok és ranglista",
-        body: "Egy arany már egy csillag. Ha az összes aranyat kibányászod, kettő; ha a célértéknél nem több lépésből, három. A második aranyat már egyedül is megszerzed!",
+        title: "Rögök és ranglista",
+        body: "Egy kibányászott arany már egy rög. Ha az összes aranyat kibányászod, kettő; ha a célértéknél nem több lépésből, három. A második aranyat már egyedül is megszerzed!",
       },
     },
   },
@@ -845,7 +845,7 @@ export const hu = {
   },
   par: {
     field: "Célérték (lépés)",
-    help: "A 3. csillaghoz minden elérhető aranyat legfeljebb ennyi lépésből kell kibányászni. Üresen hagyva a pályán legfeljebb 2 csillag jár.",
+    help: "A 3. röghöz ennyi lépés a határ. Üresen hagyva legfeljebb 2 rög jár.",
     compute: "Gépi megoldás",
     computing: "Számolás…",
     computed: (steps: number) => `A gép megoldása ${steps} lépés.`,

@@ -2,8 +2,8 @@ import type { MineMap, RobotState } from "@minescript/engine";
 import { useEffect, useId, useMemo, useRef } from "react";
 import { Link } from "../components/ui/Link.tsx";
 import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
+import { NuggetRow } from "../game/NuggetRow.tsx";
 import { RunMedal } from "../game/RunMedal.tsx";
-import { StarRow } from "../game/StarRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import type { MapDetail } from "../maps/queries.ts";
 import { TourCoach } from "../tour/TourCoach.tsx";
@@ -56,7 +56,7 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
       meta={
         detail.player.stars === null ? undefined : (
           <span className="play-progress" title={hu.game.starRule(detail.map.parSteps)}>
-            <StarRow stars={detail.player.stars} size="sm" />
+            <NuggetRow earned={detail.player.stars} size="sm" />
             {detail.map.parSteps === null ? null : (
               <span>{hu.game.parShort(detail.map.parSteps)}</span>
             )}

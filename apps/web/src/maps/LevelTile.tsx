@@ -1,5 +1,5 @@
 import { Link } from "../components/ui/Link.tsx";
-import { StarRow } from "../game/StarRow.tsx";
+import { NuggetRow } from "../game/NuggetRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import { MapPreview, type PreviewBox } from "../mine/MapPreview.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
@@ -54,7 +54,7 @@ export function Progress({ map }: { map: MapSummary }) {
       {map.stars === null ? (
         <span className="lv-progress-note">{hu.game.noStars}</span>
       ) : (
-        <StarRow stars={map.stars} size="sm" />
+        <NuggetRow earned={map.stars} size="sm" />
       )}
       <span className="lv-progress-best">
         <span className="lv-progress-label">{hu.game.bestLabel}</span>

@@ -8,7 +8,7 @@ import { sortMaps } from "../maps/sort.ts";
 import { usePlayback } from "../play/playback-store.ts";
 import type { Submission } from "../play/useRunSession.ts";
 import { playCue } from "../sound/sfx.ts";
-import { MAX_STARS, StarRow } from "./StarRow.tsx";
+import { MAX_NUGGETS, NuggetRow } from "./NuggetRow.tsx";
 import "./RunMedal.css";
 
 const STAR_CUE_DELAY_MS = 1100;
@@ -52,7 +52,7 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
   }
   const gained = gainedNow;
   const hint =
-    stars.run >= MAX_STARS
+    stars.run >= MAX_NUGGETS
       ? hu.game.allStars
       : hu.game.nextStar(stars.run, stars.parSteps, reachableGold);
   return (
@@ -61,7 +61,7 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
         {hu.game.medalTitle}
       </h2>
       <div className="medal-stars" role="status">
-        <StarRow stars={stars.run} previous={stars.previous} size="lg" isAnimated />
+        <NuggetRow earned={stars.run} previous={stars.previous} size="lg" isAnimated />
         {gained > 0 ? <span className="medal-new">{hu.game.newStar(gained)}</span> : null}
       </div>
       <p className="medal-hint">{hint}</p>
