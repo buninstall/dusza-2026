@@ -51,10 +51,7 @@ A kiírás néhány nyitva hagyott pontját írásban rögzített döntés szeri
 
 Az alábbi, tervezett plusz szolgáltatások maradtak ki:
 
-- töréspont a sorszámra kattintva (a lejátszás soronként léptethető és tekerhető, de megállási pontot nem lehet kijelölni);
-- lépésenkénti, interaktív bevezető az első térképhez (helyette a Kézikönyv és a pályánkénti kész receptek segítenek);
-- megosztható visszajátszás-link (a saját futások visszajátszása elkészült, a link más felhasználónak nem küldhető);
-- pályagenerátor;
+- két futás egymás melletti összevetése és a fokozatos tipp-gomb (a ranglista, a visszajátszás és a receptek lefedik, ezért elvetettük);
 - golf-tippek (rövidebb program ugyanannyi aranyra);
 - VS Code-bővítmény és LSP-szerver a motorból.
 
@@ -66,6 +63,14 @@ Az alábbi, tervezett plusz szolgáltatások maradtak ki:
 - Térképverziók: a módosított térkép új verzió, a régi ranglista megmarad.
 - Világos és sötét téma, teljes billentyűzetes kezelés, képernyőolvasó-támogatás.
 - Parancssori eszköz (`minescript check|fmt|lint|run|ast|map-check`).
+- Csillagok pályánként (arany, minden arany, célérték alatt), haladás és összesítés a Pályák oldalon, eredménysáv a futás végén a következő pályára vezető gombbal.
+- Napi kihívás: minden nap dátumból generált, mindenkinek azonos pálya saját ranglistával.
+- Pályagenerátor mindig megoldható pályával; a célértéket a beépített útvonaltervező számolja.
+- Interaktív bevezető, amely előbb rákérdez, és a választ böngészőnként megjegyzi.
+- Töréspont a sorszámra kattintva vagy `F9`-cel, a robot nyomvonala a térképen.
+- Próbajáték mentés nélkül, falkeret és kiürítés a térképszerkesztőben.
+- Megosztható visszajátszás a ranglistáról, a programmal együtt; „Tetszik” jelölés és népszerűség szerinti rendezés.
+- Szintetizált 8-bites hangeffektek némító gombbal.
 
 ## Felmerült problémák és megoldásuk
 
@@ -79,8 +84,8 @@ Az alábbi, tervezett plusz szolgáltatások maradtak ki:
 ## Továbbfejlesztési javaslatok
 
 - VS Code-bővítmény a core-ból, LSP-vel (diagnosztika, kiegészítés, formázás).
-- Megosztható visszajátszás: a forrás és a térképverzió linkben, a trace a böngészőben újraszámolva.
-- Pályagenerátor garantáltan elérhető arannyal és állítható nehézséggel.
+- Kampány-térkép: a pályák feloldása csillagok alapján, fejezetekbe rendezve.
+- Heti bajnokság a napi kihívások összesített csillagaiból.
 - Golf-mód: ugyanannyi aranyat kevesebb sorból.
 - Többszereplős verseny: azonos térkép, időkorlátos forduló, élő ranglista.
 

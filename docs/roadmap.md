@@ -37,19 +37,22 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 ### P2
 
 - [x] Visszaléptetés és tekerés billentyűparancsokkal (nyilak, Home, End) és az idővonallal.
-- [ ] Töréspont a sorszámra kattintva.
+- [x] Töréspont a sorszámra kattintva.
 - [x] Változó-panel típusjelöléssel.
 - [ ] A szerveroldali ellenőrzés UI-ja: eltérés esetén figyelmeztetés a kliens és a szerver eredménye között.
 - [x] Saját futások oldala (`/api/me/runs`).
-- [ ] Demó-tutorial: lépésenkénti bevezető az első térképhez.
+- [x] Demó-tutorial: lépésenkénti bevezető az első térképhez.
 - [x] Reszponzív finomítás 320 px-re (a panelek egymás alá kerülnek, a nagy térkép a saját keretében görgethető).
 
 ### P3
 
 - [x] Saját futások visszajátszása (`/runs`).
-- [ ] Megosztható visszajátszás-link.
+- [x] Megosztható visszajátszás-link.
 - [x] Elérhetőségi vizualizáció (BFS-terület) a szerkesztőben: „Bejárható rész”, az elérhetetlen arany jelölése.
-- [ ] Pályagenerátor.
+- [x] Pályagenerátor.
+- [x] Csillagok, célérték, haladás a Pályák oldalon, eredménysáv a futás végén.
+- [x] Napi kihívás generált pályával, Tetszik jelölés, népszerűség szerinti rendezés.
+- [x] Hangeffektek, robot nyomvonal, próbajáték, falkeret és kiürítés a szerkesztőben.
 
 ## testing
 

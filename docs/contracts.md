@@ -133,17 +133,25 @@ Content-Type: application/json
 
 ### Térképek
 
-| Metódus és útvonal                                  | Kérés                                           | Válasz                                                                     |
-| --------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------- |
-| `GET /api/maps?scope=all\|mine`                     | –                                               | `200 { maps: MapSummary[] }`                                               |
-| `POST /api/maps`                                    | `{ title, description?, visibility?, content }` | `201 { map, warnings }`; `422 MAP_INVALID` (`details`: diagnosztikák)      |
-| `GET /api/maps/:id`                                 | –                                               | `200 { map, version, info, warnings, versions, runCount, canEdit }`; `404` |
-| `PUT /api/maps/:id`                                 | bármely mező a fentiekből                       | `200 { map, createdNewVersion }`; `403`, `422`                             |
-| `DELETE /api/maps/:id`                              | –                                               | `200 { ok: true }` (tulajdonos vagy admin)                                 |
-| `GET /api/maps/:id/export`                          | –                                               | `text/plain`, `Content-Disposition: attachment; filename="<cím>.txt"`      |
-| `GET /api/maps/:id/leaderboard?version=<versionId>` | –                                               | `200 { mapId, title, versionId, currentVersionId, versions, entries }`     |
+| Metódus és útvonal                                  | Kérés                                                      | Válasz                                                                               |
+| --------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `GET /api/maps?scope=all\|mine`                     | –                                                          | `200 { maps: MapSummary[] }` (a napi pályák nélkül)                                  |
+| `GET /api/maps/daily`                               | –                                                          | `200 { map: MapSummary, date }`; a mai napi pályát szükség esetén létrehozza         |
+| `POST /api/maps`                                    | `{ title, description?, visibility?, parSteps?, content }` | `201 { map, warnings }`; `422 MAP_INVALID` (`details`: diagnosztikák)                |
+| `POST /api/maps/generate`                           | `{ rows, cols, difficulty, seed? }`                        | `200 { content, parSteps, seed }`; `400` (méret 5–15, nehézség `easy\|medium\|hard`) |
+| `POST /api/maps/par`                                | `{ content }`                                              | `200 { parSteps \| null }`; `422 MAP_INVALID`                                        |
+| `GET /api/maps/:id`                                 | –                                                          | `200 { map, version, info, warnings, versions, runCount, canEdit, player }`; `404`   |
+| `PUT /api/maps/:id`                                 | bármely mező a fentiekből                                  | `200 { map, createdNewVersion }`; `403`, `422`                                       |
+| `DELETE /api/maps/:id`                              | –                                                          | `200 { ok: true }` (tulajdonos vagy admin; napi pálya nem törölhető)                 |
+| `POST /api/maps/:id/like`                           | `{ liked }`                                                | `200 { likes, likedByMe }`; `409 LIKE_NEEDS_RUN`, ha még nem futtatott a pályán      |
+| `GET /api/maps/:id/export`                          | –                                                          | `text/plain`, `Content-Disposition: attachment; filename="<cím>.txt"`                |
+| `GET /api/maps/:id/leaderboard?version=<versionId>` | –                                                          | `200 { mapId, title, versionId, currentVersionId, versions, entries }`               |
 
-`MapSummary = { id, title, description, visibility, ownerId, ownerName, createdAt, updatedAt, versionId, version, content, rows, cols, goldTotal, reachableGold }`.
+`MapSummary = { id, title, description, visibility, ownerId, ownerName, parSteps, createdAt, updatedAt, versionId, version, content, rows, cols, goldTotal, reachableGold, likes, likedByMe, best, stars }`, ahol `best` a kérdező saját legjobb futása az aktuális verzión (`{ gold, steps } | null`), `stars` pedig az ebből számolt csillagok száma (0–3, arany nélküli pályán `null`).
+
+`player = { best, stars, likes, likedByMe, hasPlayed, isDaily }` a kérdező szemszögéből. A napi pálya (`map.dailyDate`) senkinek nem szerkeszthető.
+
+Csillagok: 1, ha a futás legalább egy aranyat kibányászott; 2, ha minden elérhető aranyat; 3, ha mindet legfeljebb `parSteps` lépésből (célérték nélkül legfeljebb 2). A célérték a pálya metaadata (1–1000), módosítása nem hoz létre új verziót. Az oktató pályák célértéke a receptek lépésszáma, a generált pályáké az útvonaltervező programjának lépésszáma (`/api/maps/par` ugyanezt számolja tetszőleges térképre).
 
 `entries[i] = { rank, runId, userId, username, gold, steps, outcomeKind, createdAt }`, felhasználónként a legjobb futás, `gold DESC, steps ASC, createdAt ASC` sorrendben (D13). A tartalom módosítása futás után új verziót hoz létre (D14).
 
@@ -157,12 +165,12 @@ Content-Type: application/json
 | `PUT /api/programs/:id`    | `{ title?, source? }`      | `200 { program }`                                                                   |
 | `DELETE /api/programs/:id` | –                          | `200 { ok: true }`                                                                  |
 | `POST /api/runs`           | `{ mapVersionId, source }` | `201 { run, outcome, console, standing }`; `422 SYNTAX_ERROR` (nem mentődik); `404` |
-| `GET /api/runs/:id`        | –                          | `200 { run, map: { content } }`; `404` (nem a sajátod és nem vagy admin)            |
+| `GET /api/runs/:id`        | –                          | `200 { run, map: { content } }`; `404` (privát térkép, és nem vagy érintett)        |
 | `GET /api/me/runs`         | –                          | `200 { runs }` (legutóbbi 100)                                                      |
 
-A `POST /api/runs` a kliens által küldött egyéb mezőket (például `gold`) figyelmen kívül hagyja: az eredményt a szerver számolja. A `standing` a rögzítés utáni állás az adott térképverzió ranglistáján: `{ rank, players, isPersonalBest }`, ahol `rank` a játékos helyezése a legjobb futásával, `players` a ranglistán szereplő játékosok száma, `isPersonalBest` pedig igaz, ha éppen ez a futás lett a játékos legjobbja.
+A `POST /api/runs` a kliens által küldött egyéb mezőket (például `gold`) figyelmen kívül hagyja: az eredményt a szerver számolja. A `standing` a rögzítés utáni állás az adott térképverzió ranglistáján: `{ rank, players, isPersonalBest, stars }`, ahol `rank` a játékos helyezése a legjobb futásával, `players` a ranglistán szereplő játékosok száma, `isPersonalBest` pedig igaz, ha éppen ez a futás lett a játékos legjobbja. A `stars = { run, best, previous, parSteps } | null`: ennek a futásnak, a mostani legjobbnak és a futás előtti legjobbnak a csillagszáma (arany nélküli pályán `null`).
 
-A `GET /api/runs/:id` a visszajátszáshoz adja vissza egy futás adatait. Csak a futás gazdája és az admin olvashatja; mindenki más, illetve a nem létező azonosító `404 NOT_FOUND`. A `map.content` annak a térképverziónak a kanonikus tartalma, amelyen a futás történt (nem az aktuális verzióé), így az `engine.run(run.source, map.content)` pontosan ugyanazt az eseménysort adja:
+A `GET /api/runs/:id` a visszajátszáshoz adja vissza egy futás adatait, a programmal együtt. Nyilvános térkép futását minden bejelentkezett felhasználó megnézheti (ez a megosztható link); privát térképnél csak a futás gazdája, a térkép gazdája és az admin, mindenki más és a nem létező azonosító `404 NOT_FOUND`. A `run.username` a futtató neve, a `run.isOwn` igaz, ha a kérdező futása. A `map.content` annak a térképverziónak a kanonikus tartalma, amelyen a futás történt (nem az aktuális verzióé), így az `engine.run(run.source, map.content)` pontosan ugyanazt az eseménysort adja:
 
 ```json
 {
@@ -178,7 +186,9 @@ A `GET /api/runs/:id` a visszajátszáshoz adja vissza egy futás adatait. Csak 
     "errorCode": null,
     "errorLine": null,
     "createdAt": 1793960000000,
-    "source": "step forward 3\n…"
+    "source": "step forward 3\n…",
+    "username": "demo1",
+    "isOwn": true
   },
   "map": { "content": "7 7\n…" }
 }

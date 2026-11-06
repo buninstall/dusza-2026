@@ -113,6 +113,8 @@ const sections: readonly ManualSection[] = [
           "A térkép széle falnak számít: a robot nem léphet le róla, és az `isThere` is falat lát a szélen túl.",
           "A térképszerkesztő csak szabályos térképet ment el. Arany nélküli vagy elérhetetlen aranyat tartalmazó térkép is menthető, de figyelmeztetést kap.",
           "Hibás térképfájl importálásakor a szerkesztő megmondja, melyik sorban mi a gond, és nem tölti be a hibás tartalmat.",
+          "A `Generálás` gomb mindig megoldható pályát rajzol a megadott méretben és nehézséggel, a `Falkeret` és a `Mind üres` egy kattintással átrendezi a rácsot. A `Próbajáték` mentés nélkül, ranglista nélkül játszatja a készülő pályát.",
+          "A `Célérték (lépés)` mezőben adhatod meg, hány lépésből jár a harmadik csillag. A `Gépi megoldás` gomb kiszámolja, hány lépésből oldja meg a pályát a beépített útvonaltervező.",
         ],
       },
       {
@@ -281,6 +283,11 @@ const sections: readonly ManualSection[] = [
         map: "1 8\n>..@..@.",
         code: "set count to 0\nset fal to isThere 1\nset megy to not fal\nwhile megy\n    set arany to isThere 2\n    if arany\n        step forward 1\n        mine here\n        set count to count + 1\n    else\n        step forward 1\n    set fal to isThere 1\n    set megy to not fal\nprint count",
       },
+      {
+        kind: "tip",
+        title: "Töréspont",
+        text: "Kattints egy sor számára (vagy nyomd meg az `F9`-et), és a lejátszás minden alkalommal megáll, amikor a robot végrehajtotta azt a sort. Így egy ciklus minden körében megnézheted a változók értékét. A `Szóköz` folytatja a futást.",
+      },
     ],
   },
   {
@@ -367,6 +374,39 @@ const sections: readonly ManualSection[] = [
           "Játékosonként a legjobb futás számít: több arany előrébb, egyenlőségnél a kevesebb lépés, ha az is egyezik, a korábbi.",
           "Ha egy térképen már van futás, a tartalma csak új verzióként módosítható. A ranglista verziónként külön van, így a régi eredmények megmaradnak.",
           "A `Futásaim` oldalon minden korábbi futásodat visszajátszhatod, és a programját újra betöltheted.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "csillagok",
+    title: "Csillagok és kihívások",
+    blocks: [
+      {
+        kind: "paragraph",
+        text: "Minden pályán legfeljebb három csillag szerezhető. A csillagok a legjobb futásodból számolódnak, és a `Pályák` oldalon összesítve is látod őket.",
+      },
+      {
+        kind: "table",
+        caption: "A csillagok feltételei",
+        head: ["Csillag", "Feltétel"],
+        rows: [
+          ["1", "a futás legalább egy aranyat kibányászott"],
+          ["2", "a pálya minden elérhető aranyát kibányászta"],
+          [
+            "3",
+            "minden elérhető aranyat legfeljebb a pálya célértékének megfelelő lépésből bányászott ki",
+          ],
+        ],
+      },
+      {
+        kind: "list",
+        items: [
+          "A célérték a pálya adatai között látszik. Ha egy pályának nincs célértéke, ott legfeljebb 2 csillag jár.",
+          "A futás végén megjelenő eredménysáv megmutatja a megszerzett csillagokat, azt, hogy mi kell a következőhöz, és innen a következő pályára is továbbléphetsz.",
+          "A `Napi kihívás` minden nap új, géppel generált pálya: mindenki ugyanazt kapja, és saját ranglistája van.",
+          "Ha egy pályán már futtattál, a `Tetszik` gombbal jelölheted, hogy tetszett. A `Pályák` oldalon a `Népszerű` rendezés előre sorolja a kedvelt pályákat.",
+          "A ranglistán bármelyik futást megnézheted a `Megnézem` gombbal, a programjával együtt. A visszajátszás linkje megosztható.",
         ],
       },
     ],

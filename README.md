@@ -74,6 +74,29 @@ A `just setup` a többit maga telepíti: a `wasm32-unknown-unknown` célt, a `Ca
 | `just ci`          | lint, test, build, e2e                                           |
 | `just clean`       | buildtermékek törlése                                            |
 
+## Fejlesztési ötletek és megvalósításuk
+
+A kötelező funkciók után a többi versenymegoldás nyilvános felületét is átnéztük, és azt kerestük, mitől lesz a MineScript valódi játék, nem csak egy programfuttató. Az ötleteket hatás szerint rangsoroltuk; az alábbi táblázat mutatja, mi valósult meg, és hol érhető el.
+
+| Ötlet                        | Állapot     | Hol érhető el, hogyan működik                                                                                                                                                             |
+| ---------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Csillagok pályánként (1–3)   | megvalósult | 1 csillag: arany; 2: minden elérhető arany; 3: mindez a célérték alatt. Az oktató pályák célértéke a receptekből, a generáltaké az útvonaltervezőből jön; saját pályán a szerző adja meg. |
+| Haladás a Pályák oldalon     | megvalósult | Minden pályán a saját legjobb eredmény és a csillagok, a fejlécben az összesítés (például 9 / 27 csillag).                                                                                |
+| Eredménysáv a futás végén    | megvalósult | A térkép alján: a megszerzett csillagok, az új csillagok kiemelése, tipp a következő csillaghoz és „Következő pálya” gomb; a jelentésben a ranglista-helyezés és az egyéni csúcs.         |
+| Hangeffektek                 | megvalósult | Szintetizált 8-bites hangok (lépés, fordulás, bányászás, hiba, befejezés, csillag), fájl nélkül; némító gomb a fejlécben, a böngésző megjegyzi.                                           |
+| Interaktív bevezető          | megvalósult | Első belépéskor a Pályák oldal rákérdez; igen válaszra hat lépésben végigvezet az első pályán, a választ böngészőnként megjegyzi. A Kézikönyvből újraindítható.                           |
+| Töréspont                    | megvalósult | Kattintás a sorszámra vagy `F9`: a lejátszás a jelölt sor végrehajtása után megáll.                                                                                                       |
+| A robot nyomvonala           | megvalósult | A bejárt mezőkön halvány jelölés, a csak `isThere`-rel vizsgált mezőktől megkülönböztetve.                                                                                                |
+| Próbajáték a szerkesztőből   | megvalósult | A térképszerkesztő „Próbajáték” gombja mentés és ranglista nélkül játszatja a készülő pályát, a szerkesztő állapota megmarad.                                                             |
+| Falkeret, Mind üres          | megvalósult | Gyors műveletek a térképszerkesztő eszközsávjában, visszavonhatók.                                                                                                                        |
+| Megosztható visszajátszás    | megvalósult | A ranglista minden sorából megnézhető a futás a programmal együtt; a visszajátszás linkje másolható (privát pályán csak az érintettek látják).                                            |
+| Napi kihívás                 | megvalósult | Minden nap egy dátumból generált, mindenkinek azonos pálya saját ranglistával, a Pályák oldal tetején.                                                                                    |
+| Tetszik és Népszerű rendezés | megvalósult | Aki futtatott egy pályán, jelölheti, hogy tetszik; a Pályák oldalon „Népszerű” rendezés.                                                                                                  |
+| Pályagenerátor               | megvalósult | A térképszerkesztő „Generálás” gombja: méret és nehézség, mindig megoldható pálya, a célértéket a gép saját megoldása adja.                                                               |
+| Két futás összevetése        | elvetettük  | A ranglista, a saját futások és a visszajátszás együtt már megmutatja a különbséget; külön nézet csak zsúfolná a felületet.                                                               |
+| Fokozatos tipp-gomb          | elvetettük  | A receptek és a Kézikönyv próbapadjai ezt lefedik; egy félmegoldást adó gomb a verseny jellegét rontaná.                                                                                  |
+| Golf-mód, VS Code-bővítmény  | később      | Lásd a beadandó továbbfejlesztési javaslatait ([docs/beadando.md](docs/beadando.md)).                                                                                                     |
+
 ## Dokumentáció
 
 | Dokumentum                                     | Tartalom                                   |
