@@ -11,16 +11,16 @@ A MineScript független, TypeScriptben írt referencia-interpretere differenciá
 
 ## Modulok
 
-| Fájl | Tartalom |
-| --- | --- |
-| `src/source.ts` | normalizálás (BOM, CRLF, záró újsor, D2), sorokra bontás, konstansok |
-| `src/scanner.ts` | sorszintű hibák és tokenosztályok (D3, D5, D19) |
-| `src/grammar.ts` | egy sor nyelvtana, az első tokenszintű hiba kiválasztása (D17, D19) |
-| `src/parser.ts` | behúzásverem, else-szabály, AST, `check` és `parse` (D4, D19) |
-| `src/map.ts` | `parseMapText` és `mapInfo` (D2, D15) |
-| `src/evaluate.ts` | értékek olvasása, műveletek, túlcsordulás (D6, D10, D21) |
-| `src/machine.ts` | `run`: lépésszámlálás, robot API, eseménysor (D7–D12, D16, D20) |
-| `src/generate.ts` | `generateProgram`, `generateMap`, `generateInvalidProgram` |
+| Fájl              | Tartalom                                                             |
+| ----------------- | -------------------------------------------------------------------- |
+| `src/source.ts`   | normalizálás (BOM, CRLF, záró újsor, D2), sorokra bontás, konstansok |
+| `src/scanner.ts`  | sorszintű hibák és tokenosztályok (D3, D5, D19)                      |
+| `src/grammar.ts`  | egy sor nyelvtana, az első tokenszintű hiba kiválasztása (D17, D19)  |
+| `src/parser.ts`   | behúzásverem, else-szabály, AST, `check` és `parse` (D4, D19)        |
+| `src/map.ts`      | `parseMapText` és `mapInfo` (D2, D15)                                |
+| `src/evaluate.ts` | értékek olvasása, műveletek, túlcsordulás (D6, D10, D21)             |
+| `src/machine.ts`  | `run`: lépésszámlálás, robot API, eseménysor (D7–D12, D16, D20)      |
+| `src/generate.ts` | `generateProgram`, `generateMap`, `generateInvalidProgram`           |
 
 ## Futtatás
 
