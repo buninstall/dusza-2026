@@ -22,7 +22,7 @@
   outline: none;
 }
 
-.code-host[data-focus-ring="true"] .cm-editor.cm-focused .cm-content {
+.code-host[data-focus-ring="true"] .cm-editor .cm-content:focus {
   outline: var(--focus-width) solid var(--c-focus);
   outline-offset: calc(var(--focus-width) * -1);
 }
