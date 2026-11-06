@@ -1,7 +1,10 @@
 import { createEngine, type Engine } from "@minescript/engine";
 import wasmUrl from "@minescript/engine/wasm?url";
 import { Component, createContext, type ReactNode, Suspense, use } from "react";
+import { Loading } from "../app/StatusScreens.tsx";
+import { Notice } from "../components/Notice.tsx";
 import { hu } from "../i18n/hu.ts";
+import "./EngineProvider.css";
 
 export const EngineContext = createContext<Engine | null>(null);
 
@@ -24,20 +27,20 @@ function EngineGate({ children }: { children: ReactNode }) {
   return <EngineContext value={engine}>{children}</EngineContext>;
 }
 
-type BoundaryState = { failed: boolean };
+type BoundaryState = { hasFailed: boolean };
 
 class EngineErrorBoundary extends Component<{ children: ReactNode }, BoundaryState> {
-  override state: BoundaryState = { failed: false };
+  override state: BoundaryState = { hasFailed: false };
 
   static getDerivedStateFromError(): BoundaryState {
-    return { failed: true };
+    return { hasFailed: true };
   }
 
   override render() {
-    if (this.state.failed) {
+    if (this.state.hasFailed) {
       return (
-        <div role="alert" className="plate m-8 max-w-xl p-6 text-rust">
-          {hu.app.engineFailed}
+        <div className="engine-status">
+          <Notice tone="error" title={hu.app.engineFailed} live="alert" />
         </div>
       );
     }
@@ -45,18 +48,16 @@ class EngineErrorBoundary extends Component<{ children: ReactNode }, BoundarySta
   }
 }
 
-function EngineLoading() {
-  return (
-    <output className="flex min-h-[50dvh] items-center justify-center text-ink-muted">
-      {hu.app.engineLoading}
-    </output>
-  );
-}
-
 export function EngineProvider({ children }: { children: ReactNode }) {
   return (
     <EngineErrorBoundary>
-      <Suspense fallback={<EngineLoading />}>
+      <Suspense
+        fallback={
+          <div className="engine-status">
+            <Loading label={hu.app.engineLoading} />
+          </div>
+        }
+      >
         <EngineGate>{children}</EngineGate>
       </Suspense>
     </EngineErrorBoundary>

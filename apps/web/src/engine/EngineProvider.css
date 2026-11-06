@@ -1,0 +1,6 @@
+.engine-status {
+  display: grid;
+  place-items: center;
+  min-height: 60dvh;
+  padding: var(--space-5);
+}
