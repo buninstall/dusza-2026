@@ -1,5 +1,6 @@
 use super::*;
 use crate::diagnostics::{DiagCode, Fix, Severity};
+use crate::source::normalize;
 use crate::syntax::ast::{BinOp, ElseBranch, Expr, Simple, Stmt, StmtKind};
 
 const SPEC_PROGRAM: &str = "set count to 0

@@ -7,6 +7,8 @@ pub const COMMANDS: [&str; 8] = [
     "step", "turn", "mine", "print", "set", "if", "else", "while",
 ];
 
+const LONGEST_KEYWORD: usize = 7;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Keyword {
     And,
@@ -75,15 +77,56 @@ impl Keyword {
     }
 
     pub fn exact(word: &str) -> Option<Self> {
-        Self::ALL
-            .into_iter()
-            .find(|keyword| keyword.as_str() == word)
+        Some(match word {
+            "and" => Self::And,
+            "by" => Self::By,
+            "else" => Self::Else,
+            "false" => Self::False,
+            "forward" => Self::Forward,
+            "here" => Self::Here,
+            "if" => Self::If,
+            "isThere" => Self::IsThere,
+            "mine" => Self::Mine,
+            "not" => Self::Not,
+            "or" => Self::Or,
+            "print" => Self::Print,
+            "set" => Self::Set,
+            "step" => Self::Step,
+            "to" => Self::To,
+            "true" => Self::True,
+            "turn" => Self::Turn,
+            "while" => Self::While,
+            _ => return None,
+        })
     }
 
     pub fn ignoring_case(word: &str) -> Option<Self> {
-        Self::ALL
-            .into_iter()
-            .find(|keyword| keyword.as_str().eq_ignore_ascii_case(word))
+        let mut lowered = [0u8; LONGEST_KEYWORD];
+        let slot = lowered.get_mut(..word.len())?;
+        for (target, byte) in slot.iter_mut().zip(word.bytes()) {
+            *target = byte.to_ascii_lowercase();
+        }
+        Some(match &*slot {
+            b"and" => Self::And,
+            b"by" => Self::By,
+            b"else" => Self::Else,
+            b"false" => Self::False,
+            b"forward" => Self::Forward,
+            b"here" => Self::Here,
+            b"if" => Self::If,
+            b"isthere" => Self::IsThere,
+            b"mine" => Self::Mine,
+            b"not" => Self::Not,
+            b"or" => Self::Or,
+            b"print" => Self::Print,
+            b"set" => Self::Set,
+            b"step" => Self::Step,
+            b"to" => Self::To,
+            b"true" => Self::True,
+            b"turn" => Self::Turn,
+            b"while" => Self::While,
+            _ => return None,
+        })
     }
 
     pub fn command(self) -> Option<Command> {
@@ -168,6 +211,31 @@ pub fn canonical_keyword(word: &str) -> Option<&'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::syntax::ast::BinOp;
+
+    #[test]
+    fn lookup_tables_agree_with_the_keyword_list() {
+        let longest = Keyword::ALL.iter().map(|k| k.as_str().len()).max();
+        assert_eq!(longest, Some(LONGEST_KEYWORD));
+        for keyword in Keyword::ALL {
+            let word = keyword.as_str();
+            assert_eq!(Keyword::exact(word), Some(keyword));
+            assert_eq!(Keyword::ignoring_case(word), Some(keyword));
+            assert_eq!(
+                Keyword::ignoring_case(&word.to_ascii_uppercase()),
+                Some(keyword)
+            );
+            assert_eq!(Keyword::exact(&word.to_ascii_uppercase()), None);
+            assert_eq!(Keyword::ignoring_case(&format!("{word}x")), None);
+        }
+        assert_eq!(Keyword::ignoring_case("whileXYZ"), None);
+        assert_eq!(Keyword::ignoring_case("ÍF"), None);
+        assert_eq!(Keyword::ignoring_case(""), None);
+        for op in BinOp::ALL {
+            assert_eq!(BinOp::from_symbol(op.symbol()), Some(op));
+        }
+        assert_eq!(BinOp::from_symbol("=="), None);
+    }
 
     #[test]
     fn there_are_eighteen_distinct_keywords() {

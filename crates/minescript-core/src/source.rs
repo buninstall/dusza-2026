@@ -1,26 +1,51 @@
+use std::borrow::Cow;
+
 const BOM: char = '\u{feff}';
 
 pub fn normalize(raw: &str) -> String {
+    normalized(raw).into_owned()
+}
+
+pub fn normalized(raw: &str) -> Cow<'_, str> {
     let without_bom = raw.strip_prefix(BOM).unwrap_or(raw);
-    without_bom.replace("\r\n", "\n")
+    if without_bom.as_bytes().contains(&b'\r') {
+        Cow::Owned(without_bom.replace("\r\n", "\n"))
+    } else {
+        Cow::Borrowed(without_bom)
+    }
 }
 
 pub fn split_lines(text: &str) -> Vec<&str> {
+    lines(text).collect()
+}
+
+pub fn lines(text: &str) -> impl Iterator<Item = &str> {
     let body = text.strip_suffix('\n').unwrap_or(text);
+    let mut segments = body.split('\n');
     if body.is_empty() {
-        return Vec::new();
+        segments.next();
     }
-    body.split('\n').collect()
+    segments
 }
 
 pub fn utf16_len(text: &str) -> u32 {
-    u32::try_from(text.encode_utf16().count()).unwrap_or(u32::MAX)
+    let units: usize = text
+        .as_bytes()
+        .iter()
+        .map(|&byte| usize::from(byte & 0xC0 != 0x80) + usize::from(byte >= 0xF0))
+        .sum();
+    u32::try_from(units).unwrap_or(u32::MAX)
+}
+
+fn width_u32(length: usize) -> u32 {
+    u32::try_from(length).unwrap_or(u32::MAX)
 }
 
 pub struct Utf16Cursor<'a> {
     text: &'a str,
     byte: usize,
     utf16: u32,
+    ascii: bool,
 }
 
 impl<'a> Utf16Cursor<'a> {
@@ -29,43 +54,69 @@ impl<'a> Utf16Cursor<'a> {
             text,
             byte: 0,
             utf16: 0,
+            ascii: text.is_ascii(),
         }
     }
 
     pub fn advance_to(&mut self, byte: usize) -> u32 {
         if byte > self.byte {
-            let passed = self.text.get(self.byte..byte).unwrap_or_default();
-            self.utf16 = self.utf16.saturating_add(utf16_len(passed));
+            let passed = if self.ascii {
+                if byte <= self.text.len() {
+                    width_u32(byte - self.byte)
+                } else {
+                    0
+                }
+            } else {
+                self.text.get(self.byte..byte).map_or(0, utf16_len)
+            };
+            self.utf16 = self.utf16.saturating_add(passed);
             self.byte = byte;
         }
         self.utf16
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+struct LineSlot {
+    start: usize,
+    end: usize,
+    utf16_start: u32,
+    ascii: bool,
+}
+
 #[derive(Debug, Clone)]
 pub struct LineIndex<'a> {
     text: &'a str,
-    line_starts: Vec<usize>,
-    utf16_line_starts: Vec<u32>,
+    lines: Vec<LineSlot>,
 }
 
 impl<'a> LineIndex<'a> {
     pub fn new(text: &'a str) -> Self {
-        let mut line_starts = vec![0];
-        let mut utf16_line_starts = vec![0];
-        let mut utf16_offset: u32 = 0;
-        for (byte_offset, ch) in text.char_indices() {
-            utf16_offset = utf16_offset.saturating_add(u32::try_from(ch.len_utf16()).unwrap_or(1));
-            if ch == '\n' {
-                line_starts.push(byte_offset + 1);
-                utf16_line_starts.push(utf16_offset);
-            }
+        let mut lines = Vec::with_capacity(text.len() / 16 + 1);
+        let mut start = 0;
+        let mut utf16_start: u32 = 0;
+        for segment in text.split('\n') {
+            let ascii = segment.is_ascii();
+            let width = if ascii {
+                width_u32(segment.len())
+            } else {
+                utf16_len(segment)
+            };
+            lines.push(LineSlot {
+                start,
+                end: start + segment.len(),
+                utf16_start,
+                ascii,
+            });
+            start += segment.len() + 1;
+            utf16_start = utf16_start.saturating_add(width).saturating_add(1);
         }
-        Self {
-            text,
-            line_starts,
-            utf16_line_starts,
-        }
+        Self { text, lines }
+    }
+
+    fn slot(&self, line: u32) -> Option<&LineSlot> {
+        let index = usize::try_from(line.checked_sub(1)?).ok()?;
+        self.lines.get(index)
     }
 
     pub fn text(&self) -> &'a str {
@@ -73,37 +124,44 @@ impl<'a> LineIndex<'a> {
     }
 
     pub fn line_count(&self) -> u32 {
-        u32::try_from(split_lines(self.text).len()).unwrap_or(u32::MAX)
+        let body = self.text.strip_suffix('\n').unwrap_or(self.text);
+        if body.is_empty() {
+            return 0;
+        }
+        let count = self.lines.len() - usize::from(self.text.ends_with('\n'));
+        width_u32(count)
     }
 
     pub fn line_start(&self, line: u32) -> Option<usize> {
-        let index = usize::try_from(line.checked_sub(1)?).ok()?;
-        self.line_starts.get(index).copied()
+        self.slot(line).map(|slot| slot.start)
     }
 
     pub fn line_text(&self, line: u32) -> Option<&'a str> {
-        let start = self.line_start(line)?;
-        let rest = self.text.get(start..)?;
-        Some(rest.split('\n').next().unwrap_or(""))
+        let slot = self.slot(line)?;
+        self.text.get(slot.start..slot.end)
     }
 
     pub fn utf16_offset(&self, line: u32, byte_col: usize) -> Option<u32> {
-        let index = usize::try_from(line.checked_sub(1)?).ok()?;
-        let line_utf16_start = *self.utf16_line_starts.get(index)?;
-        let line_text = self.line_text(line)?;
-        let prefix = line_text.get(..byte_col.min(line_text.len()))?;
-        Some(line_utf16_start.saturating_add(utf16_len(prefix)))
+        let slot = self.slot(line)?;
+        let length = slot.end - slot.start;
+        let col = byte_col.min(length);
+        if slot.ascii {
+            return Some(slot.utf16_start.saturating_add(width_u32(col)));
+        }
+        let prefix = self.text.get(slot.start..slot.start + col)?;
+        Some(slot.utf16_start.saturating_add(utf16_len(prefix)))
     }
 
     pub fn line_end_utf16(&self, line: u32) -> Option<u32> {
-        self.utf16_offset(line, self.line_text(line)?.len())
+        let slot = self.slot(line)?;
+        self.utf16_offset(line, slot.end - slot.start)
     }
 
     pub fn removal_range(&self, first: u32, last: u32) -> Option<(u32, u32)> {
         let start = self.utf16_offset(first, 0)?;
         let next_line_index = usize::try_from(last).ok()?;
-        if let Some(next_start) = self.utf16_line_starts.get(next_line_index) {
-            return Some((start, *next_start));
+        if let Some(next) = self.lines.get(next_line_index) {
+            return Some((start, next.utf16_start));
         }
         let end = self.line_end_utf16(last)?;
         let preceding_newline = u32::from(first > 1);
@@ -111,16 +169,21 @@ impl<'a> LineIndex<'a> {
     }
 
     pub fn position_of_utf16(&self, offset: u32) -> Option<(u32, usize)> {
-        let line_index = match self.utf16_line_starts.binary_search(&offset) {
-            Ok(exact) => exact,
-            Err(insert_at) => insert_at.checked_sub(1)?,
-        };
+        let line_index = self
+            .lines
+            .partition_point(|slot| slot.utf16_start <= offset)
+            .checked_sub(1)?;
+        let slot = self.lines.get(line_index)?;
         let line = u32::try_from(line_index + 1).ok()?;
-        let line_text = self.line_text(line)?;
-        let mut remaining = offset.saturating_sub(*self.utf16_line_starts.get(line_index)?);
+        let line_text = self.text.get(slot.start..slot.end)?;
+        let mut remaining = offset.saturating_sub(slot.utf16_start);
+        if slot.ascii {
+            let col = usize::try_from(remaining).unwrap_or(usize::MAX);
+            return Some((line, col.min(line_text.len())));
+        }
         let mut byte_col = 0;
         for ch in line_text.chars() {
-            let width = u32::try_from(ch.len_utf16()).unwrap_or(1);
+            let width = width_u32(ch.len_utf16());
             if remaining < width {
                 break;
             }

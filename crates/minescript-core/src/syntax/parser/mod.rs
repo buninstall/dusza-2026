@@ -6,6 +6,8 @@ mod repair;
 mod report;
 mod tree;
 
+use std::borrow::Borrow;
+
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -14,7 +16,7 @@ use self::faults::check_tokens;
 use self::layout::{Layout, LineRole};
 use self::tree::PlacedLine;
 use crate::diagnostics::Diagnostic;
-use crate::source::{LineIndex, normalize};
+use crate::source::{LineIndex, normalized};
 use crate::syntax::ast::Program;
 use crate::syntax::scanner::{CodeLine, ScannedLine, scan};
 
@@ -26,13 +28,20 @@ pub struct ParseResult {
 }
 
 pub fn parse(src: &str) -> ParseResult {
-    let text = normalize(src);
+    let text = normalized(src);
     let index = LineIndex::new(&text);
-    let mut parser = Parser::new(&index);
-    for line in scan(&text) {
-        match line {
-            ScannedLine::Faulty(line) => parser.diagnostics.push(report::line_fault(&line, &index)),
-            ScannedLine::Code(line) => parser.code_line(&line),
+    parse_lines(&index, scan(&text))
+}
+
+pub(crate) fn parse_lines<'t, L: Borrow<ScannedLine<'t>>>(
+    index: &LineIndex<'_>,
+    lines: impl IntoIterator<Item = L>,
+) -> ParseResult {
+    let mut parser = Parser::new(index);
+    for line in lines {
+        match line.borrow() {
+            ScannedLine::Faulty(line) => parser.diagnostics.push(report::line_fault(line, index)),
+            ScannedLine::Code(line) => parser.code_line(line),
         }
     }
     parser.finish()

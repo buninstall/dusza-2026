@@ -269,7 +269,20 @@ impl BinOp {
     }
 
     pub fn from_symbol(text: &str) -> Option<Self> {
-        Self::ALL.into_iter().find(|op| op.symbol() == text)
+        Some(match text {
+            "+" => Self::Add,
+            "-" => Self::Sub,
+            "*" => Self::Mul,
+            "=" => Self::Eq,
+            "<>" => Self::Ne,
+            "<" => Self::Lt,
+            "<=" => Self::Le,
+            ">" => Self::Gt,
+            ">=" => Self::Ge,
+            "and" => Self::And,
+            "or" => Self::Or,
+            _ => return None,
+        })
     }
 }
 
