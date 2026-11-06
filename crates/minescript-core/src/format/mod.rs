@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::diagnostics::Diagnostic;
-use crate::source::normalize;
+use crate::source::normalized;
 use crate::syntax::parse;
 
 pub const DEFAULT_INDENT_WIDTH: u32 = 4;
@@ -42,8 +42,8 @@ pub struct FormatResult {
 }
 
 pub fn format(src: &str, options: &FormatOptions) -> FormatResult {
-    let repaired = whitespace::repair(&normalize(src));
-    if normalize(&repaired) != repaired {
+    let repaired = whitespace::repair(&normalized(src));
+    if normalized(&repaired) != repaired.as_str() {
         return unchanged(src);
     }
     let Some(program) = parse(&repaired).program else {

@@ -1,16 +1,28 @@
 use super::{SemanticToken, SemanticTokenKind};
 use crate::source::{LineIndex, Utf16Cursor};
 use crate::syntax::lexeme::Lexeme;
-use crate::syntax::scanner::{ScannedLine, Word, lenient_words, scan};
+use crate::syntax::scanner::{ScannedLine, Word, lenient_words};
 
-pub(super) fn semantic_tokens(text: &str, index: &LineIndex<'_>) -> Vec<SemanticToken> {
-    let mut tokens = Vec::new();
-    for line in scan(text) {
-        let (number, text, words) = match line {
-            ScannedLine::Code(code) => (code.number, code.text, code.words),
-            ScannedLine::Faulty(faulty) => (faulty.number, faulty.text, lenient_words(faulty.text)),
-        };
-        push_line(&mut tokens, index, number, text, &words);
+pub(super) fn semantic_tokens(
+    lines: &[ScannedLine<'_>],
+    index: &LineIndex<'_>,
+) -> Vec<SemanticToken> {
+    let mut tokens = Vec::with_capacity(lines.len() * 4);
+    for line in lines {
+        match line {
+            ScannedLine::Code(code) => {
+                push_line(&mut tokens, index, code.number, code.text, &code.words);
+            }
+            ScannedLine::Faulty(faulty) => {
+                push_line(
+                    &mut tokens,
+                    index,
+                    faulty.number,
+                    faulty.text,
+                    &lenient_words(faulty.text),
+                );
+            }
+        }
     }
     tokens
 }
@@ -45,9 +57,11 @@ fn kind_of(lexeme: Lexeme) -> SemanticTokenKind {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::syntax::scanner::scan;
 
     fn tokens_of(text: &str) -> Vec<(u32, u32, SemanticTokenKind)> {
-        semantic_tokens(text, &LineIndex::new(text))
+        let lines: Vec<ScannedLine<'_>> = scan(text).collect();
+        semantic_tokens(&lines, &LineIndex::new(text))
             .into_iter()
             .map(|token| (token.from, token.to, token.kind))
             .collect()

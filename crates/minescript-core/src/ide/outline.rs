@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::collections::BTreeSet;
 
 use super::{FoldRange, Symbol};
@@ -24,11 +25,13 @@ pub(super) fn code_lines(text: &str) -> Vec<CodeLine<'_>> {
         .collect()
 }
 
-pub(super) fn first_assignments<'a>(lines: &[CodeLine<'a>]) -> Vec<AssignmentSite<'a>> {
+pub(super) fn first_assignments<'a, L: Borrow<CodeLine<'a>>>(
+    lines: &[L],
+) -> Vec<AssignmentSite<'a>> {
     let mut seen = BTreeSet::new();
     lines
         .iter()
-        .filter_map(assignment_site)
+        .filter_map(|line| assignment_site(line.borrow()))
         .filter(|site| seen.insert(site.name))
         .collect()
 }
@@ -47,7 +50,10 @@ fn assignment_site<'a>(line: &CodeLine<'a>) -> Option<AssignmentSite<'a>> {
     )
 }
 
-pub(super) fn symbols(lines: &[CodeLine<'_>], index: &LineIndex<'_>) -> Vec<Symbol> {
+pub(super) fn symbols<'a, L: Borrow<CodeLine<'a>>>(
+    lines: &[L],
+    index: &LineIndex<'_>,
+) -> Vec<Symbol> {
     first_assignments(lines)
         .into_iter()
         .map(|site| Symbol {
@@ -57,23 +63,54 @@ pub(super) fn symbols(lines: &[CodeLine<'_>], index: &LineIndex<'_>) -> Vec<Symb
         .collect()
 }
 
-pub(super) fn folds(lines: &[CodeLine<'_>], index: &LineIndex<'_>) -> Vec<FoldRange> {
-    lines
-        .iter()
-        .enumerate()
-        .filter(|(_, line)| line.command().is_some_and(Command::opens_block))
-        .filter_map(|(position, header)| {
-            let last = lines
-                .iter()
-                .skip(position + 1)
-                .take_while(|line| line.indent > header.indent)
-                .last()?;
-            Some(FoldRange {
-                from: index.line_end_utf16(header.number)?,
-                to: index.line_end_utf16(last.number)?,
-            })
-        })
-        .collect()
+struct OpenHeader {
+    order: usize,
+    position: usize,
+    indent: usize,
+    number: u32,
+}
+
+pub(super) fn folds<'a, L: Borrow<CodeLine<'a>>>(
+    lines: &[L],
+    index: &LineIndex<'_>,
+) -> Vec<FoldRange> {
+    let mut found: Vec<Option<FoldRange>> = Vec::new();
+    let mut open: Vec<OpenHeader> = Vec::new();
+    let close =
+        |header: OpenHeader, last: Option<&CodeLine<'_>>, found: &mut [Option<FoldRange>]| {
+            let fold = last.and_then(|last| {
+                Some(FoldRange {
+                    from: index.line_end_utf16(header.number)?,
+                    to: index.line_end_utf16(last.number)?,
+                })
+            });
+            if let Some(slot) = found.get_mut(header.order) {
+                *slot = fold;
+            }
+        };
+    let mut previous: Option<&CodeLine<'_>> = None;
+    for (position, line) in lines.iter().enumerate() {
+        let line = line.borrow();
+        while let Some(header) = open.pop_if(|header| header.indent >= line.indent) {
+            let last = previous.filter(|_| position > header.position + 1);
+            close(header, last, &mut found);
+        }
+        if line.command().is_some_and(Command::opens_block) {
+            open.push(OpenHeader {
+                order: found.len(),
+                position,
+                indent: line.indent,
+                number: line.number,
+            });
+            found.push(None);
+        }
+        previous = Some(line);
+    }
+    while let Some(header) = open.pop() {
+        let last = previous.filter(|_| lines.len() > header.position + 1);
+        close(header, last, &mut found);
+    }
+    found.into_iter().flatten().collect()
 }
 
 #[cfg(test)]
