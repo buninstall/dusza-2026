@@ -5,12 +5,19 @@ import type { AppEnv, Deps } from "../env.ts";
 import { apiError, messages } from "../lib/errors.ts";
 import { validationHook } from "../lib/validation.ts";
 import { canView, findMap, findVersion } from "../services/maps.ts";
-import { executeAndRecord } from "../services/runs.ts";
-import { runSchema } from "./schemas.ts";
+import { executeAndRecord, findRunDetail } from "../services/runs.ts";
+import { idParam, runSchema } from "./schemas.ts";
 
 export function runRoutes(deps: Deps) {
   return new Hono<AppEnv>()
     .use(requireUser(deps))
+    .get("/:id", zValidator("param", idParam, validationHook), async (c) => {
+      const detail = await findRunDetail(deps.db, c.var.user, c.req.valid("param").id);
+      if (!detail) {
+        return apiError(c, 404, "NOT_FOUND", messages.notFound);
+      }
+      return c.json(detail, 200);
+    })
     .post("/", zValidator("json", runSchema, validationHook), async (c) => {
       const { mapVersionId, source } = c.req.valid("json");
       const version = await findVersion(deps.db, mapVersionId);

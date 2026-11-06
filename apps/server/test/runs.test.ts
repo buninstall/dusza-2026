@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { count } from "drizzle-orm";
-import { runs } from "../src/db/schema.ts";
+import { count, eq } from "drizzle-orm";
+import { runs, users } from "../src/db/schema.ts";
 import { createTestContext, type ErrorBody, json, SPEC_MAP } from "./helpers.ts";
 
 describe("futások", () => {
@@ -57,5 +57,144 @@ describe("futások", () => {
     await using context = await createTestContext();
     const response = await context.client().post("/api/runs", { mapVersionId: 1, source: "" });
     expect(response.status).toBe(401);
+    expect((await context.client().get("/api/runs/1")).status).toBe(401);
+  });
+});
+
+type RunDetailBody = {
+  run: {
+    id: number;
+    mapId: number;
+    mapTitle: string;
+    mapVersionId: number;
+    version: number;
+    gold: number;
+    steps: number;
+    outcomeKind: string;
+    errorCode: string | null;
+    errorLine: number | null;
+    createdAt: number;
+    source: string;
+  };
+  map: { content: string };
+};
+
+describe("egy futás visszajátszáshoz", () => {
+  const firstContent = "1 4\n>@.@\n";
+  const source = "step forward 1\nmine here\nstep forward 9";
+
+  async function recordedRun() {
+    const context = await createTestContext();
+    const owner = context.client();
+    await owner.register("palyaepito");
+    const { map } = await json<{ map: { id: number; currentVersionId: number } }>(
+      await owner.post("/api/maps", { title: "Visszajátszás", content: firstContent }),
+    );
+    const runner = context.client();
+    await runner.register("futo");
+    const { run } = await json<{ run: { id: number } }>(
+      await runner.post("/api/runs", { mapVersionId: map.currentVersionId, source }),
+    );
+    return {
+      context,
+      owner,
+      runner,
+      map,
+      runId: run.id,
+      [Symbol.asyncDispose]: () => context[Symbol.asyncDispose](),
+    };
+  }
+
+  test("a tulajdonos megkapja a futást és a futott verzió tartalmát", async () => {
+    await using setup = await recordedRun();
+    const { context, runner, map, runId } = setup;
+    const response = await runner.get(`/api/runs/${runId}`);
+    expect(response.status).toBe(200);
+    const body = await json<RunDetailBody>(response);
+    expect(body).toEqual({
+      run: {
+        id: runId,
+        mapId: map.id,
+        mapTitle: "Visszajátszás",
+        mapVersionId: map.currentVersionId,
+        version: 1,
+        gold: 1,
+        steps: 3,
+        outcomeKind: "runtimeError",
+        errorCode: "E_BEDROCK_HIT",
+        errorLine: 3,
+        createdAt: 1_700_000_000_000,
+        source,
+      },
+      map: { content: firstContent },
+    });
+    const replay = context.deps.engine.run(body.run.source, body.map.content);
+    expect([replay.gold, replay.steps]).toEqual([body.run.gold, body.run.steps]);
+  });
+
+  test("új verzió után is a futott verzió tartalmát adja", async () => {
+    await using setup = await recordedRun();
+    const { owner, runner, map, runId } = setup;
+    const edited = await owner.put(`/api/maps/${map.id}`, { content: "1 4\n>.@@\n" });
+    expect((await json<{ createdNewVersion: boolean }>(edited)).createdNewVersion).toBe(true);
+    const body = await json<RunDetailBody>(await runner.get(`/api/runs/${runId}`));
+    expect(body.map.content).toBe(firstContent);
+    expect(body.run.version).toBe(1);
+    expect(body.run.mapVersionId).toBe(map.currentVersionId);
+  });
+
+  test("az admin olvashatja, más felhasználó és a térkép gazdája nem", async () => {
+    await using setup = await recordedRun();
+    const { context, owner, runId } = setup;
+    const stranger = context.client();
+    await stranger.register("kivulallo");
+    for (const client of [stranger, owner]) {
+      const response = await client.get(`/api/runs/${runId}`);
+      expect(response.status).toBe(404);
+      expect((await json<ErrorBody>(response)).error.code).toBe("NOT_FOUND");
+    }
+    const admin = context.client();
+    const { user } = await admin.register("rendszergazda");
+    await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
+    expect((await admin.get(`/api/runs/${runId}`)).status).toBe(200);
+  });
+
+  test("ismeretlen azonosító 404, hibás azonosító 400", async () => {
+    await using setup = await recordedRun();
+    const { runner, runId } = setup;
+    for (const id of [runId + 1, 2_147_483_648]) {
+      const response = await runner.get(`/api/runs/${id}`);
+      expect(response.status).toBe(404);
+      expect((await json<ErrorBody>(response)).error.code).toBe("NOT_FOUND");
+    }
+    for (const id of ["abc", "0", "-1", "1.5", "0x1", "%20"]) {
+      const response = await runner.get(`/api/runs/${id}`);
+      expect(response.status).toBe(400);
+      expect((await json<ErrorBody>(response)).error.code).toBe("VALIDATION");
+    }
+  });
+
+  test("a saját futások listája nem tartalmaz forrást", async () => {
+    await using setup = await recordedRun();
+    const { runner } = setup;
+    const { runs: list } = await json<{ runs: Record<string, unknown>[] }>(
+      await runner.get("/api/me/runs"),
+    );
+    expect(list).toHaveLength(1);
+    expect(Object.keys(list[0] ?? {}).sort()).toEqual(
+      [
+        "createdAt",
+        "errorCode",
+        "errorLine",
+        "gold",
+        "id",
+        "mapId",
+        "mapTitle",
+        "mapVersionId",
+        "outcomeKind",
+        "steps",
+        "version",
+      ].sort(),
+    );
   });
 });

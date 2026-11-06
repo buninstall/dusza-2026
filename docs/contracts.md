@@ -98,6 +98,13 @@ Minden válasz JSON. Hiba esetén egységes formátum:
 
 A nem-GET kérésekhez `Origin` fejléc kell, ami egyezik a hosttal (különben `403 CSRF_ORIGIN`). A védett végpontokhoz `ms_session` cookie kell (különben `401 UNAUTHENTICATED`). A web a típusos `hc<AppType>` klienst használja (`apps/web/src/lib/api.ts`).
 
+Minden végpontra érvényes:
+
+- A kérés törzse legfeljebb 1 MiB (különben `413 PAYLOAD_TOO_LARGE`, `Connection: close`). A nem JSON törzs `400 VALIDATION` („A kérés törzse nem érvényes JSON.”).
+- A `:id` és a `?version=` csak tizes számrendszerbeli pozitív egész lehet (`^[1-9][0-9]{0,14}$`, különben `400 VALIDATION`); a nem létező azonosító `404 NOT_FOUND`.
+- A mezőhibák (`details[i] = { path, message }`) üzenete magyar. A párosítatlan UTF-16 helyettesítő kódot tartalmazó szöveg `400 VALIDATION`.
+- A cím (térkép, program) sortörései, tabulátorai és vezérlőkarakterei egy szóközzé válnak, a cím végeiről a szóköz lekerül, és kell benne látható karakter. A leírásban a `\r\n` és a `\r` `\n`-né válik, a `\n` és a tab kivételével a vezérlőkarakterek törlődnek.
+
 ### Rendszer és hitelesítés
 
 | Metódus és útvonal        | Kérés                    | Válasz                                                                 |
@@ -150,9 +157,34 @@ Content-Type: application/json
 | `PUT /api/programs/:id`    | `{ title?, source? }`      | `200 { program }`                                                         |
 | `DELETE /api/programs/:id` | –                          | `200 { ok: true }`                                                        |
 | `POST /api/runs`           | `{ mapVersionId, source }` | `201 { run, outcome, console }`; `422 SYNTAX_ERROR` (nem mentődik); `404` |
+| `GET /api/runs/:id`        | –                          | `200 { run, map: { content } }`; `404` (nem a sajátod és nem vagy admin)  |
 | `GET /api/me/runs`         | –                          | `200 { runs }` (legutóbbi 100)                                            |
 
 A `POST /api/runs` a kliens által küldött egyéb mezőket (például `gold`) figyelmen kívül hagyja: az eredményt a szerver számolja.
+
+A `GET /api/runs/:id` a visszajátszáshoz adja vissza egy futás adatait. Csak a futás gazdája és az admin olvashatja; mindenki más, illetve a nem létező azonosító `404 NOT_FOUND`. A `map.content` annak a térképverziónak a kanonikus tartalma, amelyen a futás történt (nem az aktuális verzióé), így az `engine.run(run.source, map.content)` pontosan ugyanazt az eseménysort adja:
+
+```json
+{
+  "run": {
+    "id": 1,
+    "mapId": 3,
+    "mapTitle": "3. Kis labirintus",
+    "mapVersionId": 7,
+    "version": 1,
+    "gold": 3,
+    "steps": 24,
+    "outcomeKind": "ok",
+    "errorCode": null,
+    "errorLine": null,
+    "createdAt": 1793960000000,
+    "source": "step forward 3\n…"
+  },
+  "map": { "content": "7 7\n…" }
+}
+```
+
+A `GET /api/me/runs` elemei ugyanezek a mezők a `source` nélkül.
 
 ### Adminisztráció (csak admin)
 
