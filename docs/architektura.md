@@ -118,7 +118,7 @@ A függőségek `cargo add`/`bun add` segítségével, a legfrissebb stabil verz
 | React                 | 19.3                          |
 | TanStack Router       | 1.170                         |
 | React Aria Components | 1.22                          |
-| Tailwind CSS          | 4.3                           |
+| Fontsource            | 5.3                           |
 | Hono                  | 4.13                          |
 | Drizzle ORM           | 0.45                          |
 | zod                   | 4.6                           |
@@ -133,3 +133,6 @@ Eltérések a kiinduló tervtől:
 - **Biome a11y**: a csoport minden szabálya be van kapcsolva, kivéve a `noNoninteractiveElementToInteractiveRole`-t: a térképrács a WAI-ARIA APG „data grid” mintáját követi (`<table role="grid">`), amit ez a szabály tévesen tilt.
 - **Leaderboard `?version=`**: a paraméter a térképverzió azonosítója (`map_versions.id`), nem a sorszáma.
 - **e2e**: a `just e2e` függ a `just build`-től, mert a teszt a buildelt webet a szerver prod módjával szolgálja ki.
+- **Web-stílus**: Tailwind és CSS-modulok helyett komponensenkénti sima CSS-fájl, előtagos kebab-case osztálynevekkel (`play-gauge`, `board-cell`). A CSS-modulok osztálytípusa a `noUncheckedIndexedAccess` miatt `string | undefined`, ami a React Aria `className` propjával az `exactOptionalPropertyTypes` mellett nem fér össze. A design tokenek egy helyen vannak: `apps/web/src/styles/tokens.css`.
+- **Pixel art**: a csempék, a robot, az ikonok és a logó ASCII-rácsként szerepelnek a forrásban (`apps/web/src/pixel`), és futásidőben `shape-rendering="crispEdges"` SVG-útvonalakká fordulnak; a térkép `<use>` hivatkozásokkal egyetlen közös sprite-lapot használ. Canvas nincs.
+- **Fejlesztői API-cél**: a Vite proxy célja a `MINESCRIPT_API_URL` környezeti változóval felülírható (alapból `http://127.0.0.1:8080`).

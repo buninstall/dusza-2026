@@ -35,17 +35,17 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 - [ ] Lejátszás: a kész lejátszó finomhangolása a valódi trace-szel (sebesség, aktuális sor, konzol), a leállítás és a hibasor kiemelése a VM elkészülte után.
 - [ ] Térképszerkesztő: kész (méret, festés, robot és irány, import/export, mentés, törlés) – végső UX-ellenőrzés valódi felhasználókkal.
 - [ ] Ranglista-oldal: kész – a verzióváltó és a saját sor kiemelésének ellenőrzése.
-- [ ] Program mentése a szerverre (`/api/programs`) és betöltése a játék oldalon.
+- [x] Program mentése a szerverre (`/api/programs`) és betöltése a játék oldalon (Programtár).
 - [ ] Felfedezett mezők: a köd/teljes nézet váltó ellenőrzése a valódi trace-szel.
 
 ### P2
 
 - [ ] Visszaléptetés és tekerés billentyűparancsokkal (például `,`/`.`), breakpoint a sorszámra kattintva.
-- [ ] Változó-panel típusjelöléssel, a változás kiemelésével.
+- [x] Változó-panel típusjelöléssel.
 - [ ] A szerveroldali ellenőrzés UI-ja: eltérés esetén figyelmeztetés a kliens és a szerver eredménye között.
-- [ ] Saját futások oldala (`/api/me/runs`).
+- [x] Saját futások oldala (`/api/me/runs`).
 - [ ] Demó-tutorial: lépésenkénti bevezető az első térképhez.
-- [ ] Reszponzív finomítás 320 px-re (szerkesztő és rács egymás alatt, nagyobb érintési célok).
+- [x] Reszponzív finomítás 320 px-re (a panelek egymás alá kerülnek, a nagy térkép a saját keretében görgethető).
 
 ### P3
 
