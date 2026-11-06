@@ -39,6 +39,14 @@ describe("statikus kiszolgálás", () => {
     expect(api.headers.get("content-type")).toContain("application/json");
   });
 
+  test("index.html nélkül az ismeretlen útvonal egységes 404", async () => {
+    await using context = await createTestContext();
+    const app = createApp(context.deps, { staticHandler: createStaticHandler({}) });
+    const response = await app.request("http://localhost/play/3");
+    expect(response.status).toBe(404);
+    expect(response.headers.get("content-type")).toContain("application/json");
+  });
+
   test("ismeretlen kiterjesztés bináris", () => {
     expect(mimeTypeOf("/a.unknown")).toBe("application/octet-stream");
     expect(mimeTypeOf("/fonts/inter.woff2")).toBe("font/woff2");

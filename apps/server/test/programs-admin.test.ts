@@ -49,4 +49,14 @@ describe("adminisztráció", () => {
     expect(self.status).toBe(409);
     expect((await admin.delete(`/api/admin/users/${playerUser.id}`)).status).toBe(200);
   });
+
+  test("nem létező felhasználó módosítása és törlése 404", async () => {
+    await using context = await createTestContext();
+    const admin = context.client();
+    const { user } = await admin.register("fonok");
+    await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
+    const missing = `/api/admin/users/${user.id + 1000}`;
+    expect((await admin.request("PATCH", missing, { role: "admin" })).status).toBe(404);
+    expect((await admin.delete(missing)).status).toBe(404);
+  });
 });
