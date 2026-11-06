@@ -5,6 +5,7 @@ import { toast } from "../components/ui/Toast.tsx";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
 import { downloadText, safeFilename } from "../lib/files.ts";
+import { hasVisibleText } from "../lib/text.ts";
 import { canvasOverlay } from "./canvas-overlay.tsx";
 import { EditorBar, type SaveState } from "./EditorBar.tsx";
 import { EditorCanvas } from "./EditorCanvas.tsx";
@@ -15,7 +16,6 @@ import {
   draftGrid,
   draftRobot,
   draftToText,
-  hasVisibleText,
   type Mode,
   resizeDraft,
   type Tool,

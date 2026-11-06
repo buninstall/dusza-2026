@@ -10,12 +10,6 @@ import {
   useSaveProgram,
 } from "../programs.ts";
 
-const VISIBLE = /[^\s\p{Cc}\p{Cf}\p{M}]/u;
-
-export function isVisibleTitle(title: string): boolean {
-  return VISIBLE.test(title);
-}
-
 export function hasUnsavedWork(draft: ProgramDraft): boolean {
   return draft.linked === null ? draft.source.trim().length > 0 : isModified(draft);
 }

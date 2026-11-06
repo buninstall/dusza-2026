@@ -8,9 +8,10 @@ import { ConfirmDialog, ModalShell } from "../../components/ui/Dialog.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { formatTime, hu } from "../../i18n/hu.ts";
 import { errorMessage } from "../../lib/api.ts";
+import { hasVisibleText } from "../../lib/text.ts";
 import type { ProgramDraft } from "../program-draft.ts";
 import { type ProgramListItem, programsQuery } from "../programs.ts";
-import { isVisibleTitle, type ProgramPersistence } from "./useProgramPersistence.ts";
+import type { ProgramPersistence } from "./useProgramPersistence.ts";
 
 const TITLE_MAX = 80;
 
@@ -64,7 +65,7 @@ function SaveAsForm({
   const [title, setTitle] = useState(defaultTitle);
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isVisibleTitle(title)) {
+    if (hasVisibleText(title)) {
       onSave(title.trim());
     }
   };
@@ -76,7 +77,7 @@ function SaveAsForm({
         onChange={setTitle}
         isRequired
         maxLength={TITLE_MAX}
-        validate={(value) => (isVisibleTitle(value) ? null : hu.programs.titleInvisible)}
+        validate={(value) => (hasVisibleText(value) ? null : hu.programs.titleInvisible)}
       />
       <Button type="submit" variant="primary" icon="save" isDisabled={isLocked}>
         {hu.programs.saveAsSubmit}

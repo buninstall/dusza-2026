@@ -258,9 +258,3 @@ export function changedCells(before: DraftMap, after: DraftMap): Pos[] {
   }
   return cells;
 }
-
-const VISIBLE = /[^\s\p{Cc}\p{Cf}\p{M}]/u;
-
-export function hasVisibleText(text: string): boolean {
-  return VISIBLE.test(text);
-}

@@ -9,6 +9,7 @@ import { ConfirmDialog } from "../components/ui/Dialog.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import "./AdminPage.css";
 
 const fetchUsers = () => call(api.admin.users.$get());
@@ -120,11 +121,14 @@ export function AdminPage({ me }: { me: SessionUser }) {
                     ) : null}
                   </th>
                   <td data-role={account.role} className="admin-role">
+                    <PixelIcon name={account.role === "admin" ? "key" : "helmet"} />
                     {ROLE_LABEL[account.role]}
                   </td>
                   <td className="data-table-muted">{formatTime(account.createdAt)}</td>
                   <td>
-                    {account.id === me.id ? null : (
+                    {account.id === me.id ? (
+                      <span className="data-table-muted">{hu.admin.ownAccount}</span>
+                    ) : (
                       <AccountActions
                         account={account}
                         onRole={(role) => void setRole(account, role)}

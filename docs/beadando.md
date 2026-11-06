@@ -22,20 +22,22 @@ A program alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` c
 
 ## Melyik funkció hogyan érhető el
 
-| Funkció                     | Hol                                | Hogyan                                                                                           |
-| --------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Bejelentkezés, regisztráció | `/login`, `/register`              | Szabad regisztráció; a funkciók csak belépés után érhetők el.                                    |
-| Felhasználókezelés          | „Felhasználók” menüpont (admin)    | Szerepkör váltása, fiók törlése.                                                                 |
-| Térképlista                 | „Térképek”                         | Összes / sajátjaim szűrő, méret, arany, verzió, készítő.                                         |
-| Térképszerkesztő            | „Új térkép”, illetve „Szerkesztés” | Méret (1–15), festés eszközökkel (üres, arany, fal, robot), robot iránya, élő validálás, mentés. |
-| Térkép import/export        | Szerkesztő                         | „Térkép importálása” (.txt), „Exportálás”.                                                       |
-| Kódszerkesztő               | „Játék” oldal                      | Szintaxiskiemelés, élő hibajelzés, kiegészítés, súgó, Tab = 4 szóköz.                            |
-| Program import/export       | „Játék” oldal                      | „Program importálása”, „Program exportálása” (.ms).                                              |
-| Futtatás                    | „Futtatás” gomb                    | Szintaktikai hibánál a hibás sorok jelölve; egyébként lassított lejátszás.                       |
-| Lejátszás                   | A térkép alatt                     | Indítás/szünet, lépés előre/vissza, elejére, leállítás, tekerés, sebesség.                       |
-| Felfedezett mezők           | Térkép                             | „Csak a felfedezett mezők” kapcsoló.                                                             |
-| Konzol, állapot             | A térkép alatt                     | print kimenet, arany, lépés, aktuális sor, pozíció, változók.                                    |
-| Ranglista                   | „Ranglista” gomb                   | Felhasználónként a legjobb futás, verziónként.                                                   |
+| Funkció                     | Hol                                                | Hogyan                                                                                                                                                   |
+| --------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bejelentkezés, regisztráció | `/login`, `/register`                              | Szabad regisztráció; a funkciók csak belépés után érhetők el.                                                                                            |
+| Felhasználókezelés          | „Felhasználók” menüpont (admin)                    | Szerepkör váltása, fiók törlése.                                                                                                                         |
+| Térképlista                 | „Pályák” menüpont (`/maps`)                        | „Összes” / „Sajátjaim” fül, „Rendezés”; méret, arany, verzió, készítő; „Játék”, „Ranglista”, „Szerkesztés”.                                              |
+| Térképszerkesztő            | „Térképszerkesztő” menüpont, illetve „Szerkesztés” | Méret (1–15) a rács szélén, festőeszközök (üres kamra, arany, fal, robot), ecset, téglalap, kitöltés, robot iránya, visszavonás, élő ellenőrzés, mentés. |
+| Térkép import/export        | Szerkesztő                                         | „Importálás” (.txt, vagy a fájl ráhúzása a rácsra), „Exportálás”.                                                                                        |
+| Kódszerkesztő               | „Játék” oldal                                      | Szintaxiskiemelés, élő hibajelzés a sor végén, kiegészítés, parancsblokkok, tippek, Tab = 4 szóköz.                                                      |
+| Program import/export       | „Játék” oldal, „Fájl” menü                         | „Importálás fájlból…”, „Exportálás fájlba” (.ms).                                                                                                        |
+| Futtatás                    | „Futtatás” gomb (Ctrl+Enter)                       | Szintaktikai hibánál a hibás sorok jelölve; egyébként lassított lejátszás.                                                                               |
+| Lejátszás                   | A bánya alatti vezérlőpult                         | Indítás/szünet, lépés előre/vissza, elejére, leállítás, idővonal, sebesség.                                                                              |
+| Felfedezett mezők           | „Nézet” kapcsoló a bánya fölött                    | „Lámpafény”: csak a felfedezett mezők; „Teljes térkép”.                                                                                                  |
+| Konzol, állapot             | „Műszerek” a bánya mellett, napló alatta           | Arany, lépés, aktuális sor, pozíció; „Konzol”, „Változók”, „Jelentés”.                                                                                   |
+| Ranglista                   | „Ranglista” gomb                                   | Felhasználónként a legjobb futás, verziónként.                                                                                                           |
+| Visszajátszás               | „Futásaim” menüpont (`/runs`)                      | „Visszajátszás” soronként: a rögzített futás újra lejátszódik, beküldés nélkül.                                                                          |
+| Receptek                    | „Kézikönyv”, a tartalomjegyzék alján               | Kész programok minden pályához, hibapróbák és hibás térképek (`/manual/receptek`).                                                                       |
 
 ## Mi nem készült el vagy maradt ki
 

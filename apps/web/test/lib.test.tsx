@@ -82,6 +82,16 @@ describe("API-hívás", () => {
     expect(error).toMatchObject({ status: 422, code: "MAP_INVALID", details: [1] });
     expect(errorMessage(error, "x")).toBe("Rossz térkép.");
     expect(errorMessage(new Error("belső"), "tartalék")).toBe("tartalék");
+    const validation = new ApiError(400, "VALIDATION", "A kérés adatai hibásak.", [
+      { path: "title", message: "A cím nem lehet üres." },
+      { path: "title", message: "A cím nem lehet üres." },
+      { path: "content", message: "A térkép túl hosszú." },
+      { path: "x" },
+    ]);
+    expect(errorMessage(validation, "x")).toBe(
+      "A kérés adatai hibásak. A cím nem lehet üres. A térkép túl hosszú.",
+    );
+    expect(errorMessage(new ApiError(400, "VALIDATION", "Hiba.", "nem lista"), "x")).toBe("Hiba.");
   });
 
   test("nem JSON hibaválasz és hálózati hiba", async () => {

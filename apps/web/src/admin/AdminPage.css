@@ -5,11 +5,19 @@
 }
 
 .admin-name {
-  font-family: var(--font-code);
+  font: var(--type-mono);
   font-weight: 700;
 }
 
-.admin-role[data-role="admin"] {
-  color: var(--c-gold);
-  font-weight: 700;
+.admin-role {
+  white-space: nowrap;
+}
+
+.admin-role .px-icon {
+  margin-right: var(--space-2);
+  vertical-align: -2px;
+}
+
+.admin-role[data-role="admin"] .px-icon {
+  color: var(--c-reward);
 }

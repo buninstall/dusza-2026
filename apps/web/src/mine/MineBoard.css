@@ -364,6 +364,16 @@
   animation: px-lamp-idle var(--motion-idle) var(--ease-snap) infinite;
 }
 
+.board-grid[data-editable="true"] .board-tile-art {
+  animation: board-stamp var(--motion-stamp) steps(2);
+}
+
+@keyframes board-stamp {
+  from {
+    transform: scale(0.8);
+  }
+}
+
 @keyframes robot-bob {
   50% {
     translate: 0 calc(var(--art-px) * -1);

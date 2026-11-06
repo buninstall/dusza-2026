@@ -685,6 +685,7 @@ export const hu = {
     removed: (username: string) => `${username} fiókja törölve.`,
     roleChanged: (username: string, role: string) => `${username} új szerepköre: ${role}.`,
     you: "te",
+    ownAccount: "saját fiók",
     tableLabel: "Felhasználók",
     loadFailed: "A felhasználók nem tölthetők be.",
   },

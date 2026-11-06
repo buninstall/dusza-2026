@@ -156,7 +156,7 @@ export function MineBoard({
                         className="board-cell"
                         onFocus={() => input.setFocus(view.pos)}
                       >
-                        <TileArt view={view} />
+                        <TileArt key={isEditable ? view.kind : "tile"} view={view} />
                       </td>
                     );
                   })}
