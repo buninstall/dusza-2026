@@ -13,5 +13,15 @@
     "db:generate": "drizzle-kit generate",
     "test": "bun test",
     "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.9.1",
+    "@minescript/engine": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.16",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11"
   }
 }
