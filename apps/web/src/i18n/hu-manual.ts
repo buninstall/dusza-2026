@@ -7,6 +7,8 @@ export type ManualBlock =
       readonly map?: string;
     }
   | { readonly kind: "list"; readonly items: readonly string[] }
+  | { readonly kind: "steps"; readonly items: readonly string[] }
+  | { readonly kind: "tip"; readonly title: string; readonly text: string }
   | {
       readonly kind: "table";
       readonly caption: string;
@@ -27,21 +29,56 @@ const sections: readonly ManualSection[] = [
     blocks: [
       {
         kind: "paragraph",
-        text: "A robot sorról sorra végrehajtja a MineScript-programot. Csak a közvetlenül előtte lévő mezőt érzékeli (`isThere`), és azon a mezőn bányászhat, amelyen áll (`mine here`).",
+        text: "Egy elhagyott bánya mélyén aranyrögök várnak, és csak a kincskereső robot juthat el hozzájuk. A robot magától semmit sem tud: pontosan azt teszi, amit a MineScript-programod sorról sorra előír. A sötétben csak a közvetlenül előtte lévő mezőt látja, és csak azon a mezőn bányászhat, amelyen éppen áll.",
       },
       {
         kind: "paragraph",
-        text: "A cél: minél több aranyat összegyűjteni minél kevesebb lépésből. A ranglistán előrébb áll, aki több aranyat bányászott, egyenlőségnél az, akinek ehhez kevesebb feldolgozott programsor kellett.",
+        text: "A cél: minél több aranyat kibányászni, minél kevesebb programsor végrehajtásával. A ranglistán az áll előrébb, aki több aranyat gyűjtött; azonos aranynál az, akinek ehhez kevesebb lépés kellett.",
       },
       {
-        kind: "list",
+        kind: "steps",
         items: [
-          "Válassz pályát a `Pályák` oldalon, és nyomd meg a `Játék` gombot.",
-          "Írd meg a programot a szerkesztőben, vagy importáld egy `.ms` / `.txt` fájlból.",
-          "A `Futtatás` gomb ellenőrzi a programot. Hibás programot nem indít el, hanem megjelöli a hibás sorokat.",
-          "Helyes program esetén a térkép és a robot alaphelyzetbe kerül, és a futás lassítva lejátszódik.",
-          "A lejátszás végén az eredményt a szerver is kiszámolja, és felkerül a ranglistára.",
+          "Nyisd meg a `Pályák` oldalt, válassz egy térképet, és kattints a `Játék` gombra.",
+          "Írd meg a programot a jobb oldali szerkesztőben. A `Robot`, `Érzékelés`, `Változók`, `Döntés` és `Ciklus` fiókokból kész parancsmintákat szúrhatsz be, és `.ms` vagy `.txt` fájlból is importálhatsz.",
+          "Kattints a `Futtatás` gombra. A szerkesztő előbb ellenőrzi a programot: ha hibás, nem indul el, hanem megjelöli a hibás sorokat.",
+          "Helyes program esetén a térkép és a robot alaphelyzetbe kerül, és a futás lassítva lejátszódik. Közben látod az éppen végrehajtott sort, a konzolt és a változók értékét.",
+          "A lejátszás végén a szerver a programodból újra kiszámolja az eredményt, és rögzíti a ranglistán.",
         ],
+      },
+      {
+        kind: "tip",
+        title: "Kezdd a próbapaddal",
+        text: "A kézikönyv példái mellett kis bánya áll. A `Lejátszás` gombbal ott helyben megnézheted, mit csinál a program, mielőtt a saját pályádon kipróbálnád.",
+      },
+    ],
+  },
+  {
+    id: "elso-program",
+    title: "Az első program",
+    blocks: [
+      {
+        kind: "paragraph",
+        text: "A legegyszerűbb program néhány robotparancsból áll. Az alábbi bányában a robot kelet felé néz, az arany három mezővel előtte van. Elég odamenni és kibányászni.",
+      },
+      {
+        kind: "code",
+        caption: "Három lépés előre, majd bányászás: 1 arany, 2 lépés",
+        map: "1 5\n>..@.",
+        code: "step forward 3\nmine here",
+      },
+      {
+        kind: "paragraph",
+        text: "A `step forward 3` egyetlen sorral három mezőt halad, ezért egy lépésnek számít. A `mine here` kibányássza az aranyat abból a mezőből, amelyen a robot áll. Ha nincs ott arany, a futás `E_NO_GOLD` hibával megáll.",
+      },
+      {
+        kind: "paragraph",
+        text: "Kanyarodni a `turn by n` paranccsal lehet: a robot n negyedfordulatot fordul balra. Jobbra fordulni három balra fordulással lehet, ezért a jobbkanyar `turn by 3`, a hátraarc pedig `turn by 2`.",
+      },
+      {
+        kind: "code",
+        caption: "Két lépés, jobbkanyar, két lépés, bányászás",
+        map: "3 3\n>..\n##.\n##@",
+        code: "step forward 2\nturn by 3\nstep forward 2\nmine here",
       },
     ],
   },
@@ -51,7 +88,7 @@ const sections: readonly ManualSection[] = [
     blocks: [
       {
         kind: "paragraph",
-        text: "A térképfájl első sora a méret: a sorok és az oszlopok száma egy szóközzel elválasztva, mindkettő 1 és 15 között. Utána pontosan ennyi sor következik, mindegyikben pontosan ennyi jellel.",
+        text: "A térkép legfeljebb 15 × 15 kamrából álló rács. Fájlban így néz ki: az első sor a méret (sorok és oszlopok száma, egy szóközzel elválasztva, mindkettő 1 és 15 között), utána pontosan ennyi sor jön, mindegyikben pontosan ennyi jellel.",
       },
       {
         kind: "code",
@@ -65,93 +102,136 @@ const sections: readonly ManualSection[] = [
         rows: [
           ["`.`", "üres kamra"],
           ["`@`", "aranyrög"],
-          ["`#`", "fal, áthatolhatatlan kőzet"],
-          ["`>` `<` `^` `v`", "a robot kelet, nyugat, észak vagy dél felé nézve"],
+          ["`#`", "fal: áthatolhatatlan kőzet"],
+          ["`>` `<` `^` `v`", "a robot, kelet, nyugat, észak vagy dél felé nézve"],
+        ],
+      },
+      {
+        kind: "list",
+        items: [
+          "A térképen pontosan egy robot van, és olyan kamrában áll, amelyben nincs arany.",
+          "A térkép széle falnak számít: a robot nem léphet le róla, és az `isThere` is falat lát a szélen túl.",
+          "A térképszerkesztő csak szabályos térképet ment el. Arany nélküli vagy elérhetetlen aranyat tartalmazó térkép is menthető, de figyelmeztetést kap.",
+          "Hibás térképfájl importálásakor a szerkesztő megmondja, melyik sorban mi a gond, és nem tölti be a hibás tartalmat.",
         ],
       },
       {
         kind: "paragraph",
-        text: "A térképen pontosan egy robot van, és aranyrögöt nem tartalmazó kamrában áll. A térképszerkesztő csak ilyen térképet enged menteni; arany nélküli vagy elérhetetlen aranyat tartalmazó térkép menthető, de figyelmeztetést kap.",
-      },
-      {
-        kind: "paragraph",
-        text: "Felfedezett mező a kezdőmező, minden mező, amelyen a robot áthalad vagy megáll, és minden mező, amelyre `isThere` hívás irányult. Lámpafény nézetben csak ezek látszanak.",
+        text: "Futás közben a térkép mutatja, mit fedezett fel a robot. Felfedezett a kezdőmező, minden mező, amelyen a robot áthaladt vagy megállt, és minden mező, amelyet `isThere` hívással megvizsgált. `Lámpafény` nézetben csak ezek látszanak, a `Teljes térkép` nézet a felderítetlen részt is mutatja, rácsmintával jelölve.",
       },
     ],
   },
   {
     id: "felepites",
-    title: "A program felépítése",
+    title: "A program szabályai",
     blocks: [
+      {
+        kind: "paragraph",
+        text: "A MineScript szigorú nyelv: a robot csak akkor indul, ha a program minden sora szabályos. Ezek a szabályok:",
+      },
       {
         kind: "list",
         items: [
-          "Minden sor egy utasítás. Üres sor nem lehet a programban.",
-          "A tokenek között pontosan egy szóköz áll; sorvégi szóköz és tabulátor nem lehet.",
-          "A behúzás (csak szóköz) jelöli, mi tartozik egy `if`, `else` vagy `while` törzséhez. Egy blokkon belül a behúzás egységes, különböző blokkokban eltérhet.",
+          "Minden sor pontosan egy utasítás. Üres sor nem lehet a programban, a program viszont lehet teljesen üres is.",
+          "A szavak között pontosan egy szóköz áll. Dupla szóköz, sor végi szóköz és tabulátor nem lehet.",
+          "A behúzás (csak szóközzel) jelöli, mi tartozik egy `if`, `else` vagy `while` törzséhez. A törzs mélyebben van, mint a fejléce, és egy blokkon belül minden sor ugyanannyira van behúzva. Különböző blokkokban a behúzás mértéke eltérhet.",
           "Az `else` az `if` sorával azonos behúzáson áll, közvetlenül az `if` törzse után.",
-          "A kulcsszavak és a változónevek kis- és nagybetűérzékenyek: `arany` és `Arany` két külön változó.",
-          "A számok 0 és 100 közötti egészek. Negatív számot kivonással kapsz: `set x to 0 - 5`.",
-          "A változónév betűvel kezdődik, utána betűk és számjegyek jöhetnek (ékezet és aláhúzás nélkül), és nem lehet kulcsszó.",
+          "A kis- és nagybetű számít: `isThere` helyes, `isthere` hibás; `arany` és `Arany` két külön változó.",
+          "A számok 0 és 100 közötti egészek. Negatív szám nincs a kódban, kivonással állítható elő: `set x to 0 - 5`.",
+          "A változónév betűvel kezdődik, utána betűk és számjegyek jöhetnek, ékezet és aláhúzás nélkül. Kulcsszó nem lehet változónév.",
         ],
       },
       {
         kind: "paragraph",
-        text: "Kulcsszavak: `and` `by` `else` `false` `forward` `here` `if` `isThere` `mine` `not` `or` `print` `set` `step` `to` `true` `turn` `while`.",
+        text: "A kulcsszavak: `and` `by` `else` `false` `forward` `here` `if` `isThere` `mine` `not` `or` `print` `set` `step` `to` `true` `turn` `while`.",
       },
       {
-        kind: "code",
-        caption: "Menj előre, amíg falba nem ütköznél, és bányássz ki minden aranyat",
-        map: "1 8\n>..@..@.",
-        code: "set count to 0\nset fal to isThere 1\nset megy to not fal\nwhile megy\n    set arany to isThere 2\n    if arany\n        step forward 1\n        mine here\n        set count to count + 1\n    else\n        step forward 1\n    set fal to isThere 1\n    set megy to not fal\nprint count",
+        kind: "tip",
+        title: "A szerkesztő segít",
+        text: "A hibás sort a szerkesztő már gépelés közben aláhúzza, és a sor végén megmondja, mi a baj. A `Tab` négy szóközt szúr be, a `Shift+Alt+F` pedig egységes formára hozza a helyes programot.",
       },
     ],
   },
   {
     id: "utasitasok",
-    title: "Utasítások",
+    title: "Robotparancsok",
     blocks: [
       {
         kind: "table",
-        caption: "A MineScript utasításai",
-        head: ["Utasítás", "Mit csinál"],
+        caption: "A robot parancsai",
+        head: ["Parancs", "Mit csinál"],
         rows: [
           [
             "`step forward n`",
-            "n mezőt lép előre (n nemnegatív egész). Közben minden érintett mezőt felfedez; az aranyon áthalad, és ott hagyja.",
+            "n mezőt halad előre (n nemnegatív egész, a 0 is szabályos). Útközben minden érintett mezőt felfedez, az aranyon áthalad, és ott hagyja. Ha a következő mező fal vagy a térkép széle, a robot az utolsó szabad mezőn megáll, és `E_BEDROCK_HIT` hibával véget ér a futás.",
           ],
           [
             "`turn by n`",
-            "n negyedfordulatot fordul balra: kelet → észak → nyugat → dél. A `turn by 3` tehát egy jobbra fordulás.",
+            "n negyedfordulatot fordul balra: kelet → észak → nyugat → dél → kelet. `turn by 1` balra, `turn by 2` hátra, `turn by 3` jobbra fordít.",
           ],
-          ["`mine here`", "kibányássza az aranyat abból a mezőből, amelyen a robot áll."],
+          [
+            "`mine here`",
+            "kibányássza az aranyat abból a mezőből, amelyen a robot áll. Egy mezőt csak egyszer lehet kibányászni.",
+          ],
+          ["`isThere w`", "megnézi a robot előtti mezőt; részletesen a következő fejezetben."],
           ["`print x`", "kiírja az egész vagy logikai értéket a konzolra."],
-          [
-            "`set x to …`",
-            "kiértékeli a `to` utáni kifejezést, és az eredményt az x változóba írja. Az első értékadás hozza létre a változót.",
-          ],
-          [
-            "`if v` … `else` …",
-            "ha v igaz, a then-ág fut, különben (ha van) az else-ág. A feltétel csak logikai lehet.",
-          ],
-          ["`while v` …", "a törzs addig ismétlődik, amíg v igaz."],
         ],
       },
       {
+        kind: "paragraph",
+        text: "A parancsok paramétere egyetlen érték: szám, `true`/`false` vagy egy változó neve. Kifejezést (például `step forward n + 1`) nem lehet közvetlenül átadni, előbb egy változóba kell kiszámolni.",
+      },
+    ],
+  },
+  {
+    id: "isthere",
+    title: "Érzékelés: isThere",
+    blocks: [
+      {
+        kind: "paragraph",
+        text: "A robot az `isThere w` függvénnyel tapogatja ki a közvetlenül előtte lévő mezőt. Az eredmény logikai érték, amelyet egy változóba kell menteni: `set fal to isThere 1`.",
+      },
+      {
+        kind: "table",
+        caption: "Az isThere paramétere",
+        head: ["Hívás", "Igaz, ha a robot előtt…"],
+        rows: [
+          ["`isThere 0`", "üres kamra van"],
+          ["`isThere 1`", "fal van, vagy ott a térkép széle"],
+          ["`isThere 2`", "aranyrög van"],
+        ],
+      },
+      {
+        kind: "paragraph",
+        text: "A megvizsgált mező felfedezetté válik. Más paraméter (például `isThere 3`) `E_BAD_ARG` hibát ad.",
+      },
+      {
         kind: "code",
-        caption: "Két lépés, jobbra fordulás, két lépés, bányászás",
-        map: "3 3\n>..\n##.\n##@",
-        code: "step forward 2\nturn by 3\nstep forward 2\nmine here",
+        caption: "Csak akkor lép, ha nincs előtte fal",
+        map: "1 3\n>..",
+        code: "set fal to isThere 1\nset szabad to not fal\nif szabad\n    step forward 1",
       },
     ],
   },
   {
     id: "kifejezesek",
-    title: "Kifejezések és műveletek",
+    title: "Változók és kifejezések",
     blocks: [
       {
         kind: "paragraph",
-        text: "A `set` jobb oldala négyféle lehet: egyetlen érték (`5`, `true`, `x`), egy `isThere w` hívás, egy `not v`, vagy egy kétoperandusú művelet (`a + b`). Beágyazott kifejezés nincs: összetett számításhoz használj segédváltozókat.",
+        text: "Változót a `set név to érték` hoz létre. Külön deklaráció nincs: a változó az első értékadáskor születik meg, és a futás végéig él. Két típus létezik, egész és logikai, és köztük nincs automatikus átalakítás.",
+      },
+      {
+        kind: "list",
+        items: [
+          "A változó típusa az első értékadáskor rögzül. Ha később más típusú értéket kapna, `E_TYPE_MISMATCH` hiba keletkezik.",
+          "Értékadás előtt a változó nem olvasható: ilyenkor `E_UNINITIALIZED` hiba jön.",
+          "Minden típusellenőrzés futás közben történik. A szerkesztő figyelmeztetései előre jelzik a gyanús sorokat, de nem akadályozzák a futtatást.",
+        ],
+      },
+      {
+        kind: "paragraph",
+        text: "A `to` utáni rész négyféle lehet: egyetlen érték (`5`, `true`, `x`), egy `isThere w` hívás, egy tagadás (`not v`) vagy egy kétoperandusú művelet (`a + b`). Egymásba ágyazott kifejezés nincs: az összetett számítást lépésenként, segédváltozókkal kell felépíteni.",
       },
       {
         kind: "table",
@@ -167,7 +247,7 @@ const sections: readonly ManualSection[] = [
       },
       {
         kind: "paragraph",
-        text: "A kiértékelés balról jobbra halad, és minden operandust azonnal ellenőriz. Rövidzár nincs: a `true or c` a c változót is beolvassa, ezért ha c-nek még nincs értéke, `E_UNINITIALIZED` hiba keletkezik.",
+        text: "A kiértékelés balról jobbra halad, és minden operandust azonnal ellenőriz. Rövidzár nincs: a `true or c` akkor is beolvassa a c változót, ha az eredmény már az első operandusból kiderül, így ha c-nek még nincs értéke, `E_UNINITIALIZED` hiba keletkezik.",
       },
       {
         kind: "code",
@@ -178,33 +258,28 @@ const sections: readonly ManualSection[] = [
     ],
   },
   {
-    id: "tipusok",
-    title: "Típusok és változók",
-    blocks: [
-      {
-        kind: "list",
-        items: [
-          "Két típus van: egész és logikai. Közöttük nincs automatikus átalakítás.",
-          "Nincs külön deklaráció: a változó az első `set` utasításkor jön létre, és a futás végéig él.",
-          "A változó típusa az első értékadáskor véglegesen rögzül. Más típusú érték `E_TYPE_MISMATCH` hibát ad.",
-          "Minden típusellenőrzés futás közben történik; a szerkesztő figyelmeztetései csak segítenek előre.",
-        ],
-      },
-    ],
-  },
-  {
-    id: "isthere",
-    title: "Az isThere függvény",
+    id: "vezerles",
+    title: "Elágazás és ciklus",
     blocks: [
       {
         kind: "paragraph",
-        text: "Az `isThere w` a robot előtti mezőt vizsgálja, és logikai értéket ad: `0` esetén üres kamra, `1` esetén fal, `2` esetén aranyrög van-e ott. A térkép szélén túl mindig falat lát. A vizsgált mező felfedezetté válik.",
+        text: "Az `if v` után behúzott sorok csak akkor futnak le, ha v igaz. Az `else` utáni ág akkor fut, ha v hamis. A feltétel csak logikai érték lehet; egész szám esetén `E_NON_BOOL_CONDITION` hiba keletkezik.",
       },
       {
         kind: "code",
-        caption: "Csak akkor lép, ha nincs előtte fal",
-        map: "1 3\n>..",
-        code: "set fal to isThere 1\nset szabad to not fal\nif szabad\n    step forward 1",
+        caption: "Ha arany van előtte, kibányássza, különben megfordul",
+        map: "1 4\n>@..",
+        code: "set arany to isThere 2\nif arany\n    step forward 1\n    mine here\nelse\n    turn by 2\nprint arany",
+      },
+      {
+        kind: "paragraph",
+        text: "A `while v` törzse addig ismétlődik, amíg v igaz. A feltételt a törzs végén frissíteni kell, különben a ciklus sosem áll meg, és a futás 1000 sor után `INSTRUCTION_COUNT_LIMIT_EXCEEDED` hibával szakad meg.",
+      },
+      {
+        kind: "code",
+        caption: "Menj előre a falig, és bányássz ki minden aranyat útközben",
+        map: "1 8\n>..@..@.",
+        code: "set count to 0\nset fal to isThere 1\nset megy to not fal\nwhile megy\n    set arany to isThere 2\n    if arany\n        step forward 1\n        mine here\n        set count to count + 1\n    else\n        step forward 1\n    set fal to isThere 1\n    set megy to not fal\nprint count",
       },
     ],
   },
@@ -213,9 +288,13 @@ const sections: readonly ManualSection[] = [
     title: "Lépésszámlálás",
     blocks: [
       {
+        kind: "paragraph",
+        text: "A ranglista a végrehajtott programsorokat számolja, nem a megtett mezőket. A szabályok:",
+      },
+      {
         kind: "list",
         items: [
-          "Minden végrehajtott programsor egy lépés.",
+          "Minden végrehajtott sor egy lépés, a hibát okozó sor is.",
           "Ciklusban a törzs sorai minden lefutáskor újra számítanak.",
           "A `while` sora minden feltétel-kiértékelésnél számít, az utolsó, hamis kiértékelésnél is.",
           "Az `else` sora csak akkor számít, ha az else-ág lefut.",
@@ -225,9 +304,14 @@ const sections: readonly ManualSection[] = [
       {
         kind: "code",
         caption:
-          "Ez a program 13 lépés: 2 értékadás, 4 while-kiértékelés (az utolsó hamis), 3 × 2 törzssor és 1 print",
+          "13 lépés: 2 értékadás, 4 while-kiértékelés (az utolsó hamis), 3 × 2 törzssor és 1 print",
         map: "1 2\n>.",
         code: "set i to 0\nset tovabb to true\nwhile tovabb\n    set i to i + 1\n    set tovabb to i < 3\nprint i",
+      },
+      {
+        kind: "tip",
+        title: "Spórolj a lépésekkel",
+        text: "Ha ismered a pályát, a `step forward 4` egyetlen lépés, míg ugyanez egy falig tapogatózó ciklussal több tucat. Ciklus akkor éri meg, ha a pálya ismeretlen vagy nagyon hosszú. Minden `isThere` és minden segédváltozó egy-egy lépés, ezért csak ott vizsgálódj, ahol a döntéshez tényleg szükség van rá.",
       },
     ],
   },
@@ -237,7 +321,11 @@ const sections: readonly ManualSection[] = [
     blocks: [
       {
         kind: "paragraph",
-        text: "Szintaktikailag hibás program nem futtatható: a szerkesztő aláhúzza és a margón jelöli a hibás sorokat, a Hibalista pedig a sorszámmal együtt felsorolja őket. Futás közben az alábbi hibák állíthatják meg a robotot; ilyenkor a felület a hibakódot és a hibás sort mutatja.",
+        text: "Szintaktikailag hibás program nem futtatható. A szerkesztő aláhúzza és a margón megjelöli a hibás sorokat, a `Hibalista` pedig sorszámmal együtt felsorolja őket; egy kattintással a hibás sorra ugorhatsz, és sok hibához kész javítást is ajánl.",
+      },
+      {
+        kind: "paragraph",
+        text: "Futás közben az alábbi hibák állíthatják meg a robotot. Ilyenkor a felület kiírja a hibakódot, kiemeli a hibás sort, a térképen pedig megjelöli, hol akadt el a robot.",
       },
       {
         kind: "table",
@@ -245,17 +333,17 @@ const sections: readonly ManualSection[] = [
         head: ["Kód", "Mikor keletkezik"],
         rows: [
           ["`E_TYPE_MISMATCH`", "egy már rögzített típusú változó más típusú értéket kapna"],
-          ["`E_UNINITIALIZED`", "értékadás előtt olvasott változó"],
-          ["`E_NON_BOOL_CONDITION`", "az if vagy a while feltétele nem logikai"],
+          ["`E_UNINITIALIZED`", "olyan változót olvas a program, amely még nem kapott értéket"],
+          ["`E_NON_BOOL_CONDITION`", "az `if` vagy a `while` feltétele nem logikai"],
           ["`E_BAD_OPERAND`", "a művelet rossz típusú operandust kap"],
-          ["`E_BEDROCK_HIT`", "a step forward falra vagy a térképen kívülre vezetne"],
-          ["`E_NO_GOLD`", "mine here olyan mezőn, ahol nincs (már) arany"],
+          ["`E_BEDROCK_HIT`", "a `step forward` falra vagy a térképen kívülre vezetne"],
+          ["`E_NO_GOLD`", "`mine here` olyan mezőn, ahol nincs (vagy már nincs) arany"],
           [
             "`E_BAD_ARG`",
             "érvénytelen paraméter, például `isThere 3`, `turn by true` vagy negatív lépésszám",
           ],
           ["`E_INT_OVERFLOW`", "túl nagy egész érték (±9 007 199 254 740 991 felett)"],
-          ["`INSTRUCTION_COUNT_LIMIT_EXCEEDED`", "a futás elérte az 1000 feldolgozott sort"],
+          ["`INSTRUCTION_COUNT_LIMIT_EXCEEDED`", "a program 1000 sornál többet hajtana végre"],
         ],
       },
       {
@@ -268,7 +356,7 @@ const sections: readonly ManualSection[] = [
   },
   {
     id: "ranglista",
-    title: "Ranglista és térképverziók",
+    title: "Ranglista és verziók",
     blocks: [
       {
         kind: "list",
@@ -276,8 +364,9 @@ const sections: readonly ManualSection[] = [
           "Minden végigjátszott futás rögzítésre kerül: a hiba nélküli, a futásidejű hibával és a limit túllépésével végződő is.",
           "A leállított futás és a szintaktikailag hibás program nem kerül a ranglistára.",
           "Az eredményt a szerver a forráskódból maga számolja újra, így a ranglista nem hamisítható.",
-          "Felhasználónként a legjobb futás számít.",
-          "Ha egy térképhez már van futás, a tartalma csak új verzióként módosítható; a ranglista verziónként külön van, a régi eredmények megmaradnak.",
+          "Játékosonként a legjobb futás számít: több arany előrébb, egyenlőségnél a kevesebb lépés, ha az is egyezik, a korábbi.",
+          "Ha egy térképen már van futás, a tartalma csak új verzióként módosítható. A ranglista verziónként külön van, így a régi eredmények megmaradnak.",
+          "A `Futásaim` oldalon minden korábbi futásodat visszajátszhatod, és a programját újra betöltheted.",
         ],
       },
     ],
@@ -287,29 +376,33 @@ const sections: readonly ManualSection[] = [
     title: "Billentyűparancsok",
     blocks: [
       {
+        kind: "paragraph",
+        text: "Minden funkció egér nélkül is elérhető. A leggyakoribb billentyűk:",
+      },
+      {
         kind: "table",
         caption: "Billentyűparancsok",
         head: ["Hol", "Billentyű", "Hatás"],
         rows: [
           ["Játék", "`Ctrl+Enter`, `F5`", "futtatás"],
           ["Játék", "`Shift+F5`", "leállítás"],
+          ["Játék", "`Ctrl+S`", "a program mentése"],
+          ["Játék", "`Ctrl+O`", "programtár"],
           ["Bánya", "`Szóköz`", "szünet, folytatás"],
           ["Bánya", "`←`, `→`", "egy sor vissza, előre"],
           ["Bánya", "`Home`, `End`", "ugrás a futás elejére, végére"],
-          ["Bánya", "`L`", "lámpafény és teljes térkép váltása"],
+          ["Bánya", "`L`", "váltás a lámpafény és a teljes térkép között"],
           ["Bánya", "`+`, `−`", "gyorsabb, lassabb lejátszás"],
-          ["Játék", "`Ctrl+S`", "a program mentése"],
-          ["Játék", "`Ctrl+O`", "programtár"],
           ["Szerkesztő", "`F8`, `Shift+F8`", "következő, előző hiba"],
-          ["Szerkesztő", "`Ctrl+Shift+M`", "hibalista nyitása, zárása"],
+          ["Szerkesztő", "`Ctrl+Shift+M`", "a hibalista nyitása, zárása"],
           ["Szerkesztő", "`Tab`", "4 szóköz beszúrása"],
           ["Szerkesztő", "`Esc`, majd `Tab`", "kilépés a szerkesztőből"],
           ["Szerkesztő", "`Shift+Alt+F`", "formázás"],
           ["Szerkesztő", "`Ctrl+Szóköz`", "kódkiegészítés"],
-          ["Térkép", "nyilak, `Home`, `End`", "mozgás a cellák között"],
-          ["Térkép", "`Ctrl+Home`, `Ctrl+End`", "ugrás az első vagy az utolsó cellára"],
+          ["Térkép", "nyilak, `Home`, `End`", "mozgás a mezők között"],
+          ["Térkép", "`Ctrl+Home`, `Ctrl+End`", "ugrás az első vagy az utolsó mezőre"],
           ["Térképszerkesztő", "`Enter`, `Szóköz`", "festés a kijelölt mezőre"],
-          ["Térképszerkesztő", "`Delete`, `Backspace`", "mező törlése"],
+          ["Térképszerkesztő", "`Delete`, `Backspace`", "a mező kiürítése"],
           ["Térképszerkesztő", "`1`–`4`", "festőeszköz: üres kamra, arany, fal, robot"],
           ["Térképszerkesztő", "`E`, `T`, `K`", "festésmód: ecset, téglalap, kitöltés"],
           ["Térképszerkesztő", "`R`, `Shift+R`", "a robot forgatása balra, jobbra"],

@@ -1,4 +1,5 @@
 import { InlineText } from "../components/InlineText.tsx";
+import { Notice } from "../components/Notice.tsx";
 import { NumberedHeading } from "../components/NumberedHeading.tsx";
 import type { ManualBlock, ManualSection } from "../i18n/hu-manual.ts";
 import { Bench } from "./Bench.tsx";
@@ -57,6 +58,26 @@ function Block({ block }: { block: ManualBlock }) {
             </li>
           ))}
         </ul>
+      );
+    case "steps":
+      return (
+        <ol className="manual-steps">
+          {block.items.map((item) => (
+            <li key={item}>
+              <InlineText text={item} />
+            </li>
+          ))}
+        </ol>
+      );
+    case "tip":
+      return (
+        <aside className="manual-tip">
+          <Notice tone="info" title={block.title}>
+            <p>
+              <InlineText text={block.text} />
+            </p>
+          </Notice>
+        </aside>
       );
     case "code":
       return block.map ? (

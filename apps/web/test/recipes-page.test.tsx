@@ -93,10 +93,10 @@ describe("kézikönyv", () => {
     renderApp("/manual");
     const chapters = await screen.findByRole("tablist", { name: "Tartalom" });
     const user = userEvent.setup();
-    await user.click(within(chapters).getByRole("tab", { name: /Utasítások/ }));
-    expect(screen.getByRole("heading", { level: 2, name: /Utasítások/ })).toBeTruthy();
+    await user.click(within(chapters).getByRole("tab", { name: /Érzékelés/ }));
+    expect(screen.getByRole("heading", { level: 2, name: /Érzékelés/ })).toBeTruthy();
     expect(screen.getByText("0 arany · 0 lépés")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Lejátszás" }));
-    expect(await screen.findByText("1 arany · 4 lépés", undefined, { timeout: 4000 })).toBeTruthy();
+    expect(await screen.findByText("0 arany · 4 lépés", undefined, { timeout: 4000 })).toBeTruthy();
   });
 });
