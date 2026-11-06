@@ -1,0 +1,15 @@
+.preview {
+  --box: 120px;
+
+  display: grid;
+  place-items: center;
+  width: calc(var(--box) + var(--space-3));
+  height: calc(var(--box) + var(--space-3));
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--px-void);
+}
+
+.preview-art {
+  width: calc(var(--w) * var(--scale));
+  height: calc(var(--h) * var(--scale));
+}
