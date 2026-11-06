@@ -496,3 +496,147 @@ fn diagnostics_of_a_broken_program_are_stable() {
     let src = "set If to 1\n  step forward\nwhile  x\nelse\n\tprint 1\nset a to 1+2 \nprint -5\n";
     insta::assert_json_snapshot!("broken_program_diagnostics", parse(src).diagnostics);
 }
+
+fn positions(src: &str) -> Vec<(DiagCode, u32, u32)> {
+    parse(src)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                diagnostic.code,
+                diagnostic.span.line,
+                diagnostic.span.col_start,
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn class_errors_win_over_grammar_errors_on_the_same_token() {
+    assert_eq!(positions("# x"), vec![(DiagCode::SynInvalidToken, 1, 1)]);
+    assert_eq!(
+        positions("step 101"),
+        vec![(DiagCode::SynNumberRange, 1, 6)]
+    );
+}
+
+#[test]
+fn trailing_spaces_beat_missing_tokens_and_are_reported_once() {
+    assert_eq!(
+        positions("print "),
+        vec![(DiagCode::SynTrailingSpace, 1, 6)]
+    );
+    assert_eq!(
+        positions("print 1   "),
+        vec![(DiagCode::SynTrailingSpace, 1, 8)]
+    );
+}
+
+#[test]
+fn reserved_identifiers_only_in_name_positions() {
+    assert_eq!(
+        positions("set and to 1"),
+        vec![(DiagCode::SynUnexpectedToken, 1, 5)]
+    );
+    assert_eq!(
+        positions("set true to 1"),
+        vec![(DiagCode::SynUnexpectedToken, 1, 5)]
+    );
+    assert_eq!(
+        positions("set And to 1"),
+        vec![(DiagCode::SynReservedIdent, 1, 5)]
+    );
+    assert_eq!(
+        positions("print Not"),
+        vec![(DiagCode::SynReservedIdent, 1, 7)]
+    );
+    assert_eq!(
+        positions("step Forward 1"),
+        vec![(DiagCode::SynUnexpectedToken, 1, 6)]
+    );
+    assert_eq!(positions("If x"), vec![(DiagCode::SynUnknownCommand, 1, 1)]);
+}
+
+#[test]
+fn only_exact_header_keywords_open_blocks() {
+    assert_eq!(
+        positions("WHILE true\n    print 1"),
+        vec![
+            (DiagCode::SynUnknownCommand, 1, 1),
+            (DiagCode::SynUnexpectedIndent, 2, 1)
+        ]
+    );
+}
+
+#[test]
+fn else_without_if_is_the_single_indentation_error_of_its_line() {
+    assert_eq!(
+        positions("else x"),
+        vec![
+            (DiagCode::SynElseWithoutIf, 1, 1),
+            (DiagCode::SynExtraToken, 1, 6)
+        ]
+    );
+    assert_eq!(
+        positions("print 1\n  else"),
+        vec![(DiagCode::SynUnexpectedIndent, 2, 1)]
+    );
+    assert_eq!(
+        positions("if a\n    print 1\n    else"),
+        vec![(DiagCode::SynElseWithoutIf, 3, 5)]
+    );
+}
+
+#[test]
+fn columns_follow_the_documented_anchors() {
+    assert_eq!(positions("print 1\r"), vec![(DiagCode::SynLoneCr, 1, 8)]);
+    assert_eq!(positions("print\t1"), vec![(DiagCode::SynTab, 1, 6)]);
+    assert_eq!(
+        positions("print 1  + 2"),
+        vec![(DiagCode::SynDoubleSpace, 1, 9)]
+    );
+    assert_eq!(
+        positions("print 1\n   \nprint 2"),
+        vec![(DiagCode::SynEmptyLine, 2, 1)]
+    );
+    assert_eq!(
+        positions("ő 1\nprint  1"),
+        vec![
+            (DiagCode::SynInvalidIdent, 1, 1),
+            (DiagCode::SynDoubleSpace, 2, 7)
+        ]
+    );
+    assert_eq!(positions("ő😀\tx"), vec![(DiagCode::SynTab, 1, 4)]);
+}
+
+#[test]
+fn unicode_alphabetic_or_underscore_starts_an_invalid_identifier() {
+    assert_eq!(positions("print ŉx")[0].0, DiagCode::SynInvalidIdent);
+    assert_eq!(positions("print _")[0].0, DiagCode::SynInvalidIdent);
+    assert_eq!(positions("print ٣")[0].0, DiagCode::SynInvalidToken);
+}
+
+#[test]
+fn line_splitting_follows_d2_exactly() {
+    assert_eq!(
+        positions("print 1\r\r\nprint 2"),
+        vec![(DiagCode::SynLoneCr, 1, 8)]
+    );
+    assert_eq!(
+        positions("\n\n"),
+        vec![
+            (DiagCode::SynEmptyLine, 1, 1),
+            (DiagCode::SynEmptyLine, 2, 1)
+        ]
+    );
+    assert_eq!(
+        positions("print 1\n\n"),
+        vec![(DiagCode::SynEmptyLine, 2, 1)]
+    );
+    assert_eq!(program("\u{feff}"), Program::default());
+    assert_eq!(
+        positions("print \0"),
+        vec![(DiagCode::SynInvalidToken, 1, 7)]
+    );
+    assert_eq!(positions("\0"), vec![(DiagCode::SynInvalidToken, 1, 1)]);
+}
