@@ -28,7 +28,7 @@ function status(code: number, headers: Record<string, string> = {}): Response {
 describe("újrapróbáló kérés", () => {
   test("újrainduló szervernél a GET kivárja, amíg ismét válaszol", async () => {
     const base = sequence(new TypeError("offline"), status(502), status(503), status(200));
-    const wait = vi.fn(async () => undefined);
+    const wait = vi.fn(async (_ms: number) => undefined);
     const response = await createResilientFetch({ base, wait, delays: DELAYS })("/api/maps/1");
     expect(response.status).toBe(200);
     expect(base).toHaveBeenCalledTimes(4);
