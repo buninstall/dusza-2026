@@ -9,6 +9,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DATABASE_URL: mysql://minescript:minescript@127.0.0.1:3306/minescript
+  TEST_DATABASE_URL: mysql://root:minescript@127.0.0.1:3306
+
 jobs:
   rust:
     runs-on: ubuntu-latest
@@ -23,6 +27,22 @@ jobs:
 
   web:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:9.7
+        env:
+          MYSQL_ROOT_PASSWORD: minescript
+          MYSQL_DATABASE: minescript
+          MYSQL_USER: minescript
+          MYSQL_PASSWORD: minescript
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --host=127.0.0.1 --user=root --password=minescript --silent"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+          --health-start-period 30s
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -35,6 +55,22 @@ jobs:
   e2e:
     needs: web
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:9.7
+        env:
+          MYSQL_ROOT_PASSWORD: minescript
+          MYSQL_DATABASE: minescript
+          MYSQL_USER: minescript
+          MYSQL_PASSWORD: minescript
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --host=127.0.0.1 --user=root --password=minescript --silent"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+          --health-start-period 30s
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -62,6 +98,22 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [rust, web]
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:9.7
+        env:
+          MYSQL_ROOT_PASSWORD: minescript
+          MYSQL_DATABASE: minescript
+          MYSQL_USER: minescript
+          MYSQL_PASSWORD: minescript
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --host=127.0.0.1 --user=root --password=minescript --silent"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+          --health-start-period 30s
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
