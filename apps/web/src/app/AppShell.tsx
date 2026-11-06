@@ -30,7 +30,7 @@ export function useIsInShell(): boolean {
   return useContext(ShellContext);
 }
 
-function navItems(user: SessionUser): NavItem[] {
+function navItems(user: Pick<SessionUser, "role">): NavItem[] {
   const items: NavItem[] = [
     {
       to: "/maps",
@@ -56,13 +56,15 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const layout = useShellLayout();
   const navRef = useRef<HTMLUListElement>(null);
+  const role = user.role;
   useEffect(() => {
     const list = navRef.current;
-    const current = list?.querySelector<HTMLElement>('[data-current="true"]');
-    if (list && current && list.scrollWidth > list.clientWidth) {
+    const index = navItems({ role }).findIndex((item) => item.section.test(pathname));
+    const current = list?.children.item(index);
+    if (list && current instanceof HTMLElement && list.scrollWidth > list.clientWidth) {
       list.scrollTo({ left: current.offsetLeft - list.offsetLeft - NAV_PEEK_PX });
     }
-  }, [pathname]);
+  }, [pathname, role]);
   return (
     <div className="shell" data-layout={layout}>
       <header className="shell-header">
