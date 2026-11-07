@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Loading } from "../../../app/StatusScreens.tsx";
 import { LoadFailed } from "../../../components/LoadFailed.tsx";
 import { Notice } from "../../../components/Notice.tsx";
+import { withEngine } from "../../../engine/EngineProvider.tsx";
 import { useEngine } from "../../../engine/useEngine.ts";
 import { hu } from "../../../i18n/hu.ts";
 import { orNotFound, routeId } from "../../../lib/route-ids.ts";
@@ -32,5 +33,5 @@ export const Route = createFileRoute("/_app/runs/$runId")({
   staticData: { layout: "cab" },
   loader: ({ context, params }) =>
     orNotFound(context.queryClient.ensureQueryData(runDetailQuery(routeId(params.runId)))),
-  component: ReplayRoute,
+  component: withEngine(ReplayRoute),
 });

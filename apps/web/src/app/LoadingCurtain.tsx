@@ -7,7 +7,7 @@ import { useReadyHolds } from "./readiness.ts";
 import "./LoadingCurtain.css";
 
 const SHOW_DELAY_MS = 220;
-const SETTLE_MS = 120;
+const SETTLE_MS = 40;
 const MAX_WAIT_MS = 8000;
 const FADE_MS = 240;
 const ENTRY_PATHS = new Set(["/login", "/register"]);

@@ -5,9 +5,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Loading, NotFound, RouteError } from "./app/StatusScreens.tsx";
 import { sessionQuery } from "./auth/session.ts";
+import { preloadEngine } from "./engine/EngineProvider.tsx";
 import { applyCursor, initialCursor } from "./lib/cursor.ts";
 import { clearPersistedQueries, createQueryClient, persistQueries } from "./lib/query.ts";
 import { applyTheme } from "./lib/theme.ts";
+import { startPixelClock } from "./pixel/pixel-clock.ts";
 import { routeTree } from "./routeTree.gen.ts";
 
 const PENDING_MS = 300;
@@ -42,6 +44,7 @@ declare module "@tanstack/react-router" {
 }
 
 applyTheme();
+startPixelClock();
 persistQueries(queryClient);
 applyCursor(initialCursor());
 
@@ -55,3 +58,6 @@ if (container) {
     </StrictMode>,
   );
 }
+
+const idle = window.requestIdleCallback ?? ((run: () => void) => window.setTimeout(run, 400));
+idle(() => preloadEngine());

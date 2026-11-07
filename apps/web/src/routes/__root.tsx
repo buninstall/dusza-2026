@@ -4,7 +4,6 @@ import { I18nProvider } from "react-aria-components";
 import { LoadingCurtain } from "../app/LoadingCurtain.tsx";
 import { RouteFocus } from "../app/RouteFocus.tsx";
 import { Toasts } from "../components/ui/Toast.tsx";
-import { EngineProvider } from "../engine/EngineProvider.tsx";
 import { hu } from "../i18n/hu.ts";
 import { SpriteSheet } from "../pixel/SpriteSheet.tsx";
 
@@ -17,9 +16,7 @@ function RootLayout() {
         {hu.app.skipToContent}
       </a>
       <SpriteSheet />
-      <EngineProvider>
-        <Outlet />
-      </EngineProvider>
+      <Outlet />
       <Toasts />
       <RouteFocus />
       <LoadingCurtain />

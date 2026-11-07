@@ -1,6 +1,16 @@
 import { createEngine, type Engine } from "@minescript/engine";
 import wasmUrl from "@minescript/engine/wasm?url";
-import { Component, createContext, type ReactNode, Suspense, use, useEffect } from "react";
+import {
+  Component,
+  type ComponentType,
+  createContext,
+  type ReactNode,
+  Suspense,
+  use,
+  useEffect,
+  useLayoutEffect,
+} from "react";
+import { holdReady } from "../app/readiness.ts";
 import { EngineLoading } from "../app/StatusScreens.tsx";
 import { Notice } from "../components/Notice.tsx";
 import { toast } from "../components/ui/Toast.tsx";
@@ -14,6 +24,7 @@ export const EngineContext = createContext<Engine | null>(null);
 type LoadedEngine = ReturnType<typeof resilientEngine>;
 
 let enginePromise: Promise<LoadedEngine> | null = null;
+let isEngineReady = false;
 
 async function compile(): Promise<WebAssembly.Module> {
   const response = await fetch(wasmUrl);
@@ -24,9 +35,11 @@ async function compile(): Promise<WebAssembly.Module> {
 }
 
 export function loadEngine(): Promise<LoadedEngine> {
-  enginePromise ??= compile().then((module) =>
-    resilientEngine(createEngine(module), () => freshEngine(module)),
-  );
+  enginePromise ??= compile().then((module) => {
+    const loaded = resilientEngine(createEngine(module), () => freshEngine(module));
+    isEngineReady = true;
+    return loaded;
+  });
   return enginePromise;
 }
 
@@ -57,7 +70,17 @@ class EngineErrorBoundary extends Component<{ children: ReactNode }, BoundarySta
   }
 }
 
+export function preloadEngine(): void {
+  loadEngine().catch(() => undefined);
+}
+
 export function EngineProvider({ children }: { children: ReactNode }) {
+  useLayoutEffect(() => {
+    if (isEngineReady) return;
+    const release = holdReady();
+    loadEngine().then(release, release);
+    return release;
+  }, []);
   return (
     <EngineErrorBoundary>
       <Suspense fallback={<EngineLoading />}>
@@ -65,4 +88,15 @@ export function EngineProvider({ children }: { children: ReactNode }) {
       </Suspense>
     </EngineErrorBoundary>
   );
+}
+
+export function withEngine<P extends object>(Page: ComponentType<P>): (props: P) => ReactNode {
+  function EnginePage(props: P) {
+    return (
+      <EngineProvider>
+        <Page {...props} />
+      </EngineProvider>
+    );
+  }
+  return EnginePage;
 }

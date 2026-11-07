@@ -397,12 +397,12 @@
   --ahead-y: 0;
 }
 
-.board-robot[data-idle="true"] .board-robot-beam {
-  animation: robot-beam var(--motion-idle) var(--ease-snap) infinite;
+:root[data-beam="dim"] .board-robot[data-idle="true"] .board-robot-beam {
+  opacity: 0.4;
 }
 
-.board-robot[data-idle="true"] .board-robot-visor {
-  animation: px-lamp-idle var(--motion-idle) var(--ease-snap) infinite;
+:root[data-lamp="off"] .board-robot[data-idle="true"] .board-robot-visor {
+  opacity: 0;
 }
 
 .board-grid[data-editable="true"] .board-tile-art {
@@ -470,18 +470,6 @@
 @keyframes robot-bump {
   50% {
     translate: calc(var(--ahead-x) * var(--tile) * 0.3) calc(var(--ahead-y) * var(--tile) * 0.3);
-  }
-}
-
-@keyframes robot-beam {
-  0%,
-  96% {
-    opacity: 1;
-  }
-
-  97%,
-  98% {
-    opacity: 0.4;
   }
 }
 

@@ -68,6 +68,8 @@ export function runScene(options: SceneOptions): () => void {
     : null;
   let time = 0;
   let wheelAngle = 0;
+  let frameNo = 0;
+  let lastLights: Light[] = [];
 
   const onHit = (v: Vein, level: Level) => {
     mineVein(world, v);
@@ -416,7 +418,10 @@ export function runScene(options: SceneOptions): () => void {
   };
 
   const render = () => {
-    view.render(lights());
+    frameNo += 1;
+    const canRelight = (frameNo & 1) === 0;
+    if (canRelight || lastLights.length === 0) lastLights = lights();
+    view.render(lastLights, canRelight);
     const { ctx } = view;
     drawScenery();
     drawRobot(

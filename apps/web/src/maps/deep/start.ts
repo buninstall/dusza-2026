@@ -11,6 +11,7 @@ const MIN_WIDTH = 40;
 export type DeepHost = {
   root: HTMLElement;
   canvas: HTMLCanvasElement;
+  mid: HTMLCanvasElement;
   front: HTMLCanvasElement | null;
   paletteSource: Element;
   isStatic: boolean;
@@ -80,7 +81,7 @@ export function startDeepScene(host: DeepHost): (() => void) | null {
     palette: readDeepPalette(host.paletteSource),
     digId: host.digId,
   });
-  const view = createView(host.canvas, host.front, mine.world, scale, window.innerHeight);
+  const view = createView(host.canvas, host.mid, host.front, mine.world, scale, window.innerHeight);
   const header = document.querySelector("header");
   const roofY = header
     ? Math.ceil((header.getBoundingClientRect().bottom + window.scrollY) / scale)

@@ -47,6 +47,7 @@ function levelIndex(root: HTMLElement, target: EventTarget | null): number | nul
 export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const midRef = useRef<HTMLCanvasElement>(null);
   const frontRef = useRef<HTMLCanvasElement>(null);
   const targetRef = useRef<number | null>(null);
   const digRef = useRef<number | null>(null);
@@ -82,8 +83,9 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
   useLayoutEffect(() => {
     const root = rootRef.current;
     const canvas = canvasRef.current;
+    const mid = midRef.current;
     const wrap = wrapRef.current;
-    if (!root || !canvas || !wrap || layoutKey.length === 0) return;
+    if (!root || !canvas || !mid || !wrap || layoutKey.length === 0) return;
     let stop: () => void = () => undefined;
     let timer = 0;
     let lastBuild = 0;
@@ -100,6 +102,7 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
       const next = startDeepScene({
         root,
         canvas,
+        mid,
         front: frontRef.current,
         paletteSource: wrap,
         isStatic,
@@ -123,15 +126,34 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
       if (wait <= 0) start();
       else timer = window.setTimeout(start, wait);
     };
+    let frame = 0;
+    const onContent = () => {
+      if (frame || shape() === signature) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (shape() !== signature) start();
+      });
+    };
+    const isResize = () => window.innerWidth !== lastWidth;
+    let lastWidth = window.innerWidth;
+    const onLayout = () => {
+      if (isResize()) {
+        lastWidth = window.innerWidth;
+        onResize();
+      } else {
+        onContent();
+      }
+    };
     start();
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onResize);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onLayout);
     observer?.observe(root);
-    const mutations = new MutationObserver(onResize);
+    const mutations = new MutationObserver(onContent);
     mutations.observe(root, { childList: true, subtree: true });
     window.addEventListener("resize", onResize);
     return () => {
       observer?.disconnect();
       mutations.disconnect();
+      cancelAnimationFrame(frame);
       window.removeEventListener("resize", onResize);
       window.clearTimeout(timer);
       stop();
@@ -142,6 +164,7 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
     <>
       <div ref={wrapRef} className="deep" data-theme="tarna" aria-hidden="true">
         <canvas ref={canvasRef} className="deep-canvas" />
+        <canvas ref={midRef} className="deep-canvas" />
       </div>
       <div className="deep deep-front" aria-hidden="true">
         <canvas ref={frontRef} className="deep-canvas" />

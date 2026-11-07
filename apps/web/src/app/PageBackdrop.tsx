@@ -19,15 +19,17 @@ function contentBox(main: HTMLElement): { x0: number; x1: number } {
 export function PageBackdrop({ routeKey, isCalm }: { routeKey: string; isCalm: boolean }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const midRef = useRef<HTMLCanvasElement>(null);
   const frontRef = useRef<HTMLCanvasElement>(null);
   const isStatic = usePrefersReducedMotion();
 
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
     const canvas = canvasRef.current;
+    const mid = midRef.current;
     const main = document.getElementById("main");
     const header = document.querySelector(".shell-header");
-    if (!wrap || !canvas || !main || !header || routeKey.length === 0) return;
+    if (!wrap || !canvas || !mid || !main || !header || routeKey.length === 0) return;
     let stop: () => void = () => undefined;
     let timer = 0;
     let lastBuild = 0;
@@ -42,6 +44,7 @@ export function PageBackdrop({ routeKey, isCalm }: { routeKey: string; isCalm: b
       stop =
         startWall({
           canvas,
+          mid,
           front: frontRef.current,
           paletteSource: wrap,
           roofY: header.getBoundingClientRect().bottom + window.scrollY,
@@ -73,6 +76,7 @@ export function PageBackdrop({ routeKey, isCalm }: { routeKey: string; isCalm: b
     <>
       <div ref={wrapRef} className="deep deep-page" data-theme="tarna" aria-hidden="true">
         <canvas ref={canvasRef} className="deep-canvas" />
+        <canvas ref={midRef} className="deep-canvas" />
       </div>
       <div className="deep deep-front" aria-hidden="true">
         <canvas ref={frontRef} className="deep-canvas" />

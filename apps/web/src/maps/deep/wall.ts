@@ -31,6 +31,7 @@ const SPIDER_ART = [".k.k.", "kkkkk", ".kek.", "k.k.k"];
 
 export type WallHost = {
   canvas: HTMLCanvasElement;
+  mid: HTMLCanvasElement;
   front: HTMLCanvasElement | null;
   paletteSource: Element;
   roofY: number;
@@ -176,7 +177,15 @@ export function startWall(host: WallHost): (() => void) | null {
   const palette = readDeepPalette(host.paletteSource);
   const safe = { x0: Math.floor(host.safe.x0 / scale), x1: Math.ceil(host.safe.x1 / scale) };
   const { world, lamps, spiders } = buildWall(W, H, roof, safe, palette);
-  const view = createView(host.canvas, host.front, world, scale, window.innerHeight, WALL_AMBIENT);
+  const view = createView(
+    host.canvas,
+    host.mid,
+    host.front,
+    world,
+    scale,
+    window.innerHeight,
+    WALL_AMBIENT,
+  );
   if (!view) return null;
   view.bake(staticLights(world, lamps));
   const sprites = createSprites(world);
@@ -245,9 +254,15 @@ export function startWall(host: WallHost): (() => void) | null {
       sim(STEP);
       acc -= STEP;
     }
-    render();
+    frame += 1;
+    if ((frame & 1) === 0 || window.scrollY !== lastScroll) {
+      lastScroll = window.scrollY;
+      render();
+    }
     handle = requestAnimationFrame(loop);
   };
+  let frame = 0;
+  let lastScroll = -1;
   handle = requestAnimationFrame(loop);
   return () => cancelAnimationFrame(handle);
 }

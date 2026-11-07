@@ -6,6 +6,7 @@ import {
   lightBounds,
   type Region,
   resetBuffer,
+  type SolidGrid,
   sample,
   shadeRegion,
 } from "./lightmap.ts";
@@ -21,7 +22,7 @@ export type View = {
   isVisible: (y: number, pad: number) => boolean;
   bake: (lights: readonly Light[]) => void;
   refresh: (region: Region) => void;
-  render: (lights: readonly Light[]) => void;
+  render: (lights: readonly Light[], canRelight?: boolean) => void;
 };
 
 const AMBIENT = [0.44, 0.3, 1, 0.45, 0.36, 0.5, 0.5];
@@ -63,8 +64,25 @@ function merge(regions: readonly Region[]): Region[] {
   return list;
 }
 
+function signature(lights: readonly Light[]): string {
+  let out = "";
+  for (const l of lights) {
+    const cone = l.cone ? `${Math.round(l.cone.dx * 20)},${Math.round(l.cone.dy * 20)}` : "";
+    out += `${Math.round(l.x)},${Math.round(l.y)},${Math.round(l.intensity * 24)},${cone};`;
+  }
+  return out;
+}
+
+function sizeLayer(layer: HTMLCanvasElement, W: number, H: number, scale: number): void {
+  layer.width = W;
+  layer.height = H;
+  layer.style.width = `${W * scale}px`;
+  layer.style.height = `${H * scale}px`;
+}
+
 export function createView(
   canvas: HTMLCanvasElement,
+  spriteCanvas: HTMLCanvasElement,
   frontCanvas: HTMLCanvasElement | null,
   world: World,
   scale: number,
@@ -74,36 +92,44 @@ export function createView(
   const { W } = world;
   const pad = Math.ceil((viewHeight / scale) * PAD_RATIO);
   const H = Math.min(world.H, Math.ceil(viewHeight / scale) + pad * 2 + 2);
-  const ctx = canvas.getContext("2d");
+  const main = canvas.getContext("2d");
+  const ctx = spriteCanvas.getContext("2d");
   const base = document.createElement("canvas");
   base.width = W;
   base.height = world.H;
   const baseCtx = base.getContext("2d");
-  if (!ctx || !baseCtx) return null;
-  canvas.width = W;
-  canvas.height = H;
-  canvas.style.width = `${W * scale}px`;
-  canvas.style.height = `${H * scale}px`;
+  if (!main || !ctx || !baseCtx) return null;
+  sizeLayer(canvas, W, H, scale);
+  sizeLayer(spriteCanvas, W, H, scale);
+  main.imageSmoothingEnabled = false;
   ctx.imageSmoothingEnabled = false;
   const front = frontCanvas?.getContext("2d") ?? null;
   if (frontCanvas && front) {
-    frontCanvas.width = W;
-    frontCanvas.height = H;
-    frontCanvas.style.width = `${W * scale}px`;
-    frontCanvas.style.height = `${H * scale}px`;
+    sizeLayer(frontCanvas, W, H, scale);
     front.imageSmoothingEnabled = false;
   }
-  const frame = ctx.createImageData(W, H);
+  const layers = [canvas, spriteCanvas, frontCanvas].filter(
+    (layer): layer is HTMLCanvasElement => layer !== null,
+  );
+  const frame = main.createImageData(W, H);
   const statics = createBuffer(Math.ceil(W / 2 + 1) * Math.ceil(world.H / 2 + 1));
   resetBuffer(statics, { x: 0, y: 0, w: W, h: world.H });
   const capacity = Math.ceil(W / 2 + 1) * Math.ceil(H / 2 + 1);
   const pool: LightBuffer[] = Array.from({ length: POOL }, () => createBuffer(capacity));
   let active: LightBuffer[] = [];
   let camY = 0;
-  const isSolid = (x: number, y: number) => {
-    const m = world.maskAt(x, y);
-    return m === ROCK || m === PANEL || m === TIMBER;
+  let shownCam = -1;
+  let lastSignature = "";
+  let isDirty = true;
+  let lastRegions: Region[] = [];
+  const grid: SolidGrid = { W, H: world.H, cells: new Uint8Array(W * world.H) };
+  const syncGrid = (y0: number, y1: number) => {
+    for (let i = Math.max(0, y0) * W; i < Math.min(world.H, y1) * W; i += 1) {
+      const m = world.mask[i];
+      grid.cells[i] = m === ROCK || m === PANEL || m === TIMBER ? 1 : 0;
+    }
   };
+  syncGrid(0, world.H);
   const paintBase = (region: Region) => {
     const image = baseCtx.createImageData(region.w, region.h);
     shadeRegion(world, ambient, statics, null, region, {
@@ -129,24 +155,44 @@ export function createView(
     },
     isVisible: (y, margin) => y >= camY - margin && y <= camY + H + margin,
     bake: (lights) => {
+      syncGrid(0, world.H);
       statics.data.fill(0);
-      for (const light of lights) addLight(statics, light, isSolid, PENETRATION);
+      for (const light of lights) addLight(statics, light, grid, PENETRATION);
       paintBase({ x: 0, y: 0, w: W, h: world.H });
+      isDirty = true;
     },
     refresh: (region) => {
       const r = clip(region, W, 0, world.H);
-      if (r) paintBase(r);
+      if (r) {
+        syncGrid(r.y, r.y + r.h);
+        paintBase(r);
+      }
+      isDirty = true;
     },
-    render: (lights) => {
+    render: (lights, canRelight = true) => {
       const scroll = window.scrollY;
       camY = Math.max(0, Math.min(world.H - H, Math.floor(scroll / scale) - pad));
       view.camY = camY;
-      canvas.style.transform = `translate3d(0, ${camY * scale}px, 0)`;
-      if (frontCanvas && front) {
-        frontCanvas.style.transform = canvas.style.transform;
-        front.clearRect(0, 0, W, H);
+      ctx.clearRect(0, 0, W, H);
+      front?.clearRect(0, 0, W, H);
+      const isMoved = camY !== shownCam;
+      if (isMoved) {
+        const transform = `translate3d(0, ${camY * scale}px, 0)`;
+        for (const layer of layers) layer.style.transform = transform;
       }
-      ctx.drawImage(base, 0, camY, W, H, 0, 0, W, H);
+      if (!isMoved && !isDirty && !canRelight) return;
+      const sig = signature(lights);
+      if (!isMoved && !isDirty && sig === lastSignature) return;
+      const isFull = isMoved || isDirty;
+      shownCam = camY;
+      lastSignature = sig;
+      isDirty = false;
+      if (isFull) {
+        main.drawImage(base, 0, camY, W, H, 0, 0, W, H);
+      } else {
+        for (const r of lastRegions)
+          main.drawImage(base, r.x, r.y, r.w, r.h, r.x, r.y - camY, r.w, r.h);
+      }
       const bounds = lights.map((light) => ({ light, box: lightBounds(light) }));
       const regions = merge(
         bounds.flatMap(({ box }) => {
@@ -155,11 +201,12 @@ export function createView(
         }),
       );
       active = [];
-      regions.slice(0, POOL).forEach((region, index) => {
+      lastRegions = regions.slice(0, POOL);
+      lastRegions.forEach((region, index) => {
         const buffer = pool[index];
         if (!buffer || !resetBuffer(buffer, region)) return;
         for (const { light, box } of bounds) {
-          if (overlaps(box, region)) addLight(buffer, light, isSolid, PENETRATION);
+          if (overlaps(box, region)) addLight(buffer, light, grid, PENETRATION);
         }
         active.push(buffer);
         shadeRegion(world, ambient, statics, buffer, region, {
@@ -168,7 +215,7 @@ export function createView(
           offsetX: 0,
           offsetY: camY,
         });
-        ctx.putImageData(frame, 0, 0, region.x, region.y - camY, region.w, region.h);
+        main.putImageData(frame, 0, 0, region.x, region.y - camY, region.w, region.h);
       });
     },
   };

@@ -162,7 +162,7 @@
 
 .manual-recipes:hover .px-glint,
 .manual-recipes[data-focus-visible] .px-glint {
-  animation-delay: calc(var(--motion-glint) * -0.72);
+  animation: px-glint-once var(--motion-flash) var(--ease-snap) 1;
 }
 
 .manual-tour {

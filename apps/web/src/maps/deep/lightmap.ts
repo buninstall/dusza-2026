@@ -8,6 +8,8 @@ const LEVELS = 5;
 const MAX_LEVEL = 1.35;
 const BASE = [6, 5, 4] as const;
 
+export type SolidGrid = { W: number; H: number; cells: Uint8Array };
+
 export type LightBuffer = { bx: number; by: number; bw: number; bh: number; data: Float32Array };
 export type Region = { x: number; y: number; w: number; h: number };
 
@@ -51,7 +53,7 @@ function isBlocked(
   ly: number,
   x: number,
   y: number,
-  isSolid: (x: number, y: number) => boolean,
+  grid: SolidGrid,
   penetration: number,
 ): boolean {
   const dx = x - lx;
@@ -60,9 +62,16 @@ function isBlocked(
   if (steps < 2) return false;
   const sx = dx / steps;
   const sy = dy / steps;
+  const { W, H, cells } = grid;
   let inside = 0;
+  let px = lx;
+  let py = ly;
   for (let i = 1; i < steps; i += 1) {
-    if (isSolid(Math.floor(lx + sx * i), Math.floor(ly + sy * i))) {
+    px += sx;
+    py += sy;
+    const cx = px | 0;
+    const cy = py | 0;
+    if (cx < 0 || cy < 0 || cx >= W || cy >= H || cells[cy * W + cx] === 1) {
       inside += RAY_STEP;
       if (inside > penetration) return true;
     }
@@ -102,7 +111,7 @@ export function lightBounds(light: Light): Region {
 export function addLight(
   buffer: LightBuffer,
   source: Light,
-  isSolid: (x: number, y: number) => boolean,
+  grid: SolidGrid,
   penetration: number,
 ): void {
   const r = source.radius;
@@ -122,7 +131,7 @@ export function addLight(
       if (d2 > r * r) continue;
       const f = strength(source, dx, dy, Math.sqrt(d2) + 0.0001);
       if (f < MIN_CONTRIBUTION) continue;
-      if (source.hasShadow !== false && isBlocked(source.x, source.y, x, y, isSolid, penetration))
+      if (source.hasShadow !== false && isBlocked(source.x, source.y, x, y, grid, penetration))
         continue;
       const k = ((by - buffer.by) * buffer.bw + (bx - buffer.bx)) * 3;
       data[k] = (data[k] ?? 0) + f * cr;

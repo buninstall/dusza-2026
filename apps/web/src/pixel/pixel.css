@@ -28,23 +28,16 @@
   display: inline-flex;
 }
 
-.px-glint {
-  animation: px-glint var(--motion-glint) var(--ease-snap) infinite;
+:root[data-glint="off"] .px-glint {
+  opacity: 0;
 }
 
-@keyframes px-glint {
-  0%,
-  70% {
-    opacity: 1;
-  }
-
-  71%,
-  85% {
+@keyframes px-glint-once {
+  from {
     opacity: 0;
   }
 
-  86%,
-  100% {
+  to {
     opacity: 1;
   }
 }
@@ -123,8 +116,8 @@
   height: calc(10 * var(--logo-unit));
 }
 
-.px-lamp-idle {
-  animation: px-lamp-idle var(--motion-idle) var(--ease-snap) infinite;
+:root[data-lamp="off"] .px-lamp-idle {
+  opacity: 0;
 }
 
 .px-lamp-broken {
@@ -133,33 +126,6 @@
 
 .px-lamp-pulse {
   animation: px-lamp-pulse var(--motion-blink) var(--ease-snap) infinite;
-}
-
-@keyframes px-lamp-idle {
-  0%,
-  80% {
-    opacity: 1;
-  }
-
-  80.5%,
-  82% {
-    opacity: 0;
-  }
-
-  82.5%,
-  84% {
-    opacity: 1;
-  }
-
-  84.5%,
-  86% {
-    opacity: 0;
-  }
-
-  86.5%,
-  100% {
-    opacity: 1;
-  }
 }
 
 @keyframes px-lamp-broken {
