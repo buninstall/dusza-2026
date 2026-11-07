@@ -504,6 +504,17 @@ export function runScene(options: SceneOptions): () => void {
     };
   }
 
+  const onPointer = (event: PointerEvent) => {
+    const rect = view.ctx.canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+    bats.scare(
+      ((event.clientX - rect.left) * view.W) / rect.width,
+      view.camY + ((event.clientY - rect.top) * view.H) / rect.height,
+    );
+  };
+  window.addEventListener("pointermove", onPointer, { passive: true });
+  window.addEventListener("pointerdown", onPointer, { passive: true });
+
   let handle = 0;
   let last = performance.now();
   let acc = 0;
@@ -518,5 +529,9 @@ export function runScene(options: SceneOptions): () => void {
     handle = requestAnimationFrame(loop);
   };
   handle = requestAnimationFrame(loop);
-  return () => cancelAnimationFrame(handle);
+  return () => {
+    window.removeEventListener("pointermove", onPointer);
+    window.removeEventListener("pointerdown", onPointer);
+    cancelAnimationFrame(handle);
+  };
 }
