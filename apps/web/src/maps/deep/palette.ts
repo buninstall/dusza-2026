@@ -72,6 +72,13 @@ const DEEP_TONES = [
   "crystal-hi",
   "star",
   "star-dim",
+  "rust",
+  "rust-hi",
+  "rust-lo",
+  "iron",
+  "iron-hi",
+  "iron-lo",
+  "iron-dk",
 ];
 
 const PX_TONES = [

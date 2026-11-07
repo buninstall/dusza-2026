@@ -76,11 +76,7 @@
   place-items: center;
   width: 8.5rem;
   height: 8.5rem;
-  border: var(--border-thin) solid var(--deep-shade);
-  background: var(--c-screen);
-  box-shadow:
-    inset var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow),
-    calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--deep-stratum-2-c);
+  background: transparent;
 }
 
 .lv-body {
@@ -165,11 +161,7 @@
   width: 8.5rem;
   height: 8.5rem;
   overflow: hidden;
-  border: var(--border-thin) solid var(--deep-shade);
-  background: var(--c-screen);
-  box-shadow:
-    inset var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow),
-    calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--deep-stratum-2-c);
+  background: transparent;
 }
 
 .daily-body {
@@ -223,13 +215,21 @@
   filter: drop-shadow(var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow));
 }
 
-.maps-panel .btn {
-  --btn-bg: var(--deep-stratum-2-b);
-  --btn-bg-hover: var(--deep-stratum-2-c);
-  --btn-edge: var(--deep-shade);
-  --btn-hi: var(--deep-stratum-2-c);
-  --btn-lo: var(--deep-stratum-2-a);
+.maps-page .btn {
+  --btn-bg: var(--deep-iron);
+  --btn-bg-hover: var(--deep-iron-hi);
+  --btn-edge: var(--deep-iron-dk);
+  --btn-hi: var(--deep-iron-hi);
+  --btn-lo: var(--deep-iron-dk);
   --btn-drop: 0px;
+  --btn-rust: var(--rust-pattern);
+  --btn-rust-size: 36px;
+
+  padding-inline: calc(var(--space-4) + 12px);
+  background-color: var(--btn-bg);
+  background-image: var(--btn-rust);
+  background-size: var(--btn-rust-size) var(--btn-rust-size);
+  image-rendering: pixelated;
 
   clip-path: polygon(
     0 4px,
@@ -248,22 +248,50 @@
   );
 }
 
-.maps-panel .btn[data-variant="primary"] {
+.maps-page .btn[data-hovered] {
+  background-color: var(--btn-bg-hover);
+  background-image: var(--btn-rust);
+}
+
+.maps-page .btn::before,
+.maps-page .btn::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  background: var(--btn-hi);
+  box-shadow: 2px 2px 0 var(--btn-lo);
+}
+
+.maps-page .btn::before {
+  left: 6px;
+}
+
+.maps-page .btn::after {
+  right: 8px;
+}
+
+.maps-page .btn[data-variant="primary"] {
   --btn-bg: var(--c-accent);
   --btn-bg-hover: var(--c-accent-hover);
   --btn-edge: var(--c-on-accent);
   --btn-hi: var(--px-ore-hi);
   --btn-lo: var(--px-ore-lo);
+  --btn-rust: var(--rust-chip-pattern);
+  --btn-rust-size: 42px;
 }
 
-.maps-panel .btn[data-variant="ghost"] {
+.maps-page .btn[data-variant="ghost"] {
+  --btn-rust: none;
+
   --btn-bg: transparent;
   --btn-edge: transparent;
   --btn-hi: transparent;
   --btn-lo: transparent;
 }
 
-.maps-panel .btn:nth-child(2) {
+.maps-page .btn:nth-child(2) {
   translate: 0 calc(var(--border-thin) * -1);
   clip-path: polygon(
     0 2px,
@@ -278,7 +306,7 @@
   );
 }
 
-.maps-panel .btn:nth-child(3) {
+.maps-page .btn:nth-child(3) {
   translate: 0 var(--border-thin);
   clip-path: polygon(
     4px 0,
@@ -293,7 +321,7 @@
   );
 }
 
-.maps-panel .btn[data-focus-visible] {
+.maps-page .btn[data-focus-visible] {
   clip-path: none;
 }
 
@@ -367,4 +395,21 @@
 .lv-tile:hover .lv-title,
 .lv-tile:focus-within .lv-title {
   color: var(--c-reward);
+}
+
+.maps-plate.plate {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+}
+
+.maps-plate.plate::before,
+.maps-plate.plate::after,
+.maps-plate .plate-rivets {
+  display: none;
+}
+
+.maps-plate .plate-detail {
+  color: var(--c-text);
 }

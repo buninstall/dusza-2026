@@ -3,10 +3,17 @@ import { buildMine, type LevelInput } from "../src/maps/deep/build.ts";
 import { NICHE, OPEN, PANEL, SKY } from "../src/maps/deep/world.ts";
 
 const W = 300;
+const PALETTE = Object.fromEntries([
+  ["shaft", "#100c0a"],
+  ["shaft-hi", "#17120e"],
+  ["shade", "#0e0b09"],
+  ...[0, 1, 2, 3, 4].flatMap((k) => ["a", "b", "c"].map((v) => [`cavity-${k}-${v}`, "#3b3024"])),
+]);
 
 function levels(count: number): LevelInput[] {
   return Array.from({ length: count }, (_, i) => ({
     box: { x: 80, y: 120 + i * 100, w: 160, h: 50 },
+    pit: { x: 84, y: 124 + i * 100, w: 30, h: 30 },
     stars: [3, 1, -1][i % 3] ?? -1,
     isDaily: false,
     index: i,
@@ -23,7 +30,7 @@ function mine(count: number, digId: number | null = null) {
     plate: { x: 80, y: 40, w: 160, h: 30 },
     front: { x: 80, y: 120 + count * 100, w: 160, h: 40 },
     levels: list,
-    palette: {},
+    palette: PALETTE,
     digId,
   });
 }
@@ -32,7 +39,7 @@ describe("akna háttér", () => {
   test("a felszín felett ég, alatta kőzet van", () => {
     const m = mine(3);
     expect(m.world.maskAt(10, 5)).toBe(SKY);
-    expect(m.groundY).toBe(75);
+    expect(m.groundY).toBe(84);
   });
 
   test("minden pályakártya helye kőbe vájt fülke, alatta járható tárna", () => {
@@ -44,6 +51,22 @@ describe("akna háttér", () => {
       expect(level.rail).toBeGreaterThan(box.y + box.h);
     }
     expect(m.world.maskAt(85, 45)).toBe(PANEL);
+  });
+
+  test("az előnézet ablaka mélyebbre van vájva a fülkénél", () => {
+    const m = mine(1);
+    const pit = m.levels[0]?.pit;
+    const box = m.levels[0]?.box;
+    if (!pit || !box) return;
+    const at = (x: number, y: number) => m.world.pixel(x, y).reduce((a, b) => a + b, 0);
+    expect(at(pit.x + 10, pit.y + 10)).toBeLessThan(at(box.x + box.w - 10, box.y + 10));
+  });
+
+  test("az új pálya fülkéje azonnal kész, csak alatta a tárna vár ásásra", () => {
+    const m = mine(3, 3);
+    const level = m.levels[2];
+    if (!level) return;
+    expect(m.world.maskAt(level.box.x + 60, level.box.y + 10)).toBe(NICHE);
   });
 
   test("annyi aranyér marad a falban, ahány rög még hiányzik", () => {

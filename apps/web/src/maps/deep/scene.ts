@@ -1,7 +1,7 @@
 import type { Light } from "../../auth/lamp/lighting.ts";
 import { type Dig, type Level, type Mine, SHAFT_W } from "./build.ts";
 import { createBats, createDrips, createMotes, createSparks } from "./critters.ts";
-import { createRobot } from "./robot.ts";
+import { createRobot, standY } from "./robot.ts";
 import {
   createSprites,
   drawCart,
@@ -46,6 +46,7 @@ export type SceneOptions = {
   view: View;
   isNarrow: boolean;
   isStatic: boolean;
+  isFresh: boolean;
   target: () => number | null;
   onDigDone: (level: Level) => void;
 };
@@ -95,7 +96,7 @@ export function runScene(options: SceneOptions): () => void {
     setWanted,
   } = createRobot({
     shaftX,
-    surfaceY: mine.groundY - 16,
+    surfaceY: options.isFresh || !levels[0] ? mine.groundY - 16 : standY(levels[0]),
     driveSpeed: isNarrow ? 36 : 46,
     levels,
     onHit,
@@ -118,7 +119,7 @@ export function runScene(options: SceneOptions): () => void {
       }
     } else if (dig.phase === 2) {
       const x = Math.min(level.x1 + 3, level.x0 + dig.t * GALLERY_DIG_SPEED);
-      dig.reveal(dig.digX, level.box.y - 8, x + 1, level.y1 + 3);
+      dig.reveal(dig.digX, level.y0 - 22, x + 1, level.y1 + 3);
       dig.digX = x;
       if (Math.floor(time * 30) % 2 === 0) {
         sparks.emit(x, level.rail - 6 - fx() * 6, 3, fx, { angle: 0, spread: 2.4, speed: 34 });
@@ -272,6 +273,15 @@ export function runScene(options: SceneOptions): () => void {
         falloff: 1.6,
         hasShadow: false,
       });
+    list.push({
+      x: mine.signLamp.x + 2,
+      y: mine.signLamp.y + 4,
+      radius: 90,
+      intensity: 0.55 * flicker(time, 3),
+      color: LANTERN,
+      falloff: 1.6,
+      hasShadow: false,
+    });
     if (mine.house)
       list.push({
         x: mine.house.x + 12,
@@ -385,6 +395,9 @@ export function runScene(options: SceneOptions): () => void {
       ctx.fillStyle = sprites.tone("steel-edge");
       ctx.fillRect(l.x + 2, l.y - 2 - view.camY, 1, 2);
       ctx.drawImage(sprites.lantern[l.state], l.x, l.y - view.camY);
+    }
+    if (view.isVisible(mine.signLamp.y, 8)) {
+      ctx.drawImage(sprites.lantern.on, mine.signLamp.x, mine.signLamp.y - view.camY);
     }
     drawGlows(view, world, sprites, time);
     drawVeinGlints(view, world, sprites, time);

@@ -16,7 +16,22 @@
 .shell-header {
   position: relative;
   z-index: 10;
-  background: var(--c-surface);
+  isolation: isolate;
+  background: var(--deep-sky-0);
+  color: var(--c-text);
+}
+
+.shell-sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.shell-sky-canvas {
+  display: block;
+  image-rendering: pixelated;
 }
 
 .shell-bar {

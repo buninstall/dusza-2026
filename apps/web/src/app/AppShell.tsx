@@ -8,6 +8,7 @@ import type { IconName } from "../pixel/icons.ts";
 import { Logo } from "../pixel/Logo.tsx";
 import "./AppShell.css";
 import { SoundToggle, useAudioUnlock } from "../sound/SoundToggle.tsx";
+import { HeaderSky } from "./HeaderSky.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 import { UserMenu } from "./UserMenu.tsx";
 
@@ -57,7 +58,8 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
   useAudioUnlock();
   return (
     <div className="shell" data-layout={layout}>
-      <header className="shell-header">
+      <header className="shell-header" data-theme="tarna">
+        <HeaderSky />
         <div className="shell-bar">
           <Link to="/maps" variant="plain" className="shell-brand" aria-label={hu.app.name}>
             <span className="shell-lockup">

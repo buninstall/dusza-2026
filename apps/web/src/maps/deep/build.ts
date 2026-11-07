@@ -1,3 +1,4 @@
+import { billboard } from "./billboard.ts";
 import type { LanternState } from "./sprites.ts";
 import {
   carve,
@@ -23,7 +24,6 @@ import {
   NICHE,
   noise,
   OPEN,
-  PANEL,
   type Point,
   ROCK,
   seeded,
@@ -32,8 +32,16 @@ import {
 } from "./world.ts";
 
 export const SHAFT_W = 16;
+const GROUND_BELOW_SIGN = 14;
 
-export type LevelInput = { box: Box; stars: number; isDaily: boolean; index: number; id: number };
+export type LevelInput = {
+  box: Box;
+  pit: Box | null;
+  stars: number;
+  isDaily: boolean;
+  index: number;
+  id: number;
+};
 
 export type LayoutInput = {
   W: number;
@@ -91,6 +99,7 @@ export type Mine = {
   beacon: Point;
   house: Point | null;
   dig: Dig | null;
+  signLamp: Point;
 };
 
 function lanternState(level: LevelInput, isFront: boolean): LanternState {
@@ -182,6 +191,27 @@ function carveNiche(world: World, b: Box, seed: number): void {
       y < b.y + b.h + sill(x)
     );
   });
+}
+
+function carvePit(world: World, b: Box, seed: number): void {
+  const jag = (v: number, k: number) => 1 + Math.floor(noise(Math.floor(v / 2), seed + k, 2) * 3);
+  const inPit = (x: number, y: number) =>
+    x >= b.x - jag(y, 0) &&
+    x < b.x + b.w + jag(y, 2) &&
+    y >= b.y - jag(x, 4) &&
+    y < b.y + b.h + jag(x, 6);
+  for (let y = b.y - 5; y < b.y + b.h + 5; y += 1) {
+    for (let x = b.x - 5; x < b.x + b.w + 5; x += 1) {
+      if (inPit(x, y)) {
+        const deep = !inPit(x - 2, y - 2);
+        world.put(x, y, deep ? "shade" : dither(x, y) > 0.5 ? "shaft" : "shaft-hi");
+      } else if (inPit(x - 1, y - 1) || inPit(x, y - 1) || inPit(x - 1, y)) {
+        world.put(x, y, "rubble-hi");
+      } else if (inPit(x + 1, y + 1)) {
+        world.put(x, y, "rubble-lo");
+      }
+    }
+  }
 }
 
 function carveLevel(
@@ -437,9 +467,10 @@ function setupDig(
     }
   };
   const shaftTop = prev.y1 + 1;
-  const top = level.box.y - 8;
+  const top = level.y0 - 1;
   restore(shaftX - 3, shaftTop, shaftX + SHAFT_W + 3, top, rock.data, rock.mask);
   restore(shaftX - 3, top, W, level.y1 + 3, rock.data, rock.mask);
+  if (level.room) restore(level.room.x0 - 4, level.y0 - 22, W, top, rock.data, rock.mask);
   return {
     level,
     shaftTop,
@@ -451,14 +482,14 @@ export function buildMine(input: LayoutInput): Mine {
   const { W, H, isNarrow } = input;
   const world = createWorld(W, H, input.palette);
   const rand = seeded(isNarrow ? 21 : 7);
-  const groundY = input.plate.y + input.plate.h + 5;
+  const groundY = input.plate.y + input.plate.h + GROUND_BELOW_SIGN;
   const firstX = Math.min(input.front.x, ...input.levels.map((l) => l.box.x));
   const shaftX = Math.max(3, firstX - (isNarrow ? 22 : 44));
   const xEnd = W - (isNarrow ? 4 : 7);
   const bottomY = input.front.y + input.front.h + 18;
   const levels = input.levels.map((l) => toLevel(l, shaftX, xEnd, false, input.digId));
   const front = toLevel(
-    { box: input.front, stars: -1, isDaily: false, index: -1, id: -1 },
+    { box: input.front, pit: null, stars: -1, isDaily: false, index: -1, id: -1 },
     shaftX,
     xEnd,
     true,
@@ -473,6 +504,7 @@ export function buildMine(input: LayoutInput): Mine {
     : null;
   all.forEach((level, i) => {
     carveNiche(world, level.box, i * 17 + 5);
+    if (level.pit) carvePit(world, level.pit, i * 13 + 2);
     carveLevel(world, level, i * 31, xEnd, isNarrow);
   });
   carve(world, shaftX, bottomY - 4, shaftX + SHAFT_W, bottomY + 6);
@@ -483,8 +515,20 @@ export function buildMine(input: LayoutInput): Mine {
   const lanterns: Lantern[] = [];
   for (const level of all) decorateLevel(world, level, groundY, rand, lanterns);
   for (const level of all) world.setMask(level.box.x, level.box.y, level.box.w, level.box.h, NICHE);
-  world.setMask(input.plate.x, input.plate.y, input.plate.w, input.plate.h, PANEL);
+  const signLamp = billboard(world, input.plate, groundY);
   const dig = rock ? setupDig(world, levels, shaftX, rock) : null;
   const carts = levels.flatMap((l) => (l.cart ? [l.cart] : []));
-  return { world, groundY, shaftX, bottomY, levels, front, lanterns, carts, ...frame, dig };
+  return {
+    world,
+    groundY,
+    shaftX,
+    bottomY,
+    levels,
+    front,
+    lanterns,
+    carts,
+    ...frame,
+    dig,
+    signLamp,
+  };
 }

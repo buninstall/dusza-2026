@@ -48,7 +48,7 @@ export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
         <PixelText text={level} scale={2} />
         <span className="visually-hidden">{level}</span>
       </p>
-      <div className="lv-window">
+      <div className="lv-window" data-mine-pit="">
         <MapPreview content={map.content} box={box} className="lv-preview" />
       </div>
       <div className="lv-body">

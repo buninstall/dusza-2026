@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef } from "react";
+import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "../../lib/motion.ts";
 import { readStorage, writeStorage } from "../../lib/storage.ts";
 import { MINE_ATTR, startDeepScene } from "./start.ts";
@@ -11,8 +11,7 @@ type MineBackdropProps = {
 };
 
 const SEEN_KEY = "minescript.mine.seen";
-const RESTART_DELAY_MS = 150;
-const ARRIVE_MS = 900;
+const REBUILD_GAP_MS = 220;
 
 function readSeen(): Set<number> | null {
   const raw = readStorage(SEEN_KEY);
@@ -49,10 +48,11 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const targetRef = useRef<number | null>(null);
   const digRef = useRef<number | null>(null);
+  const hasStartedRef = useRef(false);
   const idsKey = mapIds.join(",");
   const isStatic = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     digRef.current = pickDig(idsKey.length > 0 ? idsKey.split(",").map(Number) : []);
   }, [idsKey]);
 
@@ -77,54 +77,48 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
     };
   }, [rootRef]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = rootRef.current;
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
-    if (
-      !root ||
-      !canvas ||
-      !wrap ||
-      typeof ResizeObserver === "undefined" ||
-      layoutKey.length === 0
-    )
-      return;
+    if (!root || !canvas || !wrap || layoutKey.length === 0) return;
     let stop: () => void = () => undefined;
     let timer = 0;
-    const arrivals: number[] = [];
+    let lastBuild = 0;
+    let signature = "";
     const start = () => {
+      window.clearTimeout(timer);
       stop();
       const digId = digRef.current;
       digRef.current = null;
+      signature = `${root.offsetWidth}x${root.offsetHeight}`;
+      lastBuild = performance.now();
       stop = startDeepScene({
         root,
         canvas,
         paletteSource: wrap,
         isStatic,
+        isFresh: !hasStartedRef.current,
         digId,
         target: () => targetRef.current,
-        onDigStart: (element) => {
-          element.dataset.digging = "true";
-          element.scrollIntoView({ block: "center", behavior: isStatic ? "auto" : "smooth" });
-        },
-        onDigDone: (element) => {
-          delete element.dataset.digging;
-          element.dataset.arriving = "true";
-          arrivals.push(window.setTimeout(() => delete element.dataset.arriving, ARRIVE_MS));
-        },
+        onDigStart: () => undefined,
+        onDigDone: () => undefined,
       });
+      hasStartedRef.current = true;
     };
-    const schedule = () => {
+    const onResize = () => {
+      if (`${root.offsetWidth}x${root.offsetHeight}` === signature) return;
+      const wait = REBUILD_GAP_MS - (performance.now() - lastBuild);
       window.clearTimeout(timer);
-      timer = window.setTimeout(start, RESTART_DELAY_MS);
+      if (wait <= 0) start();
+      else timer = window.setTimeout(start, wait);
     };
-    const observer = new ResizeObserver(schedule);
-    observer.observe(root);
-    schedule();
+    start();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onResize);
+    observer?.observe(root);
     return () => {
-      observer.disconnect();
+      observer?.disconnect();
       window.clearTimeout(timer);
-      for (const id of arrivals) window.clearTimeout(id);
       stop();
     };
   }, [rootRef, layoutKey, isStatic]);

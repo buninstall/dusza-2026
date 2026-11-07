@@ -13,6 +13,7 @@ export type DeepHost = {
   canvas: HTMLCanvasElement;
   paletteSource: Element;
   isStatic: boolean;
+  isFresh: boolean;
   digId: number | null;
   target: () => number | null;
   onDigStart: (element: HTMLElement) => void;
@@ -26,13 +27,26 @@ function readLevels(
   const inputs: LevelInput[] = [];
   const elements = new Map<number, HTMLElement>();
   const daily = root.querySelector<HTMLElement>(`[${MINE_ATTR}="daily"]`);
-  if (daily)
-    inputs.push({ box: measureBox(daily, scale), stars: 3, isDaily: true, index: -1, id: -1 });
+  const pitOf = (element: Element) => {
+    const pit = element.querySelector(`[${MINE_ATTR}-pit]`);
+    return pit ? measureBox(pit, scale) : null;
+  };
+  if (daily) {
+    inputs.push({
+      box: measureBox(daily, scale),
+      pit: pitOf(daily),
+      stars: 3,
+      isDaily: true,
+      index: -1,
+      id: -1,
+    });
+  }
   root.querySelectorAll<HTMLElement>(`[${MINE_ATTR}="level"]`).forEach((element, index) => {
     const id = Number(element.dataset.mapId);
     elements.set(id, element);
     inputs.push({
       box: measureBox(element, scale),
+      pit: pitOf(element),
       stars: Number(element.dataset.stars ?? -1),
       isDaily: false,
       index,
@@ -76,6 +90,7 @@ export function startDeepScene(host: DeepHost): () => void {
     view,
     isNarrow,
     isStatic: host.isStatic,
+    isFresh: host.isFresh,
     target: host.target,
     onDigDone: (level) => {
       const element = elementOf(level);

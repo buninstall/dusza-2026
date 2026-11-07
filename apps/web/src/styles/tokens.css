@@ -317,6 +317,15 @@
   --deep-crystal-hi: #e6fbff;
   --deep-star: #bcae98;
   --deep-star-dim: #6e6052;
+  --deep-rust: #7a3f1d;
+  --deep-rust-hi: #a5582a;
+  --deep-rust-lo: #4e2814;
+  --deep-iron: #4a4540;
+  --deep-iron-hi: #6b645b;
+  --deep-iron-lo: #2e2b27;
+  --deep-iron-dk: #1c1a17;
+  --rust-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath d='M1 1h2v1H1zM8 3h1v2H8zM4 7h2v1H4zM10 9h1v1h-1zM2 10h1v1H2z' fill='%237a3f1d'/%3E%3Cpath d='M2 2h1v1H2zM5 8h1v1H5zM9 4h1v1H9z' fill='%23a5582a'/%3E%3Cpath d='M6 1h1v1H6zM0 6h1v1H0z' fill='%231c1a17'/%3E%3C/svg%3E");
+  --rust-chip-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' shape-rendering='crispEdges'%3E%3Cpath d='M1 1h2v1H1zM11 2h1v2h-1zM3 11h1v1H3zM12 12h1v1h-1z' fill='%23b8741b'/%3E%3Cpath d='M2 2h1v1H2zM11 4h1v1h-1z' fill='%237a3f1d'/%3E%3C/svg%3E");
 
   --c-action: var(--c-accent);
   --c-reward: var(--c-gold);
