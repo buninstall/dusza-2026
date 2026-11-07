@@ -226,3 +226,11 @@ export function easeInOut(t: number): number {
 export function flicker(time: number, seed: number): number {
   return 0.82 + 0.1 * Math.sin(time * 11 + seed) + 0.08 * Math.sin(time * 27 + seed * 3);
 }
+
+export function pageHeight(): number {
+  const shell = document.querySelector(".shell");
+  const content = shell
+    ? shell.getBoundingClientRect().height
+    : document.body.getBoundingClientRect().height;
+  return Math.ceil(Math.max(content, window.innerHeight));
+}

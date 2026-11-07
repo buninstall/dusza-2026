@@ -10,7 +10,6 @@ import "./AppShell.css";
 import { SoundToggle, useAudioUnlock } from "../sound/SoundToggle.tsx";
 import { HeaderSky } from "./HeaderSky.tsx";
 import { PageBackdrop } from "./PageBackdrop.tsx";
-import { ThemeToggle } from "./ThemeToggle.tsx";
 import { UserMenu } from "./UserMenu.tsx";
 
 export type ShellLayout = "page" | "cab" | "workbench";
@@ -94,7 +93,6 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
           </nav>
           <div className="shell-tools">
             <SoundToggle />
-            <ThemeToggle />
             <UserMenu user={user} />
           </div>
         </div>

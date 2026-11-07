@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { I18nProvider } from "react-aria-components";
+import { LoadingCurtain } from "../app/LoadingCurtain.tsx";
 import { RouteFocus } from "../app/RouteFocus.tsx";
 import { Toasts } from "../components/ui/Toast.tsx";
 import { EngineProvider } from "../engine/EngineProvider.tsx";
@@ -21,6 +22,7 @@ function RootLayout() {
       </EngineProvider>
       <Toasts />
       <RouteFocus />
+      <LoadingCurtain />
     </I18nProvider>
   );
 }

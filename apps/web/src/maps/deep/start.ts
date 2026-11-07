@@ -2,7 +2,7 @@ import { buildMine, type Level, type LevelInput } from "./build.ts";
 import { readDeepPalette } from "./palette.ts";
 import { runScene } from "./scene.ts";
 import { createView } from "./view.ts";
-import { measureBox } from "./world.ts";
+import { measureBox, pageHeight } from "./world.ts";
 
 export const MINE_ATTR = "data-mine";
 const NARROW_WIDTH = 768;
@@ -66,8 +66,7 @@ export function startDeepScene(host: DeepHost): (() => void) | null {
   const scale = isNarrow ? 2 : 3;
   const { inputs, elements } = readLevels(host.root, scale);
   const frames = [host.canvas.parentElement, host.front?.parentElement ?? null];
-  for (const frame of frames) if (frame) frame.style.height = "0px";
-  const docHeight = document.documentElement.scrollHeight;
+  const docHeight = pageHeight();
   for (const frame of frames) if (frame) frame.style.height = `${docHeight}px`;
   const W = Math.ceil(viewWidth / scale);
   const H = Math.ceil(docHeight / scale) + 2;

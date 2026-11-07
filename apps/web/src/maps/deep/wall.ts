@@ -4,7 +4,7 @@ import { readDeepPalette } from "./palette.ts";
 import { createSprites, drawGlows, drawVeinGlints, glowLights, type Sprites } from "./sprites.ts";
 import { cave, edges, paintRock, vein } from "./terrain.ts";
 import { createView, type View } from "./view.ts";
-import { createWorld, seeded, toneHex, type World } from "./world.ts";
+import { createWorld, pageHeight, seeded, toneHex, type World } from "./world.ts";
 
 const STEP = 1 / 60;
 const MAX_FRAME = 0.1;
@@ -12,6 +12,7 @@ const LANTERN = [1, 0.68, 0.36] as const;
 const LANTERN_GAP = 150;
 const CAVE_GAP = 110;
 const FIREFLY_AREA = 14000;
+const WALL_AMBIENT = [0.6, 0.5, 1, 0.55, 0.5, 0.62, 0.6];
 
 const WEB_ART = [
   "w.....w.....",
@@ -166,8 +167,7 @@ export function startWall(host: WallHost): (() => void) | null {
   const viewWidth = document.documentElement.clientWidth;
   const scale = viewWidth < 768 ? 2 : 3;
   const frames = [host.canvas.parentElement, host.front?.parentElement ?? null];
-  for (const frame of frames) if (frame) frame.style.height = "0px";
-  const docHeight = document.documentElement.scrollHeight;
+  const docHeight = pageHeight();
   for (const frame of frames) if (frame) frame.style.height = `${docHeight}px`;
   const W = Math.ceil(viewWidth / scale);
   const H = Math.ceil(docHeight / scale) + 2;
@@ -176,7 +176,7 @@ export function startWall(host: WallHost): (() => void) | null {
   const palette = readDeepPalette(host.paletteSource);
   const safe = { x0: Math.floor(host.safe.x0 / scale), x1: Math.ceil(host.safe.x1 / scale) };
   const { world, lamps, spiders } = buildWall(W, H, roof, safe, palette);
-  const view = createView(host.canvas, host.front, world, scale, window.innerHeight);
+  const view = createView(host.canvas, host.front, world, scale, window.innerHeight, WALL_AMBIENT);
   if (!view) return null;
   view.bake(staticLights(world, lamps));
   const sprites = createSprites(world);

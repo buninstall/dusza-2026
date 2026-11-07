@@ -7,9 +7,57 @@
     <meta name="theme-color" content="#110f0d" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>MineScript</title>
+    <style>
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 1001;
+        display: grid;
+        place-items: center;
+        background: #070605;
+        color: #bcae98;
+        font: 600 0.8rem / 1 ui-monospace, monospace;
+        letter-spacing: 0.12em;
+      }
+
+      #boot-splash span {
+        display: block;
+        width: 12rem;
+        height: 6px;
+        margin-bottom: 1.2rem;
+        overflow: hidden;
+        background: #2f2822;
+      }
+
+      #boot-splash span::after {
+        content: "";
+        display: block;
+        width: 2.5rem;
+        height: 6px;
+        background: #f2b53a;
+        animation: boot-roll 1s steps(12, end) infinite;
+      }
+
+      @keyframes boot-roll {
+        from {
+          transform: translateX(-2.5rem);
+        }
+        to {
+          transform: translateX(12rem);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash span::after {
+          animation: none;
+          transform: translateX(4.75rem);
+        }
+      }
+    </style>
   </head>
   <body>
     <noscript>A MineScript futtatásához engedélyezd a JavaScriptet a böngésződben.</noscript>
+    <div id="boot-splash" role="status"><div><span></span>Betöltés…</div></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -9,7 +9,7 @@ const CURSOR_SCALE = 2;
 const FALLBACK = "auto";
 
 export function initialCursor(): CursorStyle {
-  return readStorage(CURSOR_KEY) === "pickaxe" ? "pickaxe" : "system";
+  return readStorage(CURSOR_KEY) === "system" ? "system" : "pickaxe";
 }
 
 function toneColor(tone: string): string {

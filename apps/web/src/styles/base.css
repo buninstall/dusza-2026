@@ -5,6 +5,7 @@
 }
 
 html {
+  scrollbar-gutter: stable;
   background: var(--c-bg);
   color: var(--c-text);
   font: var(--type-body);

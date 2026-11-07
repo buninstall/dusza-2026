@@ -69,6 +69,7 @@ export function createView(
   world: World,
   scale: number,
   viewHeight: number,
+  ambient: readonly number[] = AMBIENT,
 ): View | null {
   const { W } = world;
   const pad = Math.ceil((viewHeight / scale) * PAD_RATIO);
@@ -105,7 +106,7 @@ export function createView(
   };
   const paintBase = (region: Region) => {
     const image = baseCtx.createImageData(region.w, region.h);
-    shadeRegion(world, AMBIENT, statics, null, region, {
+    shadeRegion(world, ambient, statics, null, region, {
       data: image.data,
       width: region.w,
       offsetX: region.x,
@@ -161,7 +162,7 @@ export function createView(
           if (overlaps(box, region)) addLight(buffer, light, isSolid, PENETRATION);
         }
         active.push(buffer);
-        shadeRegion(world, AMBIENT, statics, buffer, region, {
+        shadeRegion(world, ambient, statics, buffer, region, {
           data: frame.data,
           width: W,
           offsetX: 0,

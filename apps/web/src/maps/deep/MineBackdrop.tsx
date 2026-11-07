@@ -1,4 +1,5 @@
 import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
+import { holdReady, releaseAfterPaint } from "../../app/readiness.ts";
 import { usePrefersReducedMotion } from "../../lib/motion.ts";
 import { readStorage, writeStorage } from "../../lib/storage.ts";
 import { MINE_ATTR, startDeepScene } from "./start.ts";
@@ -95,6 +96,7 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
       signature = shape();
       lastBuild = performance.now();
       const digId = digRef.current;
+      const release = holdReady();
       const next = startDeepScene({
         root,
         canvas,
@@ -108,6 +110,7 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
         onDigDone: () => undefined,
       });
       stop = next ?? (() => undefined);
+      releaseAfterPaint(release);
       if (next) {
         digRef.current = null;
         hasStartedRef.current = true;

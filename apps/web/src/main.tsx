@@ -6,8 +6,8 @@ import { createRoot } from "react-dom/client";
 import { Loading, NotFound, RouteError } from "./app/StatusScreens.tsx";
 import { sessionQuery } from "./auth/session.ts";
 import { applyCursor, initialCursor } from "./lib/cursor.ts";
-import { createQueryClient } from "./lib/query.ts";
-import { applyTheme, initialTheme } from "./lib/theme.ts";
+import { clearPersistedQueries, createQueryClient, persistQueries } from "./lib/query.ts";
+import { applyTheme } from "./lib/theme.ts";
 import { routeTree } from "./routeTree.gen.ts";
 
 const PENDING_MS = 300;
@@ -16,6 +16,7 @@ const SIGNED_OUT_PATHS = new Set(["/login", "/register"]);
 
 const queryClient = createQueryClient(() => {
   queryClient.setQueryData(sessionQuery.queryKey, null);
+  clearPersistedQueries();
   const { pathname, href } = router.state.location;
   if (!SIGNED_OUT_PATHS.has(pathname)) {
     void router.navigate({ to: "/login", search: { redirect: href } });
@@ -40,7 +41,8 @@ declare module "@tanstack/react-router" {
   }
 }
 
-applyTheme(initialTheme());
+applyTheme();
+persistQueries(queryClient);
 applyCursor(initialCursor());
 
 const container = document.getElementById("root");

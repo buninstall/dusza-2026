@@ -1,0 +1,67 @@
+.curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: var(--px-void);
+  opacity: 1;
+  transition: opacity var(--motion-reveal) var(--ease-px2);
+}
+
+.curtain[data-phase="leaving"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.curtain-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.curtain-track {
+  position: relative;
+  width: 12rem;
+  height: 6px;
+  overflow: hidden;
+  background: var(--deep-ballast);
+  box-shadow: 0 2px 0 var(--deep-rail);
+}
+
+.curtain-cart {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.5rem;
+  height: 6px;
+  background: var(--c-gold);
+  animation: curtain-roll var(--motion-blink) steps(12, end) infinite;
+}
+
+.curtain-text {
+  font: var(--type-mono);
+  color: var(--c-text-muted);
+  letter-spacing: var(--track-micro);
+}
+
+@keyframes curtain-roll {
+  from {
+    transform: translateX(-2.5rem);
+  }
+  to {
+    transform: translateX(12rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curtain {
+    transition: none;
+  }
+
+  .curtain-cart {
+    animation: none;
+    transform: translateX(4.75rem);
+  }
+}

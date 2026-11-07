@@ -1,23 +1,14 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { render, renderHook, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { renderHook } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
-import { ThemeToggle } from "../src/app/ThemeToggle.tsx";
 import { diagnosticTitles, formatCount, formatTime, hu, runtimeErrors } from "../src/i18n/hu.ts";
 import { ApiError, call, errorMessage } from "../src/lib/api.ts";
+import { initialCursor } from "../src/lib/cursor.ts";
 import { usePrefersReducedMotion } from "../src/lib/motion.ts";
 import { createQueryClient } from "../src/lib/query.ts";
 import { readStorage, writeStorage } from "../src/lib/storage.ts";
-import {
-  applyTheme,
-  DEFAULT_THEME,
-  initialTheme,
-  isTheme,
-  nextTheme,
-  saveTheme,
-  THEME_KEY,
-} from "../src/lib/theme.ts";
+import { applyTheme } from "../src/lib/theme.ts";
 
 const generated = join(
   import.meta.dirname,
@@ -135,27 +126,21 @@ describe("API-hívás", () => {
 });
 
 describe("téma és tárolás", () => {
-  test("alapból a sötét Tárna téma, a mentett választás felülírja", () => {
-    expect(initialTheme()).toBe(DEFAULT_THEME);
-    writeStorage(THEME_KEY, "felszin");
-    expect(initialTheme()).toBe("felszin");
-    writeStorage(THEME_KEY, "neon");
-    expect(initialTheme()).toBe("tarna");
-    expect(isTheme("tarna")).toBe(true);
-    expect(nextTheme("tarna")).toBe("felszin");
-    expect(nextTheme("felszin")).toBe("tarna");
-  });
-
-  test("a téma a dokumentumra és a theme-color metára kerül", () => {
+  test("mindig a sötét Tárna téma él, a theme-color metával együtt", () => {
     const meta = document.createElement("meta");
     meta.name = "theme-color";
     document.head.append(meta);
-    applyTheme("felszin");
-    expect(document.documentElement.dataset.theme).toBe("felszin");
-    expect(meta.getAttribute("content")).toBe("#e6d9c0");
-    saveTheme("tarna");
-    expect(readStorage(THEME_KEY)).toBe("tarna");
+    applyTheme();
+    expect(document.documentElement.dataset.theme).toBe("tarna");
+    expect(meta.getAttribute("content")).toBe("#110f0d");
     meta.remove();
+  });
+
+  test("a csákány egérmutató az alapértelmezett, a rendes mutató választható", () => {
+    expect(initialCursor()).toBe("pickaxe");
+    writeStorage("minescript.cursor", "system");
+    expect(initialCursor()).toBe("system");
+    writeStorage("minescript.cursor", "pickaxe");
   });
 
   test("a tárolás hibája nem dob kivételt", () => {
@@ -169,14 +154,6 @@ describe("téma és tárolás", () => {
     expect(() => writeStorage("x", "y")).not.toThrow();
     getItem.mockRestore();
     setItem.mockRestore();
-  });
-
-  test("a témaváltó gomb a célt nevezi meg", async () => {
-    const user = userEvent.setup();
-    render(<ThemeToggle />);
-    await user.click(screen.getByRole("button", { name: "Váltás a világos Felszín témára" }));
-    expect(document.documentElement.dataset.theme).toBe("felszin");
-    expect(screen.getByRole("button", { name: "Váltás a sötét Tárna témára" })).toBeTruthy();
   });
 
   test("a csökkentett mozgás beállítás követése", () => {

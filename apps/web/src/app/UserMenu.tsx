@@ -7,6 +7,7 @@ import { toast, toastQueue } from "../components/ui/Toast.tsx";
 import { hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
 import { type CursorStyle, initialCursor, saveCursor } from "../lib/cursor.ts";
+import { clearPersistedQueries } from "../lib/query.ts";
 
 export function UserMenu({ user }: { user: SessionUser }) {
   const queryClient = useQueryClient();
@@ -21,6 +22,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
       toast.error(errorMessage(error, hu.app.unexpected));
     }
     queryClient.clear();
+    clearPersistedQueries();
     await navigate({ to: "/login" });
   };
 
