@@ -200,6 +200,11 @@ export const story = {
   counter: (remaining: number) => `Még ${remaining} pálya`,
   counterOpen: "Nyitva",
   progress: (cleared: number, total: number) => `${cleared} / ${total} pálya kész`,
+  nuggetTotal: (earned: number, max: number) => `${earned} / ${max} rög`,
+  continue: "Folytatás",
+  continueLabel: (title: string) => `Folytatás: ${title}`,
+  allDone: "Minden pálya kész",
+  sandboxStats: (maps: number, authors: number) => `${maps} pálya · ${authors} készítő`,
   counterLabel: (remaining: number, name: string) =>
     `Még ${remaining} pályán kell minden aranyat kibányászni, hogy kinyíljon ${name}.`,
   counterOpenLabel: (name: string) =>
@@ -213,6 +218,7 @@ export const story = {
   epilogue:
     "Az utolsó rög a csillédben van. A Szív elcsendesedett: a Vakond ciklusa véget ért, mert nincs több arany, amit kereshetne. Száz év után először csend van a Dusza-tárnában.",
   leaderboard: "Történet ranglistája",
+  leaderboardShortLabel: "Ranglista: Történet",
   leaderboardTitle: "Történet · Ranglista",
   leaderboardLead:
     "Az összes kampánypálya legjobb futásai összesítve. Előrébb áll, akinek több rögje van; egyenlőségnél akinek több aranya, majd akinek kevesebb lépés kellett.",

@@ -12,10 +12,11 @@ import { Select } from "../components/ui/Select.tsx";
 import { Tab, TabList, TabPanel, Tabs } from "../components/ui/Tabs.tsx";
 import { hu } from "../i18n/hu.ts";
 import { story } from "../i18n/hu-story.ts";
+import type { IconName } from "../pixel/icons.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { TourPrompt } from "../tour/TourPrompt.tsx";
 import { ChapterCounter } from "./ChapterPlate.tsx";
-import { type Campaign, groupCampaign, isCampaignMap } from "./campaign.ts";
+import { type Campaign, groupCampaign, isCampaignMap, isCleared } from "./campaign.ts";
 import { DailyCard } from "./DailyCard.tsx";
 import { MineBackdrop } from "./deep/MineBackdrop.tsx";
 import { LevelTile } from "./LevelTile.tsx";
@@ -291,8 +292,14 @@ function DrillFront({ isSilent, isStory = false }: { isSilent: boolean; isStory?
 
 function StoryBoardLink({ isCompact = false }: { isCompact?: boolean }) {
   return (
-    <Link to="/story/leaderboard" variant="secondary" icon="trophy" size={isCompact ? "sm" : "md"}>
-      {story.leaderboard}
+    <Link
+      to="/story/leaderboard"
+      variant="secondary"
+      icon="trophy"
+      size={isCompact ? "sm" : "md"}
+      {...(isCompact ? { "aria-label": story.leaderboardShortLabel } : {})}
+    >
+      {isCompact ? hu.maps.leaderboard : story.leaderboard}
     </Link>
   );
 }
@@ -337,16 +344,68 @@ function MineLayer({
   );
 }
 
-function StoryProgress() {
+function SandboxStats() {
+  const { data } = useQuery(mapsQuery("all"));
+  const maps = sandboxMaps(data?.maps ?? []);
+  const authors = new Set(maps.map((map) => map.ownerId)).size;
+  return <StoryStatusChip icon="list" text={story.sandboxStats(maps.length, authors)} />;
+}
+
+function useStoryStatus() {
   const { data } = useQuery(mapsQuery("all"));
   const campaign = groupCampaign(sortMaps(data?.maps ?? [], "order"));
   const maps = campaign.groups.flatMap((group) => group.maps);
-  const cleared = campaign.groups.reduce((sum, group) => sum + group.cleared, 0);
+  const open = campaign.groups.filter((group) => group.lock === null);
+  return {
+    total: maps.length,
+    cleared: campaign.groups.reduce((sum, group) => sum + group.cleared, 0),
+    stars: maps.reduce((sum, map) => sum + Math.max(0, map.stars ?? 0), 0),
+    chapter: open.at(-1)?.chapter ?? null,
+    next: open.flatMap((group) => group.maps).find((map) => !isCleared(map)) ?? null,
+  };
+}
+
+function StoryStatusChip({ icon, text }: { icon: IconName; text: string }) {
   return (
-    <p className="maps-progress">
-      <PixelIcon name="pickaxe" />
-      <span>{story.progress(cleared, maps.length)}</span>
+    <p className="maps-progress" title={text}>
+      <PixelIcon name={icon} />
+      <span className="maps-progress-text">{text}</span>
     </p>
+  );
+}
+
+function ContinueLink({ map }: { map: MapSummary | null }) {
+  if (!map) {
+    return <StoryStatusChip icon="check" text={story.allDone} />;
+  }
+  return (
+    <Link
+      to="/play/$mapId"
+      params={{ mapId: String(map.id) }}
+      variant="primary"
+      icon="play"
+      size="sm"
+      aria-label={story.continueLabel(map.title)}
+    >
+      {story.continue}
+    </Link>
+  );
+}
+
+function StoryPlateActions({ onModeChange }: { onModeChange: (mode: PlayMode) => void }) {
+  const status = useStoryStatus();
+  return (
+    <div className="maps-plate-grid">
+      <ModeSwitch mode="story" onChange={onModeChange} />
+      <StoryStatusChip icon="trophy" text={story.nuggetTotal(status.stars, status.total * 3)} />
+      <StoryBoardLink isCompact />
+      <StoryStatusChip icon="pickaxe" text={story.progress(status.cleared, status.total)} />
+      <StoryStatusChip
+        icon="book"
+        text={status.chapter ? status.chapter.title : story.modes.story}
+      />
+      <ContinueLink map={status.next} />
+    </div>
   );
 }
 
@@ -365,17 +424,7 @@ function StoryPage({
         <LocationPlate
           name={hu.signs.maps}
           className="maps-plate"
-          actions={
-            <>
-              <div className="maps-plate-row">
-                <ModeSwitch mode="story" onChange={onModeChange} />
-                <StoryBoardLink isCompact />
-              </div>
-              <div className="maps-plate-row">
-                <StoryProgress />
-              </div>
-            </>
-          }
+          actions={<StoryPlateActions onModeChange={onModeChange} />}
         />
       </div>
       <div className="maps-panel">
@@ -418,31 +467,28 @@ export function MapsPage({
             className="maps-plate"
             actions={
               <>
-                <div className="maps-plate-row">
+                <div className="maps-plate-grid">
                   <ModeSwitch mode="sandbox" onChange={onModeChange} />
+                  <SandboxStats />
                   <NewMapLink isCompact />
-                </div>
-                <div className="maps-plate-row">
                   <TabList aria-label={hu.maps.scopeLabel}>
                     <Tab id="all">{hu.maps.scopeAll}</Tab>
                     <Tab id="mine">{hu.maps.scopeMine}</Tab>
                   </TabList>
-                  <div className="maps-plate-filters">
-                    <Select
-                      label={story.difficultyLabel}
-                      isLabelHidden
-                      value={difficulty}
-                      options={DIFFICULTY_OPTIONS}
-                      onChange={onDifficultyChange}
-                    />
-                    <Select
-                      label={hu.maps.sortLabel}
-                      isLabelHidden
-                      value={sort}
-                      options={SORT_OPTIONS}
-                      onChange={onSortChange}
-                    />
-                  </div>
+                  <Select
+                    label={story.difficultyLabel}
+                    isLabelHidden
+                    value={difficulty}
+                    options={DIFFICULTY_OPTIONS}
+                    onChange={onDifficultyChange}
+                  />
+                  <Select
+                    label={hu.maps.sortLabel}
+                    isLabelHidden
+                    value={sort}
+                    options={SORT_OPTIONS}
+                    onChange={onSortChange}
+                  />
                 </div>
               </>
             }

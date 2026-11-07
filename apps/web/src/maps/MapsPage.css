@@ -639,3 +639,64 @@
     margin-block-start: 2.9rem;
   }
 }
+
+.maps-plate-grid {
+  display: grid;
+  grid-template-columns: var(--plate-left) minmax(0, 1fr) var(--plate-right);
+  grid-auto-rows: var(--plate-control);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.maps-plate {
+  --plate-left: 13rem;
+  --plate-right: 9rem;
+}
+
+.maps-plate-grid > .btn {
+  padding-inline: var(--space-3);
+}
+
+.maps-plate-grid > .maps-mode .seg-track {
+  width: 100%;
+}
+
+.maps-plate-grid > .btn,
+.maps-plate-grid > .maps-progress {
+  width: 100%;
+  min-height: var(--plate-control);
+}
+
+.maps-plate-grid > .btn {
+  justify-content: center;
+}
+
+.maps-progress-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.maps-progress {
+  min-width: 0;
+  padding: 0 var(--space-2);
+}
+
+.maps-mode .seg-track {
+  flex-wrap: nowrap;
+}
+
+.maps-mode .seg-segment {
+  gap: var(--space-1);
+  padding: 0 var(--space-1);
+}
+
+.maps-plate-grid > .tabs-list {
+  width: 100%;
+}
+
+.maps-plate-grid > .field,
+.maps-plate-grid .field-select-button {
+  width: 100%;
+}
