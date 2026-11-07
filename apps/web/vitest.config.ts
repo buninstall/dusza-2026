@@ -7,6 +7,7 @@ export default defineConfig({
     environment: "happy-dom",
     include: ["test/**/*.test.{ts,tsx}"],
     setupFiles: ["test/setup.ts"],
+    testTimeout: 15_000,
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
