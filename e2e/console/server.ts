@@ -457,7 +457,9 @@ export function createHandler(options: ConsoleOptions) {
             ? ids.has(suite.id)
             : (includeLong || !suite.long) && (!group || suite.group === group)) &&
           (ids ||
-            !["fuzz-deep", "live-write", "e2e-flaky", "rust-proptest-deep"].includes(suite.id)),
+            !["fuzz-deep", "live-write", "e2e-flaky", "rust-proptest-deep", "kiiras-live"].includes(
+              suite.id,
+            )),
       );
       if (chosen.length === 0) return problem(400, "Nincs kiválasztott csomag.");
       const sorted = [

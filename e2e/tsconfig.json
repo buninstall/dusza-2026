@@ -14,5 +14,5 @@
       "zustand": ["../apps/web/node_modules/zustand"]
     }
   },
-  "include": ["*.ts", "console/**/*.ts", "console/**/*.tsx"]
+  "include": ["*.ts", "console/**/*.ts", "console/**/*.tsx", "spec/**/*.ts"]
 }

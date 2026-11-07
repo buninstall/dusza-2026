@@ -595,6 +595,84 @@ export const SUITES: Suite[] = [
     }),
   },
   {
+    id: "kiiras-engine",
+    group: "Versenykiírás (PDF)",
+    title: "Kiírás: nyelv, térkép, robot API, hibák, lépésszámlálás",
+    description:
+      "A kiírás 1., 2., 2.1, 2.2.1–2.2.4 és 3.4 fejezetének minden szabálya külön tesztként, fejezetszámmal: a példatérkép és a két példaprogram kézzel levezetett eredménye, az EBNF minden ága, mind a 18 kulcsszó minden betűmérettel, a tokenizálás, a szemantika, a robot API, mind a 7 hibakód és az 1000 soros limit. A WASM-motoron és a referencián is fut.",
+    severity: "blokkoló",
+    long: false,
+    needs: ["wasm"],
+    targets: "bun",
+    testRoot: "tools/reference-interpreter/test/kiiras.test.ts",
+    command: bunTest("tools/reference-interpreter", ["test/kiiras.test.ts"]),
+  },
+  {
+    id: "kiiras-live",
+    group: "Versenykiírás (PDF)",
+    title:
+      "Kiírás: bejelentkezés, térképszerkesztő, programmentés, futtatás, ranglista (élő szerver)",
+    description:
+      "A 3.1–3.5 fejezet a futó alkalmazáson: bejelentkezés nélkül semmi nem érhető el, csak szabályos térkép menthető, a hibás program is menthető, a hibás program nem fut és nem rögzül, a futás aranya, lépésszáma és hibakódja a szerveré, a ranglista arany szerint csökkenő, egyenlőségnél lépés szerint növekvő, és van kész bemutató játékkörnyezet. Eldobható fiókokat hoz létre.",
+    severity: "blokkoló",
+    long: false,
+    needs: ["live"],
+    targets: "bun",
+    testRoot: "e2e/spec/kiiras-live.test.ts",
+    command: (target, options, reportFile) =>
+      bunTest("e2e", ["spec/kiiras-live.test.ts"], { KIIRAS_TARGET: options.baseUrl })(
+        target,
+        options,
+        reportFile,
+      ),
+  },
+  {
+    id: "kiiras-ui",
+    group: "Versenykiírás (PDF)",
+    title: "Kiírás: a felület követelményei böngészőben (Playwright)",
+    description:
+      "A 3. fejezet felületi elvárásai: lassított futás az éppen végrehajtott sor kiemelésével, konzol, felfedezett mezők, hibakód és hibasor kijelzése, leállítás, térképszerkesztő szabályai, import és export, hibás fájl érthető hibaüzenettel, ranglista, bejelentkezés. Előtte kell a teljes build.",
+    severity: "magas",
+    long: true,
+    needs: ["db", "build"],
+    targets: "none",
+    testRoot: null,
+    command: (_target, _options, reportFile) => ({
+      cmd: [
+        bun,
+        "run",
+        "e2e",
+        "--reporter=list,json",
+        "run.spec.ts",
+        "play.spec.ts",
+        "program.spec.ts",
+        "map-editor.spec.ts",
+        "map-rules.spec.ts",
+        "leaderboard.spec.ts",
+        "auth.spec.ts",
+        "smoke.spec.ts",
+      ],
+      cwd: join(root, "e2e"),
+      env: { ...databaseEnv(), PLAYWRIGHT_JSON_OUTPUT_NAME: reportFile, FORCE_COLOR: "0" },
+      reportFile,
+      parser: "playwright",
+      reportBase: "e2e",
+    }),
+  },
+  {
+    id: "kiiras-beadando",
+    group: "Versenykiírás (PDF)",
+    title: "Kiírás 4. fejezet: a beadandó leírás teljessége",
+    description:
+      "A docs/beadando.md-ben külön, nem üres fejezet szól a funkciók eléréséről, a kimaradt részekről, a plusz szolgáltatásokról, a problémákról és megoldásaikról, a továbbfejlesztési ötletekről; mind a hat alapfunkció és mind a négy értékelési szempont szerepel, és le van írva a bemutató játékkörnyezet.",
+    severity: "közepes",
+    long: false,
+    needs: [],
+    targets: "bun",
+    testRoot: "e2e/spec/beadando.test.ts",
+    command: bunTest("e2e", ["spec/beadando.test.ts"]),
+  },
+  {
     id: "console-self",
     group: "Tesztkonzol",
     title: "A tesztkonzol önellenőrzése",
@@ -613,6 +691,7 @@ export type DiscoveredTest = { file: string; name: string; line: number | null }
 
 function filesIn(dir: string, pattern: RegExp): string[] {
   if (!existsSync(dir)) return [];
+  if (statSync(dir).isFile()) return pattern.test(dir) ? [dir] : [];
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) return name === "node_modules" ? [] : filesIn(path, pattern);
