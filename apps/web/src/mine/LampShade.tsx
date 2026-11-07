@@ -6,9 +6,11 @@ import {
   FADE_MS,
   fadeLevel,
   flicker,
+  HAZE_AMOUNT,
   isSettled,
   type LightSpot,
   lightSpot,
+  mixRgb,
   mixSpot,
   parseRgb,
   type RevealState,
@@ -33,7 +35,7 @@ export type LampShadeProps = {
 
 type Travel = { from: LightSpot; to: LightSpot; start: number; duration: number };
 type Glow = { from: number; to: number; start: number };
-type Palette = { void: Rgb; ember: Rgb; glow: Rgb };
+type Palette = { void: Rgb; ember: Rgb; glow: Rgb; haze: Rgb };
 
 const BLACK: Rgb = [0, 0, 0];
 
@@ -41,7 +43,7 @@ function readPalette(element: HTMLElement): Palette {
   const style = getComputedStyle(element);
   const voidColor = parseRgb(style.getPropertyValue("--px-void")) ?? BLACK;
   const ore = parseRgb(style.getPropertyValue("--px-ore")) ?? voidColor;
-  return { void: voidColor, ember: ore, glow: ore };
+  return { void: voidColor, ember: ore, glow: ore, haze: mixRgb(voidColor, ore, HAZE_AMOUNT) };
 }
 
 function spotAt(travel: Travel, now: number): LightSpot {
@@ -106,7 +108,8 @@ export function LampShade(props: LampShadeProps) {
     }
     const shown = new Set(visible);
     shown.add(posKey(robot.pos));
-    reveal.current = scheduleReveal(reveal.current, shown, robot.pos, now, isReduced);
+    const pace = isReduced ? "instant" : reveal.current.size === 0 ? "wave" : "quick";
+    reveal.current = scheduleReveal(reveal.current, shown, robot.pos, now, pace);
     const target = lightSpot(robot.pos, robot.dir, radius);
     const current = travel.current ? spotAt(travel.current, now) : target;
     travel.current = {

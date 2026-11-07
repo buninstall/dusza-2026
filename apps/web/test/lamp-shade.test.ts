@@ -6,6 +6,7 @@ import {
   lightSpot,
   mixSpot,
   parseRgb,
+  QUICK_REVEAL_MS,
   REVEAL_MS,
   scheduleReveal,
   shadeInto,
@@ -16,7 +17,7 @@ const origin = { row: 0, col: 0 };
 
 describe("felfedés animációja", () => {
   test("az új mezők a robottól távolodva, hullámban jelennek meg", () => {
-    const state = scheduleReveal(new Map(), new Set(["0:0", "0:3"]), origin, 1000, false);
+    const state = scheduleReveal(new Map(), new Set(["0:0", "0:3"]), origin, 1000, "wave");
     const near = state.get("0:0");
     const far = state.get("0:3");
     expect(near?.delay).toBe(0);
@@ -29,22 +30,30 @@ describe("felfedés animációja", () => {
   });
 
   test("a már látható mező nem kezdi újra", () => {
-    const first = scheduleReveal(new Map(), new Set(["0:1"]), origin, 0, false);
-    const again = scheduleReveal(first, new Set(["0:1"]), origin, 300, false);
+    const first = scheduleReveal(new Map(), new Set(["0:1"]), origin, 0, "wave");
+    const again = scheduleReveal(first, new Set(["0:1"]), origin, 300, "quick");
     expect(again.get("0:1")).toBe(first.get("0:1"));
   });
 
   test("az eltűnő mező elsötétül, majd kikerül", () => {
-    const shown = scheduleReveal(new Map(), new Set(["0:1"]), origin, 0, true);
-    const fading = scheduleReveal(shown, new Set(), origin, 100, false);
+    const shown = scheduleReveal(new Map(), new Set(["0:1"]), origin, 0, "instant");
+    const fading = scheduleReveal(shown, new Set(), origin, 100, "wave");
     const fade = fading.get("0:1");
     expect(fade?.to).toBe(0);
     expect(fadeLevel(fade, 100 + FADE_MS * 2)).toBe(0);
-    expect(scheduleReveal(fading, new Set(), origin, 100 + FADE_MS * 2, false).size).toBe(0);
+    expect(scheduleReveal(fading, new Set(), origin, 100 + FADE_MS * 2, "wave").size).toBe(0);
+  });
+
+  test("futás közben a lámpa fényébe került mező szinte azonnal kigyúl", () => {
+    const shown = scheduleReveal(new Map(), new Set(["0:0"]), origin, 0, "wave");
+    const lit = scheduleReveal(shown, new Set(["0:0", "0:1", "0:2"]), origin, 2000, "quick");
+    expect(lit.get("0:0")).toBe(shown.get("0:0"));
+    expect(fadeLevel(lit.get("0:1"), 2000 + QUICK_REVEAL_MS + 40)).toBe(1);
+    expect(fadeLevel(lit.get("0:2"), 2000 + QUICK_REVEAL_MS + 80)).toBe(1);
   });
 
   test("csökkentett mozgásnál azonnal látszik", () => {
-    const state = scheduleReveal(new Map(), new Set(["2:2"]), origin, 50, true);
+    const state = scheduleReveal(new Map(), new Set(["2:2"]), origin, 50, "instant");
     expect(fadeLevel(state.get("2:2"), 50)).toBe(1);
   });
 });
@@ -81,6 +90,7 @@ describe("lámpafény", () => {
         void: [7, 6, 5],
         ember: [240, 178, 50],
         glow: [240, 178, 50],
+        haze: [60, 45, 20],
       },
       out,
     );
@@ -93,7 +103,9 @@ describe("lámpafény", () => {
       }
     }
     expect(opaque).toBeLessThan((TILE_SIZE * TILE_SIZE) / 4);
-    expect([...pixel(TILE_SIZE + 8, 8)]).toEqual([7, 6, 5, 255]);
+    const hiddenPixel = [...pixel(TILE_SIZE + 8, 8)];
+    expect(hiddenPixel[3]).toBe(255);
+    expect([7, 60]).toContain(hiddenPixel[0]);
   });
 
   test("szín beolvasása a tokenből", () => {

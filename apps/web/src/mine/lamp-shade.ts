@@ -4,9 +4,12 @@ import { TILE_SIZE } from "../pixel/tiles.ts";
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 
 export const REVEAL_MS = 520;
+export const QUICK_REVEAL_MS = 180;
 export const FADE_MS = 720;
 const WAVE_MS_PER_TILE = 90;
 const WAVE_MAX_MS = 900;
+const QUICK_MS_PER_TILE = 20;
+const QUICK_MAX_MS = 80;
 const EMBER_BAND = 0.16;
 const MEMORY_SEEN = 0.42;
 const MEMORY_LIT = 0.6;
@@ -15,10 +18,21 @@ const GLOW_ALPHA = 46;
 const EMBER_ALPHA = 210;
 const HEADLAMP_SHIFT = 0.18;
 const LIGHT_PAD = 0.7;
+const HAZE_REACH = 1.6;
+const HAZE_DENSITY = 0.55;
+const HAZE_MIX = 0.22;
 
 export type Rgb = readonly [number, number, number];
 
-export type TileFade = { from: number; to: number; start: number; delay: number };
+export type TileFade = {
+  from: number;
+  to: number;
+  start: number;
+  delay: number;
+  duration: number;
+};
+
+export type RevealPace = "instant" | "wave" | "quick";
 
 export type RevealState = ReadonlyMap<string, TileFade>;
 
@@ -38,18 +52,31 @@ function keyPos(key: string): Pos {
   return { row, col };
 }
 
-function waveDelay(key: string, origin: Pos): number {
+function distanceFrom(key: string, origin: Pos): number {
   const pos = keyPos(key);
-  const distance = Math.abs(pos.row - origin.row) + Math.abs(pos.col - origin.col);
-  return Math.min(distance * WAVE_MS_PER_TILE, WAVE_MAX_MS);
+  return Math.abs(pos.row - origin.row) + Math.abs(pos.col - origin.col);
+}
+
+function waveDelay(key: string, origin: Pos): number {
+  return Math.min(distanceFrom(key, origin) * WAVE_MS_PER_TILE, WAVE_MAX_MS);
+}
+
+function revealTiming(pace: RevealPace, key: string, origin: Pos) {
+  if (pace === "instant") {
+    return { delay: 0, duration: 1 };
+  }
+  if (pace === "quick") {
+    const delay = Math.min(distanceFrom(key, origin) * QUICK_MS_PER_TILE, QUICK_MAX_MS);
+    return { delay, duration: QUICK_REVEAL_MS };
+  }
+  return { delay: waveDelay(key, origin), duration: REVEAL_MS };
 }
 
 export function fadeLevel(fade: TileFade | undefined, now: number): number {
   if (!fade) {
     return 0;
   }
-  const duration = fade.to > fade.from ? REVEAL_MS : FADE_MS;
-  const t = smooth((now - fade.start - fade.delay) / duration);
+  const t = smooth((now - fade.start - fade.delay) / fade.duration);
   return fade.from + (fade.to - fade.from) * t;
 }
 
@@ -67,8 +94,9 @@ export function scheduleReveal(
   visible: ReadonlySet<string>,
   origin: Pos,
   now: number,
-  isInstant: boolean,
+  pace: RevealPace,
 ): Map<string, TileFade> {
+  const isInstant = pace === "instant";
   const next = new Map<string, TileFade>();
   for (const key of visible) {
     const current = state.get(key);
@@ -77,7 +105,7 @@ export function scheduleReveal(
       continue;
     }
     const from = isInstant ? 1 : fadeLevel(current, now);
-    next.set(key, { from, to: 1, start: now, delay: isInstant ? 0 : waveDelay(key, origin) });
+    next.set(key, { from, to: 1, start: now, ...revealTiming(pace, key, origin) });
   }
   for (const [key, fade] of state) {
     if (visible.has(key)) {
@@ -89,7 +117,15 @@ export function scheduleReveal(
     }
     next.set(
       key,
-      fade.to === 0 ? fade : { from: level, to: 0, start: now, delay: waveDelay(key, origin) / 2 },
+      fade.to === 0
+        ? fade
+        : {
+            from: level,
+            to: 0,
+            start: now,
+            delay: waveDelay(key, origin) / 2,
+            duration: FADE_MS,
+          },
     );
   }
   return next;
@@ -130,13 +166,39 @@ export type ShadeFrame = {
   void: Rgb;
   ember: Rgb;
   glow: Rgb;
+  haze: Rgb;
 };
+
+export function mixRgb(from: Rgb, to: Rgb, amount: number): Rgb {
+  return [
+    Math.round(from[0] + (to[0] - from[0]) * amount),
+    Math.round(from[1] + (to[1] - from[1]) * amount),
+    Math.round(from[2] + (to[2] - from[2]) * amount),
+  ];
+}
+
+export const HAZE_AMOUNT = HAZE_MIX;
 
 function put(out: Uint8ClampedArray, index: number, color: Rgb, alpha: number): void {
   out[index] = color[0];
   out[index + 1] = color[1];
   out[index + 2] = color[2];
   out[index + 3] = alpha;
+}
+
+function hazeAt(frame: ShadeFrame, x: number, y: number): number {
+  const { spot } = frame;
+  const reach = spot.radius * HAZE_REACH;
+  if (reach <= 0 || frame.intensity <= 0) {
+    return 0;
+  }
+  const distance = Math.hypot(x + 0.5 - spot.x, y + 0.5 - spot.y);
+  return distance >= reach ? 0 : smooth((reach - distance) / reach) * frame.intensity;
+}
+
+function hidden(frame: ShadeFrame, out: Uint8ClampedArray, index: number, x: number, y: number) {
+  const haze = hazeAt(frame, x, y);
+  put(out, index, haze * HAZE_DENSITY > bayer(x + 1, y + 3) ? frame.haze : frame.void, 255);
 }
 
 function lightAt(frame: ShadeFrame, x: number, y: number): number {
@@ -155,9 +217,10 @@ function lightAt(frame: ShadeFrame, x: number, y: number): number {
 function fillTile(frame: ShadeFrame, out: Uint8ClampedArray, row: number, col: number): void {
   const width = frame.cols * TILE_SIZE;
   for (let py = 0; py < TILE_SIZE; py += 1) {
-    const start = ((row * TILE_SIZE + py) * width + col * TILE_SIZE) * 4;
+    const y = row * TILE_SIZE + py;
+    const start = (y * width + col * TILE_SIZE) * 4;
     for (let px = 0; px < TILE_SIZE; px += 1) {
-      put(out, start + px * 4, frame.void, 255);
+      hidden(frame, out, start + px * 4, col * TILE_SIZE + px, y);
     }
   }
 }
@@ -177,7 +240,7 @@ function shadeTile(frame: ShadeFrame, out: Uint8ClampedArray, row: number, col: 
       const index = (y * width + x) * 4;
       const threshold = bayer(x + 2, y + 1);
       if (reveal <= threshold) {
-        put(out, index, frame.void, 255);
+        hidden(frame, out, index, x, y);
         continue;
       }
       if (reveal < 1 && reveal - threshold < EMBER_BAND) {
