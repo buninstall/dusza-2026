@@ -8,6 +8,7 @@ import { sessionQuery } from "./auth/session.ts";
 import { preloadEngine } from "./engine/EngineProvider.tsx";
 import { applyCursor, initialCursor } from "./lib/cursor.ts";
 import { clearPersistedQueries, createQueryClient, persistQueries } from "./lib/query.ts";
+import { keepScrollbarGap } from "./lib/scrollbar-gap.ts";
 import { applyTheme } from "./lib/theme.ts";
 import { startPixelClock } from "./pixel/pixel-clock.ts";
 import { routeTree } from "./routeTree.gen.ts";
@@ -47,6 +48,7 @@ applyTheme();
 startPixelClock();
 persistQueries(queryClient);
 applyCursor(initialCursor());
+keepScrollbarGap();
 
 const container = document.getElementById("root");
 if (container) {

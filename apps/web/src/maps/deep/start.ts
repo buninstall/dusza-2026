@@ -1,3 +1,4 @@
+import { viewportWidth } from "../../lib/scrollbar-gap.ts";
 import { buildMine, type Level, type LevelInput } from "./build.ts";
 import { readDeepPalette } from "./palette.ts";
 import { runScene } from "./scene.ts";
@@ -61,7 +62,7 @@ function readLevels(
 export function startDeepScene(host: DeepHost): (() => void) | null {
   const plate = host.root.querySelector(`[${MINE_ATTR}="plate"]`);
   const front = host.root.querySelector(`[${MINE_ATTR}="front"]`);
-  const viewWidth = document.documentElement.clientWidth;
+  const viewWidth = viewportWidth();
   if (!plate || !front || viewWidth < MIN_WIDTH) return null;
   const isNarrow = viewWidth < NARROW_WIDTH;
   const scale = isNarrow ? 2 : 3;

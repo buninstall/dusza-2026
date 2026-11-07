@@ -1,4 +1,5 @@
 import type { Light } from "../../auth/lamp/lighting.ts";
+import { viewportWidth } from "../../lib/scrollbar-gap.ts";
 import { createBats, createDrips } from "./critters.ts";
 import { readDeepPalette } from "./palette.ts";
 import { createSprites, drawGlows, drawVeinGlints, glowLights, type Sprites } from "./sprites.ts";
@@ -165,7 +166,7 @@ function drawSpiders(
 }
 
 export function startWall(host: WallHost): (() => void) | null {
-  const viewWidth = document.documentElement.clientWidth;
+  const viewWidth = viewportWidth();
   const scale = viewWidth < 768 ? 2 : 3;
   const frames = [host.canvas.parentElement, host.front?.parentElement ?? null];
   const docHeight = pageHeight();
