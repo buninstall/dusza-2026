@@ -1,5 +1,5 @@
 import type { Pos, RobotState } from "@minescript/engine";
-import type { CSSProperties } from "react";
+import { type CSSProperties, useState } from "react";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { SPRITE_ID, TILE_SIZE, TILE_SPRITES } from "../pixel/tiles.ts";
 import "./MineBoard.css";
@@ -36,6 +36,20 @@ const ROBOT_TONES = {
   "tread-hi": "board-robot-tread",
 } as const;
 
+type TurnSide = "none" | "left" | "right" | "back";
+
+function useTurnDrift(turns: number): { side: TurnSide; key: number } {
+  const [state, setState] = useState({ turns, side: "none" as TurnSide, key: 0 });
+  if (state.turns !== turns) {
+    const delta = turns - state.turns;
+    const side: TurnSide = Math.abs(delta) >= 2 ? "back" : delta > 0 ? "right" : "left";
+    const next = { turns, side, key: state.key + 1 };
+    setState(next);
+    return next;
+  }
+  return state;
+}
+
 type RobotLayerProps = {
   robot: RobotState;
   mood?: RobotMood;
@@ -54,7 +68,8 @@ export function RobotLayer({
   beam,
 }: RobotLayerProps) {
   const turns = useQuarterTurns(robot.dir);
-  const style = { ...placement(robot.pos), "--walk-steps": walkTiles * 4 } as CSSProperties;
+  const drift = useTurnDrift(turns);
+  const style = { ...placement(robot.pos), "--walk-tiles": walkTiles } as CSSProperties;
   return (
     <div
       className="board-robot"
@@ -80,11 +95,13 @@ export function RobotLayer({
           </div>
         ) : null}
         <div className="board-robot-body" style={{ "--turns": turns } as CSSProperties}>
-          <PixelSprite
-            sprite={TILE_SPRITES.robot}
-            className="board-tile-art"
-            animated={ROBOT_TONES}
-          />
+          <div key={drift.key} className="board-robot-drift" data-turn={drift.side}>
+            <PixelSprite
+              sprite={TILE_SPRITES.robot}
+              className="board-tile-art"
+              animated={ROBOT_TONES}
+            />
+          </div>
         </div>
       </div>
     </div>

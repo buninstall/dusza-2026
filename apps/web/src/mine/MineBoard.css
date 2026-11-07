@@ -241,7 +241,16 @@
 
 .board-void {
   fill: var(--px-void);
-  opacity: 0.8;
+  opacity: 0.82;
+  transition: opacity 420ms ease-out;
+}
+
+.board-void[data-light="glow"] {
+  opacity: 0.45;
+}
+
+.board-void[data-light="lit"] {
+  opacity: 0;
 }
 
 .board-shroud {
@@ -299,8 +308,10 @@
 }
 
 .board-robot {
+  --glide: cubic-bezier(0.45, 0.05, 0.25, 1);
+
   z-index: 3;
-  transition: transform var(--step-ms) steps(var(--walk-steps, 4), end);
+  transition: transform var(--step-ms) var(--glide);
 }
 
 .board-robot[data-mood="ok"] {
@@ -327,10 +338,27 @@
 
 .board-robot-body {
   rotate: calc(var(--turns) * 90deg);
+  transition: rotate max(140ms, calc(var(--step-ms) * 0.75)) cubic-bezier(0.3, 1.45, 0.55, 1);
 }
 
-.board-robot-motion[data-motion="walk"] {
-  animation: robot-bob var(--step-ms) var(--ease-px2);
+.board-robot-drift {
+  width: 100%;
+  height: 100%;
+}
+
+.board-robot-drift[data-turn="right"] {
+  --skid: -1;
+  animation: robot-drift max(180ms, calc(var(--step-ms) * 0.9)) ease-out;
+}
+
+.board-robot-drift[data-turn="left"] {
+  --skid: 1;
+  animation: robot-drift max(180ms, calc(var(--step-ms) * 0.9)) ease-out;
+}
+
+.board-robot-drift[data-turn="back"] {
+  --skid: 1;
+  animation: robot-drift max(220ms, var(--step-ms)) ease-out;
 }
 
 .board-robot-motion[data-motion="mine"] {
@@ -338,7 +366,7 @@
 }
 
 .board-robot-motion[data-motion="hop"] {
-  animation: robot-hop var(--motion-burst) var(--ease-px4) 2;
+  animation: robot-hop 420ms cubic-bezier(0.3, 0, 0.4, 1) 2;
 }
 
 .board-robot-motion[data-motion="shake"] {
@@ -387,12 +415,6 @@
   }
 }
 
-@keyframes robot-bob {
-  50% {
-    translate: 0 calc(var(--art-px) * -1);
-  }
-}
-
 @keyframes robot-nudge {
   50% {
     translate: calc(var(--ahead-x) * 2 * var(--art-px)) calc(var(--ahead-y) * 2 * var(--art-px));
@@ -402,6 +424,28 @@
 @keyframes robot-hop {
   50% {
     translate: 0 calc(var(--art-px) * -2);
+  }
+}
+
+@keyframes robot-drift {
+  0% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+
+  35% {
+    translate: calc(var(--skid) * var(--art-px) * 1.5) calc(var(--art-px) * 0.5);
+    rotate: calc(var(--skid) * 7deg);
+  }
+
+  70% {
+    translate: calc(var(--skid) * var(--art-px) * -0.5) 0;
+    rotate: calc(var(--skid) * -2deg);
+  }
+
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
   }
 }
 
@@ -569,11 +613,13 @@
   inset: 0;
   translate: calc(var(--ahead-x) * 100%) calc(var(--ahead-y) * 100%);
   pointer-events: none;
+  transition: translate 180ms cubic-bezier(0.3, 1.3, 0.55, 1);
 }
 
 .board-robot-cone .board-fx-art {
   opacity: 0.55;
   rotate: calc(var(--turns, 0) * 90deg);
+  transition: rotate 180ms cubic-bezier(0.3, 1.3, 0.55, 1);
 }
 
 .board-fx[data-fx="reveal"] {
@@ -754,8 +800,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .board-robot {
+  .board-robot,
+  .board-robot-body,
+  .board-robot-cone,
+  .board-robot-cone .board-fx-art,
+  .board-void {
     transition: none;
+  }
+
+  .board-robot-drift {
+    animation: none;
   }
 
   .board-robot-motion[data-motion],

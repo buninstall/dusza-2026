@@ -248,12 +248,12 @@ export function PlayScreen(props: PlayScreenProps) {
             />
           </div>
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
-        </div>
-        <div className="stage-status">
-          <LongRunNotice />
-          {report}
-          {view.report === "stopped" || blocked ? null : props.reportFooter}
-          {props.wellOverlay}
+          <div className="stage-status">
+            <LongRunNotice />
+            {report}
+            {view.report === "stopped" || blocked ? null : props.reportFooter}
+            {props.wellOverlay}
+          </div>
         </div>
         <ControlDeck
           mode={mode}

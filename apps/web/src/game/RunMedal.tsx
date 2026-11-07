@@ -89,7 +89,7 @@ export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedal
   const gained = gainedNow;
   const hint =
     stars.run >= MAX_NUGGETS
-      ? hu.game.allStars
+      ? hu.game.allStars(reachableGold)
       : hu.game.nextStar(stars.run, stars.parSteps, reachableGold);
   return (
     <section className="medal" aria-labelledby={headingId} data-gained={gained > 0}>

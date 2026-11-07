@@ -46,10 +46,25 @@
 }
 
 .stage-status {
-  grid-area: status;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 7;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  max-height: 70%;
+  overflow-y: auto;
+  box-shadow: 0 calc(var(--shadow-offset) * -1) 0 var(--c-shadow);
+  animation: status-rise var(--motion-enter) var(--ease-px3);
+}
+
+@keyframes status-rise {
+  from {
+    translate: 0 16px;
+    opacity: 0;
+  }
 }
 
 .stage-status:empty {
@@ -193,7 +208,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stage-flash {
+  .stage-flash,
+  .stage-status {
     animation: none;
   }
 }

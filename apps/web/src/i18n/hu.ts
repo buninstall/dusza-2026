@@ -785,7 +785,10 @@ export const hu = {
         ? "Ennek a pályának nincs célértéke, 2 rög a maximum."
         : `A harmadik röghöz legfeljebb ${par} lépés kell.`;
     },
-    allStars: "Mind a három rög megvan.",
+    allStars: (gold: number) =>
+      gold === 1
+        ? "Hibátlan: az arany megvan, a célon belül. Ez a legjobb eredmény."
+        : `Hibátlan: mind a ${gold} elérhető arany megvan, a célon belül. Ez a legjobb eredmény.`,
     medalTitle: "Eredmény",
     nextMap: "Következő pálya",
     nextMapFor: (title: string) => `Következő pálya: ${title}`,

@@ -13,20 +13,15 @@ function baseSprite(view: TileView): string {
     : SPRITE_ID.floor(tileVariant(row, col, TILE_SPRITES.floor.length));
 }
 
-function DarkTile({ view }: { view: TileView }) {
-  return (
-    <>
-      <use href={spriteHref(baseSprite(view))} />
-      {view.kind === "gold" ? <use href={spriteHref(SPRITE_ID.gold)} /> : null}
-      <rect width={TILE_SIZE} height={TILE_SIZE} className="board-void" />
-      {view.fringe.map((side) => (
-        <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} />
-      ))}
-    </>
-  );
+function lightOf(view: TileView): "lit" | "glow" | "dark" {
+  if (view.lighting !== "dark") {
+    return "lit";
+  }
+  return view.isLampLit ? "glow" : "dark";
 }
 
-function LitTile({ view }: { view: TileView }) {
+function TileLayers({ view }: { view: TileView }) {
+  const light = lightOf(view);
   return (
     <>
       <use href={spriteHref(baseSprite(view))} />
@@ -35,6 +30,10 @@ function LitTile({ view }: { view: TileView }) {
       {view.lighting === "shrouded" ? (
         <use href={spriteHref(SPRITE_ID.shroud)} className="board-shroud" />
       ) : null}
+      <rect width={TILE_SIZE} height={TILE_SIZE} className="board-void" data-light={light} />
+      {light === "dark"
+        ? view.fringe.map((side) => <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} />)
+        : null}
     </>
   );
 }
@@ -48,7 +47,7 @@ export function TileArt({ view }: { view: TileView }) {
       shapeRendering="crispEdges"
       className="board-tile-art"
     >
-      {view.lighting === "dark" ? <DarkTile view={view} /> : <LitTile view={view} />}
+      <TileLayers view={view} />
     </svg>
   );
 }
