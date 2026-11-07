@@ -16,10 +16,12 @@ import {
 export const ROLES = ["admin", "user"] as const;
 export const VISIBILITIES = ["public", "private"] as const;
 export const OUTCOME_KINDS = ["ok", "runtimeError"] as const;
+export const LAMP_MODES = ["open", "lamp", "dark"] as const;
 
 export type Role = (typeof ROLES)[number];
 export type Visibility = (typeof VISIBILITIES)[number];
 export type RecordedOutcome = (typeof OUTCOME_KINDS)[number];
+export type LampMode = (typeof LAMP_MODES)[number];
 
 export const COLLATION = "utf8mb4_0900_ai_ci";
 
@@ -73,6 +75,7 @@ export const maps = mysqlTable(
     visibility: mysqlEnum("visibility", VISIBILITIES).notNull().default("public"),
     currentVersionId: int("current_version_id"),
     parSteps: int("par_steps"),
+    lampMode: mysqlEnum("lamp_mode", LAMP_MODES).notNull().default("open"),
     dailyDate: char("daily_date", { length: DAY_KEY_LENGTH }),
     createdAt: millis("created_at").notNull(),
     updatedAt: millis("updated_at").notNull(),

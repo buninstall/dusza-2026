@@ -39,7 +39,19 @@ describe("demó-seed", () => {
     const demo = context.client();
     const login = await demo.post("/api/auth/login", { username: "demo1", password: "demo2026" });
     expect(login.status).toBe(200);
-    const list = await json<{ maps: { title: string }[] }>(await demo.get("/api/maps"));
+    const list = await json<{ maps: { title: string; lampMode: string }[] }>(
+      await demo.get("/api/maps"),
+    );
     expect(list.maps.map((m) => m.title)).toEqual(TUTORIAL_MAPS.map((m) => m.title));
+    expect(list.maps.map((m) => m.lampMode)).toEqual([
+      "open",
+      "open",
+      "open",
+      "open",
+      "lamp",
+      "lamp",
+      "dark",
+      "dark",
+    ]);
   });
 });

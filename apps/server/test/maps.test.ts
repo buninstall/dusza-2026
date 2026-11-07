@@ -72,6 +72,32 @@ describe("térképek", () => {
     expect((await admin.get(`/api/maps/${map.id}`)).status).toBe(200);
   });
 
+  test("lámpafényes pálya: a fokozat menthető, más nem exportálhatja", async () => {
+    await using context = await createTestContext();
+    const owner = context.client();
+    await owner.register("tulaj");
+    const { map } = await json<{ map: { id: number; lampMode: string } }>(
+      await owner.post("/api/maps", { title: "Sötét", content: "1 2\n>@", lampMode: "lamp" }),
+    );
+    expect(map.lampMode).toBe("lamp");
+    expect((await owner.get(`/api/maps/${map.id}/export`)).status).toBe(200);
+
+    const stranger = context.client();
+    await stranger.register("idegen");
+    const denied = await stranger.get(`/api/maps/${map.id}/export`);
+    expect(denied.status).toBe(403);
+    expect((await json<ErrorBody>(denied)).error.code).toBe("FORBIDDEN");
+    const list = await json<{ maps: { id: number; lampMode: string }[] }>(
+      await stranger.get("/api/maps"),
+    );
+    expect(list.maps.find((item) => item.id === map.id)?.lampMode).toBe("lamp");
+
+    const updated = await owner.put(`/api/maps/${map.id}`, { lampMode: "open" });
+    expect(updated.status).toBe(200);
+    expect((await stranger.get(`/api/maps/${map.id}/export`)).status).toBe(200);
+    expect((await owner.put(`/api/maps/${map.id}`, { lampMode: "fekete" })).status).toBe(400);
+  });
+
   test("más térképét nem lehet módosítani vagy törölni", async () => {
     await using context = await createTestContext();
     const owner = context.client();

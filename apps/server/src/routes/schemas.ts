@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LIMITS, VISIBILITIES } from "../db/schema.ts";
+import { LAMP_MODES, LIMITS, VISIBILITIES } from "../db/schema.ts";
 import { DIFFICULTIES, GENERATOR_MAX, GENERATOR_MIN } from "../services/generator.ts";
 
 z.config(z.locales.hu());
@@ -70,11 +70,16 @@ const parSteps = z
   .max(LIMITS.parSteps, PAR_MESSAGE)
   .nullable();
 
+const lampMode = z.enum(LAMP_MODES, {
+  error: "A lámpa-fokozat „open”, „lamp” vagy „dark” lehet.",
+});
+
 export const createMapSchema = z.object({
   title,
   description: description.default(""),
   visibility: visibility.default("public"),
   parSteps: parSteps.default(null),
+  lampMode: lampMode.default("open"),
   content,
 });
 
@@ -84,6 +89,7 @@ export const updateMapSchema = z
     description: description.optional(),
     visibility: visibility.optional(),
     parSteps: parSteps.optional(),
+    lampMode: lampMode.optional(),
     content: content.optional(),
   })
   .refine((value) => Object.values(value).some((field) => field !== undefined), {

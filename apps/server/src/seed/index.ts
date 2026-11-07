@@ -103,6 +103,7 @@ async function createMaps(deps: Deps, ownerId: number, now: number): Promise<Map
         description: tutorial.description,
         visibility: "public",
         parSteps: tutorialPar(index),
+        lampMode: tutorial.lampMode,
         valid,
         now: now + index,
       }),

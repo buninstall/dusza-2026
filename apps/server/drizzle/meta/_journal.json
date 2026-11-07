@@ -15,6 +15,13 @@
       "when": 1794004341430,
       "tag": "0001_game_features",
       "breakpoints": false
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1794074271535,
+      "tag": "0002_lamp_mode",
+      "breakpoints": false
     }
   ]
 }

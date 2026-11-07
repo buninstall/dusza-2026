@@ -11,6 +11,7 @@ import { ensureDailyMap } from "../services/daily.ts";
 import { computeParSteps, difficultyOf, generateMap } from "../services/generator.ts";
 import {
   canEdit,
+  canExport,
   canView,
   createMapWithVersion,
   currentVersion,
@@ -36,6 +37,8 @@ import {
 } from "./schemas.ts";
 
 const invalidMapMessage = "A térkép nem felel meg a szabályoknak.";
+
+const lampExportMessage = "Lámpafényes pályát csak a szerzője exportálhat, különben elárulná a sötét bányát.";
 
 const MAX_SEED = 0xffff_ffff;
 
@@ -104,6 +107,7 @@ export function mapRoutes(deps: Deps) {
         description: input.description,
         visibility: input.visibility,
         parSteps: input.parSteps,
+        lampMode: input.lampMode,
         valid,
         now: deps.now(),
       });
@@ -153,6 +157,7 @@ export function mapRoutes(deps: Deps) {
             ...(input.description === undefined ? {} : { description: input.description }),
             ...(input.visibility === undefined ? {} : { visibility: input.visibility }),
             ...(input.parSteps === undefined ? {} : { parSteps: input.parSteps }),
+            ...(input.lampMode === undefined ? {} : { lampMode: input.lampMode }),
             updatedAt: now,
           })
           .where(eq(maps.id, map.id));
@@ -178,6 +183,9 @@ export function mapRoutes(deps: Deps) {
       const found = await detail(c.req.valid("param").id);
       if (!found || !canView(c.var.user, found.map)) {
         return apiError(c, 404, "NOT_FOUND", messages.notFound);
+      }
+      if (!canExport(c.var.user, found.map)) {
+        return apiError(c, 403, "FORBIDDEN", lampExportMessage);
       }
       c.header("Content-Type", "text/plain; charset=utf-8");
       c.header("Content-Disposition", attachmentDisposition(found.map.title, "txt"));

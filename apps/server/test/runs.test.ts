@@ -161,7 +161,7 @@ describe("egy futás visszajátszáshoz", () => {
         username: "futo",
         isOwn: true,
       },
-      map: { content: firstContent },
+      map: { content: firstContent, lampMode: "open" },
     });
     const replay = context.deps.engine.run(body.run.source, body.map.content);
     expect([replay.gold, replay.steps]).toEqual([body.run.gold, body.run.steps]);

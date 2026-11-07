@@ -50,6 +50,10 @@ export function canView(user: SessionUser, map: MapRow): boolean {
   return map.visibility === "public" || map.ownerId === user.id || user.role === "admin";
 }
 
+export function canExport(user: SessionUser, map: MapRow): boolean {
+  return map.lampMode === "open" || map.ownerId === user.id || user.role === "admin";
+}
+
 export function canEdit(user: SessionUser, map: MapRow): boolean {
   return map.dailyDate === null && (map.ownerId === user.id || user.role === "admin");
 }
@@ -117,6 +121,7 @@ export async function mapSummaries(
       ownerId: maps.ownerId,
       ownerName: users.username,
       parSteps: maps.parSteps,
+      lampMode: maps.lampMode,
       createdAt: maps.createdAt,
       updatedAt: maps.updatedAt,
       versionId: mapVersions.id,
@@ -161,6 +166,7 @@ export function createMapWithVersion(
     valid: ValidMapContent;
     now: number;
     parSteps?: number | null;
+    lampMode?: MapRow["lampMode"];
     dailyDate?: string | null;
   },
 ): Promise<MapRow> {
@@ -174,6 +180,7 @@ export function createMapWithVersion(
           description: input.description,
           visibility: input.visibility,
           parSteps: input.parSteps ?? null,
+          lampMode: input.lampMode ?? "open",
           dailyDate: input.dailyDate ?? null,
           createdAt: input.now,
           updatedAt: input.now,
