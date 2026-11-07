@@ -729,6 +729,10 @@ export const hu = {
     ownAccount: "saját fiók",
     tableLabel: "Felhasználók",
     loadFailed: "A felhasználók nem tölthetők be.",
+    create: "Új felhasználó",
+    createTitle: "Új felhasználó létrehozása",
+    createSubmit: "Fiók létrehozása",
+    createdToast: (username: string, role: string) => `${username} fiókja elkészült (${role}).`,
   },
   manual,
   recipes: {

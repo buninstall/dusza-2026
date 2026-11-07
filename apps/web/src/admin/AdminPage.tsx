@@ -11,6 +11,8 @@ import { formatTime, hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import "./AdminPage.css";
+import { type NewAccount, NewAccountDialog } from "./NewAccountDialog.tsx";
+
 
 const fetchUsers = () => call(api.admin.users.$get());
 
@@ -79,6 +81,12 @@ export function AdminPage({ me }: { me: SessionUser }) {
     }
   };
 
+  const create = async (account: NewAccount) => {
+    await call(api.admin.users.$post({ json: account }));
+    await refresh();
+    toast.success(hu.admin.createdToast(account.username, ROLE_LABEL[account.role]));
+  };
+
   const remove = async (account: Account) => {
     try {
       await call(api.admin.users[":id"].$delete({ param: { id: String(account.id) } }));
@@ -94,6 +102,7 @@ export function AdminPage({ me }: { me: SessionUser }) {
       <LocationPlate
         name={hu.signs.admin}
         meta={data ? hu.admin.meta(data.users.length, countAdmins(data.users)) : undefined}
+        actions={<NewAccountDialog onCreate={create} />}
       />
       {error ? (
         <Notice tone="error" title={errorMessage(error, hu.admin.loadFailed)} live="alert" />
