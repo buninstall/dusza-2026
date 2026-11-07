@@ -214,13 +214,50 @@ function lightAt(frame: ShadeFrame, x: number, y: number): number {
   return smooth((spot.radius - distance) / edge) * frame.intensity;
 }
 
-function fillTile(frame: ShadeFrame, out: Uint8ClampedArray, row: number, col: number): void {
+function nearest(lo: number, hi: number): number {
+  if (lo > 0) {
+    return lo;
+  }
+  return hi < 0 ? -hi : 0;
+}
+
+function isBeyond(frame: ShadeFrame, row: number, col: number, reach: number): boolean {
+  const { spot } = frame;
+  const x0 = col * TILE_SIZE;
+  const y0 = row * TILE_SIZE;
+  const last = TILE_SIZE - 1;
+  const gapX = nearest(x0 + 0.5 - spot.x, x0 + last + 0.5 - spot.x);
+  const gapY = nearest(y0 + 0.5 - spot.y, y0 + last + 0.5 - spot.y);
+  return gapX >= reach || gapY >= reach;
+}
+
+function isHazeFree(frame: ShadeFrame, row: number, col: number): boolean {
+  const reach = frame.spot.radius * HAZE_REACH;
+  return reach <= 0 || frame.intensity <= 0 || isBeyond(frame, row, col, reach);
+}
+
+function isLightFree(frame: ShadeFrame, row: number, col: number): boolean {
+  const { radius } = frame.spot;
+  return radius <= 0 || frame.intensity <= 0 || isBeyond(frame, row, col, radius);
+}
+
+function fillTile(
+  frame: ShadeFrame,
+  out: Uint8ClampedArray,
+  row: number,
+  col: number,
+  hasHaze: boolean,
+): void {
   const width = frame.cols * TILE_SIZE;
   for (let py = 0; py < TILE_SIZE; py += 1) {
     const y = row * TILE_SIZE + py;
     const start = (y * width + col * TILE_SIZE) * 4;
     for (let px = 0; px < TILE_SIZE; px += 1) {
-      hidden(frame, out, start + px * 4, col * TILE_SIZE + px, y);
+      if (hasHaze) {
+        hidden(frame, out, start + px * 4, col * TILE_SIZE + px, y);
+      } else {
+        put(out, start + px * 4, frame.void, 255);
+      }
     }
   }
 }
@@ -228,10 +265,12 @@ function fillTile(frame: ShadeFrame, out: Uint8ClampedArray, row: number, col: n
 function shadeTile(frame: ShadeFrame, out: Uint8ClampedArray, row: number, col: number): void {
   const width = frame.cols * TILE_SIZE;
   const reveal = frame.level(row, col);
+  const hasHaze = !isHazeFree(frame, row, col);
   if (reveal <= 0) {
-    fillTile(frame, out, row, col);
+    fillTile(frame, out, row, col, hasHaze);
     return;
   }
+  const hasLight = !isLightFree(frame, row, col);
   const memory = frame.isSeen(row, col) ? MEMORY_SEEN : MEMORY_LIT;
   for (let py = 0; py < TILE_SIZE; py += 1) {
     const y = row * TILE_SIZE + py;
@@ -240,14 +279,18 @@ function shadeTile(frame: ShadeFrame, out: Uint8ClampedArray, row: number, col: 
       const index = (y * width + x) * 4;
       const threshold = bayer(x + 2, y + 1);
       if (reveal <= threshold) {
-        hidden(frame, out, index, x, y);
+        if (hasHaze) {
+          hidden(frame, out, index, x, y);
+        } else {
+          put(out, index, frame.void, 255);
+        }
         continue;
       }
       if (reveal < 1 && reveal - threshold < EMBER_BAND) {
         put(out, index, frame.ember, EMBER_ALPHA);
         continue;
       }
-      const light = lightAt(frame, x, y);
+      const light = hasLight ? lightAt(frame, x, y) : 0;
       if (memory * (1 - light) * (1 - light) > bayer(x, y)) {
         put(out, index, frame.void, 255);
         continue;

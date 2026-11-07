@@ -25,12 +25,27 @@ type LoadedEngine = ReturnType<typeof resilientEngine>;
 let enginePromise: Promise<LoadedEngine> | null = null;
 let isEngineReady = false;
 
+async function compileBuffer(response: Response): Promise<WebAssembly.Module> {
+  return WebAssembly.compile(await response.arrayBuffer());
+}
+
 async function compile(): Promise<WebAssembly.Module> {
   const response = await fetch(wasmUrl);
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
   }
-  return new WebAssembly.Module(await response.arrayBuffer());
+  const isStreamable =
+    typeof WebAssembly.compileStreaming === "function" &&
+    response.headers.get("content-type")?.split(";")[0]?.trim() === "application/wasm";
+  if (!isStreamable) {
+    return compileBuffer(response);
+  }
+  const fallback = response.clone();
+  try {
+    return await WebAssembly.compileStreaming(response);
+  } catch {
+    return compileBuffer(fallback);
+  }
 }
 
 export function loadEngine(): Promise<LoadedEngine> {

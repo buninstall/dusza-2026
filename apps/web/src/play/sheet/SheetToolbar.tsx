@@ -1,4 +1,4 @@
-import { type ChangeEvent, type ReactNode, useRef } from "react";
+import { type ChangeEvent, memo, type ReactNode, useRef } from "react";
 import { Button } from "../../components/ui/Button.tsx";
 import { IconButton } from "../../components/ui/IconButton.tsx";
 import { Menu, MenuItem, MenuSeparator } from "../../components/ui/Menu.tsx";
@@ -63,7 +63,7 @@ type SheetToolbarProps = FileActions & {
   isSaving: boolean;
 };
 
-export function SheetToolbar({
+export const SheetToolbar = memo(function SheetToolbar({
   onOpenLibrary,
   onFormat,
   onSave,
@@ -105,7 +105,7 @@ export function SheetToolbar({
       </Button>
     </SheetBar>
   );
-}
+});
 
 export function SheetBar({ children }: { children: ReactNode }) {
   return <div className="sheet-toolbar">{children}</div>;

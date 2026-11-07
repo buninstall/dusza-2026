@@ -1,12 +1,26 @@
 import type { MineMap, Pos, RobotState } from "@minescript/engine";
-import { type CSSProperties, type ReactNode, useMemo, useRef } from "react";
+import {
+  type CSSProperties,
+  memo,
+  type ReactNode,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { type BoardInteraction, useBoardInput } from "./board-input.ts";
 import { samePos } from "./grid-nav.ts";
 import "./MineBoard.css";
 import { LampShade } from "./LampShade.tsx";
 import { RobotLayer, type RobotMood, type RobotMotion, SparkleBurst } from "./RobotLayer.tsx";
 import { TileArt } from "./TileArt.tsx";
-import { buildTiles, describeTile, type Exploration, posKey } from "./tiles-model.ts";
+import {
+  buildTiles,
+  describeTile,
+  type Exploration,
+  posKey,
+  type TileView,
+} from "./tiles-model.ts";
 
 export type BoardSize = "play" | "editor" | "scene";
 export type BoardFit = "width" | "both";
@@ -92,6 +106,68 @@ function Rulers({
   );
 }
 
+type BoardCellProps = {
+  view: TileView;
+  label: string;
+  isFocusable: boolean;
+  mark: string | undefined;
+  isEditable: boolean;
+  onFocusCell: (pos: Pos) => void;
+};
+
+function sameFringe(a: TileView["fringe"], b: TileView["fringe"]): boolean {
+  return a.length === b.length && a.every((side, index) => side === b[index]);
+}
+
+function sameView(a: TileView, b: TileView): boolean {
+  return (
+    a.pos.row === b.pos.row &&
+    a.pos.col === b.pos.col &&
+    a.kind === b.kind &&
+    a.lighting === b.lighting &&
+    a.hasRobot === b.hasRobot &&
+    a.isLampLit === b.isLampLit &&
+    a.isSealed === b.isSealed &&
+    sameFringe(a.fringe, b.fringe)
+  );
+}
+
+function sameCell(a: BoardCellProps, b: BoardCellProps): boolean {
+  return (
+    a.label === b.label &&
+    a.isFocusable === b.isFocusable &&
+    a.mark === b.mark &&
+    a.isEditable === b.isEditable &&
+    a.onFocusCell === b.onFocusCell &&
+    sameView(a.view, b.view)
+  );
+}
+
+const BoardCell = memo(function BoardCell({
+  view,
+  label,
+  isFocusable,
+  mark,
+  isEditable,
+  onFocusCell,
+}: BoardCellProps) {
+  return (
+    <td
+      role="gridcell"
+      aria-colindex={view.pos.col + 1}
+      aria-label={label}
+      tabIndex={isFocusable ? 0 : -1}
+      data-row={view.pos.row}
+      data-col={view.pos.col}
+      data-mark={mark}
+      className="board-cell"
+      onFocus={() => onFocusCell(view.pos)}
+    >
+      <TileArt key={isEditable ? view.kind : "tile"} view={view} />
+    </td>
+  );
+}, sameCell);
+
 export function MineBoard({
   map,
   robot,
@@ -115,6 +191,11 @@ export function MineBoard({
   const gridRef = useRef<HTMLTableElement>(null);
   const input = useBoardInput({ gridRef, rows: map.rows, cols: map.cols, interaction });
   const isEditable = interaction !== undefined;
+  const setFocusRef = useRef(input.setFocus);
+  useLayoutEffect(() => {
+    setFocusRef.current = input.setFocus;
+  });
+  const onFocusCell = useCallback((pos: Pos) => setFocusRef.current(pos), []);
   const lit = exploration?.lit;
   const visible = useMemo(
     () => (lit && exploration ? new Set([...exploration.discovered, ...lit]) : null),
@@ -159,20 +240,15 @@ export function MineBoard({
                   {row.map((view) => {
                     const key = posKey(view.pos);
                     return (
-                      <td
+                      <BoardCell
                         key={key}
-                        role="gridcell"
-                        aria-colindex={view.pos.col + 1}
-                        aria-label={describeTile(view, robot, cellNotes.get(key))}
-                        tabIndex={samePos(view.pos, input.focus) ? 0 : -1}
-                        data-row={view.pos.row}
-                        data-col={view.pos.col}
-                        data-mark={cellMarks.get(key)}
-                        className="board-cell"
-                        onFocus={() => input.setFocus(view.pos)}
-                      >
-                        <TileArt key={isEditable ? view.kind : "tile"} view={view} />
-                      </td>
+                        view={view}
+                        label={describeTile(view, robot, cellNotes.get(key))}
+                        isFocusable={samePos(view.pos, input.focus)}
+                        mark={cellMarks.get(key)}
+                        isEditable={isEditable}
+                        onFocusCell={onFocusCell}
+                      />
                     );
                   })}
                 </tr>

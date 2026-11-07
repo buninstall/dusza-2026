@@ -1,5 +1,4 @@
 import type { Cell, DiagCode, Dir, RuntimeErrorCode, Severity } from "@minescript/engine";
-import { manual } from "./hu-manual.ts";
 
 export const runtimeErrors: Record<RuntimeErrorCode, { title: string; hint: string }> = {
   E_TYPE_MISMATCH: {
@@ -786,7 +785,6 @@ export const hu = {
     createSubmit: "Fiók létrehozása",
     createdToast: (username: string, role: string) => `${username} fiókja elkészült (${role}).`,
   },
-  manual,
   recipes: {
     back: "Kézikönyv",
     entry: "Receptek",

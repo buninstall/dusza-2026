@@ -1,4 +1,4 @@
-import type { Ref } from "react";
+import { memo, type Ref } from "react";
 import { Toolbar } from "react-aria-components";
 import { IconButton } from "../../components/ui/IconButton.tsx";
 import { hu } from "../../i18n/hu.ts";
@@ -17,7 +17,11 @@ function centerKey(status: string): CenterKey {
   return { label: hu.play.resume, icon: "play", act: actions.play };
 }
 
-export function DeckKeys({ centerRef }: { centerRef: Ref<HTMLButtonElement> }) {
+export const DeckKeys = memo(function DeckKeys({
+  centerRef,
+}: {
+  centerRef: Ref<HTMLButtonElement>;
+}) {
   const index = usePlayback((state) => state.index);
   const status = usePlayback((state) => state.status);
   const total = usePlayback((state) => state.result?.events.length ?? 0);
@@ -70,4 +74,4 @@ export function DeckKeys({ centerRef }: { centerRef: Ref<HTMLButtonElement> }) {
       />
     </Toolbar>
   );
-}
+});

@@ -88,6 +88,15 @@ describe("fény és felfedés", () => {
   const W = 40;
   const H = 10;
   const wall = (x: number) => x >= 20 && x < 30;
+  const TILE = 4;
+  const tileCount = Math.ceil(W / TILE) * Math.ceil(H / TILE);
+  const outside = { x: -10, y: -10, w: 0, h: 0 };
+  const tilesOf = (revealed: number) => ({
+    size: TILE,
+    cols: Math.ceil(W / TILE),
+    memory: new Float32Array(tileCount),
+    reveal: new Float32Array(tileCount).fill(revealed),
+  });
 
   test("a fal mögé nem jut fény, elé igen", () => {
     const lighting = createLighting(W, H, (x) => wall(x), 2);
@@ -106,12 +115,12 @@ describe("fény és felfedés", () => {
       const out = new Uint8ClampedArray(W * H * 4);
       lighting.shade(albedo, out, {
         levels: 5,
-        memory: () => 0,
+        tiles: tilesOf(revealed),
+        box: outside,
+        ambient: 0,
         memoryTint: [1, 1, 1],
         memoryLevel: 0,
         memoryDensity: 0,
-        ambient: () => 0,
-        reveal: () => revealed,
         base: [7, 6, 5],
       });
       return out;
@@ -133,12 +142,12 @@ describe("fény és felfedés", () => {
     const out = new Uint8ClampedArray(W * H * 4);
     lighting.shade(albedo, out, {
       levels: 5,
-      memory: () => 0,
+      tiles: tilesOf(1),
+      box: outside,
+      ambient: 0,
       memoryTint: [1, 1, 1],
       memoryLevel: 0,
       memoryDensity: 0,
-      ambient: () => 0,
-      reveal: () => 1,
       base: [7, 6, 5],
       bounds: { width: 30, height: 6 },
     });

@@ -1,5 +1,5 @@
 import type { RobotState } from "@minescript/engine";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { TILE_SIZE } from "../pixel/tiles.ts";
 import {
@@ -66,6 +66,14 @@ export function LampShade(props: LampShadeProps) {
   const seenRef = useRef(seen);
   const frameRef = useRef(0);
   const drawRef = useRef<(now: number) => boolean>(() => false);
+  const imageRef = useRef<ImageData | null>(null);
+  const keys = useMemo(
+    () =>
+      Array.from({ length: rows * cols }, (_, index) =>
+        posKey({ row: Math.floor(index / cols), col: index % cols }),
+      ),
+    [rows, cols],
+  );
 
   drawRef.current = (now: number) => {
     const canvas = canvasRef.current;
@@ -73,7 +81,14 @@ export function LampShade(props: LampShadeProps) {
     if (!canvas || !context || !travel.current || !palette.current) {
       return false;
     }
-    const image = context.createImageData(cols * TILE_SIZE, rows * TILE_SIZE);
+    const width = cols * TILE_SIZE;
+    const height = rows * TILE_SIZE;
+    const cached = imageRef.current;
+    const image =
+      cached && cached.width === width && cached.height === height
+        ? cached
+        : context.createImageData(width, height);
+    imageRef.current = image;
     const state = reveal.current;
     const known = seenRef.current;
     const intensity = glowAt(glow.current, now) * (isReduced ? 1 : flicker(now));
@@ -81,8 +96,8 @@ export function LampShade(props: LampShadeProps) {
       {
         cols,
         rows,
-        level: (row, col) => fadeLevel(state.get(`${row}:${col}`), now),
-        isSeen: (row, col) => known.has(`${row}:${col}`),
+        level: (row, col) => fadeLevel(state.get(keys[row * cols + col] ?? ""), now),
+        isSeen: (row, col) => known.has(keys[row * cols + col] ?? ""),
         spot: spotAt(travel.current, now),
         intensity,
         ...palette.current,
@@ -103,7 +118,7 @@ export function LampShade(props: LampShadeProps) {
   useLayoutEffect(() => {
     const now = performance.now();
     seenRef.current = seen;
-    if (canvasRef.current) {
+    if (canvasRef.current && !palette.current) {
       palette.current = readPalette(canvasRef.current);
     }
     const shown = new Set(visible);

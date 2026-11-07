@@ -1,6 +1,5 @@
 import { InlineText } from "../components/InlineText.tsx";
-import { hu } from "../i18n/hu.ts";
-import type { ManualBlock } from "../i18n/hu-manual.ts";
+import { type ManualBlock, manual } from "../i18n/hu-manual.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { Bench } from "./Bench.tsx";
 import { CodeListing } from "./CodeListing.tsx";
@@ -68,7 +67,7 @@ function TipBlock({ block }: { block: Extract<ManualBlock, { kind: "tip" }> }) {
     <div role="note" className="manual-tip">
       <p className="manual-tip-head">
         <PixelIcon name="lantern" />
-        <span className="manual-tip-kind">{hu.manual.tipLabel}</span>
+        <span className="manual-tip-kind">{manual.tipLabel}</span>
         <span className="manual-tip-title">{block.title}</span>
       </p>
       <p className="manual-tip-text">

@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode, type Ref, useEffect, useRef } from "react";
+import { type CSSProperties, memo, type ReactNode, type Ref, useEffect, useRef } from "react";
 import { Button } from "../../components/ui/Button.tsx";
 import { Slider } from "../../components/ui/Slider.tsx";
 import { hu } from "../../i18n/hu.ts";
@@ -37,7 +37,7 @@ function TimelineMarks() {
   );
 }
 
-export function Timeline() {
+export const Timeline = memo(function Timeline() {
   const index = usePlayback((state) => state.index);
   const status = usePlayback((state) => state.status);
   const total = usePlayback((state) => state.result?.events.length ?? 0);
@@ -54,9 +54,9 @@ export function Timeline() {
       decor={<TimelineMarks />}
     />
   );
-}
+});
 
-export function TempoGate() {
+export const TempoGate = memo(function TempoGate() {
   const speed = usePlayback((state) => state.speed);
   return (
     <Slider
@@ -78,7 +78,7 @@ export function TempoGate() {
       }
     />
   );
-}
+});
 
 type LeverProps = {
   mode: "play" | "replay";
@@ -102,7 +102,7 @@ function useShake(shakeKey: number | null) {
   return housing;
 }
 
-export function Lever({ mode, leverRef, shakeKey, onRun }: LeverProps) {
+export const Lever = memo(function Lever({ mode, leverRef, shakeKey, onRun }: LeverProps) {
   const status = usePlayback((state) => state.status);
   const hasEnded = usePlayback((state) => state.hasEnded);
   const isLive = isLiveRun(status, hasEnded);
@@ -133,7 +133,7 @@ export function Lever({ mode, leverRef, shakeKey, onRun }: LeverProps) {
       {isLive ? <HazardStripe className="deck-lever-hazard" /> : null}
     </span>
   );
-}
+});
 
 type ControlDeckProps = {
   mode: "play" | "replay";

@@ -255,6 +255,7 @@ export function startLampScene(host: SceneHost): LampScene {
   const memory = new Float32Array(cols * rows);
   const reveal = new Float32Array(cols * rows);
   const revealAt = new Float32Array(cols * rows).fill(Number.POSITIVE_INFINITY);
+  const shadeTiles = { size: T, cols, memory, reveal };
 
   let lanterns = lanternSpots(box, isNarrow);
   const rand = seeded(99);
@@ -285,6 +286,7 @@ export function startLampScene(host: SceneHost): LampScene {
       mine.grid[mineIndex(c, r)] = FLOOR;
       dug.add(r * cols + c);
       refreshTile(c, r);
+      lighting.invalidate();
       bursts.push({ c, r, t: 0 });
     },
     onLoop: () => {
@@ -293,6 +295,7 @@ export function startLampScene(host: SceneHost): LampScene {
         dug.delete(r * cols + c);
         refreshTile(c, r);
       }
+      lighting.invalidate();
     },
   });
   const robot = walker.state;
@@ -390,7 +393,6 @@ export function startLampScene(host: SceneHost): LampScene {
     }
   };
 
-  const tileIndex = (x: number, y: number) => Math.floor(y / T) * cols + Math.floor(x / T);
   const frame = ctx.createImageData(W, H);
   const base = [7, 6, 5] as const;
 
@@ -481,13 +483,12 @@ export function startLampScene(host: SceneHost): LampScene {
     notice();
     lighting.shade(albedo, frame.data, {
       levels: 5,
-      memory: (x, y) => Math.min(memory[tileIndex(x, y)] ?? 0, reveal[tileIndex(x, y)] ?? 0),
+      tiles: shadeTiles,
+      box,
+      ambient: 0.3,
       memoryTint: [0.42, 0.46, 0.62],
       memoryLevel: 0.36,
       memoryDensity: 0.5,
-      ambient: (x, y) =>
-        x >= box.x - 1 && x <= box.x + box.w && y >= box.y - 1 && y <= box.y + box.h ? 0.3 : 0,
-      reveal: (x, y) => (inBox(x, y) ? 1 : (reveal[tileIndex(x, y)] ?? 0)),
       base,
       bounds: { width: placement.view.w, height: placement.view.h },
     });
@@ -510,6 +511,7 @@ export function startLampScene(host: SceneHost): LampScene {
     const isMoved = !isSameBox(previous.box, box);
     if (isShifted) positionCanvas();
     if (isMoved) {
+      lighting.invalidate();
       repaintFrame(previous.box);
       lanterns = lanternSpots(box, isNarrow);
     }

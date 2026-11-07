@@ -153,16 +153,33 @@ export function lineMarks(): Extension {
   ];
 }
 
-export function scrollToLine(view: EditorView, line: number): void {
+type ScrollTarget = number | null;
+
+const SCROLL_KEY = {};
+
+function centeredTop(view: EditorView, line: number): ScrollTarget {
   if (line < 1 || line > view.state.doc.lines) {
-    return;
+    return null;
   }
   const block = view.lineBlockAt(view.state.doc.line(line).from);
   const scroller = view.scrollDOM;
   const top = block.top + view.documentPadding.top;
   const isAbove = top < scroller.scrollTop;
   const isBelow = top + block.height > scroller.scrollTop + scroller.clientHeight;
-  if (isAbove || isBelow) {
-    scroller.scrollTop = top - (scroller.clientHeight - block.height) / 2;
+  return isAbove || isBelow ? top - (scroller.clientHeight - block.height) / 2 : null;
+}
+
+export function scrollToLine(view: EditorView, line: number): void {
+  if (line < 1 || line > view.state.doc.lines) {
+    return;
   }
+  view.requestMeasure<ScrollTarget>({
+    key: SCROLL_KEY,
+    read: (current) => centeredTop(current, line),
+    write: (target, current) => {
+      if (target !== null) {
+        current.scrollDOM.scrollTop = target;
+      }
+    },
+  });
 }

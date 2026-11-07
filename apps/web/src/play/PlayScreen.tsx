@@ -4,6 +4,7 @@ import { Notice } from "../components/Notice.tsx";
 import { RegionBoundary } from "../components/RegionBoundary.tsx";
 import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
+import { useStableCallback } from "../lib/stable-callback.ts";
 import { MineBoard } from "../mine/MineBoard.tsx";
 import type { Exploration, FogMode } from "../mine/tiles-model.ts";
 import { usePlaybackSounds } from "../sound/usePlaybackSounds.ts";
@@ -247,6 +248,7 @@ export function PlayScreen(props: PlayScreenProps) {
   };
 
   const run = (isFromLever: boolean) => afterRun(props.onRun(), isFromLever);
+  const runFromLever = useStableCallback(() => run(true));
 
   usePlayShortcuts(rootRef, stageRef, { ...props.commands, run: () => run(false) });
 
@@ -346,7 +348,7 @@ export function PlayScreen(props: PlayScreenProps) {
           leverRef={leverRef}
           centerRef={centerRef}
           shakeKey={blocked ? props.attempt : null}
-          onRun={() => run(true)}
+          onRun={runFromLever}
           extra={<LogToggle count={consoleCount} isOpen={ui.isLogOpen} onToggle={ui.toggleLog} />}
         />
         {ui.isLogOpen ? (

@@ -7,6 +7,7 @@ import { type EditorHandle, MineScriptEditor } from "../../editor/MineScriptEdit
 import { useEngine } from "../../engine/useEngine.ts";
 import { formatCount, hu } from "../../i18n/hu.ts";
 import { downloadText, safeFilename } from "../../lib/files.ts";
+import { useStableCallback } from "../../lib/stable-callback.ts";
 import { usePlayUi } from "../play-ui-store.ts";
 import { usePlayback } from "../playback-store.ts";
 import type { ProgramDraft } from "../program-draft.ts";
@@ -101,19 +102,29 @@ export function ProgramSheet(props: ProgramSheetProps) {
     }
   };
 
+  const onInsert = useStableCallback(insert);
+  const onImport = useStableCallback((file: File) => void importFile(file));
+  const onExport = useStableCallback(() =>
+    downloadText(`${safeFilename(props.mapTitle)}.ms`, draft.source),
+  );
+  const onSaveAs = useStableCallback(() => persistence.setPanel("saveAs"));
+  const onOpenLibrary = useStableCallback(() => persistence.setPanel("library"));
+  const onFormat = useStableCallback(() => reportFormat(editorRef.current?.format() ?? null));
+  const onSave = useStableCallback(() => persistence.saveCurrent());
+
   return (
     <section id="program" ref={props.ref} aria-label={hu.play.programHeading} className="sheet">
       <SheetToolbar
         isLocked={isLocked}
         isSaving={persistence.isSaving}
-        onImport={(file) => void importFile(file)}
-        onExport={() => downloadText(`${safeFilename(props.mapTitle)}.ms`, draft.source)}
-        onSaveAs={() => persistence.setPanel("saveAs")}
-        onOpenLibrary={() => persistence.setPanel("library")}
-        onFormat={() => reportFormat(editorRef.current?.format() ?? null)}
-        onSave={persistence.saveCurrent}
+        onImport={onImport}
+        onExport={onExport}
+        onSaveAs={onSaveAs}
+        onOpenLibrary={onOpenLibrary}
+        onFormat={onFormat}
+        onSave={onSave}
       />
-      <BlockDrawers isDisabled={isLocked} onInsert={insert} />
+      <BlockDrawers isDisabled={isLocked} onInsert={onInsert} />
       <div className="sheet-editor">
         <MineScriptEditor
           ref={editorRef}

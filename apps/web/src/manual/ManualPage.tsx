@@ -4,7 +4,7 @@ import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
-import type { ManualSection } from "../i18n/hu-manual.ts";
+import { type ManualSection, manual } from "../i18n/hu-manual.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { PixelText } from "../pixel/PixelText.tsx";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
@@ -14,11 +14,11 @@ import { Block } from "./ManualBlocks.tsx";
 import "./ManualPage.css";
 
 const ORE_GLINT = { "ore-hi": "px-glint" } as const;
-const SECTIONS = hu.manual.sections;
+const SECTIONS = manual.sections;
 const TOTAL = SECTIONS.length;
 
 function partOf(id: string): string {
-  return hu.manual.parts.find((part) => part.ids.includes(id))?.title ?? "";
+  return manual.parts.find((part) => part.ids.includes(id))?.title ?? "";
 }
 
 function indexOf(hash: string): number {
@@ -97,7 +97,7 @@ function Contents({ current }: { current: number }) {
   const active = SECTIONS[current];
   const close = () => setOpen(false);
   return (
-    <nav aria-label={hu.manual.tocLabel} className="manual-toc" data-open={isOpen || undefined}>
+    <nav aria-label={manual.tocLabel} className="manual-toc" data-open={isOpen || undefined}>
       <Button
         size="sm"
         icon="list"
@@ -106,14 +106,14 @@ function Contents({ current }: { current: number }) {
         aria-controls="manual-toc-parts"
         onPress={() => setOpen((open) => !open)}
       >
-        {hu.manual.tocToggle}
+        {manual.tocToggle}
         <span className="manual-toc-toggle-current">
           {numberOf(current)} · {active?.title}
         </span>
         <PixelIcon name="chevronDown" />
       </Button>
       <div id="manual-toc-parts" className="manual-toc-parts">
-        {hu.manual.parts.map((part) => (
+        {manual.parts.map((part) => (
           <div key={part.title} className="manual-toc-part">
             <p className="manual-toc-part-title" id={`manual-part-${part.ids[0] ?? ""}`}>
               {part.title}
@@ -169,7 +169,7 @@ function PagerLink({ index, direction }: PagerLinkProps) {
   if (!section) {
     return <span className="manual-pager-gap" />;
   }
-  const label = direction === "previous" ? hu.manual.previous : hu.manual.next;
+  const label = direction === "previous" ? manual.previous : manual.next;
   return (
     <Link
       to="/manual"
@@ -220,7 +220,7 @@ function Chapter({ section, index }: { section: ManualSection; index: number }) 
       <header className="manual-head">
         <p className="manual-kicker">
           <span className="manual-kicker-part">{partOf(section.id)}</span>
-          <span className="manual-kicker-count">{hu.manual.chapterOf(index + 1, TOTAL)}</span>
+          <span className="manual-kicker-count">{manual.chapterOf(index + 1, TOTAL)}</span>
           <Progress current={index} />
         </p>
         <h2 id={`${section.id}-title`} ref={headingRef} tabIndex={-1} className="manual-title">
@@ -236,7 +236,7 @@ function Chapter({ section, index }: { section: ManualSection; index: number }) 
           <Block key={`${section.id}-${(position + 1).toString()}`} block={block} />
         ))}
       </div>
-      <nav aria-label={hu.manual.pagerLabel} className="manual-pager">
+      <nav aria-label={manual.pagerLabel} className="manual-pager">
         <PagerLink index={index - 1} direction="previous" />
         <PagerLink index={index + 1} direction="next" />
       </nav>
