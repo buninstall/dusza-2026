@@ -130,6 +130,6 @@ describe("térképszerkesztő extrák", () => {
       screen.getAllByText(/Próbafutás: az eredmény nem kerül a ranglistára/).length,
     ).toBeGreaterThan(0);
     await user.click(screen.getByRole("button", { name: "Vissza a szerkesztőbe" }));
-    expect(await screen.findByRole("gridcell", { name: "1. sor, 2. oszlop: fal" })).toBeTruthy();
+    expect(await screen.findByRole("gridcell", { name: "1. sor, 3. oszlop: fal" })).toBeTruthy();
   });
 });

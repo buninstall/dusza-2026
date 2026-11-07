@@ -40,11 +40,19 @@ describe("térképszerkesztő állapot", () => {
     expect(draftRobot(draft)).toEqual({ pos: { row: 0, col: 2 }, dir: "west" });
   });
 
-  test("a robot felülfestése eltávolítja a robotot, a rácson kívül nincs hatás", () => {
-    const draft = paint(emptyDraft(1, 2), { row: 0, col: 0 }, "wall", "east");
+  test("fal és arany nem festi felül a robotot, a törlés eltávolítja, a rácson kívül nincs hatás", () => {
+    const start = emptyDraft(1, 2);
+    expect(paint(start, { row: 0, col: 0 }, "wall", "east")).toBe(start);
+    expect(paint(start, { row: 0, col: 0 }, "gold", "east")).toBe(start);
+    const draft = paint(
+      paint(start, { row: 0, col: 1 }, "wall", "east"),
+      { row: 0, col: 0 },
+      "empty",
+      "east",
+    );
     expect(draft.robot).toBeNull();
     expect(draftRobot(draft)).toBeNull();
-    expect(draftToText(draft)).toBe("1 2\n#.\n");
+    expect(draftToText(draft)).toBe("1 2\n.#\n");
     expect(draftGrid(draft).robot).toEqual({ row: 0, col: 0 });
     expect(paint(draft, { row: 5, col: 5 }, "gold", "east")).toBe(draft);
   });

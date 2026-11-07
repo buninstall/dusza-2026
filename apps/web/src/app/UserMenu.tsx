@@ -22,7 +22,11 @@ export function UserMenu({ user }: { user: SessionUser }) {
   };
 
   return (
-    <Menu icon="helmet" ariaLabel={hu.nav.userMenuFor(user.username)} label={<span className="shell-tool-label">{user.username}</span>}>
+    <Menu
+      icon="helmet"
+      ariaLabel={hu.nav.userMenuFor(user.username)}
+      label={<span className="shell-tool-label">{user.username}</span>}
+    >
       <MenuItem isDisabled textValue={hu.nav.signedInAs(user.username)}>
         {hu.nav.signedInAs(user.username)}
       </MenuItem>

@@ -11,14 +11,14 @@ function isFocusLost(): boolean {
 
 export function RouteFocus() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const isFirst = useRef(true);
+  const lastPath = useRef(pathname);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (isFirst.current) {
-      isFirst.current = false;
+    if (lastPath.current === pathname) {
       return;
     }
+    lastPath.current = pathname;
     const timer = window.setTimeout(() => {
       if (isFocusLost()) {
         document.getElementById("main")?.focus({ preventScroll: true });

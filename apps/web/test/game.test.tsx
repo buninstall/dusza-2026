@@ -25,11 +25,11 @@ describe("rögök", () => {
 });
 
 describe("gyors térképműveletek", () => {
-  test("a falkeret a széleket falra cseréli, a robotot meghagyja", () => {
+  test("a falkeret a széleket falra cseréli, a robotnak kijáratot hagy", () => {
     const framed = frameDraft(emptyDraft(3, 4));
     expect(framed.cells.map((row) => row.map((cell) => cell[0]).join(""))).toEqual([
-      "ewww",
-      "weew",
+      "eeww",
+      "eeew",
       "wwww",
     ]);
     expect(framed.robot).toEqual({ row: 0, col: 0 });

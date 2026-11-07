@@ -291,7 +291,7 @@
 .ed-scroll {
   min-width: 0;
   min-height: 0;
-  overflow-x: auto;
+  overflow: auto;
   container-type: inline-size;
 }
 
@@ -630,7 +630,7 @@
   }
 }
 
-@media (min-width: 64rem) and (min-height: 40rem) {
+@media (min-width: 64rem) and (min-height: 30rem) {
   .ed {
     flex: 1;
     min-height: 0;

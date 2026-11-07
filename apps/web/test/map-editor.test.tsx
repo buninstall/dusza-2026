@@ -44,7 +44,7 @@ describe("új térkép", () => {
     await user.click(saveButton());
     expect(callsTo("POST", "/maps")).toHaveLength(0);
     expect(document.activeElement?.textContent).toContain("Ellenőrzés");
-    expect(screen.getByText(/Még nem menthető: 1 hiba/)).toBeTruthy();
+    expect(screen.getAllByText(/Még nem menthető: 1 hiba/).length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole("radio", { name: /Arany/ }));
     cell("1. sor, 2. oszlop: üres kamra").focus();
@@ -65,17 +65,19 @@ describe("új térkép", () => {
     expect(await screen.findByRole("link", { name: "Kipróbálás" })).toBeTruthy();
   });
 
-  test("a robot felülfestése érvénytelenné teszi, a hiba gombja a robot eszközt választja", async () => {
+  test("a fal nem festi felül a robotot, a törlése érvénytelenné teszi, a hiba gombja a robot eszközt választja", async () => {
     const { user } = await openNew();
     await user.click(screen.getByRole("radio", { name: /Fal/ }));
     cell("1. sor, 1. oszlop: robot, kelet felé").focus();
     await user.keyboard("{Enter}");
+    expect(cell("1. sor, 1. oszlop: robot, kelet felé")).toBeTruthy();
+    await user.keyboard("{Delete}");
     expect(screen.getAllByText("Nincs robot.", { exact: false }).length).toBeGreaterThan(0);
     expect(screen.getByText("hiányzik")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Robot kiválasztása" }));
     expect((screen.getByRole("radio", { name: /Robot/ }) as HTMLInputElement).checked).toBe(true);
     await user.click(screen.getByRole("radio", { name: "dél" }));
-    cell("1. sor, 1. oszlop: fal").focus();
+    cell("1. sor, 1. oszlop: üres kamra").focus();
     await user.keyboard("{ArrowDown}{Enter}");
     expect(cell("2. sor, 1. oszlop: robot, dél felé")).toBeTruthy();
     await user.keyboard("{Enter}");
@@ -253,9 +255,8 @@ describe("új térkép", () => {
     expect(await screen.findByText(/A térkép betöltve a fájlból\./)).toBeTruthy();
     await exportMap(user);
     expect(click).toHaveBeenCalledOnce();
-    await user.click(screen.getByRole("radio", { name: /Fal/ }));
     cell("1. sor, 1. oszlop: robot, kelet felé").focus();
-    await user.keyboard("{Enter}");
+    await user.keyboard("{Delete}");
     await exportMap(user);
     expect(await screen.findByText("Csak érvényes térkép exportálható.")).toBeTruthy();
     expect(click).toHaveBeenCalledOnce();

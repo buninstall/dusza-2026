@@ -55,7 +55,11 @@ function useRovingLine(count: number) {
     setPicked(next === last ? null : next);
     event.currentTarget.querySelectorAll<HTMLButtonElement>(".log-line-button")[next]?.focus();
   };
-  return { active, onKeyDown, pick: (position: number) => setPicked(position === last ? null : position) };
+  return {
+    active,
+    onKeyDown,
+    pick: (position: number) => setPicked(position === last ? null : position),
+  };
 }
 
 export function ConsoleTape({ entries, canSeek, onSeek }: ConsoleTapeProps) {
