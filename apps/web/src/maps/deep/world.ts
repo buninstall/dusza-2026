@@ -45,6 +45,8 @@ export type World = {
   rows: (art: PixelRows, tones: Readonly<Record<string, Tone>>, x: number, y: number) => void;
   line: (x0: number, y0: number, x1: number, y1: number, tone: Tone | null) => Point[];
   pixel: (x: number, y: number) => Rgb;
+  rgb: (tone: Tone) => Rgb;
+  shift: Float32Array;
 };
 
 export function hash(x: number, y: number): number {
@@ -197,6 +199,8 @@ export function createWorld(
     rows,
     line,
     pixel,
+    rgb: resolve,
+    shift: new Float32Array(W),
   };
 }
 

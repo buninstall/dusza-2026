@@ -11,6 +11,7 @@ const MIN_WIDTH = 40;
 export type DeepHost = {
   root: HTMLElement;
   canvas: HTMLCanvasElement;
+  front: HTMLCanvasElement | null;
   paletteSource: Element;
   isStatic: boolean;
   isFresh: boolean;
@@ -56,18 +57,18 @@ function readLevels(
   return { inputs, elements };
 }
 
-export function startDeepScene(host: DeepHost): () => void {
+export function startDeepScene(host: DeepHost): (() => void) | null {
   const plate = host.root.querySelector(`[${MINE_ATTR}="plate"]`);
   const front = host.root.querySelector(`[${MINE_ATTR}="front"]`);
   const viewWidth = document.documentElement.clientWidth;
-  if (!plate || !front || viewWidth < MIN_WIDTH) return () => undefined;
+  if (!plate || !front || viewWidth < MIN_WIDTH) return null;
   const isNarrow = viewWidth < NARROW_WIDTH;
   const scale = isNarrow ? 2 : 3;
   const { inputs, elements } = readLevels(host.root, scale);
-  const frame = host.canvas.parentElement;
-  if (frame) frame.style.height = "0px";
+  const frames = [host.canvas.parentElement, host.front?.parentElement ?? null];
+  for (const frame of frames) if (frame) frame.style.height = "0px";
   const docHeight = document.documentElement.scrollHeight;
-  if (frame) frame.style.height = `${docHeight}px`;
+  for (const frame of frames) if (frame) frame.style.height = `${docHeight}px`;
   const W = Math.ceil(viewWidth / scale);
   const H = Math.ceil(docHeight / scale) + 2;
   const mine = buildMine({
@@ -80,8 +81,12 @@ export function startDeepScene(host: DeepHost): () => void {
     palette: readDeepPalette(host.paletteSource),
     digId: host.digId,
   });
-  const view = createView(host.canvas, mine.world, scale, window.innerHeight);
-  if (!view) return () => undefined;
+  const view = createView(host.canvas, host.front, mine.world, scale, window.innerHeight);
+  const header = document.querySelector("header");
+  const roofY = header
+    ? Math.ceil((header.getBoundingClientRect().bottom + window.scrollY) / scale)
+    : 0;
+  if (!view) return null;
   const elementOf = (level: Level) => elements.get(level.id);
   const digging = mine.dig ? elementOf(mine.dig.level) : undefined;
   if (digging) host.onDigStart(digging);
@@ -91,6 +96,7 @@ export function startDeepScene(host: DeepHost): () => void {
     isNarrow,
     isStatic: host.isStatic,
     isFresh: host.isFresh,
+    roofY,
     target: host.target,
     onDigDone: (level) => {
       const element = elementOf(level);

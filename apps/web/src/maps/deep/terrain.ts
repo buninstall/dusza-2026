@@ -109,21 +109,79 @@ function flecks(world: World, groundY: number, rand: () => number): void {
   }
 }
 
-export function paintRock(world: World, groundY: number, rand: () => number): void {
-  const { W, H, put, mask } = world;
-  for (let y = Math.max(0, groundY - 2); y < H; y += 1) {
-    for (let x = 0; x < W; x += 1) {
-      const s = surfaceAt(groundY, x);
-      if (y < s) continue;
-      const k = stratumAt(y - groundY, x, y);
-      const n = noise(x, y, 5) * 0.6 + noise(x, y, 2) * 0.4;
-      const v = n + (dither(x, y) - 0.5) * 0.25;
-      put(x, y, y === s ? "grass" : stratumTone(k, "stratum", v < 0.4 ? 0 : v < 0.62 ? 1 : 2));
-      mask[y * W + x] = ROCK;
+const TILE = 128;
+const TILE_MASK = TILE - 1;
+let rockTile: Uint8Array | null = null;
+let cavityTile: Uint8Array | null = null;
+
+function tiles(): { rock: Uint8Array; cavity: Uint8Array } {
+  if (!rockTile || !cavityTile) {
+    rockTile = new Uint8Array(TILE * TILE);
+    cavityTile = new Uint8Array(TILE * TILE);
+    for (let y = 0; y < TILE; y += 1) {
+      for (let x = 0; x < TILE; x += 1) {
+        const v = noise(x, y, 5) * 0.6 + noise(x, y, 2) * 0.4 + (dither(x, y) - 0.5) * 0.25;
+        rockTile[y * TILE + x] = v < 0.4 ? 0 : v < 0.62 ? 1 : 2;
+        const c = noise(x + 300, y, 3) + (dither(x, y) - 0.5) * 0.3;
+        cavityTile[y * TILE + x] = c < 0.45 ? 0 : c < 0.7 ? 1 : 2;
+      }
     }
   }
+  return { rock: rockTile, cavity: cavityTile };
+}
+
+function stratumIndex(d: number): number {
+  for (let k = 0; k < STRATUM_DEPTHS.length; k += 1) if (d < (STRATUM_DEPTHS[k] ?? 0)) return k;
+  return STRATUM_DEPTHS.length - 1;
+}
+
+function strataTones(world: World, kind: "stratum" | "cavity") {
+  return STRATUM_DEPTHS.map((_, k) => [0, 1, 2].map((v) => world.rgb(stratumTone(k, kind, v))));
+}
+
+function fill(
+  world: World,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  kind: "stratum" | "cavity",
+  maskValue: number,
+  test?: (x: number, y: number) => boolean,
+): void {
+  const { W, H, data, mask, shift, groundY } = world;
+  const tile = kind === "stratum" ? tiles().rock : tiles().cavity;
+  const tones = strataTones(world, kind);
+  const ya = Math.max(0, Math.floor(y0));
+  const yb = Math.min(H, Math.ceil(y1));
+  const xa = Math.max(0, Math.floor(x0));
+  const xb = Math.min(W, Math.ceil(x1));
+  for (let y = ya; y < yb; y += 1) {
+    const depth = y - groundY;
+    for (let x = xa; x < xb; x += 1) {
+      if (test && !test(x, y)) continue;
+      const k = stratumIndex(depth + (shift[x] ?? 0));
+      const tone =
+        tones[k]?.[tile[((y + k * 37) & TILE_MASK) * TILE + ((x + k * 53) & TILE_MASK)] ?? 0];
+      if (!tone) continue;
+      const i = (y * W + x) * 4;
+      data[i] = tone[0];
+      data[i + 1] = tone[1];
+      data[i + 2] = tone[2];
+      data[i + 3] = 255;
+      mask[y * W + x] = maskValue;
+    }
+  }
+}
+
+export function paintRock(world: World, groundY: number, rand: () => number): void {
+  const { W, H, put } = world;
+  for (let x = 0; x < W; x += 1) world.shift[x] = Math.sin(x * 0.045) * 4 + noise(x, 7, 23) * 9;
+  const surface = Array.from({ length: W }, (_, x) => surfaceAt(groundY, x));
+  fill(world, 0, groundY - 2, W, H, "stratum", ROCK, (x, y) => y >= (surface[x] ?? groundY));
   for (let x = 0; x < W; x += 1) {
-    const s = surfaceAt(groundY, x);
+    const s = surface[x] ?? groundY;
+    put(x, s, "grass");
     if (hash(x, 7) > 0.62) put(x, s - 1, "grass-lo");
     if (hash(x, 9) > 0.9) put(x, s - 2, "grass-dk");
   }
@@ -140,16 +198,7 @@ export function carve(
   y1: number,
   test?: (x: number, y: number) => boolean,
 ): void {
-  const { W, H, put, mask } = world;
-  for (let y = Math.max(0, Math.floor(y0)); y < Math.min(H, Math.ceil(y1)); y += 1) {
-    for (let x = Math.max(0, Math.floor(x0)); x < Math.min(W, Math.ceil(x1)); x += 1) {
-      if (test && !test(x, y)) continue;
-      const k = stratumAt(y - world.groundY, x, y);
-      const v = noise(x, y, 3) + (dither(x, y) - 0.5) * 0.3;
-      put(x, y, stratumTone(k, "cavity", v < 0.45 ? 0 : v < 0.7 ? 1 : 2));
-      mask[y * W + x] = OPEN;
-    }
-  }
+  fill(world, x0, y0, x1, y1, "cavity", OPEN, test);
 }
 
 export function carveTunnel(

@@ -247,11 +247,14 @@ function Chapter({ section, index }: { section: ManualSection; index: number }) 
 
 export function ManualPage() {
   const hash = useLocation({ select: (location) => location.hash });
+  const isHere = useLocation({
+    select: (location) => location.pathname.replace(/\/$/, "") === "/manual",
+  });
   const navigate = useNavigate();
   const current = indexOf(hash);
   const section = SECTIONS[current];
   useEffect(() => {
-    if (section && section.id !== hash) {
+    if (isHere && section && section.id !== hash) {
       void navigate({
         to: "/manual",
         hash: section.id,
@@ -260,7 +263,7 @@ export function ManualPage() {
         hashScrollIntoView: false,
       });
     }
-  }, [hash, section, navigate]);
+  }, [hash, section, navigate, isHere]);
   return (
     <div className="manual-page">
       <LocationPlate name={hu.signs.manual} />

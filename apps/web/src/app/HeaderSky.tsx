@@ -4,8 +4,8 @@ import { readDeepPalette } from "../maps/deep/palette.ts";
 import { dither, hash, toneHex } from "../maps/deep/world.ts";
 
 const SCALE = 3;
-const TWINKLE_MS = 120;
-const STAR_DENSITY = 0.022;
+const TWINKLE_MS = 220;
+const STAR_DENSITY = 0.0045;
 
 type Star = { x: number; y: number; phase: number; bright: number };
 
@@ -18,9 +18,8 @@ function paintSky(
   const tones = ["sky-0", "sky-1", "sky-2"].map((tone) => toneHex(palette, tone));
   for (let y = 0; y < H; y += 1) {
     for (let x = 0; x < W; x += 1) {
-      const t =
-        y / Math.max(1, H) + (dither(x, y) - 0.5) * 0.5 + (hash(x >> 4, y >> 3) - 0.5) * 0.15;
-      ctx.fillStyle = tones[t < 0.4 ? 0 : t < 0.8 ? 1 : 2] ?? "";
+      const t = y / Math.max(1, H) + (dither(x, y) - 0.5) * 0.35;
+      ctx.fillStyle = tones[t < 0.55 ? 0 : 1] ?? "";
       ctx.fillRect(x, y, 1, 1);
     }
   }
@@ -34,14 +33,7 @@ function paintStars(
 ): void {
   for (const s of stars) {
     const tw = Math.sin(time * (1 + s.bright) + s.phase);
-    const tone =
-      tw < -0.6
-        ? "sky-1"
-        : tw > 0.8 && s.bright > 0.7
-          ? "glint"
-          : s.bright > 0.5
-            ? "star"
-            : "star-dim";
+    const tone = tw < -0.2 ? "sky-1" : tw > 0.9 && s.bright > 0.85 ? "star" : "star-dim";
     ctx.fillStyle = toneHex(palette, tone);
     ctx.fillRect(s.x, s.y, 1, 1);
   }

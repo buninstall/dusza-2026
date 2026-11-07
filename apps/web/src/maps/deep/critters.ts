@@ -1,6 +1,6 @@
 import { spriteCanvas } from "../../auth/lamp/canvas-art.ts";
 import type { View } from "./view.ts";
-import { OPEN, SKY, toneHex, WATER, type World } from "./world.ts";
+import { toneHex, type World } from "./world.ts";
 
 const BAT_UP = ["k.......k", "kk.....kk", ".kkkekkk.", "...kkk...", "....k...."];
 const BAT_DOWN = [".........", "...kek...", ".kkkkkkk.", "kk.kkk.kk", "k...k...k"];
@@ -38,14 +38,24 @@ function batSet(world: World, body: string, eye: string): BatSet {
 
 export type Bats = {
   update: (dt: number, view: View, threatX: number) => void;
-  draw: (view: View) => void;
+  draw: (view: View, ctx: CanvasRenderingContext2D) => void;
 };
 
-export function createBats(world: World, rand: () => number): Bats {
-  const lit = batSet(world, "bat-lit", "bat-eye");
-  const dim = batSet(world, "bat-dim", "bat-dim-eye");
-  const dark = batSet(world, "bat", "bat");
-  const bats: Bat[] = world.roosts.map((r) => ({
+const MAX_CAVE_BATS = 8;
+const ROOF_GAP = 70;
+
+export function createBats(world: World, rand: () => number, roofY: number): Bats {
+  const lit = batSet(world, "rubble-hi", "bat-eye");
+  const dim = batSet(world, "bat-lit", "bat-eye");
+  const dark = batSet(world, "lantern-off-hi", "bat-eye");
+  const step = Math.max(1, Math.ceil(world.roosts.length / MAX_CAVE_BATS));
+  const caves = world.roosts.filter((_, i) => i % step === 0).map((r) => ({ ...r, isRoof: false }));
+  const roof = Array.from({ length: Math.max(2, Math.floor(world.W / ROOF_GAP)) }, (_, i) => ({
+    x: Math.round((i + 0.3 + rand() * 0.4) * ROOF_GAP),
+    y: roofY,
+    isRoof: true,
+  })).filter((r) => r.x < world.W - 4);
+  const bats: (Bat & { isRoof: boolean })[] = [...roof, ...caves].map((r) => ({
     rx: r.x,
     ry: r.y,
     x: r.x,
@@ -59,29 +69,19 @@ export function createBats(world: World, rand: () => number): Bats {
     ty: r.y,
     flap: rand() * 4,
     retarget: 0,
-    startle: -rand() * 2,
+    startle: -rand() * 6,
     home: 0,
     jumpy: 0.12 + rand() * 0.4,
+    isRoof: r.isRoof,
   }));
-  const isFree = (x: number, y: number) => {
-    const m = world.maskAt(Math.floor(x), Math.floor(y));
-    return m === OPEN || m === SKY || m === WATER;
-  };
-  const isClear = (x0: number, y0: number, x1: number, y1: number) => {
-    const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 2);
-    for (let i = 1; i <= n; i += 1) {
-      if (!isFree(x0 + ((x1 - x0) * i) / n, y0 + ((y1 - y0) * i) / n)) return false;
-    }
-    return true;
-  };
   const takeOff = (b: Bat, fromX: number) => {
     b.isHanging = false;
     b.isHoming = false;
-    b.t = 3 + rand() * 4;
+    b.t = 4 + rand() * 5;
     b.retarget = 0;
     b.home = 0;
-    b.vx = (b.x < fromX ? -1 : 1) * (20 + rand() * 20);
-    b.vy = 18 + rand() * 10;
+    b.vx = (b.x < fromX ? -1 : 1) * (24 + rand() * 20);
+    b.vy = 20 + rand() * 12;
   };
   const roost = (b: Bat) => {
     b.isHanging = true;
@@ -90,27 +90,15 @@ export function createBats(world: World, rand: () => number): Bats {
     b.y = b.ry;
     b.vx = 0;
     b.vy = 0;
-    b.startle = -2.5 - rand() * 2;
+    b.startle = -3 - rand() * 6;
   };
-  const hang = (b: Bat, dt: number, view: View, threatX: number) => {
-    if (!view.isVisible(b.ry, 60)) return;
-    const l = view.lightAt(b.rx, b.ry + 2);
-    if (l > 0.5) b.startle += dt;
+  const hang = (b: Bat & { isRoof: boolean }, dt: number, view: View, threatX: number) => {
+    if (!view.isVisible(b.ry, 30)) return;
+    const l = b.isRoof ? 0 : view.lightAt(b.rx, b.ry + 2);
+    if (l > 0.55) b.startle += dt;
     else b.startle = b.startle < 0 ? Math.min(0, b.startle + dt) : Math.max(0, b.startle - dt);
-    if (b.startle > b.jumpy || (b.startle >= 0 && rand() < dt * 0.025)) takeOff(b, threatX);
-  };
-  const pickTarget = (b: Bat) => {
-    for (let k = 0; k < 8; k += 1) {
-      const a = rand() * Math.PI * 2;
-      const d = 14 + rand() * 46;
-      const tx = b.rx + Math.cos(a) * d * 1.6;
-      const ty = b.ry + 6 + Math.abs(Math.sin(a)) * d * 0.7;
-      if (isFree(tx, ty) && isClear(b.x, b.y, tx, ty)) {
-        b.tx = tx;
-        b.ty = ty;
-        return;
-      }
-    }
+    const restless = b.startle >= 0 && rand() < dt * (b.isRoof ? 0.05 : 0.02);
+    if (b.startle > b.jumpy || restless) takeOff(b, threatX);
   };
   const fly = (b: Bat, dt: number, view: View) => {
     b.t -= dt;
@@ -118,8 +106,9 @@ export function createBats(world: World, rand: () => number): Bats {
     b.flap += dt * (b.isHoming ? 11 : 15);
     if (!b.isHoming) {
       if (b.retarget <= 0) {
-        pickTarget(b);
-        b.retarget = 0.5 + rand() * 0.8;
+        b.tx = 6 + rand() * (world.W - 12);
+        b.ty = Math.max(roofY + 6, view.camY + 12 + rand() * Math.max(10, view.H - 24));
+        b.retarget = 0.6 + rand() * 1.1;
       }
       if (b.t <= 0) b.isHoming = true;
     } else {
@@ -130,17 +119,13 @@ export function createBats(world: World, rand: () => number): Bats {
     const dx = tx - b.x;
     const dy = ty - b.y;
     const d = Math.hypot(dx, dy) + 0.001;
-    const speed = b.isHoming ? Math.min(42, 10 + d * 2) : 58;
-    const k = Math.min(1, dt * 3.2);
+    const speed = b.isHoming ? Math.min(60, 12 + d * 1.5) : 62;
+    const k = Math.min(1, dt * 2.6);
     b.vx += ((dx / d) * speed - b.vx) * k;
     b.vy += ((dy / d) * speed - b.vy) * k;
-    const nx = b.x + b.vx * dt;
-    const ny = b.y + (b.vy + Math.sin(b.flap * 0.9) * 8) * dt;
-    if (isFree(nx, b.y)) b.x = nx;
-    else b.vx = -b.vx * 0.5;
-    if (isFree(b.x, ny)) b.y = ny;
-    else b.vy = -b.vy * 0.5;
-    if (b.isHoming && (d < 1.6 || (b.home > 7 && !view.isVisible(b.ry, 10)))) roost(b);
+    b.x += b.vx * dt;
+    b.y = Math.max(roofY, b.y + (b.vy + Math.sin(b.flap * 0.9) * 10) * dt);
+    if (b.isHoming && (d < 1.6 || b.home > 9)) roost(b);
   };
   const update = (dt: number, view: View, threatX: number) => {
     for (const b of bats) {
@@ -148,15 +133,15 @@ export function createBats(world: World, rand: () => number): Bats {
       else fly(b, dt, view);
     }
   };
-  const draw = (view: View) => {
+  const draw = (view: View, ctx: CanvasRenderingContext2D) => {
     for (const b of bats) {
       if (!view.isVisible(b.y, 8)) continue;
       const l = view.lightAt(b.x, b.y + 1);
-      const set = l > 0.42 ? lit : l > 0.16 ? dim : dark;
+      const set = l > 0.6 ? lit : l > 0.25 ? dim : dark;
       const x = Math.round(b.x);
       const y = Math.round(b.y) - view.camY;
-      if (b.isHanging) view.ctx.drawImage(set.hang, x - 1, y);
-      else view.ctx.drawImage(Math.floor(b.flap) % 2 ? set.up : set.down, x - 4, y - 2);
+      if (b.isHanging) ctx.drawImage(set.hang, x - 1, y);
+      else ctx.drawImage(Math.floor(b.flap) % 2 ? set.up : set.down, x - 4, y - 2);
     }
   };
   return { update, draw };

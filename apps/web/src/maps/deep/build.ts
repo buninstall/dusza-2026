@@ -242,7 +242,7 @@ function caves(
   rand: () => number,
 ): void {
   if (mine.shaftX > 34) {
-    for (let y = mine.groundY + 40; y < mine.bottomY - 24; y += 58 + Math.floor(rand() * 34)) {
+    for (let y = mine.groundY + 40; y < mine.bottomY - 24; y += 96 + Math.floor(rand() * 40)) {
       const rx = Math.min((mine.shaftX - 14) / 2.6, 10 + rand() * 12);
       const cx = 6 + rx * 1.3 + rand() * Math.max(1, mine.shaftX - 16 - rx * 2.6);
       cave(world, cx, y, rx, 6 + rand() * 5, rand);
@@ -340,7 +340,6 @@ function decorateLevel(
 ): void {
   const b = level.box;
   rails(world, level.x0, level.x1, level.rail);
-  let post = 0;
   for (
     let x = level.x0 + 10 + Math.floor(hash(b.y, 3) * 20);
     x < level.x1 - 10;
@@ -349,17 +348,6 @@ function decorateLevel(
     wood(world, x, level.y0 + 1, 3, level.rail - level.y0 - 1, true);
     wood(world, x + 11, level.y0 + 1, 3, level.rail - level.y0 - 1, true);
     wood(world, x - 2, level.y0, 18, 3, false);
-    if (post % 2 === 0) {
-      lanterns.push({
-        x: x + 4,
-        y: level.y0 + 5,
-        state: level.state,
-        seed: rand() * 9,
-        level,
-        isSmall: true,
-      });
-    }
-    post += 1;
   }
   for (const [lx, side] of [
     [b.x - 9, "left"],
@@ -416,10 +404,10 @@ function toLevel(
   digId: number | null,
 ): Level {
   const b = input.box;
-  const rail = b.y + b.h + 26;
+  const rail = b.y + b.h + 19;
   return {
     ...input,
-    y0: b.y + b.h + 5,
+    y0: b.y + b.h + 3,
     rail,
     y1: rail + 4,
     x0: shaftX + SHAFT_W,
@@ -478,6 +466,42 @@ function setupDig(
   };
 }
 
+type Ground = {
+  key: string;
+  H: number;
+  data: Uint8ClampedArray;
+  mask: Uint8Array;
+  shift: Float32Array;
+  stars: World["stars"];
+};
+
+const GROUND_CHUNK = 256;
+let groundCache: Ground | null = null;
+
+function paintGround(world: World, groundY: number, moonX: number, isNarrow: boolean): void {
+  const key = `${world.W}:${groundY}:${moonX}:${Object.keys(world.palette).length}`;
+  if (!groundCache || groundCache.key !== key || groundCache.H < world.H) {
+    const H = Math.ceil(world.H / GROUND_CHUNK) * GROUND_CHUNK + GROUND_CHUNK;
+    const scratch = createWorld(world.W, H, world.palette);
+    const rand = seeded(isNarrow ? 21 : 7);
+    paintSky(scratch, groundY, rand, moonX);
+    paintRock(scratch, groundY, rand);
+    groundCache = {
+      key,
+      H,
+      data: scratch.data,
+      mask: scratch.mask,
+      shift: scratch.shift,
+      stars: scratch.stars,
+    };
+  }
+  world.data.set(groundCache.data.subarray(0, world.W * world.H * 4));
+  world.mask.set(groundCache.mask.subarray(0, world.W * world.H));
+  world.shift.set(groundCache.shift);
+  world.stars.push(...groundCache.stars);
+  world.groundY = groundY;
+}
+
 export function buildMine(input: LayoutInput): Mine {
   const { W, H, isNarrow } = input;
   const world = createWorld(W, H, input.palette);
@@ -497,8 +521,7 @@ export function buildMine(input: LayoutInput): Mine {
   );
   const all = [...levels, front];
 
-  paintSky(world, groundY, rand, isNarrow ? W - 24 : W - 70);
-  paintRock(world, groundY, rand);
+  paintGround(world, groundY, isNarrow ? W - 24 : W - 70, isNarrow);
   const rock = levels.some((l) => l.isDigging)
     ? { data: world.data.slice(), mask: world.mask.slice() }
     : null;

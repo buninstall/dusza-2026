@@ -10,7 +10,6 @@ import { Select } from "../components/ui/Select.tsx";
 import { Tab, TabList, TabPanel, Tabs } from "../components/ui/Tabs.tsx";
 import { MAX_NUGGETS } from "../game/NuggetRow.tsx";
 import { hu } from "../i18n/hu.ts";
-import { useMediaQuery } from "../lib/useMediaQuery.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { TILE_SPRITES } from "../pixel/tiles.ts";
@@ -42,7 +41,6 @@ function NewMapLink() {
 
 function LevelGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; user: SessionUser }) {
   const { data, error, isPending, refetch } = useQuery(mapsQuery(scope));
-  const isWide = useMediaQuery("(min-width: 48rem)", true);
   if (error) {
     return (
       <LoadFailed error={error} fallback={hu.maps.loadFailed} onRetry={() => void refetch()} />
@@ -68,7 +66,7 @@ function LevelGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; user
             key={map.id}
             map={map}
             depth={depthOf.get(map.id) ?? 1}
-            box={isWide ? 120 : 64}
+            box={64}
             canEdit={map.ownerId === user.id || user.role === "admin"}
           />
         ))}
@@ -141,7 +139,6 @@ export function MapsPage({ scope, sort, user, onScopeChange, onSortChange }: Map
       selectedKey={scope}
       onSelectionChange={(key) => onScopeChange(key === "mine" ? "mine" : "all")}
     >
-      <MineLayer scope={scope} sort={sort} rootRef={rootRef} />
       <div ref={rootRef} className="maps-page" data-theme="tarna">
         <div data-mine="plate">
           <LocationPlate
@@ -183,6 +180,7 @@ export function MapsPage({ scope, sort, user, onScopeChange, onSortChange }: Map
           ) : null}
         </TabPanel>
       </div>
+      <MineLayer scope={scope} sort={sort} rootRef={rootRef} />
     </Tabs>
   );
 }

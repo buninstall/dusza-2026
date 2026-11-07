@@ -16,3 +16,8 @@
   left: 0;
   image-rendering: pixelated;
 }
+
+.deep-front {
+  z-index: 2;
+  background: none;
+}

@@ -14,7 +14,7 @@ import {
 } from "./sprites.ts";
 import { mineVein } from "./terrain.ts";
 import type { View } from "./view.ts";
-import { flicker, seeded, type Vein } from "./world.ts";
+import { seeded, type Vein } from "./world.ts";
 
 const STEP = 1 / 60;
 const MAX_FRAME = 0.1;
@@ -47,6 +47,7 @@ export type SceneOptions = {
   isNarrow: boolean;
   isStatic: boolean;
   isFresh: boolean;
+  roofY: number;
   target: () => number | null;
   onDigDone: (level: Level) => void;
 };
@@ -56,7 +57,7 @@ export function runScene(options: SceneOptions): () => void {
   const { world, shaftX, bottomY, levels, front } = mine;
   const sprites: Sprites = createSprites(world);
   const fx = seeded(17);
-  const bats = createBats(world, seeded(3));
+  const bats = createBats(world, seeded(3), options.roofY);
   const drips = createDrips(world, seeded(4));
   const motes = createMotes(world, view.W, view.H, seeded(5));
   const sparks = createSparks(world);
@@ -70,6 +71,7 @@ export function runScene(options: SceneOptions): () => void {
 
   const onHit = (v: Vein, level: Level) => {
     mineVein(world, v);
+    view.refresh({ x: v.cx - 6, y: v.cy - 6, w: 13, h: 13 });
     sparks.emit(v.cx - 1, v.cy, 14, fx, { angle: Math.PI, spread: 2.2, speed: 45 });
     sparks.emit(v.cx - 1, v.cy, 6, fx, {
       angle: Math.PI,
@@ -102,6 +104,17 @@ export function runScene(options: SceneOptions): () => void {
     onHit,
   });
 
+  const reveal = (x0: number, y0: number, x1: number, y1: number) => {
+    if (!dig) return;
+    dig.reveal(x0, y0, x1, y1);
+    view.refresh({
+      x: Math.floor(x0),
+      y: Math.floor(y0),
+      w: Math.ceil(x1 - x0) + 1,
+      h: Math.ceil(y1 - y0) + 1,
+    });
+  };
+
   const stepDig = (dt: number) => {
     if (!dig) return;
     dig.t += dt;
@@ -109,7 +122,7 @@ export function runScene(options: SceneOptions): () => void {
     if (dig.phase === 1) {
       const end = level.y1 + 1;
       const y = Math.min(end, dig.shaftTop + dig.t * SHAFT_DIG_SPEED);
-      dig.reveal(shaftX - 3, dig.shaftY, shaftX + SHAFT_W + 3, y + 1);
+      reveal(shaftX - 3, dig.shaftY, shaftX + SHAFT_W + 3, y + 1);
       dig.shaftY = y;
       if (Math.floor(time * 30) % 2 === 0)
         sparks.emit(shaftX + 8, y, 3, fx, { spread: 2.8, speed: 30, isHot: fx() < 0.6 });
@@ -119,7 +132,7 @@ export function runScene(options: SceneOptions): () => void {
       }
     } else if (dig.phase === 2) {
       const x = Math.min(level.x1 + 3, level.x0 + dig.t * GALLERY_DIG_SPEED);
-      dig.reveal(dig.digX, level.y0 - 22, x + 1, level.y1 + 3);
+      reveal(dig.digX, level.y0 - 22, x + 1, level.y1 + 3);
       dig.digX = x;
       if (Math.floor(time * 30) % 2 === 0) {
         sparks.emit(x, level.rail - 6 - fx() * 6, 3, fx, { angle: 0, spread: 2.4, speed: 34 });
@@ -132,10 +145,11 @@ export function runScene(options: SceneOptions): () => void {
         });
       }
       if (x >= level.x1 + 3) {
-        dig.reveal(shaftX - 3, dig.shaftTop, world.W, level.y1 + 3);
+        reveal(shaftX - 3, dig.shaftTop, world.W, level.y1 + 3);
         dig.phase = 3;
         dig.t = 0;
         level.isDigging = false;
+        view.bake(staticLights());
         options.onDigDone(level);
       }
     } else if (dig.t > 1.2) {
@@ -184,105 +198,43 @@ export function runScene(options: SceneOptions): () => void {
     return { x: shaftX + 8, y: bottomY - 2 };
   };
 
-  const levelLights = (list: Light[]) => {
-    const target = options.target();
+  const staticLights = (): Light[] => {
+    const list: Light[] = [];
     for (const level of [...levels, front]) {
-      if (level.isDigging || level.state === "off" || !view.isVisible(level.box.y, level.box.w))
-        continue;
+      if (level.isDigging || level.state === "off") continue;
       list.push({
         x: level.box.x + level.box.w / 2,
         y: level.box.y - 8,
         radius: level.box.w * 0.62,
-        intensity: (level.state === "on" ? 0.34 : 0.18) * flicker(time, level.box.y),
+        intensity: level.state === "on" ? 0.3 : 0.16,
         color: LANTERN,
         falloff: 2.2,
         hasShadow: false,
       });
     }
     for (const l of mine.lanterns) {
-      if (l.level.isDigging || !view.isVisible(l.y, 70)) continue;
-      const hot =
-        robot.goal === l.level || (target !== null && l.level.index === target) ? 1.25 : 1;
-      const f = flicker(time, l.seed);
-      if (l.state === "on")
-        list.push({
-          x: l.x + 2,
-          y: l.y + 3,
-          radius: l.isSmall ? 44 : 60,
-          intensity: 0.9 * hot * f,
-          color: LANTERN,
-          falloff: 1.7,
-        });
-      if (l.state === "dim")
-        list.push({
-          x: l.x + 2,
-          y: l.y + 3,
-          radius: l.isSmall ? 28 : 40,
-          intensity: 0.5 * hot * f,
-          color: LANTERN,
-          falloff: 1.8,
-        });
-      if (l.state === "off" && hot > 1)
-        list.push({
-          x: l.x + 2,
-          y: l.y + 3,
-          radius: 22,
-          intensity: 0.4,
-          color: LANTERN,
-          falloff: 1.8,
-        });
-    }
-  };
-
-  const lights = (): Light[] => {
-    const dir = robot.face === "left" ? -1 : 1;
-    const list: Light[] = [
-      {
-        x: robot.x + 8 + dir * 6,
-        y: robot.y + 5,
-        radius: isNarrow ? 100 : 140,
-        intensity: 1.3,
-        color: WARM,
-        falloff: 1.2,
-        cone: {
-          dx: Math.cos(robot.sweep) * dir,
-          dy: Math.sin(robot.sweep) + 0.03,
-          half: 0.36,
-          soft: 0.26,
-        },
-      },
-      { x: robot.x + 8, y: robot.y + 7, radius: 30, intensity: 0.6, color: HALO, falloff: 1.8 },
-      { x: shaftX + 8, y: robot.cageY - 4, radius: 34, intensity: 0.5, color: CAGE, falloff: 1.8 },
-    ];
-    levelLights(list);
-    list.push(...glowLights(world, time));
-    const drill = drillPos();
-    list.push({
-      ...drill,
-      radius: dig ? 90 : 70,
-      intensity: (dig ? 1.1 : 0.7) * (0.75 + 0.25 * Math.sin(time * 23)),
-      color: DRILL,
-      falloff: 1.5,
-    });
-    if (Math.floor(time * 1.2) % 2 === 0)
+      if (l.level.isDigging || l.state === "off") continue;
+      const isOn = l.state === "on";
       list.push({
-        ...mine.beacon,
-        radius: 24,
-        intensity: 0.9,
-        color: BEACON,
-        falloff: 1.6,
-        hasShadow: false,
+        x: l.x + 2,
+        y: l.y + 3,
+        radius: (l.isSmall ? 40 : 56) * (isOn ? 1 : 0.7),
+        intensity: isOn ? 0.85 : 0.45,
+        color: LANTERN,
+        falloff: 1.7,
       });
+    }
+    list.push(...glowLights(world, 0));
     list.push({
       x: mine.signLamp.x + 2,
       y: mine.signLamp.y + 4,
       radius: 90,
-      intensity: 0.55 * flicker(time, 3),
+      intensity: 0.55,
       color: LANTERN,
       falloff: 1.6,
       hasShadow: false,
     });
-    if (mine.house)
+    if (mine.house) {
       list.push({
         x: mine.house.x + 12,
         y: mine.house.y + 6,
@@ -292,20 +244,75 @@ export function runScene(options: SceneOptions): () => void {
         falloff: 1.7,
         hasShadow: false,
       });
+    }
+    return list;
+  };
+
+  const lights = (): Light[] => {
+    const dir = robot.face === "left" ? -1 : 1;
+    const list: Light[] = [
+      {
+        x: robot.x + 8 + dir * 6,
+        y: robot.y + 5,
+        radius: isNarrow ? 90 : 120,
+        intensity: 1.2,
+        color: WARM,
+        falloff: 1.2,
+        cone: {
+          dx: Math.cos(robot.sweep) * dir,
+          dy: Math.sin(robot.sweep) + 0.03,
+          half: 0.34,
+          soft: 0.24,
+        },
+      },
+      { x: robot.x + 8, y: robot.y + 7, radius: 26, intensity: 0.55, color: HALO, falloff: 1.8 },
+    ];
+    if (!robot.isInCage) {
+      list.push({
+        x: shaftX + 8,
+        y: robot.cageY - 4,
+        radius: 24,
+        intensity: 0.45,
+        color: CAGE,
+        falloff: 1.8,
+      });
+    }
+    const drill = drillPos();
+    if (view.isVisible(drill.y, 40)) {
+      list.push({
+        ...drill,
+        radius: dig ? 70 : 44,
+        intensity: (dig ? 1 : 0.6) * (0.8 + 0.2 * Math.sin(time * 23)),
+        color: DRILL,
+        falloff: 1.5,
+        hasShadow: false,
+      });
+    }
+    if (Math.floor(time * 1.2) % 2 === 0 && view.isVisible(mine.beacon.y, 24)) {
+      list.push({
+        ...mine.beacon,
+        radius: 18,
+        intensity: 0.8,
+        color: BEACON,
+        falloff: 1.6,
+        hasShadow: false,
+      });
+    }
     if (robot.mining && robot.miningPhase > 0.35 && robot.miningPhase < 0.7) {
       list.push({
         x: robot.mining.cx - 2,
         y: robot.mining.cy,
-        radius: 36,
-        intensity: 0.9,
+        radius: 30,
+        intensity: 0.8,
         color: GOLD,
         falloff: 1.3,
+        hasShadow: false,
       });
     }
     for (const f of flights) {
       const x = f.x0 + (f.x1 - f.x0) * f.t;
       const y = f.y0 + (f.y1 - f.y0) * f.t - Math.sin(f.t * Math.PI) * 16;
-      list.push({ x, y, radius: 14, intensity: 0.7, color: GOLD, falloff: 1.4, hasShadow: false });
+      list.push({ x, y, radius: 12, intensity: 0.7, color: GOLD, falloff: 1.4, hasShadow: false });
     }
     return list;
   };
@@ -427,7 +434,7 @@ export function runScene(options: SceneOptions): () => void {
     drawCage();
     drawWheel();
     drawDrill();
-    bats.draw(view);
+    if (view.front) bats.draw(view, view.front);
     drips.draw(view);
     motes.draw(view);
     sparks.draw(view);
@@ -441,13 +448,15 @@ export function runScene(options: SceneOptions): () => void {
     }
   };
 
+  if (options.isStatic && dig) {
+    dig.reveal(0, 0, world.W, world.H);
+    dig.level.isDigging = false;
+    options.onDigDone(dig.level);
+    dig = null;
+  }
+  view.bake(staticLights());
+
   if (options.isStatic) {
-    if (dig) {
-      dig.reveal(0, 0, world.W, world.H);
-      dig.level.isDigging = false;
-      options.onDigDone(dig.level);
-      dig = null;
-    }
     for (let i = 0; i < STATIC_WARMUP; i += 1) sim(STEP);
     let pending = 0;
     const draw = () => {
