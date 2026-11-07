@@ -214,7 +214,7 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 
 | ID    | Forrás        | Szabály                                                           | Teszteset(ek)                                            | Állapot |
 | ----- | ------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------- |
-| T9.1  | 4 (értékelés) | Nincs serious/critical axe-találat (Tárna téma)        | `e2e:a11y` (minden oldal és állapot)                     | zöld    |
+| T9.1  | 4 (értékelés) | Nincs serious/critical axe-találat (Tárna téma)                   | `e2e:a11y` (minden oldal és állapot)                     | zöld    |
 | T9.2  | 4             | Teljes belépés és navigáció billentyűzettel                       | `e2e:keyboard`, `e2e:keyboard` (teljes recept futtatása) | zöld    |
 | T9.3  | 4             | A térképrács szerepkörei és nyílbillentyűs navigációja            | `web:MapGrid.test`                                       | zöld    |
 | T9.4  | –             | CSRF Origin-ellenőrzés                                            | `server:csrf.test`                                       | zöld    |
