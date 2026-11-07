@@ -1,4 +1,5 @@
 import { billboard } from "./billboard.ts";
+import { LIMESTONE } from "./palette.ts";
 import type { LanternState } from "./sprites.ts";
 import {
   carve,
@@ -6,6 +7,7 @@ import {
   cave,
   ceilingAt,
   crystal,
+  crystalKindAt,
   edges,
   paintRock,
   paintSky,
@@ -276,7 +278,7 @@ function decorateRoom(
       world.roosts.push({ x: rx, y: ry });
     return;
   }
-  const depth = stratumAt(level.y0 - groundY, level.box.x, level.y0);
+  const depth = stratumAt(world, level.box.x, level.y0);
   const cx = Math.round((room.x0 + room.x1) / 2);
   if (!level.isDaily)
     sign(
@@ -322,12 +324,13 @@ function decorateRoom(
       floor: level.rail - 1,
     });
   }
-  if (depth >= 3) {
-    for (let k = 0; k < 3; k += 1) {
+  const kind = crystalKindAt(depth);
+  if (kind && depth > LIMESTONE) {
+    for (let k = 0; k < (kind === "amethyst" ? 5 : 3); k += 1) {
       const gx = room.x0 + 6 + Math.floor(rand() * Math.max(1, room.x1 - room.x0 - 10));
-      crystal(world, gx, ceilingAt(world, gx, level.rail - 2), rand, false);
+      crystal(world, gx, ceilingAt(world, gx, level.rail - 2), rand, false, kind);
     }
-    crystal(world, level.x1 - 2, level.rail - 1, rand, true);
+    crystal(world, level.x1 - 2, level.rail - 1, rand, true, kind);
   }
 }
 

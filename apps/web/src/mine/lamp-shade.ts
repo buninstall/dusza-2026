@@ -152,9 +152,23 @@ function lightAt(frame: ShadeFrame, x: number, y: number): number {
   return smooth((spot.radius - distance) / edge) * frame.intensity;
 }
 
+function fillTile(frame: ShadeFrame, out: Uint8ClampedArray, row: number, col: number): void {
+  const width = frame.cols * TILE_SIZE;
+  for (let py = 0; py < TILE_SIZE; py += 1) {
+    const start = ((row * TILE_SIZE + py) * width + col * TILE_SIZE) * 4;
+    for (let px = 0; px < TILE_SIZE; px += 1) {
+      put(out, start + px * 4, frame.void, 255);
+    }
+  }
+}
+
 function shadeTile(frame: ShadeFrame, out: Uint8ClampedArray, row: number, col: number): void {
   const width = frame.cols * TILE_SIZE;
   const reveal = frame.level(row, col);
+  if (reveal <= 0) {
+    fillTile(frame, out, row, col);
+    return;
+  }
   const memory = frame.isSeen(row, col) ? MEMORY_SEEN : MEMORY_LIT;
   for (let py = 0; py < TILE_SIZE; py += 1) {
     const y = row * TILE_SIZE + py;
