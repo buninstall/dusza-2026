@@ -109,7 +109,7 @@ type RunDetailBody = {
     username: string;
     isOwn: boolean;
   };
-  map: { content: string };
+  map: { content: string; lampMode: string };
 };
 
 describe("egy futás visszajátszáshoz", () => {

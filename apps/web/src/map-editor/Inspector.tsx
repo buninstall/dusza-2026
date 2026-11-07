@@ -10,6 +10,7 @@ import { Segmented } from "../components/ui/Segmented.tsx";
 import { TextField } from "../components/ui/TextField.tsx";
 import { diagnosticTitles, hu } from "../i18n/hu.ts";
 import { PixelText } from "../pixel/PixelText.tsx";
+import type { LampMode } from "../play/lamp-mode.ts";
 
 export type Visibility = "public" | "private";
 
@@ -18,6 +19,13 @@ export type MapDetails = {
   description: string;
   visibility: Visibility;
   parSteps: number | null;
+  lampMode: LampMode;
+};
+
+const LAMP_HINTS: Record<LampMode, string> = {
+  open: hu.mapEditor.lampOpenHint,
+  lamp: hu.mapEditor.lampLampHint,
+  dark: hu.mapEditor.lampDarkHint,
 };
 
 export type VersionInfo = { current: number; next: number; runCount: number };
@@ -248,6 +256,17 @@ export function DetailsBlock({
         options={[
           { id: "public", label: hu.maps.public, icon: "grid" },
           { id: "private", label: hu.maps.private, icon: "lock" },
+        ]}
+      />
+      <Segmented
+        label={hu.mapEditor.lampMode}
+        value={details.lampMode}
+        onChange={(lampMode) => onChange({ ...details, lampMode })}
+        description={LAMP_HINTS[details.lampMode]}
+        options={[
+          { id: "open", label: hu.mapEditor.lampOpen, icon: "grid" },
+          { id: "lamp", label: hu.mapEditor.lampLamp, icon: "lantern" },
+          { id: "dark", label: hu.mapEditor.lampDark, icon: "lantern" },
         ]}
       />
     </InspectorSection>

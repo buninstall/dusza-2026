@@ -81,10 +81,7 @@
       "indexes": {
         "map_versions_map_version_idx": {
           "name": "map_versions_map_version_idx",
-          "columns": [
-            "map_id",
-            "version"
-          ],
+          "columns": ["map_id", "version"],
           "isUnique": true
         }
       },
@@ -93,12 +90,8 @@
           "name": "map_versions_map_id_maps_id_fk",
           "tableFrom": "map_versions",
           "tableTo": "maps",
-          "columnsFrom": [
-            "map_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["map_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -106,9 +99,7 @@
       "compositePrimaryKeys": {
         "map_versions_id": {
           "name": "map_versions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -201,16 +192,12 @@
       "indexes": {
         "maps_owner_idx": {
           "name": "maps_owner_idx",
-          "columns": [
-            "owner_id"
-          ],
+          "columns": ["owner_id"],
           "isUnique": false
         },
         "maps_daily_date_idx": {
           "name": "maps_daily_date_idx",
-          "columns": [
-            "daily_date"
-          ],
+          "columns": ["daily_date"],
           "isUnique": true
         }
       },
@@ -219,12 +206,8 @@
           "name": "maps_owner_id_users_id_fk",
           "tableFrom": "maps",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -232,9 +215,7 @@
       "compositePrimaryKeys": {
         "maps_id": {
           "name": "maps_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -282,9 +263,7 @@
       "indexes": {
         "programs_owner_idx": {
           "name": "programs_owner_idx",
-          "columns": [
-            "owner_id"
-          ],
+          "columns": ["owner_id"],
           "isUnique": false
         }
       },
@@ -293,12 +272,8 @@
           "name": "programs_owner_id_users_id_fk",
           "tableFrom": "programs",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -306,9 +281,7 @@
       "compositePrimaryKeys": {
         "programs_id": {
           "name": "programs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -398,19 +371,12 @@
       "indexes": {
         "runs_leaderboard_idx": {
           "name": "runs_leaderboard_idx",
-          "columns": [
-            "map_version_id",
-            "`gold` desc",
-            "steps",
-            "created_at"
-          ],
+          "columns": ["map_version_id", "`gold` desc", "steps", "created_at"],
           "isUnique": false
         },
         "runs_user_idx": {
           "name": "runs_user_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -419,12 +385,8 @@
           "name": "runs_user_id_users_id_fk",
           "tableFrom": "runs",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -432,12 +394,8 @@
           "name": "runs_map_version_id_map_versions_id_fk",
           "tableFrom": "runs",
           "tableTo": "map_versions",
-          "columnsFrom": [
-            "map_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["map_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -445,9 +403,7 @@
       "compositePrimaryKeys": {
         "runs_id": {
           "name": "runs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -481,9 +437,7 @@
       "indexes": {
         "sessions_user_idx": {
           "name": "sessions_user_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -492,12 +446,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -505,9 +455,7 @@
       "compositePrimaryKeys": {
         "sessions_id_hash": {
           "name": "sessions_id_hash",
-          "columns": [
-            "id_hash"
-          ]
+          "columns": ["id_hash"]
         }
       },
       "uniqueConstraints": {},
@@ -558,17 +506,13 @@
       "compositePrimaryKeys": {
         "users_id": {
           "name": "users_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "users_username_unique": {
           "name": "users_username_unique",
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         }
       },
       "checkConstraint": {}

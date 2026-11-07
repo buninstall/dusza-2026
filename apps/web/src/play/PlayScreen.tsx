@@ -9,6 +9,7 @@ import type { Exploration, FogMode } from "../mine/tiles-model.ts";
 import { usePlaybackSounds } from "../sound/usePlaybackSounds.ts";
 import { deriveFault } from "./fault.ts";
 import { GoldFlight } from "./GoldFlight.tsx";
+import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
 import {
   isDarkMine,
   isLampBroken,
@@ -19,7 +20,6 @@ import {
   lampView,
   type Sketch,
 } from "./lamp-mode.ts";
-import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
 import { type Blocked, moodFor } from "./phase.ts";
 import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";

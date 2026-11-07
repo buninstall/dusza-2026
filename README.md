@@ -110,7 +110,7 @@ A kötelező funkciók után a többi versenymegoldás nyilvános felületét is
 | A robot nyomvonala          | kivettük    | A felfedezett mezők jelölése mellett fölösleges vizuális zaj volt.                                                                                                                                                |
 | Két futás összevetése       | elvetettük  | A ranglista, a saját futások és a visszajátszás együtt már megmutatja a különbséget.                                                                                                                              |
 | Fokozatos tipp-gomb         | elvetettük  | A receptek és a Kézikönyv próbapadjai ezt lefedik; egy félmegoldást adó gomb a verseny jellegét rontaná.                                                                                                          |
-| Lámpafény-mód               | tervezve    | Sötét bánya, arannyal növő fénykör, falnál elvesző vázlat a nehezebb pályákon; lásd fent és a [docs/jatekelmeny.md](docs/jatekelmeny.md) tervét.                                                                     |
+| Lámpafény-mód               | tervezve    | Sötét bánya, arannyal növő fénykör, falnál elvesző vázlat a nehezebb pályákon; lásd fent és a [docs/jatekelmeny.md](docs/jatekelmeny.md) tervét.                                                                  |
 | Golf-mód, VS Code-bővítmény | később      | Lásd a beadandó továbbfejlesztési javaslatait ([docs/beadando.md](docs/beadando.md)).                                                                                                                             |
 
 ## Dokumentáció

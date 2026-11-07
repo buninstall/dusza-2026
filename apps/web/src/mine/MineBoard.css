@@ -249,6 +249,10 @@
   opacity: 0.45;
 }
 
+.board-void[data-light="sealed"] {
+  opacity: 1;
+}
+
 .board-void[data-light="lit"] {
   opacity: 0;
 }

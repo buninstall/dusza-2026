@@ -317,6 +317,20 @@ describe("térkép szerkesztése", () => {
     expect(screen.getByText("Mentve")).toBeTruthy();
   });
 
+  test("a bánya fokozata választható és mentődik", async () => {
+    respond("GET", "/maps/4", mapDetail(4, "Labirintus", LABYRINTH, { lampMode: "lamp" }));
+    respond("PUT", "/maps/4", { map: { id: 4 }, createdNewVersion: false });
+    const { user } = renderApp("/maps/4/edit");
+    const lamp = await screen.findByRole("radio", { name: "Lámpafény" });
+    expect(lamp).toHaveProperty("checked", true);
+    expect(screen.getByText(/Falnak ütközéskor a játékos vázlata elvész/)).toBeTruthy();
+    await user.click(screen.getByRole("radio", { name: "Vaksötét" }));
+    expect(screen.getByText(/üres akkuval indul/)).toBeTruthy();
+    await user.click(saveButton());
+    expect(await screen.findByText("A térkép elmentve.")).toBeTruthy();
+    expect(callsTo("PUT", "/maps/4")[0]?.body).toMatchObject({ lampMode: "dark" });
+  });
+
   test("futás nélkül helyben ment, törlés megerősítéssel a listára visz", async () => {
     respond("GET", "/maps/4", mapDetail(4, "Labirintus", LABYRINTH));
     respond("PUT", "/maps/4", { map: { id: 4 }, createdNewVersion: false });

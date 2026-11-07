@@ -144,7 +144,12 @@ describe("vázlat", () => {
       event({ robot: { pos: { row: 1, col: 0 }, dir: "south" }, path: [{ row: 1, col: 0 }] }),
     ]);
     const track = lampTrack(map, start, run, "lamp");
-    const next = sketchAfterRun({ discovered: new Set(["2:4"]), lit: new Set() }, start, run, track);
+    const next = sketchAfterRun(
+      { discovered: new Set(["2:4"]), lit: new Set() },
+      start,
+      run,
+      track,
+    );
     expect(next.discovered.has("2:4")).toBe(true);
     expect(next.discovered.has("1:0")).toBe(true);
     expect(next.lit.has("2:0")).toBe(true);

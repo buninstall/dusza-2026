@@ -38,7 +38,8 @@ import {
 
 const invalidMapMessage = "A térkép nem felel meg a szabályoknak.";
 
-const lampExportMessage = "Lámpafényes pályát csak a szerzője exportálhat, különben elárulná a sötét bányát.";
+const lampExportMessage =
+  "Lámpafényes pályát csak a szerzője exportálhat, különben elárulná a sötét bányát.";
 
 const MAX_SEED = 0xffff_ffff;
 

@@ -2,7 +2,15 @@ import type { Engine, RunResult } from "@minescript/engine";
 import { eq } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import { firstRow } from "../db/rows.ts";
-import { type MapRow, type MapVersionRow, maps, mapVersions, type RunRow, runs, users } from "../db/schema.ts";
+import {
+  type MapRow,
+  type MapVersionRow,
+  maps,
+  mapVersions,
+  type RunRow,
+  runs,
+  users,
+} from "../db/schema.ts";
 import type { SessionUser } from "../env.ts";
 import { sha256Hex } from "../lib/crypto.ts";
 

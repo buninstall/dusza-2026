@@ -24,6 +24,7 @@ export type TileView = {
   fringe: readonly FringeSide[];
   hasRobot: boolean;
   isLampLit: boolean;
+  isSealed: boolean;
 };
 
 const NEIGHBOURS: readonly { side: FringeSide; dRow: number; dCol: number }[] = [
@@ -88,9 +89,9 @@ export function buildTiles(
         kind: tileKind(cell, exploration?.mined.has(key) ?? false),
         lighting,
         isLampLit: lighting === "dark" && isBeside(robot, pos),
-        fringe:
-          lighting === "dark" && exploration ? litNeighbourSides(pos, exploration) : [],
+        fringe: lighting === "dark" && exploration ? litNeighbourSides(pos, exploration) : [],
         hasRobot,
+        isSealed: lighting === "dark" && exploration?.lit !== undefined,
       };
     }),
   );

@@ -129,7 +129,12 @@ export type LampViewInput = {
   start: RobotState;
   mode: LampMode;
   sketch: Sketch;
-  frame: { index: number; discovered: ReadonlySet<string>; robot: RobotState; atEnd: boolean } | null;
+  frame: {
+    index: number;
+    discovered: ReadonlySet<string>;
+    robot: RobotState;
+    atEnd: boolean;
+  } | null;
   track: LampTrack | null;
   isBroken: boolean;
 };

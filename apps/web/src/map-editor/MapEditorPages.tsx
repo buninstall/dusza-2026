@@ -38,7 +38,13 @@ export function NewMapPage() {
     <MapEditor
       mapId={null}
       initialDraft={initialDraft}
-      initialDetails={{ title: "", description: "", visibility: "public", parSteps: null }}
+      initialDetails={{
+        title: "",
+        description: "",
+        visibility: "public",
+        parSteps: null,
+        lampMode: "open",
+      }}
       version={null}
       onSave={create}
     />
@@ -102,6 +108,7 @@ function EditMapForm({ mapId, detail }: { mapId: number; detail: MapDetail }) {
         description: detail.map.description,
         visibility: detail.map.visibility,
         parSteps: detail.map.parSteps,
+        lampMode: detail.map.lampMode,
       }}
       version={{
         current: detail.version.version,
