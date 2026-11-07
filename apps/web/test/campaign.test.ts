@@ -37,15 +37,16 @@ describe("kampány fejezetei", () => {
       false,
       false,
     ]);
-    expect(groups[1]?.lock).toMatchObject({ remaining: 5, isChained: false });
+    expect(groups.map((group) => group.lock?.remaining ?? 0)).toEqual([0, 5, 10, 15, 20, 25]);
     expect(groups[2]?.lock?.isChained).toBe(true);
     expect(lockedIds.size).toBe(25);
     expect(isSilent).toBe(false);
   });
 
   test("a fejezet akkor nyílik, ha az előző minden pályáján megvan minden arany", () => {
-    const fourDone = groupCampaign(campaign((index) => (index < 4 ? 2 : 1)));
+    const fourDone = groupCampaign(campaign((index) => (index < 4 || index === 6 ? 2 : 1)));
     expect(fourDone.groups[1]?.lock?.remaining).toBe(1);
+    expect(fourDone.groups[2]?.lock?.remaining).toBe(5);
     const allDone = groupCampaign(campaign((index) => (index < 5 ? 3 : 0)));
     expect(allDone.groups[1]?.lock).toBeNull();
     expect(allDone.groups[2]?.lock).toMatchObject({ remaining: 5, isChained: false });

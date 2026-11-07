@@ -62,6 +62,7 @@ function bucketize(ordered: readonly MapSummary[]): MapSummary[][] {
 export function groupCampaign(ordered: readonly MapSummary[]): Campaign {
   const buckets = bucketize(ordered);
   const groups: ChapterGroup[] = [];
+  let owed = 0;
   for (const [at, chapter] of CHAPTERS.entries()) {
     const maps = buckets[at] ?? [];
     if (maps.length === 0) {
@@ -81,10 +82,11 @@ export function groupCampaign(ordered: readonly MapSummary[]): Campaign {
           ? null
           : {
               previous: previous.chapter,
-              remaining: Math.max(0, previous.chapter.levels.length - previous.cleared),
+              remaining: owed,
               isChained: previous.lock !== null,
             },
     });
+    owed += Math.max(0, chapter.levels.length - cleared);
   }
   const last = groups.at(-1);
   const finalTitle = CHAPTERS.at(-1)?.levels.at(-1);

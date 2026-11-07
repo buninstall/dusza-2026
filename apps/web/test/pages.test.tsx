@@ -49,7 +49,7 @@ describe("térképlista", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        "Még 5 pályán kell minden aranyat kibányászni, hogy kinyíljon az V. fejezet.",
+        "Még 20 pályán kell minden aranyat kibányászni, hogy kinyíljon az V. fejezet.",
       ),
     ).toBeTruthy();
   });
