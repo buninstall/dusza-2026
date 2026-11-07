@@ -74,6 +74,18 @@ A `just setup` a többit maga telepíti: a `wasm32-unknown-unknown` célt, a `Ca
 | `just ci`          | lint, test, build, e2e                                           |
 | `just clean`       | buildtermékek törlése                                            |
 
+## Következő nagy lépés: Lámpafény-mód
+
+A bánya a kiírás szerint sötét, és a robot „tapogatózva halad előre”. A Lámpafény-mód ezt játékszabállyá teszi a nehezebb pályákon:
+
+- **Sötét bánya:** a pálya mérete látszik, a labirintus nem. Csak az látszik, amit a robot felfedezett vagy a lámpája megvilágított.
+- **Arany = fény:** minden kibányászott rög feltölti a robot akkumulátorát, és a lámpa fénykörének sugara eggyel nő, legfeljebb négyig.
+- **Vázlat:** ami egyszer kiderült, a következő futás előtt is látszik, így a játék ritmusa felderítés, tervezés, jobb program.
+- **Fal = sötétség:** ha a robot falnak megy, összetörik a lámpa, a vázlat elvész, és a játékos újra vaksötétben áll. Aki lépés előtt `isThere 1`-gyel tapogat, az soha nem veszíti el.
+- **Kiérdemelt térkép:** három rög után feloldódik a Teljes térkép, és jöhet a lépésszám csiszolása a ranglistáért.
+
+A könnyű pályák nyitottak maradnak, ott a játékos az utasításokat tanulja. A mód a nyelv viselkedését, a lépésszámlálást és a ranglista rendezését nem változtatja, a motorhoz nem nyúl. Az ötlet a felkészítő tanárunktól származik; a teljes terv, a kiírással való összevetés és a megvalósítás lépései: [docs/jatekelmeny.md](docs/jatekelmeny.md).
+
 ## Fejlesztési ötletek és megvalósításuk
 
 A kötelező funkciók után a többi versenymegoldás nyilvános felületét is átnéztük, és azt kerestük, mitől lesz a MineScript valódi játék, nem csak egy programfuttató. Az ötleteket hatás szerint rangsoroltuk, majd egy takarítási körben mindent kivettünk, ami csak helyet foglalt. Az alábbi táblázat mutatja, mi valósult meg, és hol érhető el.
@@ -98,6 +110,7 @@ A kötelező funkciók után a többi versenymegoldás nyilvános felületét is
 | A robot nyomvonala          | kivettük    | A felfedezett mezők jelölése mellett fölösleges vizuális zaj volt.                                                                                                                                                |
 | Két futás összevetése       | elvetettük  | A ranglista, a saját futások és a visszajátszás együtt már megmutatja a különbséget.                                                                                                                              |
 | Fokozatos tipp-gomb         | elvetettük  | A receptek és a Kézikönyv próbapadjai ezt lefedik; egy félmegoldást adó gomb a verseny jellegét rontaná.                                                                                                          |
+| Lámpafény-mód               | tervezve    | Sötét bánya, arannyal növő fénykör, falnál elvesző vázlat a nehezebb pályákon; lásd fent és a [docs/jatekelmeny.md](docs/jatekelmeny.md) tervét.                                                                     |
 | Golf-mód, VS Code-bővítmény | később      | Lásd a beadandó továbbfejlesztési javaslatait ([docs/beadando.md](docs/beadando.md)).                                                                                                                             |
 
 ## Dokumentáció
@@ -111,6 +124,7 @@ A kötelező funkciók után a többi versenymegoldás nyilvános felületét is
 | [docs/tesztterv.md](docs/tesztterv.md)         | spec-mátrix és tesztlefedettség            |
 | [docs/a11y.md](docs/a11y.md)                   | WCAG 2.2 AA ellenőrzőlista                 |
 | [docs/beadando.md](docs/beadando.md)           | a beadandó leírás                          |
+| [docs/jatekelmeny.md](docs/jatekelmeny.md)     | a Lámpafény-mód terve                      |
 | [conformance/README.md](conformance/README.md) | a conformance-esetek formátuma             |
 
 ## Csapat
