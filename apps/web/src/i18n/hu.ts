@@ -247,6 +247,15 @@ export const hu = {
     visibility: "Láthatóság",
     visibilityPublicHint: "Mindenki látja és játszhat rajta.",
     visibilityPrivateHint: "Csak neked és az adminisztrátoroknak látszik.",
+    lampMode: "Bánya",
+    lampOpen: "Nyitott",
+    lampLamp: "Lámpafény",
+    lampDark: "Vaksötét",
+    lampOpenHint: "A teljes térkép látszik, ahogy a könnyű pályákon.",
+    lampLampHint:
+      "Sötét bánya: csak a felfedezett és a lámpa fényébe eső mezők látszanak. Falnak ütközéskor a játékos vázlata elvész.",
+    lampDarkHint:
+      "Mint a Lámpafény, de a lámpa üres akkuval indul: amíg a robot nem bányászik, csak a felfedezett mezők látszanak.",
     rows: "Sorok",
     cols: "Oszlopok",
     sizeLosesRobot: "A robot is törlődik.",
@@ -428,6 +437,14 @@ export const hu = {
     viewFull: "Teljes térkép",
     viewLampHint: "Csak a felfedezett mezők látszanak.",
     viewFullHint: "Minden mező látszik, a felderítetlenek rácsmintásak.",
+    viewLocked: "Sötét bánya: a teljes térkép három rög után nyílik meg.",
+    battery: "Akku",
+    batterySpoken: (radius: number, max: number) =>
+      `Akku: ${radius} / ${max}, a lámpa ${radius} mezőnyire világít.`,
+    lampBrokenTitle: "Összetört a lámpa",
+    lampBrokenBody:
+      "A robot falnak ment, a vázlat elveszett: a következő futás újra sötétben indul. Lépés előtt az isThere 1 megmutatja, hol a fal.",
+    lampSketch: (count: number) => `Vázlat: ${count} ismert mező`,
     keys: "Billentyűk",
     keysTitle: "Billentyűparancsok",
     gauges: "Műszerek",

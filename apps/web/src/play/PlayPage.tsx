@@ -1,21 +1,37 @@
 import type { MineMap, RobotState } from "@minescript/engine";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useMemo, useRef } from "react";
+import { sessionQuery } from "../auth/session.ts";
 import { Link } from "../components/ui/Link.tsx";
 import type { EditorHandle } from "../editor/MineScriptEditor.tsx";
 import { NuggetRow } from "../game/NuggetRow.tsx";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { RunMedal } from "../game/RunMedal.tsx";
 import { hu } from "../i18n/hu.ts";
 import type { MapDetail } from "../maps/queries.ts";
 import { TourCoach } from "../tour/TourCoach.tsx";
-import { PlayScreen } from "./PlayScreen.tsx";
+import { isDarkMine } from "./lamp-mode.ts";
+import { isFullViewLocked, type LampSetup, PlayScreen } from "./PlayScreen.tsx";
 import { type ProgramDraft, useProgramDraft } from "./program-draft.ts";
 import { GUARD_BLOCK } from "./sheet/blocks.ts";
 import { ProgramSheet } from "./sheet/ProgramSheet.tsx";
 import { useProgramPersistence } from "./sheet/useProgramPersistence.ts";
 import { Bezel } from "./stage/Bezel.tsx";
 import { SubmissionLine } from "./stage/ShiftReport.tsx";
+import { useLampSketch } from "./useLampSketch.ts";
 import { usePlayView } from "./usePlayView.ts";
 import { useEngineRun, useRunSubmission } from "./useRunSession.ts";
+
+const FULL_STARS = 3;
+
+function DarkMineTag({ mode }: { mode: LampSetup["mode"] }) {
+  return (
+    <span className="play-dark-tag">
+      <PixelIcon name="lantern" />
+      {mode === "dark" ? hu.mapEditor.lampDark : hu.mapEditor.lampLamp}
+    </span>
+  );
+}
 
 type PlayPageProps = {
   detail: MapDetail;
@@ -46,6 +62,18 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
     engineRun.clearBlocked();
   };
   const persistence = useProgramPersistence({ draft, onDraftChange });
+  const userId = useQuery(sessionQuery).data?.id ?? null;
+  const lampMode = detail.map.lampMode;
+  const sketch = useLampSketch({
+    userId,
+    mapVersionId: detail.version.id,
+    mode: lampMode,
+    map,
+    start,
+  });
+  const lamp: LampSetup | undefined = isDarkMine(lampMode)
+    ? { mode: lampMode, sketch, canSeeAll: detail.canEdit || detail.player.stars === FULL_STARS }
+    : undefined;
   const goldTotal = detail.info?.goldTotal ?? 0;
   const reachableGold = detail.info?.reachableGold ?? goldTotal;
 
@@ -53,9 +81,11 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
     <Bezel
       name={hu.signs.play}
       title={detail.map.title}
+      isFullLocked={isFullViewLocked(lamp)}
       meta={
         detail.player.stars === null ? undefined : (
           <span className="play-progress" title={hu.game.starRule(detail.map.parSteps)}>
+            {lamp ? <DarkMineTag mode={lamp.mode} /> : null}
             <NuggetRow earned={detail.player.stars} size="sm" />
             {detail.map.parSteps === null ? null : (
               <span>{hu.game.parShort(detail.map.parSteps)}</span>
@@ -121,6 +151,7 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
             isDaily={detail.player.isDaily}
           />
         }
+        lamp={lamp}
         onRun={run}
         onInsertGuard={(line) => editorRef.current?.insertBeforeLine(line, GUARD_BLOCK)}
         revealLine={(line) => editorRef.current?.revealLine(line)}

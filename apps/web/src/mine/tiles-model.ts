@@ -10,6 +10,7 @@ export type Exploration = {
   discovered: ReadonlySet<string>;
   mined: ReadonlySet<string>;
   mode: FogMode;
+  lit?: ReadonlySet<string> | undefined;
 };
 
 export type TileKind = "floor" | "wall" | "gold" | "mined";
@@ -50,17 +51,24 @@ function isBeside(robot: RobotState | null, pos: Pos): boolean {
   return Math.abs(robot.pos.row - pos.row) + Math.abs(robot.pos.col - pos.col) === 1;
 }
 
-function litNeighbourSides(pos: Pos, discovered: ReadonlySet<string>): FringeSide[] {
+function isVisible(key: string, exploration: Exploration): boolean {
+  return exploration.discovered.has(key) || (exploration.lit?.has(key) ?? false);
+}
+
+function litNeighbourSides(pos: Pos, exploration: Exploration): FringeSide[] {
   return NEIGHBOURS.filter(({ dRow, dCol }) =>
-    discovered.has(posKey({ row: pos.row + dRow, col: pos.col + dCol })),
+    isVisible(posKey({ row: pos.row + dRow, col: pos.col + dCol }), exploration),
   ).map(({ side }) => side);
 }
 
-function lightingFor(isKnown: boolean, exploration: Exploration | null): Lighting {
+function lightingFor(isKnown: boolean, key: string, exploration: Exploration | null): Lighting {
   if (exploration === null || isKnown) {
     return "lit";
   }
-  return exploration.mode === "lamp" ? "dark" : "shrouded";
+  if (exploration.mode !== "lamp") {
+    return "shrouded";
+  }
+  return exploration.lit?.has(key) ? "shrouded" : "dark";
 }
 
 export function buildTiles(
@@ -74,14 +82,14 @@ export function buildTiles(
       const key = posKey(pos);
       const hasRobot = isRobotAt(robot, pos);
       const isKnown = hasRobot || (exploration?.discovered.has(key) ?? true);
-      const lighting = lightingFor(isKnown, exploration);
+      const lighting = lightingFor(isKnown, key, exploration);
       return {
         pos,
         kind: tileKind(cell, exploration?.mined.has(key) ?? false),
         lighting,
         isLampLit: lighting === "dark" && isBeside(robot, pos),
         fringe:
-          lighting === "dark" && exploration ? litNeighbourSides(pos, exploration.discovered) : [],
+          lighting === "dark" && exploration ? litNeighbourSides(pos, exploration) : [],
         hasRobot,
       };
     }),

@@ -23,6 +23,7 @@ export function mapSummary(id: number, title: string, content: string, ownerId =
     ownerId,
     ownerName: ownerId === 1 ? "admin" : "demo1",
     parSteps: null as number | null,
+    lampMode: "open" as "open" | "lamp" | "dark",
     createdAt: CREATED,
     updatedAt: CREATED,
     versionId: id * 10,
@@ -44,6 +45,8 @@ type DetailOptions = {
   version?: number;
   parSteps?: number | null;
   isDaily?: boolean;
+  lampMode?: "open" | "lamp" | "dark";
+  stars?: number | null;
 };
 
 export function mapDetail(id: number, title: string, content: string, options: DetailOptions = {}) {
@@ -58,6 +61,7 @@ export function mapDetail(id: number, title: string, content: string, options: D
       visibility: "public" as const,
       currentVersionId: id * 10 + version,
       parSteps: options.parSteps ?? null,
+      lampMode: options.lampMode ?? "open",
       dailyDate: options.isDaily ? "2026-11-06" : null,
       createdAt: CREATED,
       updatedAt: CREATED,
@@ -85,7 +89,7 @@ export function mapDetail(id: number, title: string, content: string, options: D
     canEdit: options.canEdit ?? true,
     player: {
       best: null as { gold: number; steps: number } | null,
-      stars: 0 as number | null,
+      stars: (options.stars === undefined ? 0 : options.stars) as number | null,
       isDaily: options.isDaily ?? false,
       difficulty: "easy" as "easy" | "medium" | "hard" | null,
     },

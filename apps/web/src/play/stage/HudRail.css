@@ -31,6 +31,32 @@
   min-width: 7.5rem;
 }
 
+.hud-battery {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.hud-battery-cells {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 6px;
+  gap: 1px;
+  height: 12px;
+  padding: 1px;
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+}
+
+.hud-battery-cells > span[data-on="true"] {
+  background: var(--c-reward);
+}
+
+.hud-battery[data-broken="true"] .hud-battery-cells {
+  background: var(--c-hazard) var(--hazard-pattern);
+  background-size: 8px 8px;
+}
+
 .hud-value {
   display: flex;
   align-items: flex-end;

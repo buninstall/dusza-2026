@@ -32,6 +32,24 @@ function LineReadout({ line, lineText, onReveal }: LineReadoutProps) {
   );
 }
 
+export type Battery = { radius: number; max: number; isBroken: boolean };
+
+function BatteryMeter({ battery }: { battery: Battery }) {
+  return (
+    <span className="hud-battery" data-broken={battery.isBroken}>
+      <span className="label" aria-hidden="true">
+        {hu.play.battery}
+      </span>{" "}
+      <span className="visually-hidden">{hu.play.batterySpoken(battery.radius, battery.max)}</span>
+      <span aria-hidden="true" className="hud-battery-cells">
+        {Array.from({ length: battery.max }, (_, cell) => (
+          <span key={`c${cell.toString()}`} data-on={cell < battery.radius} />
+        ))}
+      </span>
+    </span>
+  );
+}
+
 type HudRailProps = {
   phase: StagePhase;
   gold: number;
@@ -42,6 +60,7 @@ type HudRailProps = {
   robot: RobotState;
   isRolling: boolean;
   isLimit: boolean;
+  battery?: Battery | null;
   onRevealLine: (line: number) => void;
 };
 
@@ -55,6 +74,7 @@ export function HudRail({
   robot,
   isRolling,
   isLimit,
+  battery = null,
   onRevealLine,
 }: HudRailProps) {
   const lamp = lampFor(phase);
@@ -63,6 +83,12 @@ export function HudRail({
       <div className="hud-gauge hud-lamp">
         <span className="visually-hidden">{hu.play.status}</span>{" "}
         <Led state={lamp.led} label={lamp.label} isBlinking={lamp.blink} />
+        {battery ? (
+          <>
+            {" "}
+            <BatteryMeter battery={battery} />
+          </>
+        ) : null}
       </div>{" "}
       <CartGauge gold={gold} total={goldTotal} isRolling={isRolling} />{" "}
       <DepthGauge steps={steps} isLimit={isLimit} /> <Compass robot={robot} />{" "}

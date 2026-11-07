@@ -67,6 +67,53 @@ describe("eredmény a játék oldalon", () => {
   });
 });
 
+describe("lámpafényes pálya", () => {
+  test("futás előtt sötét a bánya, a teljes térkép zárolva, az akku látszik", async () => {
+    await openPlay({ lampMode: "lamp", canEdit: false });
+    expect(screen.getByRole("gridcell", { name: "3. sor, 4. oszlop: felderítetlen" })).toBeTruthy();
+    expect(
+      screen.getByRole("gridcell", { name: "2. sor, 1. oszlop: üres kamra, még nem felfedezett" }),
+    ).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Teljes térkép" })).toHaveProperty("disabled", true);
+    expect(screen.getByText("Akku: 1 / 4, a lámpa 1 mezőnyire világít.")).toBeTruthy();
+  });
+
+  test("három rög után a teljes térkép választható", async () => {
+    await openPlay({ lampMode: "lamp", stars: 3, canEdit: false });
+    expect(screen.getByRole("radio", { name: "Teljes térkép" })).toHaveProperty("disabled", false);
+  });
+
+  test("a vázlat a következő futás előtt is látszik", async () => {
+    window.localStorage.setItem(
+      `minescript.lamp-sketch.2.${MAP_ID * 10 + 1}`,
+      JSON.stringify({ discovered: ["2:3"], lit: ["2:4"] }),
+    );
+    await openPlay({ lampMode: "dark", canEdit: false });
+    expect(screen.getByRole("gridcell", { name: "3. sor, 4. oszlop: arany" })).toBeTruthy();
+    expect(
+      screen.getByRole("gridcell", { name: "3. sor, 5. oszlop: üres kamra, még nem felfedezett" }),
+    ).toBeTruthy();
+    expect(screen.getByText("Akku: 0 / 4, a lámpa 0 mezőnyire világít.")).toBeTruthy();
+  });
+
+  test("falnak ütközés után a vázlat törlődik", async () => {
+    const key = `minescript.lamp-sketch.2.${MAP_ID * 10 + 1}`;
+    window.localStorage.setItem(key, JSON.stringify({ discovered: ["2:3"], lit: [] }));
+    window.localStorage.setItem(
+      `minescript.program.${MAP_ID}`,
+      JSON.stringify({ source: "turn by 1\nstep forward 1\n", linked: null }),
+    );
+    respond("POST", "/runs", apiError(500, "INTERNAL", "nem kell"));
+    const { user } = await openPlay({ lampMode: "lamp", canEdit: false });
+    await user.click(screen.getAllByRole("button", { name: /Futtatás/ })[0] as HTMLElement);
+    expect(await screen.findByText("Összetört a lámpa")).toBeTruthy();
+    expect(JSON.parse(window.localStorage.getItem(key) ?? "{}")).toEqual({
+      discovered: [],
+      lit: [],
+    });
+  });
+});
+
 describe("bevezető a játék oldalon", () => {
   test("végigvezet: beírja a parancsot, és lépésről lépésre halad", async () => {
     act(() => useTour.getState().start(MAP_ID));

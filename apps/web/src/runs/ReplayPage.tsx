@@ -15,6 +15,7 @@ import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { writeStorage } from "../lib/storage.ts";
 import { mapQuery } from "../maps/queries.ts";
+import { EMPTY_SKETCH, isDarkMine } from "../play/lamp-mode.ts";
 import { PlayScreen } from "../play/PlayScreen.tsx";
 import { SPEED_DEFAULT, usePlayback } from "../play/playback-store.ts";
 import { draftKey, readDraft } from "../play/program-draft.ts";
@@ -101,6 +102,7 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
       name={hu.signs.replay}
       title={run.mapTitle}
       meta={meta}
+      isFullLocked={isDarkMine(detail.map.lampMode) && !run.isOwn}
       documentTitle={hu.replay.documentTitle(run.mapTitle)}
       actions={
         <>
@@ -147,6 +149,11 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
             execLine={view.execLine}
             runtimeMark={view.runtimeMark}
           />
+        }
+        lamp={
+          isDarkMine(detail.map.lampMode)
+            ? { mode: detail.map.lampMode, sketch: EMPTY_SKETCH, canSeeAll: run.isOwn }
+            : undefined
         }
         reportFooter={<RecordedLine gold={run.gold} steps={run.steps} />}
         onRun={() => engineRun.run(run.source)}

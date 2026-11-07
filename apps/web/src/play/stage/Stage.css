@@ -262,6 +262,17 @@
   gap: var(--space-1) var(--space-3);
 }
 
+.play-dark-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+  color: var(--c-reward);
+  font: var(--type-label);
+}
+
 .well-view[data-zoomed="true"] {
   cursor: grab;
 }
