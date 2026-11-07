@@ -18,6 +18,7 @@
 | `minescript-wasm`                    | wasm-bindgen exportok, JSON-kompatibilis szerializálás, tömörített `runPacked`/`analyzePacked`, magyar `JsError`                             |
 | `minescript-cli`                     | `minescript check`, `fmt`, `lint`, `run`, `ast`, `map-check`, ariadne-diagnosztikák                                                          |
 | `minescript-bench`                   | benchmark-korpusz, `cargo bench -p minescript-bench`, `golden` (bájtra egyező kimenet-összevetés), `profile` (egy művelet ismétlése)         |
+| `minescript-desktop`                 | Tauri-héj (a workspace-ből kizárva, saját `Cargo.lock`): a cím fordításkor a `MINESCRIPT_BASE_URL`-ből kerül a binárisba (alapból az éles cím, a `build.rs` ellenőrzi), futáskor a `MINESCRIPT_URL` felülírja, `pages/` (offline képernyő, MineScript-stílusú névjegyablak), magyar menü, külső linkek a böngészőben; ha a `MINESCRIPT_GATEWAY_TOKEN` be van állítva, minden kérés a `minescript://` sémán át, Rust-proxyval megy (`X-Minescript-Gateway-Authorization`, átírt `Origin`, saját sütitár) |
 
 ## Invariánsok
 

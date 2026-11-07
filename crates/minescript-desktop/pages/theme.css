@@ -1,0 +1,78 @@
+:root {
+  color-scheme: dark;
+  --bg: #110f0d;
+  --surface: #1b1714;
+  --line: #3b332b;
+  --text: #f1e7d3;
+  --muted: #bcae98;
+  --accent: #f2b53a;
+  --accent-hover: #ffcd5c;
+  --on-accent: #1b1206;
+  --danger: #d9532b;
+  --focus: #ffe7a3;
+  --gold: #f2b53a;
+  --line-strong: #7d6e5e;
+  --screen: #0a0908;
+  --bevel-hi: #3d342b;
+  --bevel-lo: #070605;
+  --faint: #988a76;
+  --ok: #97cc6e;
+  --hazard-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23f2c21b'/%3E%3Cpath d='M0 8L8 0h8L0 16zM8 16L16 8v8z' fill='%2315120f'/%3E%3C/svg%3E");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+button {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 20px;
+  border: 2px solid var(--on-accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow:
+    inset -3px -3px 0 rgb(0 0 0 / 0.25),
+    inset 3px 3px 0 rgb(255 255 255 / 0.25);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+button:active {
+  box-shadow: inset 3px 3px 0 rgb(0 0 0 / 0.25);
+}
+
+button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
