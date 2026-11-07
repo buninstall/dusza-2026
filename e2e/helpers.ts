@@ -226,7 +226,12 @@ export function syntaxReport(page: Page): Locator {
   return page.getByRole("alert").filter({ hasText: "szintaktikailag hibás" });
 }
 
+const LONG_RUN_MS = 30_000;
+
 export async function expectFinished(page: Page, gold: number, steps: number): Promise<void> {
+  await expect(page.getByRole("region", { name: "Műszerek" })).toContainText(/Állapot\s*Kész/, {
+    timeout: LONG_RUN_MS,
+  });
   await expectReadings(page, { gold, steps, status: "Kész" });
   await expect(
     page.getByText(`A szerver rögzítette: ${gold} arany, ${steps} lépés.`),

@@ -68,7 +68,7 @@ test("a szintaktikailag hibás program betöltődik, a hibák azonnal látszanak
   for (const line of SYNTAX_RECIPE.lines) {
     await expect(
       diagnostics(page).getByRole("button", {
-        name: new RegExp(`^Ugrás a\\(z\\) ${line}\\. sorra, hiba`),
+        name: new RegExp(`^Ugrás az? ${line}\\. sorra, hiba`),
       }),
     ).toBeVisible();
   }

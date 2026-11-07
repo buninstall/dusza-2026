@@ -37,7 +37,7 @@ test("szintaktikailag hibás program nem fut, a hibás sor jelölve", async ({ p
   await expect(
     page
       .getByRole("region", { name: /^Hibalista/ })
-      .getByRole("button", { name: /^Ugrás a\(z\) 2\. sorra, hiba/ }),
+      .getByRole("button", { name: /^Ugrás az? 2\. sorra, hiba/ }),
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: /Hibalista/ })).toBeVisible();
 });

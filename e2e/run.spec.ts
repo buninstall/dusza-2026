@@ -280,7 +280,7 @@ test.describe("3.4 futtatás új fiókkal", () => {
     for (const line of SYNTAX_RECIPE.lines) {
       await expect(
         diagnostics.getByRole("button", {
-          name: new RegExp(`^Ugrás a\\(z\\) ${line}\\. sorra, hiba`),
+          name: new RegExp(`^Ugrás az? ${line}\\. sorra, hiba`),
         }),
       ).toBeVisible();
     }
