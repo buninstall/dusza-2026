@@ -44,12 +44,20 @@ describe("térképlista", () => {
     expect(screen.getByRole("link", { name: "Felhasználók" })).toBeTruthy();
   });
 
-  test("betöltési hiba magyar üzenettel", async () => {
-    onApi("GET", "/maps", () => apiError(500, "INTERNAL", "Belső hiba történt."));
-    renderApp("/maps");
+  test("betöltési hiba magyar üzenettel és újrapróbálással", async () => {
+    let attempts = 0;
+    onApi("GET", "/maps", () => {
+      attempts += 1;
+      return attempts < 2
+        ? apiError(500, "INTERNAL", "Belső hiba történt.")
+        : { body: { maps: [] } };
+    });
+    const { user } = renderApp("/maps");
     expect((await screen.findByRole("alert", undefined, { timeout: 4000 })).textContent).toContain(
-      "Belső hiba történt.",
+      "A szerver most nem válaszol.",
     );
+    await user.click(screen.getByRole("button", { name: "Újrapróbálás" }));
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
   });
 });
 

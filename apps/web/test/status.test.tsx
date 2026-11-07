@@ -11,7 +11,7 @@ describe("hibaképernyők", () => {
     const { user } = renderApp("/maps", "none");
     onApi("GET", "/auth/me", () => {
       attempts += 1;
-      return attempts < 4
+      return attempts < 2
         ? apiError(500, "INTERNAL", "A szerver hibát jelzett.")
         : { body: { user: { id: 2, username: "demo1", role: "user", createdAt: 1 } } };
     });

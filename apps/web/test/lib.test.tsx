@@ -105,15 +105,31 @@ describe("API-hívás", () => {
     expect(network).toMatchObject({ code: "NETWORK", status: 0 });
   });
 
-  test("a 4xx hibát a lekérdezés nem próbálja újra", () => {
+  test("a lekérdezés nem próbálja újra a 4xx-et és a már újrapróbált szerverhibát", () => {
     const client = createQueryClient();
     const retry = client.getDefaultOptions().queries?.retry;
     expect(typeof retry).toBe("function");
     if (typeof retry === "function") {
       expect(retry(0, new ApiError(404, "NOT_FOUND", "x"))).toBe(false);
-      expect(retry(0, new ApiError(500, "INTERNAL", "x"))).toBe(true);
-      expect(retry(5, new ApiError(500, "INTERNAL", "x"))).toBe(false);
+      expect(retry(0, new ApiError(500, "INTERNAL", "x"))).toBe(false);
+      expect(retry(0, new ApiError(0, "NETWORK", "x"))).toBe(false);
+      expect(retry(0, new Error("x"))).toBe(true);
+      expect(retry(5, new Error("x"))).toBe(false);
     }
+  });
+
+  test("a 401 a kilépett állapot kezelőjét hívja", async () => {
+    let calls = 0;
+    const client = createQueryClient(() => {
+      calls += 1;
+    });
+    await client
+      .fetchQuery({
+        queryKey: ["probe"],
+        queryFn: () => Promise.reject(new ApiError(401, "UNAUTHORIZED", "x")),
+      })
+      .catch(() => null);
+    expect(calls).toBe(1);
   });
 });
 
