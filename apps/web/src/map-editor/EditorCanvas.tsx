@@ -14,6 +14,7 @@ type SizeProps = {
   onRows: (rows: number) => void;
   onCols: (cols: number) => void;
   doomNotes: { row: string | null; col: string | null };
+  sizeActions?: ReactNode;
 };
 
 function SizeStepper({
@@ -120,6 +121,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
           kind="col"
           onChange={props.onCols}
         />
+        {props.sizeActions ? <div className="ed-size-actions">{props.sizeActions}</div> : null}
       </div>
       <DropZone
         aria-label={hu.mapEditor.dropZone}

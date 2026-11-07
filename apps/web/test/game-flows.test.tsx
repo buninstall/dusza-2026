@@ -155,6 +155,10 @@ describe("térképszerkesztő extrák", () => {
     expect(
       (screen.getByRole("textbox", { name: "Célérték (lépés)" }) as HTMLInputElement).value,
     ).toBe("2");
+    expect(screen.queryByText("A térkép azóta változott, számold újra.")).toBeNull();
+    screen.getByRole("gridcell", { name: "1. sor, 3. oszlop: üres kamra" }).focus();
+    await user.keyboard("{Enter}");
+    expect(await screen.findByText("A térkép azóta változott, számold újra.")).toBeTruthy();
   });
 
   test("a gépi megoldás a szerver számát írja a célértékbe, hibánál üzen", async () => {

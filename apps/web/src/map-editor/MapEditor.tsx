@@ -268,32 +268,20 @@ export function MapEditor({
         onTry={tryOut}
         onSave={() => void save()}
       />
-      <ToolRail
-        tool={tool}
-        mode={mode}
-        dir={draft.dir}
-        hasRobot={draft.robot !== null}
-        onToolChange={setTool}
-        onModeChange={setMode}
-        onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
-        actions={
-          <Menu
-            label={hu.shape.heading}
-            ariaLabel={hu.shape.heading}
-            icon="chevronDown"
-            variant="secondary"
-            placement="bottom start"
-          >
-            <MenuItem onAction={() => commitShape(frameDraft(draft), hu.shape.framed)}>
-              {hu.shape.frame}
-            </MenuItem>
-            <MenuItem onAction={() => commitShape(clearDraft(draft), hu.shape.cleared)}>
-              {hu.shape.clear}
-            </MenuItem>
-            <MenuItem onAction={() => setGenerating(true)}>{hu.generator.menuItem}</MenuItem>
-          </Menu>
-        }
-      />
+      <div className="ed-left">
+        <ToolRail
+          tool={tool}
+          mode={mode}
+          dir={draft.dir}
+          hasRobot={draft.robot !== null}
+          onToolChange={setTool}
+          onModeChange={setMode}
+          onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
+        />
+        {version && mapId !== null ? (
+          <VersionBlock mapId={mapId} title={details.title} version={version} onDelete={leave} />
+        ) : null}
+      </div>
       <GeneratorDialog
         isOpen={isGenerating}
         onOpenChange={setGenerating}
@@ -319,6 +307,23 @@ export function MapEditor({
         onDropFile={(file) => void importFile(file)}
         onRows={(rows) => dispatch({ type: "commit", next: resizeDraft(draft, rows, draft.cols) })}
         onCols={(cols) => dispatch({ type: "commit", next: resizeDraft(draft, draft.rows, cols) })}
+        sizeActions={
+          <Menu
+            label={hu.shape.heading}
+            ariaLabel={hu.shape.heading}
+            icon="chevronDown"
+            variant="secondary"
+            placement="bottom end"
+          >
+            <MenuItem onAction={() => commitShape(frameDraft(draft), hu.shape.framed)}>
+              {hu.shape.frame}
+            </MenuItem>
+            <MenuItem onAction={() => commitShape(clearDraft(draft), hu.shape.cleared)}>
+              {hu.shape.clear}
+            </MenuItem>
+            <MenuItem onAction={() => setGenerating(true)}>{hu.generator.menuItem}</MenuItem>
+          </Menu>
+        }
         doomNotes={doomNotes(draft)}
         cursorText={hu.mapEditor.cursorAt(tools.cursor.row + 1, tools.cursor.col + 1)}
         canUndo={history.past.length > 0}
@@ -356,9 +361,6 @@ export function MapEditor({
           isComputingPar={isComputingPar}
           onComputePar={() => void computePar()}
         />
-        {version && mapId !== null ? (
-          <VersionBlock mapId={mapId} title={details.title} version={version} onDelete={leave} />
-        ) : null}
       </div>
       <output className="visually-hidden">{announcement}</output>
       <LeaveGuard shouldBlock={() => isDirty && !isLeaving.current} />

@@ -39,7 +39,7 @@ describe("új térkép", () => {
     respond("GET", "/maps/9", mapDetail(9, "Saját akna", "1 3\n>@.\n"));
     const { user, router } = await openNew();
     expect(within(screen.getByRole("grid")).getAllByRole("gridcell")).toHaveLength(70);
-    expect(screen.getByText("A térkép címe hiányzik.")).toBeTruthy();
+    expect(screen.getByText("Nincs cím.")).toBeTruthy();
     expect(saveButton().getAttribute("data-blocked")).toBe("true");
     await user.click(saveButton());
     expect(callsTo("POST", "/maps")).toHaveLength(0);
@@ -74,7 +74,7 @@ describe("új térkép", () => {
     await user.keyboard("{Delete}");
     expect(screen.getAllByText("Nincs robot.", { exact: false }).length).toBeGreaterThan(0);
     expect(screen.getByText("hiányzik")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Robot kiválasztása" }));
+    await user.click(screen.getByRole("button", { name: "Robot eszköz" }));
     expect((screen.getByRole("radio", { name: /Robot/ }) as HTMLInputElement).checked).toBe(true);
     await user.click(screen.getByRole("radio", { name: "dél" }));
     cell("1. sor, 1. oszlop: üres kamra").focus();
@@ -289,7 +289,7 @@ describe("új térkép", () => {
   test("a láthatatlan karakterből álló cím hiányzónak számít", async () => {
     const { user } = await openNew();
     await user.type(screen.getByRole("textbox", { name: /Cím/ }), "​  ");
-    expect(screen.getByText("A térkép címe hiányzik.")).toBeTruthy();
+    expect(screen.getByText("Nincs cím.")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Cím megadása" }));
     expect(document.activeElement).toBe(screen.getByRole("textbox", { name: /Cím/ }));
   });
@@ -323,9 +323,8 @@ describe("térkép szerkesztése", () => {
     const { user } = renderApp("/maps/4/edit");
     const lamp = await screen.findByRole("radio", { name: "Lámpafény" });
     expect(lamp).toHaveProperty("checked", true);
-    expect(screen.getByText(/Falnak ütközéskor a játékos vázlata elvész/)).toBeTruthy();
     await user.click(screen.getByRole("radio", { name: "Vaksötét" }));
-    expect(screen.getByText(/üres akkuval indul/)).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Vaksötét" })).toHaveProperty("checked", true);
     await user.click(saveButton());
     expect(await screen.findByText("A térkép elmentve.")).toBeTruthy();
     expect(callsTo("PUT", "/maps/4")[0]?.body).toMatchObject({ lampMode: "dark" });

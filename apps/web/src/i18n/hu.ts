@@ -251,11 +251,6 @@ export const hu = {
     lampOpen: "Nyitott",
     lampLamp: "Lámpafény",
     lampDark: "Vaksötét",
-    lampOpenHint: "A teljes térkép látszik, ahogy a könnyű pályákon.",
-    lampLampHint:
-      "Sötét bánya: csak a felfedezett és a lámpa fényébe eső mezők látszanak. Falnak ütközéskor a játékos vázlata elvész.",
-    lampDarkHint:
-      "Mint a Lámpafény, de a lámpa üres akkuval indul: amíg a robot nem bányászik, csak a felfedezett mezők látszanak.",
     rows: "Sorok",
     cols: "Oszlopok",
     sizeLosesRobot: "A robot is törlődik.",
@@ -298,11 +293,10 @@ export const hu = {
     checkHeading: "Ellenőrzés",
     valid: "A térkép érvényes, menthető.",
     invalid: "A térkép így nem menthető.",
-    issueCount: (errors: number, warnings: number) => `${errors} hiba · ${warnings} figyelmeztetés`,
-    titleMissing: "A térkép címe hiányzik.",
+    titleMissing: "Nincs cím.",
     fixTitle: "Cím megadása",
-    fixRobot: "Robot kiválasztása",
-    fixGold: "Arany kiválasztása",
+    fixRobot: "Robot eszköz",
+    fixGold: "Arany eszköz",
     goTo: (row: number, col: number) => `${row}. sor, ${col}. oszlop`,
     goToLabel: (row: number, col: number) => `Ugrás ide: ${row}. sor, ${col}. oszlop`,
     unreachableNote: "elérhetetlen arany",
@@ -923,14 +917,12 @@ export const hu = {
   },
   par: {
     field: "Célérték (lépés)",
-    help: "A 3. röghöz ennyi lépés a határ. Üresen hagyva legfeljebb 2 rög jár.",
     compute: "Gépi megoldás",
     computing: "Számolás…",
     computed: (steps: number) => `A gép megoldása ${steps} lépés.`,
     noSolution: "Ezen a térképen nincs kibányászható arany, ezért célérték sem adható.",
     failed: "A célértéket nem sikerült kiszámolni.",
-    stale:
-      "A térkép változott, mióta ezt a célértéket megadtad. Számold újra a Gépi megoldással, vagy írd át.",
+    stale: "A térkép azóta változott, számold újra.",
   },
   share: {
     copy: "Link másolása",

@@ -1,4 +1,5 @@
 import type { Diagnostic, Pos } from "@minescript/engine";
+import { clsx } from "clsx";
 import type { ReactNode, Ref } from "react";
 import { Led } from "../components/Led.tsx";
 import { Notice } from "../components/Notice.tsx";
@@ -9,6 +10,7 @@ import { NumberField } from "../components/ui/NumberField.tsx";
 import { Segmented } from "../components/ui/Segmented.tsx";
 import { TextField } from "../components/ui/TextField.tsx";
 import { diagnosticTitles, hu } from "../i18n/hu.ts";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { PixelText } from "../pixel/PixelText.tsx";
 import type { LampMode } from "../play/lamp-mode.ts";
 
@@ -22,12 +24,6 @@ export type MapDetails = {
   lampMode: LampMode;
 };
 
-const LAMP_HINTS: Record<LampMode, string> = {
-  open: hu.mapEditor.lampOpenHint,
-  lamp: hu.mapEditor.lampLampHint,
-  dark: hu.mapEditor.lampDarkHint,
-};
-
 export type VersionInfo = { current: number; next: number; runCount: number };
 
 export type ImportError = { file: string; message: string; diagnostics: readonly Diagnostic[] };
@@ -39,14 +35,16 @@ export const DESCRIPTION_MAX = 500;
 function InspectorSection({
   title,
   headingRef,
+  className,
   children,
 }: {
   title: string;
   headingRef?: Ref<HTMLHeadingElement>;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="ed-section" aria-label={title}>
+    <section className={clsx("ed-section", className)} aria-label={title}>
       <h2 ref={headingRef} tabIndex={-1} className="ed-section-title">
         <PixelText text={title} scale={2} />
         <span className="visually-hidden">{title}</span>
@@ -60,10 +58,12 @@ function DiagnosticItem({
   diagnostic,
   action,
   hasFileLine = false,
+  isBrief = false,
 }: {
   diagnostic: Diagnostic;
   action?: ReactNode;
   hasFileLine?: boolean;
+  isBrief?: boolean;
 }) {
   return (
     <li className="ed-issue" data-severity={diagnostic.severity}>
@@ -71,7 +71,8 @@ function DiagnosticItem({
         <span className="ed-issue-line">{hu.common.lineRef(diagnostic.span.line)}</span>
       ) : null}
       <span className="ed-issue-text">
-        <strong>{diagnosticTitles[diagnostic.code]}.</strong> {diagnostic.message}
+        <strong>{diagnosticTitles[diagnostic.code]}.</strong>
+        {isBrief ? null : ` ${diagnostic.message}`}
       </span>
       {action}
     </li>
@@ -136,10 +137,39 @@ function issueAction(diagnostic: Diagnostic, props: CheckListProps): ReactNode {
   return null;
 }
 
+function UnreachableItem({
+  unreachable,
+  onGoTo,
+}: {
+  unreachable: readonly Pos[];
+  onGoTo: (pos: Pos) => void;
+}) {
+  return (
+    <li className="ed-issue" data-severity="warning">
+      <span className="ed-issue-text">
+        <strong>{diagnosticTitles.MAP_UNREACHABLE_GOLD}.</strong>
+      </span>
+      <span className="ed-issue-jumps">
+        {unreachable.map((pos) => (
+          <Button
+            key={`u-${pos.row}-${pos.col}`}
+            size="sm"
+            variant="ghost"
+            icon="arrowRight"
+            aria-label={hu.mapEditor.goToLabel(pos.row + 1, pos.col + 1)}
+            onPress={() => onGoTo(pos)}
+          >
+            {hu.mapEditor.goTo(pos.row + 1, pos.col + 1)}
+          </Button>
+        ))}
+      </span>
+    </li>
+  );
+}
+
 export function CheckList(props: CheckListProps) {
   const { errors, warnings, isTitleMissing, unreachable } = props;
   const isValid = errors.length === 0 && !isTitleMissing;
-  const errorCount = errors.length + (isTitleMissing ? 1 : 0);
   const others = warnings.filter((diagnostic) => diagnostic.code !== "MAP_UNREACHABLE_GOLD");
   return (
     <InspectorSection title={hu.mapEditor.checkHeading} headingRef={props.headingRef}>
@@ -150,7 +180,6 @@ export function CheckList(props: CheckListProps) {
           isSentenceCase
         />
       </output>
-      <p className="ed-counts mono">{hu.mapEditor.issueCount(errorCount, warnings.length)}</p>
       <ul className="ed-issues">
         {isTitleMissing ? (
           <li className="ed-issue" data-severity="error">
@@ -162,36 +191,17 @@ export function CheckList(props: CheckListProps) {
             </Button>
           </li>
         ) : null}
-        {errors.map((diagnostic, index) => (
+        {[...errors, ...others].map((diagnostic, index) => (
           <DiagnosticItem
             key={`${diagnostic.code}-${index.toString()}`}
             diagnostic={diagnostic}
             action={issueAction(diagnostic, props)}
+            isBrief
           />
         ))}
-        {others.map((diagnostic, index) => (
-          <DiagnosticItem
-            key={`${diagnostic.code}-w${index.toString()}`}
-            diagnostic={diagnostic}
-            action={issueAction(diagnostic, props)}
-          />
-        ))}
-        {unreachable.map((pos) => (
-          <li key={`u-${pos.row}-${pos.col}`} className="ed-issue" data-severity="warning">
-            <span className="ed-issue-text">
-              <strong>{diagnosticTitles.MAP_UNREACHABLE_GOLD}.</strong>
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              icon="arrowRight"
-              aria-label={hu.mapEditor.goToLabel(pos.row + 1, pos.col + 1)}
-              onPress={() => props.onGoTo(pos)}
-            >
-              {hu.mapEditor.goTo(pos.row + 1, pos.col + 1)}
-            </Button>
-          </li>
-        ))}
+        {unreachable.length > 0 ? (
+          <UnreachableItem unreachable={unreachable} onGoTo={props.onGoTo} />
+        ) : null}
       </ul>
     </InspectorSection>
   );
@@ -228,7 +238,6 @@ export function DetailsBlock({
               parSteps: Number.isFinite(value) ? Math.round(value) : null,
             })
           }
-          description={hu.par.help}
         />
         <Button
           size="sm"
@@ -240,13 +249,20 @@ export function DetailsBlock({
           {isComputingPar ? hu.par.computing : hu.par.compute}
         </Button>
       </div>
-      {isParStale ? <Notice tone="warning" title={hu.par.stale} live="status" /> : null}
+      <output className="ed-stale">
+        {isParStale ? (
+          <>
+            <PixelIcon name="warning" size="sm" />
+            {hu.par.stale}
+          </>
+        ) : null}
+      </output>
       <TextField
         label={hu.mapEditor.descriptionField}
         value={details.description}
         onChange={(description) => onChange({ ...details, description })}
         isMultiline
-        rows={3}
+        rows={2}
         maxLength={DESCRIPTION_MAX}
       />
       <Segmented
@@ -262,11 +278,10 @@ export function DetailsBlock({
         label={hu.mapEditor.lampMode}
         value={details.lampMode}
         onChange={(lampMode) => onChange({ ...details, lampMode })}
-        description={LAMP_HINTS[details.lampMode]}
         options={[
-          { id: "open", label: hu.mapEditor.lampOpen, icon: "grid" },
-          { id: "lamp", label: hu.mapEditor.lampLamp, icon: "lantern" },
-          { id: "dark", label: hu.mapEditor.lampDark, icon: "lantern" },
+          { id: "open", label: hu.mapEditor.lampOpen },
+          { id: "lamp", label: hu.mapEditor.lampLamp },
+          { id: "dark", label: hu.mapEditor.lampDark },
         ]}
       />
     </InspectorSection>
@@ -282,7 +297,7 @@ type VersionBlockProps = {
 
 export function VersionBlock({ mapId, title, version, onDelete }: VersionBlockProps) {
   return (
-    <InspectorSection title={hu.mapEditor.versionHeading}>
+    <InspectorSection title={hu.mapEditor.versionHeading} className="ed-version-block">
       <p className="ed-version">
         {version.runCount > 0
           ? hu.mapEditor.versionSummary(version.current, version.runCount)
@@ -295,11 +310,13 @@ export function VersionBlock({ mapId, title, version, onDelete }: VersionBlockPr
           variant="secondary"
           size="sm"
           icon="trophy"
+          className="ed-version-board"
         >
           {hu.mapEditor.toLeaderboard}
         </Link>
         <ConfirmDialog
           triggerLabel={hu.mapEditor.deleteMap}
+          isTriggerIconOnly
           triggerIcon="trash"
           triggerVariant="danger"
           title={hu.mapEditor.deleteTitle}
