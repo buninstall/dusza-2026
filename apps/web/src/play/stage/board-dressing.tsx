@@ -194,7 +194,7 @@ function robotLook(input: DressingInput, mood: RobotMood): RobotLook {
     phase === "idle" || phase === "paused" || phase === "review" || phase === "finished";
   const base = { mood, walkTiles, isIdle };
   if (frame?.atEnd && phase === "finished") {
-    return { ...base, motion: { kind: "hop", key: runId * 10_000 + index } };
+    return { ...base, motion: { kind: "settle", key: runId * 10_000 + index } };
   }
   if (frame?.atEnd && (phase === "error" || phase === "limit")) {
     const kind = input.fault?.kind === "wall" || input.fault?.kind === "edge" ? "bump" : "shake";

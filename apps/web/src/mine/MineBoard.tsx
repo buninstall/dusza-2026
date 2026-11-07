@@ -174,6 +174,7 @@ export function MineBoard({
               {...(look.mood ? { mood: look.mood } : {})}
               {...(look.motion ? { motion: look.motion } : {})}
               walkTiles={look.walkTiles ?? 1}
+              stepMs={stepMs}
               isIdle={look.isIdle ?? false}
               {...(look.beam ? { beam: look.beam } : {})}
             />

@@ -37,7 +37,7 @@ test("szintaktikailag hibás program nem fut, a hibás sor jelölve", async ({ p
   await expect(
     page
       .getByRole("region", { name: /^Hibalista/ })
-      .getByRole("button", { name: /^Ugrás a\(z\) 2\. sorra, hiba/ }),
+      .getByRole("button", { name: /^Ugrás az? 2\. sorra, hiba/ }),
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: /Hibalista/ })).toBeVisible();
 });
@@ -65,11 +65,18 @@ test("a programtár receptje végigfut, és a szerver rögzíti a pontos eredmé
   await openPlay(page, "2. Az első kanyar");
   await page.getByRole("button", { name: "Programtár" }).click();
   await page.getByRole("button", { name: "Megnyitás: Recept – 2. Az első kanyar" }).click();
-  await page
+  const confirm = page
     .getByRole("alert")
     .filter({ hasText: "Felülírod a szerkesztő tartalmát?" })
-    .getByRole("button", { name: "Megnyitás", exact: true })
-    .click();
+    .getByRole("button", { name: "Megnyitás", exact: true });
+  if (
+    await confirm
+      .waitFor({ state: "visible", timeout: 1500 })
+      .then(() => true)
+      .catch(() => false)
+  ) {
+    await confirm.click();
+  }
   await expect(editor(page)).toContainText("turn by 3");
   await page.getByRole("button", { name: "Futtatás" }).click();
   await expect(

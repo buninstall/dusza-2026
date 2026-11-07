@@ -136,11 +136,12 @@ describe("téma és tárolás", () => {
     meta.remove();
   });
 
-  test("a csákány egérmutató az alapértelmezett, a rendes mutató választható", () => {
-    expect(initialCursor()).toBe("pickaxe");
-    writeStorage("minescript.cursor", "system");
+  test("alapból a rendes egérmutató él, a csákány bekapcsolható", () => {
+    writeStorage("minescript.cursor", "");
     expect(initialCursor()).toBe("system");
     writeStorage("minescript.cursor", "pickaxe");
+    expect(initialCursor()).toBe("pickaxe");
+    writeStorage("minescript.cursor", "");
   });
 
   test("a tárolás hibája nem dob kivételt", () => {

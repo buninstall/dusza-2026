@@ -38,6 +38,46 @@
   padding: 0 var(--space-2) 0 var(--space-3);
 }
 
+.cm-editor .cm-foldGutter .cm-gutterElement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  cursor: pointer;
+}
+
+.cm-fold-marker {
+  width: 0;
+  height: 0;
+  border-inline: 4px solid transparent;
+  border-top: 5px solid var(--c-text-faint);
+  opacity: 0;
+  transition: opacity var(--motion-press) linear;
+}
+
+.cm-fold-marker[data-open="false"] {
+  rotate: -90deg;
+  border-top-color: var(--c-reward);
+  opacity: 1;
+}
+
+.cm-gutters:hover .cm-fold-marker,
+.cm-foldGutter .cm-gutterElement:hover .cm-fold-marker {
+  opacity: 1;
+}
+
+.cm-editor .cm-foldPlaceholder {
+  margin-inline: var(--space-1);
+  padding: 0 var(--space-1);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-surface-raised);
+  color: var(--c-text-muted);
+}
+
+.cm-editor .cm-dropCursor {
+  border-left: 2px solid var(--c-current);
+}
+
 .cm-editor .cm-activeLine {
   background: var(--c-surface);
 }

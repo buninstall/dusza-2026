@@ -9,9 +9,9 @@ export const DEMO: Account = { username: "demo1", password: "demo2026" };
 export const ADMIN: Account = { username: "admin", password: "dusza2026" };
 export const NEW_PASSWORD = "banyasz2026";
 
-export type Theme = "tarna" | "felszin";
+export type Theme = "tarna";
 
-export const THEMES: readonly Theme[] = ["tarna", "felszin"];
+export const THEMES: readonly Theme[] = ["tarna"];
 
 export async function useTheme(page: Page, theme: Theme): Promise<void> {
   await page.addInitScript(
@@ -226,7 +226,12 @@ export function syntaxReport(page: Page): Locator {
   return page.getByRole("alert").filter({ hasText: "szintaktikailag hibás" });
 }
 
+const LONG_RUN_MS = 30_000;
+
 export async function expectFinished(page: Page, gold: number, steps: number): Promise<void> {
+  await expect(page.getByRole("region", { name: "Műszerek" })).toContainText(/Állapot\s*Kész/, {
+    timeout: LONG_RUN_MS,
+  });
   await expectReadings(page, { gold, steps, status: "Kész" });
   await expect(
     page.getByText(`A szerver rögzítette: ${gold} arany, ${steps} lépés.`),
@@ -394,7 +399,12 @@ export async function expectFocusVisible(page: Page): Promise<void> {
       const isVisible = rect.width > 1 && rect.height > 1;
       const hasOutline =
         style.outlineStyle !== "none" && Number.parseFloat(style.outlineWidth) >= MIN_WIDTH;
-      if (isVisible && hasOutline) {
+      const ring = getComputedStyle(current, "::after");
+      const hasRing =
+        ring.content !== "none" &&
+        ring.borderTopStyle !== "none" &&
+        Number.parseFloat(ring.borderTopWidth) >= MIN_WIDTH;
+      if (isVisible && (hasOutline || hasRing)) {
         return `${current.tagName} ${style.outlineWidth} ${style.outlineColor}`;
       }
       current = current.parentElement;

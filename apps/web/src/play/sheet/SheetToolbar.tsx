@@ -3,7 +3,6 @@ import { Button } from "../../components/ui/Button.tsx";
 import { IconButton } from "../../components/ui/IconButton.tsx";
 import { Menu, MenuItem, MenuSeparator } from "../../components/ui/Menu.tsx";
 import { hu } from "../../i18n/hu.ts";
-import { SheetRunButton } from "./SheetRun.tsx";
 
 type FileActions = {
   onImport?: ((file: File) => void) | undefined;
@@ -104,7 +103,6 @@ export function SheetToolbar({
       >
         <span className="sheet-compact-label">{hu.programs.save}</span>
       </Button>
-      <SheetRunButton />
     </SheetBar>
   );
 }

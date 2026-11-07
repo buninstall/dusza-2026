@@ -51,7 +51,7 @@ async function expectSaveRefused(page: Page): Promise<void> {
   const url = page.url();
   await save.click();
   await expect(page.getByRole("heading", { level: 2, name: "Ellenőrzés" })).toBeFocused();
-  await expect(page.getByText(/^Még nem menthető: \d+ hiba\./)).toBeAttached();
+  await expect(page.locator("#main").getByText(/^Még nem menthető: \d+ hiba\./)).toBeAttached();
   expect(page.url()).toBe(url);
 }
 
@@ -125,7 +125,11 @@ test("minden mezőtípus festhető, pontosan egy robot van, mind a négy iránny
 
   await pickTool(page, "Arany");
   await editorCell(page, 3, 5).click();
-  await expect(editorCell(page, 3, 5)).toHaveAccessibleName("3. sor, 5. oszlop: arany");
+  await expect(editorCell(page, 3, 5)).toHaveAccessibleName("3. sor, 5. oszlop: robot, kelet felé");
+  await expect(robots).toHaveCount(1);
+  await pickTool(page, "Üres kamra");
+  await editorCell(page, 3, 5).click();
+  await expect(editorCell(page, 3, 5)).toHaveAccessibleName("3. sor, 5. oszlop: üres kamra");
   await expect(robots).toHaveCount(0);
   await expect(page.getByText("A térkép így nem menthető.")).toBeVisible();
   await expect(page.getByText("Nincs robot.", { exact: true })).toBeVisible();
@@ -141,7 +145,7 @@ test("minden mezőtípus festhető, pontosan egy robot van, mind a négy iránny
   await expect(saveButton(page)).toHaveAttribute("data-blocked", "false");
   const exported = await exportMap(page);
   expect(mapRow(exported.bytes.toString("utf8"), 1)).toBe("..>.......");
-  expect(mapRow(exported.bytes.toString("utf8"), 3)).toBe("....@.....");
+  expect(mapRow(exported.bytes.toString("utf8"), 3)).toBe("..........");
 
   await page.getByRole("textbox", { name: /Cím/ }).fill("");
   await expect(page.getByText("A térkép címe hiányzik.")).toBeVisible();

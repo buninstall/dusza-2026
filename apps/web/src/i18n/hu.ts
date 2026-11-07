@@ -106,6 +106,11 @@ export const dirNames: Record<Dir, string> = {
 
 const lineRef = (line: number) => `${line}. sor`;
 
+function runtimeTitle(code: string): string {
+  const known: Partial<Record<string, { title: string }>> = runtimeErrors;
+  return known[code]?.title ?? code;
+}
+
 export function articleFor(value: number): "a" | "az" {
   const digits = String(Math.abs(Math.trunc(value)));
   const startsWithVowel =
@@ -332,7 +337,8 @@ export const hu = {
       `A térkép elmentve, új verzióként (v${version}). A korábbi ranglista megmaradt.`,
     versionHeading: "Verzió",
     versionRuns: (version: number, runs: number) => `v${version} · ${runs} futás`,
-    versionCurrent: (version: number) => `Jelenleg a(z) ${version}. verzió aktív.`,
+    versionCurrent: (version: number) =>
+      `Jelenleg ${articleFor(version)} ${version}. verzió aktív.`,
     versionWillFork: (runs: number, next: number) =>
       `Ehhez a verzióhoz már ${runs} futás tartozik, ezért a tartalom módosítása új verziót hoz létre (v${next}); a régi ranglista megmarad.`,
     versionInPlace: "Ehhez a verzióhoz még nincs futás, ezért a módosítás helyben mentődik.",
@@ -388,8 +394,6 @@ export const hu = {
     toProgram: "Ugrás a programhoz",
     run: "Futtatás",
     stop: "Leállítás",
-    sheetRun: "Futtasd",
-    sheetStop: "Állítsd le",
     pause: "Szünet",
     resume: "Folytatás",
     replay: "Újrajátszás",
@@ -467,7 +471,8 @@ export const hu = {
     console: "Konzol",
     consoleEmpty: "Nincs kimenet.",
     consoleLine: (step: number) => `${step}. lépés`,
-    consoleJump: (step: number, text: string) => `Ugrás a(z) ${step}. lépéshez: ${text}`,
+    consoleJump: (step: number, text: string) =>
+      `Ugrás ${articleFor(step)} ${step}. lépéshez: ${text}`,
     variables: "Változók",
     variableName: "Név",
     variableType: "Típus",
@@ -492,7 +497,7 @@ export const hu = {
     diagnosticsMore: (count: number) => `+${count} további`,
     fix: (title: string) => `Javítás: ${title}`,
     fixShort: "Javítás",
-    jumpTo: (line: number) => `Ugrás a(z) ${lineRef(line)}ra`,
+    jumpTo: (line: number) => `Ugrás ${articleFor(line)} ${lineRef(line)}ra`,
     analyzerFailed: "Az elemző nem tudta ellenőrizni a programot.",
     syntaxErrorTitle: "A program szintaktikailag hibás, ezért nem futtatható.",
     syntaxErrorLines: (lines: readonly number[]) =>
@@ -500,7 +505,12 @@ export const hu = {
     firstError: (line: number) => `Első hiba: ${lineRef(line)}`,
     blockedAnnounce: (count: number, line: number, title: string) =>
       `A program nem indítható: ${count} szintaktikai hiba. Első: ${lineRef(line)}, ${title}.`,
-    runtimeErrorTitle: (code: string, line: number) => `${code} · ${lineRef(line)}`,
+    runtimeErrorTitle: (code: RuntimeErrorCode, line: number) => `${code} · ${lineRef(line)}`,
+    runtimeErrorWithCode: (code: RuntimeErrorCode, line: number) =>
+      `${runtimeTitle(code)} ${articleFor(line)} ${lineRef(line)}ban · ${code}`,
+    runtimeErrorSpoken: (code: RuntimeErrorCode, line: number) =>
+      `${runtimeTitle(code)} ${articleFor(line)} ${lineRef(line)}ban. Hibakód: ${code}.`,
+    errorCodeLabel: "Hibakód",
     finishedBody: (gold: number, steps: number) =>
       `A program hiba nélkül lefutott: ${gold} arany, ${steps} lépés.`,
     stoppedTitle: "Leállítva",
@@ -518,9 +528,9 @@ export const hu = {
     submitFailed: "Az eredményt nem sikerült rögzíteni.",
     submitRetry: "Rögzítés újra",
     showLine: (line: number) => `Mutasd a(z) ${lineRef(line)}t`,
-    insertGuard: (line: number) => `Falfigyelő a(z) ${lineRef(line)} elé`,
+    insertGuard: (line: number) => `Falfigyelő ${articleFor(line)} ${lineRef(line)} elé`,
     guardInserted: (line: number) =>
-      `Falfigyelő beszúrva a(z) ${lineRef(line)} elé. A Ctrl+Z visszavonja.`,
+      `Falfigyelő beszúrva ${articleFor(line)} ${lineRef(line)} elé. A Ctrl+Z visszavonja.`,
     recorded: (gold: number, steps: number) => `Rögzített eredmény: ${gold} arany, ${steps} lépés.`,
     engineDrift: "A visszajátszás a jelenlegi motorral fut, és eltér a rögzített eredménytől.",
     toLeaderboard: "Ranglista",
@@ -868,6 +878,12 @@ export const hu = {
     removed: (line: number) => `Töréspont törölve: ${line}. sor`,
     hit: (line: number) => `Megállt ${articleFor(line)} ${line}. sor töréspontján.`,
     gutterTitle: "Kattints a sorszámra: töréspont ki/be (F9)",
+  },
+  editor: {
+    fold: {
+      open: "Blokk összecsukása (Ctrl+Shift+[)",
+      closed: "Blokk kinyitása (Ctrl+Shift+])",
+    },
   },
   trial: {
     button: "Próbajáték",

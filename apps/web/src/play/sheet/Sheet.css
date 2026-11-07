@@ -18,7 +18,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border-bottom: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface-raised);
   box-shadow:
@@ -43,10 +43,6 @@
   min-width: 0;
 }
 
-.sheet-run {
-  flex: none;
-}
-
 @container sheet (width < 34rem) {
   .sheet-compact {
     padding-inline: var(--space-2);
@@ -63,17 +59,42 @@
   }
 }
 
-.drawers {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(4.75rem, 1fr));
+.sheet-toolbar .btn,
+.drawers .btn {
+  min-height: var(--control-height-xs);
+  padding-inline: var(--space-2);
   gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
+}
+
+.sheet-toolbar .btn-icon-only {
+  min-width: var(--control-height-xs);
+  padding: 0;
+}
+
+.drawers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
   border-bottom: var(--border-thin) solid var(--c-line);
 }
 
+@media (pointer: coarse) {
+  .sheet-toolbar .btn,
+  .drawers .btn {
+    min-height: var(--control-height-sm);
+  }
+
+  .sheet-toolbar .btn-icon-only {
+    min-width: var(--control-height-sm);
+  }
+}
+
 .drawer-button {
+  flex: 1 0 auto;
   min-width: 0;
-  padding-inline: var(--space-1);
+  font-size: 0.75rem;
   box-shadow:
     inset 0 calc(var(--border-thin) * -2) 0 var(--drawer-tick, var(--c-line-strong)),
     var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow);

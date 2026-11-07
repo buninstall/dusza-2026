@@ -308,10 +308,11 @@
 }
 
 .board-robot {
-  --glide: cubic-bezier(0.45, 0.05, 0.25, 1);
+  --drive: cubic-bezier(0.5, 0, 0.3, 1);
+  --steer: cubic-bezier(0.6, 0, 0.35, 1);
 
   z-index: 3;
-  transition: transform var(--step-ms) var(--glide);
+  transition: transform var(--step-ms) var(--drive);
 }
 
 .board-robot[data-mood="ok"] {
@@ -330,71 +331,54 @@
   --px-visor: var(--c-led-off);
 }
 
+.board-robot-heading,
 .board-robot-motion,
-.board-robot-body {
-  width: 100%;
-  height: 100%;
-}
-
-.board-robot-body {
-  rotate: calc(var(--turns) * 90deg);
-  transition: rotate max(140ms, calc(var(--step-ms) * 0.75)) cubic-bezier(0.3, 1.45, 0.55, 1);
-}
-
 .board-robot-drift {
   width: 100%;
   height: 100%;
 }
 
-.board-robot-drift[data-turn="right"] {
-  --skid: -1;
-  animation: robot-drift max(180ms, calc(var(--step-ms) * 0.9)) ease-out;
+.board-robot-heading {
+  position: relative;
+  rotate: calc(var(--turns) * 90deg);
+  transition: rotate max(200ms, var(--step-ms)) var(--steer);
 }
 
-.board-robot-drift[data-turn="left"] {
-  --skid: 1;
-  animation: robot-drift max(180ms, calc(var(--step-ms) * 0.9)) ease-out;
+.board-robot-tread,
+.board-robot-tread-hi {
+  animation: none;
 }
 
-.board-robot-drift[data-turn="back"] {
-  --skid: 1;
-  animation: robot-drift max(220ms, var(--step-ms)) ease-out;
+.board-robot-motion[data-motion="walk"] .board-robot-tread,
+.board-robot-drift:is([data-turn="left"], [data-turn="right"], [data-turn="back"])
+  .board-robot-tread {
+  animation: tread-roll-lo var(--tread-phase) linear var(--tread-cycles);
+}
+
+.board-robot-motion[data-motion="walk"] .board-robot-tread-hi,
+.board-robot-drift:is([data-turn="left"], [data-turn="right"], [data-turn="back"])
+  .board-robot-tread-hi {
+  animation: tread-roll-hi var(--tread-phase) linear var(--tread-cycles);
+}
+
+.board-robot-motion[data-motion="walk"] {
+  animation: robot-pitch max(200ms, var(--step-ms)) linear;
 }
 
 .board-robot-motion[data-motion="mine"] {
-  animation: robot-nudge 300ms var(--ease-px2);
+  animation: robot-drill max(320ms, var(--step-ms)) linear;
 }
 
-.board-robot-motion[data-motion="hop"] {
-  animation: robot-hop 420ms cubic-bezier(0.3, 0, 0.4, 1) 2;
+.board-robot-motion[data-motion="settle"] {
+  animation: robot-settle 520ms cubic-bezier(0.3, 0, 0.3, 1);
 }
 
 .board-robot-motion[data-motion="shake"] {
-  animation: robot-shake var(--motion-impact) var(--ease-px6);
+  animation: robot-jolt 420ms linear;
 }
 
 .board-robot-motion[data-motion="bump"] {
-  animation: robot-bump 200ms var(--ease-px2);
-}
-
-.board-robot-motion[data-dir="north"] {
-  --ahead-x: 0;
-  --ahead-y: -1;
-}
-
-.board-robot-motion[data-dir="east"] {
-  --ahead-x: 1;
-  --ahead-y: 0;
-}
-
-.board-robot-motion[data-dir="south"] {
-  --ahead-x: 0;
-  --ahead-y: 1;
-}
-
-.board-robot-motion[data-dir="west"] {
-  --ahead-x: -1;
-  --ahead-y: 0;
+  animation: robot-bump 460ms linear;
 }
 
 :root[data-beam="dim"] .board-robot[data-idle="true"] .board-robot-beam {
@@ -415,61 +399,142 @@
   }
 }
 
-@keyframes robot-nudge {
-  50% {
-    translate: calc(var(--ahead-x) * 2 * var(--art-px)) calc(var(--ahead-y) * 2 * var(--art-px));
+@keyframes tread-roll-hi {
+  0%,
+  49.9% {
+    fill: var(--px-tread-hi);
+  }
+
+  50%,
+  100% {
+    fill: var(--px-tread);
   }
 }
 
-@keyframes robot-hop {
-  50% {
-    translate: 0 calc(var(--art-px) * -2);
+@keyframes tread-roll-lo {
+  0%,
+  49.9% {
+    fill: var(--px-tread);
+  }
+
+  50%,
+  100% {
+    fill: var(--px-tread-hi);
   }
 }
 
-@keyframes robot-drift {
-  0% {
-    translate: 0 0;
-    rotate: 0deg;
-  }
-
-  35% {
-    translate: calc(var(--skid) * var(--art-px) * 1.5) calc(var(--art-px) * 0.5);
-    rotate: calc(var(--skid) * 7deg);
-  }
-
-  70% {
-    translate: calc(var(--skid) * var(--art-px) * -0.5) 0;
-    rotate: calc(var(--skid) * -2deg);
-  }
-
+@keyframes robot-pitch {
+  0%,
   100% {
     translate: 0 0;
-    rotate: 0deg;
+  }
+
+  12% {
+    translate: 0 calc(var(--art-px) * 0.75);
+  }
+
+  28%,
+  80% {
+    translate: 0 0;
+  }
+
+  91% {
+    translate: 0 calc(var(--art-px) * -1);
   }
 }
 
-@keyframes robot-shake {
-  20% {
-    translate: calc(var(--art-px) * -1) 0;
+@keyframes robot-drill {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1;
   }
 
-  40% {
-    translate: var(--art-px) 0;
+  12% {
+    translate: 0 calc(var(--art-px) * -1);
+    scale: 0.97;
   }
 
-  60% {
-    translate: calc(var(--art-px) * -1) 0;
+  20%,
+  36%,
+  52%,
+  68% {
+    translate: calc(var(--art-px) * 0.5) calc(var(--art-px) * -1);
+    scale: 0.97;
   }
 
-  80% {
-    translate: var(--art-px) 0;
+  28%,
+  44%,
+  60%,
+  76% {
+    translate: calc(var(--art-px) * -0.5) calc(var(--art-px) * -1);
+    scale: 0.97;
+  }
+
+  86% {
+    translate: 0 calc(var(--art-px) * 0.5);
+    scale: 1;
+  }
+}
+
+@keyframes robot-settle {
+  0%,
+  100% {
+    scale: 1;
+  }
+
+  30% {
+    scale: 1.04 0.94;
+  }
+
+  62% {
+    scale: 0.99 1.02;
+  }
+}
+
+@keyframes robot-jolt {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  10% {
+    translate: calc(var(--art-px) * -1.5) 0;
+  }
+
+  26% {
+    translate: calc(var(--art-px) * 1) 0;
+  }
+
+  44% {
+    translate: calc(var(--art-px) * -0.5) 0;
+  }
+
+  62% {
+    translate: calc(var(--art-px) * 0.25) 0;
   }
 }
 
 @keyframes robot-bump {
-  50% {
-    translate: calc(var(--ahead-x) * var(--tile) * 0.3) calc(var(--ahead-y) * var(--tile) * 0.3);
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  16% {
+    translate: 0 calc(var(--tile) * -0.16);
+  }
+
+  30% {
+    translate: 0 calc(var(--tile) * 0.06);
+  }
+
+  48% {
+    translate: 0 calc(var(--tile) * -0.02);
+  }
+
+  66% {
+    translate: 0 0;
   }
 }
 
@@ -601,15 +666,12 @@
 .board-robot-cone {
   position: absolute;
   inset: 0;
-  translate: calc(var(--ahead-x) * 100%) calc(var(--ahead-y) * 100%);
+  translate: 0 -100%;
   pointer-events: none;
-  transition: translate 180ms cubic-bezier(0.3, 1.3, 0.55, 1);
 }
 
 .board-robot-cone .board-fx-art {
   opacity: 0.55;
-  rotate: calc(var(--turns, 0) * 90deg);
-  transition: rotate 180ms cubic-bezier(0.3, 1.3, 0.55, 1);
 }
 
 .board-fx[data-fx="reveal"] {
@@ -653,7 +715,6 @@
 
 .board-fx[data-fx="alert"] {
   z-index: 5;
-  translate: 0 calc(var(--tile) * -0.5);
 }
 
 .board-fx[data-fx="alert"] .board-fx-art {
@@ -791,17 +852,15 @@
 
 @media (prefers-reduced-motion: reduce) {
   .board-robot,
-  .board-robot-body,
-  .board-robot-cone,
-  .board-robot-cone .board-fx-art,
+  .board-robot-heading,
   .board-void {
     transition: none;
   }
 
-  .board-robot-drift {
-    animation: none;
-  }
-
+  .board-robot-motion[data-motion] .board-robot-tread,
+  .board-robot-motion[data-motion] .board-robot-tread-hi,
+  .board-robot-drift[data-turn] .board-robot-tread,
+  .board-robot-drift[data-turn] .board-robot-tread-hi,
   .board-robot-motion[data-motion],
   .board-robot[data-idle="true"] .board-robot-beam,
   .board-robot[data-idle="true"] .board-robot-visor,

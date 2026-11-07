@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "../../components/ui/Toast.tsx";
 import { hu } from "../../i18n/hu.ts";
-import { errorMessage } from "../../lib/api.ts";
+import { ApiError, errorMessage } from "../../lib/api.ts";
 import { isModified, type ProgramDraft } from "../program-draft.ts";
 import {
   fetchProgram,
@@ -20,6 +20,8 @@ export function hasUnsavedWork(draft: ProgramDraft): boolean {
 
 export type LibraryPanel = "closed" | "library" | "saveAs";
 
+const NOT_FOUND = 404;
+
 type PersistenceInput = { draft: ProgramDraft; onDraftChange: (draft: ProgramDraft) => void };
 
 export function useProgramPersistence({ draft, onDraftChange }: PersistenceInput) {
@@ -28,9 +30,20 @@ export function useProgramPersistence({ draft, onDraftChange }: PersistenceInput
   const save = useSaveProgram();
   const remove = useDeleteProgram();
 
+  const saveOrRecreate = async (id: number | null, title: string) => {
+    try {
+      return await save.mutateAsync({ id, title, source: draft.source });
+    } catch (error) {
+      if (id !== null && error instanceof ApiError && error.status === NOT_FOUND) {
+        return save.mutateAsync({ id: null, title, source: draft.source });
+      }
+      throw error;
+    }
+  };
+
   const persist = async (id: number | null, title: string) => {
     try {
-      const { program } = await save.mutateAsync({ id, title, source: draft.source });
+      const { program } = await saveOrRecreate(id, title);
       onDraftChange({
         source: draft.source,
         linked: { id: program.id, title: program.title, savedSource: program.source },

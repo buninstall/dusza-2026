@@ -145,17 +145,16 @@ describe("futtatás", () => {
     const { user } = await openPlay();
     await user.click(runButton());
     expect(
-      await screen.findByText("E_BEDROCK_HIT · 2. sor · Falba ütközés", undefined, {
-        timeout: 3000,
-      }),
+      await screen.findByText("E_BEDROCK_HIT · 2. sor", undefined, { timeout: 3000 }),
     ).toBeTruthy();
+    expect(screen.getByText("Falba ütközés")).toBeTruthy();
     await waitFor(() => expect(callsTo("POST", "/runs")).toHaveLength(1));
     expect(screen.getByText("Hiba")).toBeTruthy();
     await waitFor(() =>
       expect(document.querySelector(".cm-runtime-line")?.textContent).toMatch(/^step forward 1/),
     );
     expect(document.querySelector(".cm-lens-line")?.getAttribute("data-lens")).toBe(
-      "◂ E_BEDROCK_HIT · Falba ütközés",
+      "◂ Falba ütközés · E_BEDROCK_HIT",
     );
   });
 
@@ -303,6 +302,28 @@ describe("program kezelése", () => {
     await waitFor(() => expect(callsTo("PUT", "/programs/5")).toHaveLength(1));
   });
 
+  test("ha a csatolt program már nincs meg a szerveren, a mentés újként menti", async () => {
+    seedProgram("print 2\n", { id: 77, title: "Régi", savedSource: "print 1\n" });
+    respond("GET", "/programs", { programs: [] });
+    respond(
+      "PUT",
+      "/programs/77",
+      { error: { code: "NOT_FOUND", message: "A keresett erőforrás nem található." } },
+      404,
+    );
+    respond(
+      "POST",
+      "/programs",
+      { program: { id: 9, title: "Régi", source: "print 2\n", ownerId: 2, updatedAt: 3 } },
+      201,
+    );
+    const { user } = await openPlay();
+    await user.click(screen.getByRole("button", { name: "Mentés" }));
+    await waitFor(() => expect(callsTo("POST", "/programs")).toHaveLength(1));
+    expect(callsTo("POST", "/programs")[0]?.body).toEqual({ title: "Régi", source: "print 2\n" });
+    expect(screen.queryByText("A keresett erőforrás nem található.")).toBeNull();
+  });
+
   test("megnyitás nem mentett módosítás esetén megerősítést kér, a törlés lecsatol", async () => {
     seedProgram("print 2\n", { id: 5, title: "Első", savedSource: "print 1\n" });
     respond("GET", "/programs", {
@@ -348,7 +369,7 @@ describe("program kezelése", () => {
     const toggle = await screen.findByRole("button", { name: "Hibalista" });
     await waitFor(() => expect(toggle.hasAttribute("disabled")).toBe(false));
     await user.click(toggle);
-    const item = await screen.findByRole("button", { name: /Ugrás a\(z\) 1\. sorra, hiba/ });
+    const item = await screen.findByRole("button", { name: /Ugrás az 1\. sorra, hiba/ });
     await user.click(item);
     expect(document.activeElement?.closest(".cm-editor")).not.toBeNull();
   });

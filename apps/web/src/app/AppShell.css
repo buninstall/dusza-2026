@@ -116,6 +116,21 @@
   gap: var(--space-1);
   margin-left: auto;
   min-height: var(--header-height);
+  min-width: 0;
+}
+
+.shell-tool-label {
+  min-width: 0;
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 30rem) {
+  .shell-tool-label {
+    max-width: 9ch;
+  }
 }
 
 .shell-main {

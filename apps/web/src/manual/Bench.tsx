@@ -66,7 +66,7 @@ export function Bench({ code, map, caption }: BenchProps) {
   const outcome = result.outcome;
   const fault =
     frame.atEnd && outcome.kind === "runtimeError"
-      ? hu.play.runtimeErrorTitle(outcome.code, outcome.line)
+      ? hu.play.runtimeErrorWithCode(outcome.code, outcome.line)
       : null;
   return (
     <figure className="bench" data-fault={fault !== null}>

@@ -8,7 +8,7 @@ import { useQuarterTurns } from "./quarter-turns.ts";
 export type RobotMood = "run" | "ok" | "error" | "limit" | "stopped";
 
 export type RobotMotion = {
-  kind: "walk" | "mine" | "hop" | "shake" | "bump" | "still";
+  kind: "walk" | "mine" | "settle" | "shake" | "bump" | "still";
   key: number;
 };
 
@@ -33,8 +33,15 @@ export function SpriteUse({ id, className }: { id: string; className?: string })
 const ROBOT_TONES = {
   beam: "board-robot-beam",
   visor: "board-robot-visor",
-  "tread-hi": "board-robot-tread",
+  tread: "board-robot-tread",
+  "tread-hi": "board-robot-tread-hi",
 } as const;
+
+const TREAD_PHASE_MS = 90;
+
+function treadCycles(stepMs: number): number {
+  return Math.max(1, Math.round(stepMs / (TREAD_PHASE_MS * 2)));
+}
 
 type TurnSide = "none" | "left" | "right" | "back";
 
@@ -55,6 +62,7 @@ type RobotLayerProps = {
   mood?: RobotMood;
   motion?: RobotMotion;
   walkTiles?: number;
+  stepMs?: number;
   isIdle?: boolean;
   beam?: { isScan: boolean; key: string };
 };
@@ -64,12 +72,18 @@ export function RobotLayer({
   mood = "run",
   motion,
   walkTiles = 1,
+  stepMs = 0,
   isIdle = false,
   beam,
 }: RobotLayerProps) {
   const turns = useQuarterTurns(robot.dir);
   const drift = useTurnDrift(turns);
-  const style = { ...placement(robot.pos), "--walk-tiles": walkTiles } as CSSProperties;
+  const style = {
+    ...placement(robot.pos),
+    "--walk-tiles": walkTiles,
+    "--tread-cycles": treadCycles(stepMs),
+    "--tread-phase": `${TREAD_PHASE_MS * 2}ms`,
+  } as CSSProperties;
   return (
     <div
       className="board-robot"
@@ -78,23 +92,17 @@ export function RobotLayer({
       data-mood={mood}
       data-idle={isIdle}
     >
-      <div
-        key={motion?.key ?? 0}
-        className="board-robot-motion"
-        data-motion={motion?.kind ?? "still"}
-        data-dir={robot.dir}
-      >
+      <div className="board-robot-heading" style={{ "--turns": turns } as CSSProperties}>
         {beam ? (
-          <div
-            key={beam.key}
-            className="board-robot-cone"
-            data-scan={beam.isScan}
-            style={{ "--turns": turns } as CSSProperties}
-          >
+          <div key={beam.key} className="board-robot-cone" data-scan={beam.isScan}>
             <SpriteUse id={SPRITE_ID.cone} className="board-fx-art" />
           </div>
         ) : null}
-        <div className="board-robot-body" style={{ "--turns": turns } as CSSProperties}>
+        <div
+          key={motion?.key ?? 0}
+          className="board-robot-motion"
+          data-motion={motion?.kind ?? "still"}
+        >
           <div key={drift.key} className="board-robot-drift" data-turn={drift.side}>
             <PixelSprite
               sprite={TILE_SPRITES.robot}

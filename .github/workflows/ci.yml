@@ -16,7 +16,7 @@ env:
 
 jobs:
   rust:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -27,7 +27,7 @@ jobs:
       - run: git diff --exit-code packages/engine/src/generated
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     services:
       mysql:
         image: mysql:9.7
@@ -55,7 +55,7 @@ jobs:
 
   e2e:
     needs: web
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     services:
       mysql:
         image: mysql:9.7
@@ -87,7 +87,7 @@ jobs:
           path: e2e/playwright-report
 
   conformance:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -97,7 +97,7 @@ jobs:
   binaries:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     needs: [rust, web]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     services:
       mysql:
         image: mysql:9.7

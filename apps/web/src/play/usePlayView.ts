@@ -53,7 +53,7 @@ export function usePlayView(editorSource: string, blocked: Blocked | null): Play
   const runtimeMark = useMemo<RuntimeMark | null>(
     () =>
       runtimeLine !== null && runtimeCode !== null
-        ? { line: runtimeLine, text: `${runtimeCode} · ${runtimeErrors[runtimeCode].title}` }
+        ? { line: runtimeLine, text: `${runtimeErrors[runtimeCode].title} · ${runtimeCode}` }
         : null,
     [runtimeLine, runtimeCode],
   );

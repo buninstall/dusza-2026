@@ -42,6 +42,9 @@ export function CredentialsForm({ isNewAccount, submitLabel, onSubmit }: Credent
   const [error, setError] = useState<string | null>(null);
   const [isPending, setPending] = useState(false);
   const [values, setValues] = useState<Credentials>({ username: "", password: "" });
+  const [hasTried, setTried] = useState(false);
+  const liveError = (problem: string | null) =>
+    hasTried ? { isInvalid: problem !== null, errorMessage: problem ?? undefined } : {};
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -68,6 +71,7 @@ export function CredentialsForm({ isNewAccount, submitLabel, onSubmit }: Credent
           value={values.username}
           onChange={(username) => setValues((current) => ({ ...current, username }))}
           validate={usernameProblem}
+          {...liveError(usernameProblem(values.username))}
           description={isNewAccount ? hu.auth.usernameHelp : undefined}
         />
         <TextField
@@ -79,9 +83,16 @@ export function CredentialsForm({ isNewAccount, submitLabel, onSubmit }: Credent
           value={values.password}
           onChange={(password) => setValues((current) => ({ ...current, password }))}
           validate={passwordProblem}
+          {...liveError(passwordProblem(values.password))}
           description={isNewAccount ? hu.auth.passwordHelp : undefined}
         />
-        <Button type="submit" variant="primary" isPending={isPending} icon="play">
+        <Button
+          type="submit"
+          variant="primary"
+          isPending={isPending}
+          icon="play"
+          onPress={() => setTried(true)}
+        >
           {submitLabel}
         </Button>
       </Form>

@@ -7,7 +7,13 @@ import {
   LiveAnnouncer,
 } from "../src/play/LiveAnnouncer.tsx";
 import { isPlaybackActive, SPEED_MAX, SPEED_MIN, usePlayback } from "../src/play/playback-store.ts";
-import { STEP_ANIMATION_MS, stepDuration, usePrevious } from "../src/play/step-animation.ts";
+import {
+  eventBeats,
+  STEP_ANIMATION_MS,
+  settleWindow,
+  stepDuration,
+  usePrevious,
+} from "../src/play/step-animation.ts";
 import { tickInterval, usePlaybackTimer } from "../src/play/usePlaybackTimer.ts";
 import { corridorStart, crashTrace, walkTrace } from "./support/fixtures.ts";
 
@@ -130,6 +136,14 @@ describe("időzítés és animáció", () => {
     expect(stepDuration(4, 3, 4)).toBe(0);
   });
 
+  test("a több mezős lépés mezőnként kap időt, és az animációs ablak kivárja", () => {
+    expect(eventBeats(walkTrace.events[1])).toBe(2);
+    expect(eventBeats(null)).toBe(1);
+    expect(stepDuration(3, 4, 1, 3)).toBe(STEP_ANIMATION_MS * 3);
+    expect(stepDuration(3, 4, 4, 2)).toBe(450);
+    expect(settleWindow(2000)).toBeGreaterThan(2000);
+  });
+
   test("a usePrevious az előző értéket adja", () => {
     const { result, rerender } = renderHook(({ value }) => usePrevious(value), {
       initialProps: { value: 1 },
@@ -148,14 +162,25 @@ describe("időzítés és animáció", () => {
     usePlayback.getState().load(walkTrace, corridorStart, "");
     renderHook(() => usePlaybackTimer());
     act(() => {
-      vi.advanceTimersByTime(250);
+      vi.advanceTimersByTime(125);
+    });
+    act(() => {
+      vi.advanceTimersByTime(125);
     });
     expect(usePlayback.getState().index).toBe(2);
+    act(() => {
+      vi.advanceTimersByTime(125);
+    });
+    expect(usePlayback.getState().index).toBe(2);
+    act(() => {
+      vi.advanceTimersByTime(125);
+    });
+    expect(usePlayback.getState().index).toBe(3);
     act(() => usePlayback.getState().pause());
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-    expect(usePlayback.getState().index).toBe(2);
+    expect(usePlayback.getState().index).toBe(3);
   });
 });
 

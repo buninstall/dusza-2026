@@ -180,7 +180,6 @@ function PagerLink({ index, direction }: PagerLinkProps) {
       className="manual-pager-link"
       data-direction={direction}
       activeOptions={{ includeHash: true }}
-      aria-label={`${label}: ${section.title}`}
     >
       <span className="manual-pager-kind">
         <PixelIcon name={direction === "previous" ? "arrowLeft" : "arrowRight"} />
