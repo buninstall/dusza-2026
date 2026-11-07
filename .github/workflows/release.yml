@@ -3,6 +3,14 @@ name: Release
 on:
   push:
     tags: ["v*"]
+    branches: [main]
+    paths:
+      - "crates/minescript-desktop/**"
+  pull_request:
+    paths:
+      - "crates/minescript-desktop/**"
+      - ".github/workflows/release.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -10,9 +18,16 @@ permissions:
 env:
   DATABASE_URL: mysql://minescript:minescript@127.0.0.1:3306/minescript
   TEST_DATABASE_URL: mysql://root:minescript@127.0.0.1:3306
+  DESKTOP_DIR: crates/minescript-desktop
+  LINUX_DESKTOP_DEPS: libwebkit2gtk-4.1-dev libxdo-dev librsvg2-dev libayatana-appindicator3-dev patchelf
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   release:
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -39,3 +54,105 @@ jobs:
         with:
           files: release/*
           generate_release_notes: true
+
+  desktop-check:
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y $LINUX_DESKTOP_DEPS
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ env.DESKTOP_DIR }} -> target
+      - working-directory: ${{ env.DESKTOP_DIR }}
+        run: |
+          cargo fmt --check
+          cargo clippy --all-targets --locked -- -D warnings
+          cargo test --locked
+
+  desktop-prepare:
+    needs: desktop-check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: tag
+        run: |
+          version=$(jq -r .version "$DESKTOP_DIR/tauri.conf.json")
+          tag="desktop-v${version}-${GITHUB_SHA::7}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          subject=$(git log -1 --format=%s)
+          printf 'MineScript Desktop %s\n\nCommit: %s (%s)\n\nmacOS: .dmg (Apple Silicon és Intel), Windows: .msi vagy -setup.exe, Linux: .AppImage, .deb vagy .rpm.\n' "$version" "$subject" "${GITHUB_SHA::7}" > notes.md
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --draft --target "$GITHUB_SHA" --title "MineScript Desktop $version (${GITHUB_SHA::7})" --notes-file notes.md
+
+  desktop-build:
+    needs: [desktop-check, desktop-prepare]
+    if: >-
+      always() && needs.desktop-check.result == 'success' &&
+      (needs.desktop-prepare.result == 'success' || needs.desktop-prepare.result == 'skipped')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            args: --target universal-apple-darwin
+            rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
+          - os: windows-latest
+            args: ""
+            rust-targets: ""
+          - os: ubuntu-22.04
+            args: ""
+            rust-targets: ""
+    runs-on: ${{ matrix.os }}
+    env:
+      MINESCRIPT_BASE_URL: ${{ vars.MINESCRIPT_BASE_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y $LINUX_DESKTOP_DEPS
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-targets }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ env.DESKTOP_DIR }} -> target
+          key: ${{ matrix.os }}
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - working-directory: ${{ env.DESKTOP_DIR }}
+        shell: bash
+        run: bunx @tauri-apps/cli@2.12.4 build --ci ${{ matrix.args }}
+      - shell: bash
+        run: |
+          mkdir -p dist
+          find "$DESKTOP_DIR/target" -path '*/release/bundle/*' -type f \
+            \( -name '*.dmg' -o -name '*.msi' -o -name '*-setup.exe' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' \) \
+            -exec cp {} dist/ \;
+          ls -la dist
+          test -n "$(ls -A dist)"
+      - if: needs.desktop-prepare.result == 'success'
+        shell: bash
+        run: gh release upload "${{ needs.desktop-prepare.outputs.tag }}" dist/* --clobber
+      - if: needs.desktop-prepare.result != 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: minescript-desktop-${{ runner.os }}
+          path: dist/*
+          retention-days: 7
+
+  desktop-publish:
+    needs: [desktop-prepare, desktop-build]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - run: gh release edit "${{ needs.desktop-prepare.outputs.tag }}" --repo "$GITHUB_REPOSITORY" --draft=false --latest=false
