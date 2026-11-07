@@ -1,5 +1,6 @@
 .stage {
   --log-h: clamp(9rem, 22vh, 14rem);
+  --well-min: 12rem;
 
   position: relative;
   display: grid;
@@ -11,9 +12,11 @@
 }
 
 .stage[data-layout="cab"] {
-  container: stage / size;
+  container: stage / inline-size;
   min-height: 32rem;
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  grid-template-rows: auto auto minmax(var(--well-min), 1fr) auto auto auto;
   grid-template-areas:
     "bezel"
     "rail"
@@ -48,7 +51,6 @@
 .stage-bezel {
   grid-area: bezel;
   z-index: 2;
-  min-height: 0;
   padding: var(--space-2) var(--space-3);
   border-width: 0 0 var(--border-thin);
   box-shadow:
@@ -227,9 +229,46 @@
 }
 
 .well-view[data-zoomed="true"] .board {
+  --tile-snap: 16px;
   --tile: calc(clamp(var(--tile-min), var(--tile-fit), var(--tile-max)) * var(--zoom, 1));
 
   margin: auto;
+}
+
+@supports (width: round(nearest, 10px, 4px)) {
+  .well-view[data-zoomed="true"] .board {
+    --tile: max(
+      var(--tile-min),
+      round(
+        nearest,
+        clamp(var(--tile-min), var(--tile-fit), var(--tile-max)) *
+        var(--zoom, 1),
+        var(--tile-snap)
+      )
+    );
+  }
+}
+
+.well-view[data-zoomed="true"] .board-corner,
+.well-view[data-zoomed="true"] .board-ruler-top,
+.well-view[data-zoomed="true"] .board-ruler-left {
+  position: sticky;
+  z-index: 7;
+  background: var(--c-screen);
+}
+
+.well-view[data-zoomed="true"] .board-corner {
+  top: 0;
+  left: 0;
+  z-index: 8;
+}
+
+.well-view[data-zoomed="true"] .board-ruler-top {
+  top: 0;
+}
+
+.well-view[data-zoomed="true"] .board-ruler-left {
+  left: 0;
 }
 
 .well-zoom {

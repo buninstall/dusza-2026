@@ -3,6 +3,7 @@ import { Button } from "../../components/ui/Button.tsx";
 import { IconButton } from "../../components/ui/IconButton.tsx";
 import { Menu, MenuItem, MenuSeparator } from "../../components/ui/Menu.tsx";
 import { hu } from "../../i18n/hu.ts";
+import { SheetRunButton } from "./SheetRun.tsx";
 
 type FileActions = {
   onImport?: ((file: File) => void) | undefined;
@@ -73,8 +74,14 @@ export function SheetToolbar({
   return (
     <SheetBar>
       <FileMenu {...file} />
-      <Button size="sm" icon="book" aria-keyshortcuts="Control+O" onPress={onOpenLibrary}>
-        {hu.programs.library}
+      <Button
+        size="sm"
+        icon="book"
+        className="sheet-compact"
+        aria-keyshortcuts="Control+O"
+        onPress={onOpenLibrary}
+      >
+        <span className="sheet-compact-label">{hu.programs.library}</span>
       </Button>
       <span className="sheet-spacer" />
       <IconButton
@@ -89,13 +96,15 @@ export function SheetToolbar({
       <Button
         size="sm"
         icon="save"
+        className="sheet-compact"
         aria-keyshortcuts="Control+S"
         isDisabled={file.isLocked}
         isPending={isSaving}
         onPress={onSave}
       >
-        {hu.programs.save}
+        <span className="sheet-compact-label">{hu.programs.save}</span>
       </Button>
+      <SheetRunButton />
     </SheetBar>
   );
 }

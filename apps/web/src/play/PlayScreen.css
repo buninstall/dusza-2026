@@ -14,6 +14,7 @@
     clamp(20rem, var(--sheet-share, min(36%, 28rem)), calc(100% - 36rem - var(--split-w)))
     var(--split-w)
     minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   grid-template-areas: "sheet split stage";
   column-gap: 0;
 }

@@ -247,9 +247,8 @@
 .ed-canvas {
   grid-area: canvas;
   container: ed-canvas / inline-size;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto auto;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
   border: var(--border-thin) solid var(--c-line-strong);
@@ -258,8 +257,29 @@
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
 }
 
+.ed-sizebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-thin) dashed var(--c-line-strong);
+  background: var(--c-surface-raised);
+}
+
+.ed-stepper .field {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ed-stepper .field-label {
+  min-width: 5.5rem;
+}
+
 .ed-drop {
   position: relative;
+  flex: 1 1 0;
   display: grid;
   grid-template-rows: minmax(0, 1fr);
   min-width: 0;
@@ -345,9 +365,9 @@
   color: var(--c-danger-ink);
 }
 
-.ed-canvas:has(.board-edge-bottom [data-step="down"]:is(:hover, :focus-visible))
+.ed-canvas:has(.ed-stepper[data-kind="row"] [data-step="down"]:is(:hover, :focus-visible))
   .ed-size-note[data-kind="row"],
-.ed-canvas:has(.board-edge-end [data-step="down"]:is(:hover, :focus-visible))
+.ed-canvas:has(.ed-stepper[data-kind="col"] [data-step="down"]:is(:hover, :focus-visible))
   .ed-size-note[data-kind="col"] {
   display: block;
 }
@@ -529,9 +549,9 @@
   width: var(--tile);
 }
 
-.board:has(.board-edge-bottom [data-step="down"]:is(:hover, :focus-visible))
+.ed-canvas:has(.ed-stepper[data-kind="row"] [data-step="down"]:is(:hover, :focus-visible))
   .ed-doomed[data-kind="row"],
-.board:has(.board-edge-end [data-step="down"]:is(:hover, :focus-visible))
+.ed-canvas:has(.ed-stepper[data-kind="col"] [data-step="down"]:is(:hover, :focus-visible))
   .ed-doomed[data-kind="col"] {
   opacity: 0.7;
 }

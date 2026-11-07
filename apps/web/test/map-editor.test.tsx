@@ -157,9 +157,9 @@ describe("új térkép", () => {
     fireEvent.pointerDown(eraseStart, { button: 2 });
     document.elementFromPoint = vi.fn(() => eraseEnd);
     fireEvent.pointerMove(eraseEnd, { clientX: 1, clientY: 1 });
-    expect(document.querySelector('.ed-ghost[data-source="hover"]')?.getAttribute("data-tool")).toBe(
-      "empty",
-    );
+    expect(
+      document.querySelector('.ed-ghost[data-source="hover"]')?.getAttribute("data-tool"),
+    ).toBe("empty");
     fireEvent.pointerUp(window);
     const menu = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
     document.body.dispatchEvent(menu);

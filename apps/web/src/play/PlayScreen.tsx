@@ -12,6 +12,7 @@ import { type Blocked, moodFor } from "./phase.ts";
 import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
 import { SplitHandle } from "./SplitHandle.tsx";
+import { SheetRunContext } from "./sheet/SheetRun.tsx";
 import { useBreakpointNotice } from "./useBreakpointNotice.ts";
 import { useWellZoom } from "./useWellZoom.ts";
 import "./PlayScreen.css";
@@ -280,7 +281,9 @@ export function PlayScreen(props: PlayScreenProps) {
 
   const sheet = (
     <RegionBoundary key="sheet" message={hu.play.sheetFailed}>
-      {props.sheet}
+      <SheetRunContext value={mode === "play" ? () => run(false) : null}>
+        {props.sheet}
+      </SheetRunContext>
     </RegionBoundary>
   );
   const skip = (

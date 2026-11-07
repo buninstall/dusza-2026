@@ -105,16 +105,22 @@ type EditorCanvasProps = SizeProps &
 
 export function EditorCanvas(props: EditorCanvasProps) {
   const { map } = props;
-  const edges = {
-    end: (
-      <SizeStepper label={hu.mapEditor.cols} value={map.cols} kind="col" onChange={props.onCols} />
-    ),
-    bottom: (
-      <SizeStepper label={hu.mapEditor.rows} value={map.rows} kind="row" onChange={props.onRows} />
-    ),
-  };
   return (
     <section aria-label={hu.mapEditor.gridLabel} className="ed-canvas">
+      <div className="ed-sizebar">
+        <SizeStepper
+          label={hu.mapEditor.rows}
+          value={map.rows}
+          kind="row"
+          onChange={props.onRows}
+        />
+        <SizeStepper
+          label={hu.mapEditor.cols}
+          value={map.cols}
+          kind="col"
+          onChange={props.onCols}
+        />
+      </div>
       <DropZone
         aria-label={hu.mapEditor.dropZone}
         className="ed-drop"
@@ -143,7 +149,6 @@ export function EditorCanvas(props: EditorCanvasProps) {
             overlay={props.overlay}
             cellNotes={props.cellNotes}
             rulerMarks={props.rulerMarks}
-            edges={edges}
           />
         </div>
         <p className="ed-drop-hint" aria-hidden="true">

@@ -372,6 +372,8 @@ export const hu = {
     toProgram: "Ugrás a programhoz",
     run: "Futtatás",
     stop: "Leállítás",
+    sheetRun: "Futtasd",
+    sheetStop: "Állítsd le",
     pause: "Szünet",
     resume: "Folytatás",
     replay: "Újrajátszás",

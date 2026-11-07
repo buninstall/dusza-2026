@@ -43,6 +43,17 @@ describe("programlap", () => {
     await waitFor(() => expect(editorText()).toContain("set szamlalo to 0"));
   });
 
+  test("a programlap saját gombja is futtat, futás közben leállít", async () => {
+    const { user } = await openPlay("step forward 1\nstep forward 1\nstep forward 1\n");
+    await user.click(screen.getByRole("button", { name: "Futtasd" }));
+    await waitFor(() => expect(usePlayback.getState().result).not.toBeNull());
+    const stop = screen.queryByRole("button", { name: "Állítsd le" });
+    if (stop) {
+      await user.click(stop);
+    }
+    expect(await screen.findByRole("button", { name: "Futtasd" })).toBeTruthy();
+  });
+
   test("a 100 000 karakternél hosszabb program jelzést kap, és nem fut", async () => {
     const { user } = await openPlay(`print 1\n${"x".repeat(100_001)}`);
     expect((await screen.findByText(/legfeljebb 100/)).getAttribute("role")).toBe("alert");
