@@ -318,7 +318,8 @@ export const hu = {
       `A térkép elmentve, új verzióként (v${version}). A korábbi ranglista megmaradt.`,
     versionHeading: "Verzió",
     versionRuns: (version: number, runs: number) => `v${version} · ${runs} futás`,
-    versionCurrent: (version: number) => `Jelenleg ${articleFor(version)} ${version}. verzió aktív.`,
+    versionCurrent: (version: number) =>
+      `Jelenleg ${articleFor(version)} ${version}. verzió aktív.`,
     versionWillFork: (runs: number, next: number) =>
       `Ehhez a verzióhoz már ${runs} futás tartozik, ezért a tartalom módosítása új verziót hoz létre (v${next}); a régi ranglista megmarad.`,
     versionInPlace: "Ehhez a verzióhoz még nincs futás, ezért a módosítás helyben mentődik.",
@@ -451,7 +452,8 @@ export const hu = {
     console: "Konzol",
     consoleEmpty: "Nincs kimenet.",
     consoleLine: (step: number) => `${step}. lépés`,
-    consoleJump: (step: number, text: string) => `Ugrás ${articleFor(step)} ${step}. lépéshez: ${text}`,
+    consoleJump: (step: number, text: string) =>
+      `Ugrás ${articleFor(step)} ${step}. lépéshez: ${text}`,
     variables: "Változók",
     variableName: "Név",
     variableType: "Típus",
