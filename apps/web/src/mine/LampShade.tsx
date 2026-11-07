@@ -124,7 +124,13 @@ export function LampShade(props: LampShadeProps) {
     }
   }, [visible, seen, robot, radius, isBroken, stepMs, isReduced]);
 
-  useEffect(() => () => cancelAnimationFrame(frameRef.current), []);
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = 0;
+    },
+    [],
+  );
 
   return (
     <div aria-hidden="true" className="board-lamp-shade">
