@@ -51,7 +51,7 @@ describe("aranyrög röppályája", () => {
       Keyframe[],
       KeyframeAnimationOptions,
     ];
-    expect(options).toEqual({ duration: 720 });
+    expect(options).toEqual({ duration: 1300 });
     expect(frames).toHaveLength(5);
     expect(String(frames[0]?.transform)).toContain("translate(116px, 66px)");
     expect(String(frames[1]?.transform)).toContain("translate(116px, 44px)");

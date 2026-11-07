@@ -4,8 +4,8 @@ import { playOnce, usePrefersReducedMotion } from "../lib/motion.ts";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { TILE_SPRITES } from "../pixel/tiles.ts";
 
-const FLIGHT_MS = 720;
-const PULSE_MS = 320;
+const FLIGHT_MS = 1300;
+const PULSE_MS = 480;
 const NUGGET_PX = 32;
 const POP_PX = 22;
 const ARC_LIFT = 0.35;
