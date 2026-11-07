@@ -41,7 +41,7 @@ afterEach(() => {
 describe("aranyrög röppályája", () => {
   test("a bányászott mezőről felpattan, és a csillébe esik", () => {
     const cancel = vi.fn();
-    const animate = vi.fn(() => ({ finished: Promise.resolve(), cancel }));
+    const animate = vi.fn(() => ({ finished: new Promise(() => undefined), cancel }));
     HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
     const rootRef = scene(64);
     const { rerender, unmount } = render(
@@ -57,8 +57,11 @@ describe("aranyrög röppályája", () => {
     expect(String(frames.at(-1)?.transform)).toContain("translate(18px, 22px)");
     expect(frames.at(-1)?.opacity).toBe(0);
     rerender(<GoldFlight flight={null} rootRef={rootRef} />);
-    expect(cancel).toHaveBeenCalledOnce();
+    expect(cancel).not.toHaveBeenCalled();
+    expect(document.querySelectorAll(".gold-flight")).toHaveLength(2);
     unmount();
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(document.querySelectorAll(".gold-flight")).toHaveLength(0);
   });
 
   test("az út sosem emelkedik a csille fölé, és a csillében ér véget", () => {

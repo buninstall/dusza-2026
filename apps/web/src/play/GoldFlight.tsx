@@ -1,5 +1,5 @@
 import type { Pos } from "@minescript/engine";
-import { type RefObject, useLayoutEffect, useRef } from "react";
+import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import { playOnce, usePrefersReducedMotion } from "../lib/motion.ts";
 import { PixelText } from "../pixel/PixelText.tsx";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
@@ -126,18 +126,48 @@ function plusFrames(cart: Point): Keyframe[] {
   ];
 }
 
+function launch(
+  template: HTMLElement | null,
+  frames: Keyframe[],
+  options: KeyframeAnimationOptions,
+  live: Set<() => void>,
+): void {
+  if (!template || typeof template.animate !== "function") {
+    return;
+  }
+  const clone = template.cloneNode(true) as HTMLElement;
+  template.after(clone);
+  const animation = clone.animate(frames, options);
+  const stop = () => {
+    animation.cancel();
+    clone.remove();
+    live.delete(stop);
+  };
+  live.add(stop);
+  animation.finished.then(stop, stop);
+}
+
 export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
   const nuggetRef = useRef<HTMLDivElement>(null);
   const plusRef = useRef<HTMLDivElement>(null);
+  const live = useRef(new Set<() => void>());
   const isReduced = usePrefersReducedMotion();
   const key = flight?.key ?? null;
   const row = flight?.from.row ?? null;
   const col = flight?.from.col ?? null;
 
+  useEffect(() => {
+    const running = live.current;
+    return () => {
+      for (const stop of [...running]) {
+        stop();
+      }
+    };
+  }, []);
+
   useLayoutEffect(() => {
     const root = rootRef.current;
-    const nugget = nuggetRef.current;
-    if (key === null || row === null || col === null || isReduced || !root || !nugget) {
+    if (key === null || row === null || col === null || isReduced || !root) {
       return;
     }
     const cell = root.querySelector(`[data-row="${row}"][data-col="${col}"]`);
@@ -148,19 +178,21 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
       return;
     }
     const cart = centerOf(to);
-    const stops = [playOnce(nugget, flightFrames(centerOf(from), cart), { duration: FLIGHT_MS })];
-    const timer = window.setTimeout(() => {
-      stops.push(playOnce(target, PULSE, { duration: PULSE_MS, easing: "ease-out" }));
-      stops.push(
-        playOnce(plusRef.current, plusFrames(cart), { duration: PLUS_MS, easing: "ease-out" }),
+    launch(
+      nuggetRef.current,
+      flightFrames(centerOf(from), cart),
+      { duration: FLIGHT_MS },
+      live.current,
+    );
+    window.setTimeout(() => {
+      playOnce(target, PULSE, { duration: PULSE_MS, easing: "ease-out" });
+      launch(
+        plusRef.current,
+        plusFrames(cart),
+        { duration: PLUS_MS, easing: "ease-out" },
+        live.current,
       );
     }, FLIGHT_MS * DROP_AT);
-    return () => {
-      window.clearTimeout(timer);
-      for (const stop of stops) {
-        stop();
-      }
-    };
   }, [key, row, col, isReduced, rootRef]);
 
   return (
