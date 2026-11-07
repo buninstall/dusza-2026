@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { randomBytes } from "node:crypto";
-import { Client } from "../console/probes.ts";
+import { Client } from "./client.ts";
 
 setDefaultTimeout(60_000);
 
