@@ -73,11 +73,11 @@
 
 .drawers {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-1);
+  min-width: 0;
   padding: var(--space-1) var(--space-2);
-  overflow-x: auto;
   border-bottom: var(--border-thin) solid var(--c-line);
-  scrollbar-width: none;
 }
 
 @media (pointer: coarse) {
