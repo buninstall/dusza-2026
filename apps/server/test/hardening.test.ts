@@ -136,7 +136,7 @@ describe("hibatűrés a kérések határán", () => {
       }
     }
     const scope = await json<ErrorBody>(await user.get("/api/maps?scope=minden"));
-    expect(detailMessages(scope)).toEqual(["A szűrő „all” vagy „mine” lehet."]);
+    expect(detailMessages(scope)).toEqual(["A szűrő „all”, „mine” vagy „favorites” lehet."]);
   });
 
   test("az azonosító csak tizes számrendszerbeli pozitív egész", async () => {

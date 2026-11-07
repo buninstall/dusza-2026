@@ -2,18 +2,26 @@ import type { Diagnostic, Engine, MapInfo, MineMap } from "@minescript/engine";
 import { and, asc, count, desc, eq, isNull, max, or, type SQL, sql } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import { firstRow } from "../db/rows.ts";
-import { type MapRow, type MapVersionRow, maps, mapVersions, runs, users } from "../db/schema.ts";
+import {
+  type DifficultyMark,
+  type MapRow,
+  type MapVersionRow,
+  maps,
+  mapVersions,
+  runs,
+  users,
+} from "../db/schema.ts";
 import type { SessionUser } from "../env.ts";
 import { sha256Hex } from "../lib/crypto.ts";
-import { TUTORIAL_MAPS } from "../seed/maps.ts";
-import { difficultyOf } from "./generator.ts";
-import { bestRunsOf, progressOf } from "./progress.ts";
+import { type Difficulty, difficultyOf } from "./generator.ts";
 
 export type ValidMapContent = {
   ok: true;
   canonical: string;
+  contentHash: string;
   map: MineMap;
   info: MapInfo;
+  difficulty: Difficulty | null;
   warnings: Diagnostic[];
 };
 
@@ -27,24 +35,65 @@ export function validateMapContent(
   if (!parsed.map) {
     return { ok: false, diagnostics: parsed.diagnostics };
   }
+  const canonical = engine.serializeMap(parsed.map);
+  const contentHash = sha256Hex(canonical);
   return {
     ok: true,
-    canonical: engine.serializeMap(parsed.map),
+    canonical,
+    contentHash,
     map: parsed.map,
     info: engine.mapInfo(parsed.map),
+    difficulty: difficultyOf(engine, canonical, contentHash),
     warnings: parsed.diagnostics,
   };
+}
+
+export function canonicalHash(engine: Engine, content: string): string | null {
+  const parsed = engine.parseMap(content);
+  return parsed.map ? sha256Hex(engine.serializeMap(parsed.map)) : null;
+}
+
+export function difficultyMark(difficulty: Difficulty | null): DifficultyMark {
+  return difficulty ?? "none";
+}
+
+export function markedDifficulty(mark: DifficultyMark | null): Difficulty | null {
+  return mark === null || mark === "none" ? null : mark;
 }
 
 export function versionValues(valid: ValidMapContent) {
   return {
     content: valid.canonical,
-    contentHash: sha256Hex(valid.canonical),
+    contentHash: valid.contentHash,
     rows: valid.map.rows,
     cols: valid.map.cols,
     goldTotal: valid.info.goldTotal,
     reachableGold: valid.info.reachableGold,
+    difficulty: difficultyMark(valid.difficulty),
   };
+}
+
+const BACKFILL_BATCH = 200;
+
+export async function backfillDifficulty(db: Db, engine: Engine): Promise<number> {
+  let filled = 0;
+  for (;;) {
+    const pending = await db
+      .select({ id: mapVersions.id, content: mapVersions.content, hash: mapVersions.contentHash })
+      .from(mapVersions)
+      .where(isNull(mapVersions.difficulty))
+      .limit(BACKFILL_BATCH);
+    for (const version of pending) {
+      await db
+        .update(mapVersions)
+        .set({ difficulty: difficultyMark(difficultyOf(engine, version.content, version.hash)) })
+        .where(eq(mapVersions.id, version.id));
+    }
+    filled += pending.length;
+    if (pending.length < BACKFILL_BATCH) {
+      return filled;
+    }
+  }
 }
 
 export function canView(user: SessionUser, map: MapRow): boolean {
@@ -104,61 +153,6 @@ export async function runCount(db: Db, mapVersionId: number): Promise<number> {
     .from(runs)
     .where(eq(runs.mapVersionId, mapVersionId));
   return row?.value ?? 0;
-}
-
-const STORY_TITLES = new Set(TUTORIAL_MAPS.map((tutorial) => tutorial.title));
-
-export async function mapSummaries(
-  db: Db,
-  engine: Engine,
-  user: SessionUser,
-  filter: SQL | undefined,
-) {
-  const mine = bestRunsOf(db, user.id);
-  const rows = await db
-    .select({
-      id: maps.id,
-      title: maps.title,
-      description: maps.description,
-      visibility: maps.visibility,
-      ownerId: maps.ownerId,
-      ownerName: users.username,
-      ownerRole: users.role,
-      parSteps: maps.parSteps,
-      lampMode: maps.lampMode,
-      createdAt: maps.createdAt,
-      updatedAt: maps.updatedAt,
-      versionId: mapVersions.id,
-      version: mapVersions.version,
-      content: mapVersions.content,
-      contentHash: mapVersions.contentHash,
-      rows: mapVersions.rows,
-      cols: mapVersions.cols,
-      goldTotal: mapVersions.goldTotal,
-      reachableGold: mapVersions.reachableGold,
-      bestGold: mine.gold,
-      bestSteps: mine.steps,
-    })
-    .from(maps)
-    .innerJoin(users, eq(users.id, maps.ownerId))
-    .innerJoin(mapVersions, eq(mapVersions.id, maps.currentVersionId))
-    .leftJoin(mine, and(eq(mine.mapVersionId, mapVersions.id), eq(mine.position, 1)))
-    .where(filter)
-    .orderBy(asc(maps.createdAt), asc(maps.id));
-  return rows.map(({ bestGold, bestSteps, contentHash, ownerRole, ...row }) => ({
-    ...row,
-    isStory: ownerRole === "admin" && STORY_TITLES.has(row.title),
-    difficulty: difficultyOf(engine, row.content, contentHash),
-    ...progressOf(
-      bestGold === null || bestSteps === null ? null : { gold: bestGold, steps: bestSteps },
-      row.reachableGold,
-      row.parSteps,
-    ),
-  }));
-}
-
-export function listMaps(db: Db, engine: Engine, user: SessionUser, scope: "all" | "mine") {
-  return mapSummaries(db, engine, user, and(isNull(maps.dailyDate), visibleTo(user, scope)));
 }
 
 export function createMapWithVersion(

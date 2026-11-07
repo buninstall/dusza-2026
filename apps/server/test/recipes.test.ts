@@ -134,7 +134,9 @@ describe("receptek (docs/receptek)", () => {
     expect(report.recipes).toBe(RECIPES.length * 4);
     const demo = context.client();
     await demo.post("/api/auth/login", { username: "demo1", password: "demo2026" });
-    const library = await json<{ programs: { title: string }[] }>(await demo.get("/api/programs"));
+    const library = await json<{ programs: { title: string }[] }>(
+      await demo.get("/api/programs?pageSize=100"),
+    );
     const titles = library.programs.map((program) => program.title);
     for (const recipe of RECIPES) {
       expect(titles).toContain(recipe.title);

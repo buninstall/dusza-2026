@@ -1,14 +1,23 @@
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { requireUser } from "../auth/middleware.ts";
-import { type MapRow, type MapVersionRow, maps } from "../db/schema.ts";
+import { type MapRow, type MapVersionRow, mapFavorites, maps } from "../db/schema.ts";
 import type { AppEnv, Deps, SessionUser } from "../env.ts";
 import { apiError, messages } from "../lib/errors.ts";
 import { attachmentDisposition } from "../lib/request.ts";
 import { validationHook } from "../lib/validation.ts";
 import { ensureDailyMap } from "../services/daily.ts";
+import { setFavorite } from "../services/favorites.ts";
 import { computeParSteps, difficultyOf, generateMap } from "../services/generator.ts";
+import {
+  listMapPage,
+  matchContents,
+  nextMap,
+  sandboxStats,
+  storyMaps,
+  summaryOf,
+} from "../services/map-list.ts";
 import {
   canEdit,
   canExport,
@@ -17,9 +26,8 @@ import {
   currentVersion,
   findMap,
   leaderboard,
-  listMaps,
   mapBelongsToVersion,
-  mapSummaries,
+  markedDifficulty,
   replaceContent,
   runCount,
   validateMapContent,
@@ -32,6 +40,7 @@ import {
   idParam,
   leaderboardQuery,
   listMapsQuery,
+  matchMapsSchema,
   parSchema,
   updateMapSchema,
 } from "./schemas.ts";
@@ -43,14 +52,45 @@ const lampExportMessage =
 
 const MAX_SEED = 0xffff_ffff;
 
+const dailyFavoriteMessage = "A napi kihívás nem tehető a kedvencek közé.";
+
 export function mapRoutes(deps: Deps) {
   const playerView = async (user: SessionUser, map: MapRow, version: MapVersionRow) => {
     const best = await bestScore(deps.db, user.id, version.id);
     return {
       ...progressOf(best, version.reachableGold, map.parSteps),
       isDaily: map.dailyDate !== null,
-      difficulty: difficultyOf(deps.engine, version.content, version.contentHash),
+      difficulty:
+        version.difficulty === null
+          ? difficultyOf(deps.engine, version.content, version.contentHash)
+          : markedDifficulty(version.difficulty),
     };
+  };
+
+  const isFavoriteOf = async (user: SessionUser, mapId: number) => {
+    const [row] = await deps.db
+      .select({ mapId: mapFavorites.mapId })
+      .from(mapFavorites)
+      .where(and(eq(mapFavorites.userId, user.id), eq(mapFavorites.mapId, mapId)))
+      .limit(1);
+    return row !== undefined;
+  };
+
+  const toggleFavorite = async (user: SessionUser, mapId: number, isFavorite: boolean) => {
+    const map = await findMap(deps.db, mapId);
+    if (!map || !canView(user, map)) {
+      return { kind: "missing" } as const;
+    }
+    if (map.dailyDate !== null) {
+      return { kind: "daily" } as const;
+    }
+    const state = await setFavorite(deps.db, {
+      userId: user.id,
+      mapId: map.id,
+      isFavorite,
+      now: deps.now(),
+    });
+    return { kind: "done", state } as const;
   };
 
   const detail = async (mapId: number) => {
@@ -72,13 +112,20 @@ export function mapRoutes(deps: Deps) {
 
   return new Hono<AppEnv>()
     .use(requireUser(deps))
-    .get("/", zValidator("query", listMapsQuery, validationHook), async (c) => {
-      const { scope } = c.req.valid("query");
-      return c.json({ maps: await listMaps(deps.db, deps.engine, c.var.user, scope) }, 200);
+    .get("/", zValidator("query", listMapsQuery, validationHook), async (c) =>
+      c.json(await listMapPage(deps.db, deps.engine, c.var.user, c.req.valid("query")), 200),
+    )
+    .get("/stats", async (c) => c.json(await sandboxStats(deps.db, c.var.user), 200))
+    .get("/story", async (c) =>
+      c.json({ maps: await storyMaps(deps.db, deps.engine, c.var.user) }, 200),
+    )
+    .post("/match", zValidator("json", matchMapsSchema, validationHook), async (c) => {
+      const { contents } = c.req.valid("json");
+      return c.json({ ids: await matchContents(deps.db, deps.engine, c.var.user, contents) }, 200);
     })
     .get("/daily", async (c) => {
       const daily = await ensureDailyMap(deps, c.var.user);
-      const [summary] = await mapSummaries(deps.db, deps.engine, c.var.user, eq(maps.id, daily.id));
+      const summary = await summaryOf(deps.db, deps.engine, c.var.user, daily.id);
       if (!summary) {
         return apiError(c, 404, "NOT_FOUND", messages.notFound);
       }
@@ -123,10 +170,32 @@ export function mapRoutes(deps: Deps) {
         {
           ...found,
           canEdit: canEdit(c.var.user, found.map),
+          isFavorite: await isFavoriteOf(c.var.user, found.map.id),
+          next: await nextMap(deps.db, c.var.user, found.map),
           player: await playerView(c.var.user, found.map, found.version),
         },
         200,
       );
+    })
+    .put("/:id/favorite", zValidator("param", idParam, validationHook), async (c) => {
+      const result = await toggleFavorite(c.var.user, c.req.valid("param").id, true);
+      if (result.kind === "missing") {
+        return apiError(c, 404, "NOT_FOUND", messages.notFound);
+      }
+      if (result.kind === "daily") {
+        return apiError(c, 409, "DAILY_FAVORITE", dailyFavoriteMessage);
+      }
+      return c.json(result.state, 200);
+    })
+    .delete("/:id/favorite", zValidator("param", idParam, validationHook), async (c) => {
+      const result = await toggleFavorite(c.var.user, c.req.valid("param").id, false);
+      if (result.kind === "missing") {
+        return apiError(c, 404, "NOT_FOUND", messages.notFound);
+      }
+      if (result.kind === "daily") {
+        return apiError(c, 409, "DAILY_FAVORITE", dailyFavoriteMessage);
+      }
+      return c.json(result.state, 200);
     })
     .put(
       "/:id",

@@ -1,13 +1,15 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { requireUser } from "../auth/middleware.ts";
-import { firstRow } from "../db/rows.ts";
 import { type ProgramRow, programs } from "../db/schema.ts";
 import type { AppEnv, Deps } from "../env.ts";
 import { apiError, messages } from "../lib/errors.ts";
 import { validationHook } from "../lib/validation.ts";
-import { idParam, programSchema, updateProgramSchema } from "./schemas.ts";
+import { createProgram, listProgramPage, PROGRAM_LIMIT } from "../services/programs.ts";
+import { idParam, programSchema, programsQuery, updateProgramSchema } from "./schemas.ts";
+
+const limitMessage = `A programtárban legfeljebb ${PROGRAM_LIMIT} program fér el. Törölj egy régit, mielőtt újat mentesz.`;
 
 export function programRoutes(deps: Deps) {
   const owned = async (id: number, ownerId: number): Promise<ProgramRow | undefined> => {
@@ -21,23 +23,18 @@ export function programRoutes(deps: Deps) {
 
   return new Hono<AppEnv>()
     .use(requireUser(deps))
-    .get("/", async (c) => {
-      const list = await deps.db
-        .select({ id: programs.id, title: programs.title, updatedAt: programs.updatedAt })
-        .from(programs)
-        .where(eq(programs.ownerId, c.var.user.id))
-        .orderBy(desc(programs.updatedAt));
-      return c.json({ programs: list }, 200);
-    })
+    .get("/", zValidator("query", programsQuery, validationHook), async (c) =>
+      c.json(await listProgramPage(deps.db, c.var.user.id, c.req.valid("query")), 200),
+    )
     .post("/", zValidator("json", programSchema, validationHook), async (c) => {
-      const input = c.req.valid("json");
-      const { id } = firstRow(
-        await deps.db
-          .insert(programs)
-          .values({ ...input, ownerId: c.var.user.id, updatedAt: deps.now() })
-          .$returningId(),
-      );
-      const created = firstRow(await deps.db.select().from(programs).where(eq(programs.id, id)));
+      const created = await createProgram(deps.db, {
+        ...c.req.valid("json"),
+        ownerId: c.var.user.id,
+        now: deps.now(),
+      });
+      if (!created) {
+        return apiError(c, 409, "PROGRAM_LIMIT", limitMessage);
+      }
       return c.json({ program: created }, 201);
     })
     .get("/:id", zValidator("param", idParam, validationHook), async (c) => {

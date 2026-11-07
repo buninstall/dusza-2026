@@ -1,10 +1,17 @@
-import { and, asc, desc, eq, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import { runs } from "../db/schema.ts";
 import { type Score, starsFor } from "./stars.ts";
 
-export function bestRunsOf(db: Db, userId: number) {
-  return db
+export async function bestScoresOf(
+  db: Db,
+  userId: number,
+  versionIds: readonly number[],
+): Promise<Map<number, Score>> {
+  if (versionIds.length === 0) {
+    return new Map();
+  }
+  const ranked = db
     .select({
       mapVersionId: runs.mapVersionId,
       gold: runs.gold,
@@ -15,8 +22,13 @@ export function bestRunsOf(db: Db, userId: number) {
       )`.as("position"),
     })
     .from(runs)
-    .where(eq(runs.userId, userId))
-    .as("mine");
+    .where(and(eq(runs.userId, userId), inArray(runs.mapVersionId, [...versionIds])))
+    .as("ranked");
+  const rows = await db
+    .select({ mapVersionId: ranked.mapVersionId, gold: ranked.gold, steps: ranked.steps })
+    .from(ranked)
+    .where(eq(ranked.position, 1));
+  return new Map(rows.map((row) => [row.mapVersionId, { gold: row.gold, steps: row.steps }]));
 }
 
 export async function bestScore(

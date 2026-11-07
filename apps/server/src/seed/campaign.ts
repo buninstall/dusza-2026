@@ -68,7 +68,7 @@ export async function ensureSandbox(deps: Deps, base: number): Promise<number> {
 
 type SeedMap = { id: number; title: string; description: string; createdAt: number };
 
-async function campaignOwner(deps: Deps): Promise<{ ownerId: number; base: number } | null> {
+export async function campaignOwner(deps: Deps): Promise<{ ownerId: number; base: number } | null> {
   const first = TUTORIAL_MAPS[0];
   const [anchor] = first
     ? await deps.db

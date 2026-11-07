@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { LAMP_MODES, LIMITS, VISIBILITIES } from "../db/schema.ts";
 import { DIFFICULTIES, GENERATOR_MAX, GENERATOR_MIN } from "../services/generator.ts";
+import { LEVEL_FILTERS, MAP_SCOPES, MAP_SORTS, MAP_WORLDS } from "../services/map-list.ts";
 
 z.config(z.locales.hu());
 
@@ -117,8 +118,73 @@ export const generateMapSchema = z.object({
 
 export const parSchema = z.object({ content });
 
-export const listMapsQuery = z.object({
-  scope: z.enum(["all", "mine"], { error: "A szűrő „all” vagy „mine” lehet." }).default("all"),
+export const MAX_SEARCH = 80;
+export const MAX_MATCH = 64;
+
+const PAGE_PATTERN = /^[1-9][0-9]{0,5}$/;
+const PAGE_MESSAGE = "Az oldalszám pozitív egész szám kell legyen.";
+
+function positiveCount(message: string) {
+  return z.string({ error: message }).regex(PAGE_PATTERN, message).transform(Number);
+}
+
+export function pageQuery(defaultSize: number, maxSize: number) {
+  const sizeMessage = `Az oldalméret 1 és ${maxSize} közötti egész szám lehet.`;
+  return z.object({
+    page: positiveCount(PAGE_MESSAGE).default(1),
+    pageSize: positiveCount(sizeMessage)
+      .pipe(z.number().max(maxSize, sizeMessage))
+      .default(defaultSize),
+  });
+}
+
+const searchText = wellFormedText("A keresés")
+  .max(MAX_SEARCH * 4, `A keresés legfeljebb ${MAX_SEARCH} karakter lehet.`)
+  .transform((value) => value.replace(TITLE_BREAKS, " ").trim())
+  .pipe(z.string().max(MAX_SEARCH, `A keresés legfeljebb ${MAX_SEARCH} karakter lehet.`))
+  .default("");
+
+export const MAP_PAGE_DEFAULT = 24;
+export const MAP_PAGE_MAX = 60;
+
+export const listMapsQuery = pageQuery(MAP_PAGE_DEFAULT, MAP_PAGE_MAX).extend({
+  world: z
+    .enum(MAP_WORLDS, { error: "A világ „all”, „sandbox” vagy „story” lehet." })
+    .default("all"),
+  scope: z
+    .enum(MAP_SCOPES, { error: "A szűrő „all”, „mine” vagy „favorites” lehet." })
+    .default("all"),
+  q: searchText,
+  sort: z
+    .enum(MAP_SORTS, {
+      error: "A rendezés „order”, „recent”, „size”, „gold” vagy „popular” lehet.",
+    })
+    .default("order"),
+  level: z
+    .enum(LEVEL_FILTERS, { error: "A nehézség „all”, „easy”, „medium” vagy „hard” lehet." })
+    .default("all"),
+});
+
+export const matchMapsSchema = z.object({
+  contents: z
+    .array(content, { error: "A térképek listája szöveges elemekből álljon." })
+    .max(MAX_MATCH, `Egyszerre legfeljebb ${MAX_MATCH} térkép kereshető.`),
+});
+
+export const RUN_PAGE_DEFAULT = 20;
+export const RUN_PAGE_MAX = 100;
+
+export const runsPageQuery = pageQuery(RUN_PAGE_DEFAULT, RUN_PAGE_MAX);
+
+export const PROGRAM_PAGE_DEFAULT = 20;
+export const PROGRAM_PAGE_MAX = 100;
+export const PROGRAM_SORTS = ["recent", "title"] as const;
+
+export const programsQuery = pageQuery(PROGRAM_PAGE_DEFAULT, PROGRAM_PAGE_MAX).extend({
+  q: searchText,
+  sort: z
+    .enum(PROGRAM_SORTS, { error: "A rendezés „recent” vagy „title” lehet." })
+    .default("recent"),
 });
 
 export const leaderboardQuery = z.object({

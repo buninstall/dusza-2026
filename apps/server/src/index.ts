@@ -66,7 +66,18 @@ function printWelcome(url: string, config: ServerConfig): void {
   console.log("  Leállítás: Ctrl+C");
 }
 
+function printCrowdReport(report: SeedReport): void {
+  const { crowd } = report;
+  if (crowd.players === 0) {
+    return;
+  }
+  console.log(
+    `Homokozó feltöltve: ${crowd.players} bányász, ${crowd.maps} térkép, ${crowd.favorites} kedvenc, ${crowd.runs} futás`,
+  );
+}
+
 function printSeedReport(report: SeedReport): void {
+  printCrowdReport(report);
   if (!report.seeded) {
     return;
   }
@@ -91,7 +102,7 @@ async function start(config: ServerConfig, database: Database) {
     now: Date.now,
     desktop: config.desktop ? createDesktopReleases(config.desktop) : undefined,
   };
-  printSeedReport(await seedDemo(deps, { reset: config.resetDemo }));
+  printSeedReport(await seedDemo(deps, { reset: config.resetDemo, crowd: config.seedCrowd }));
   const app = createApp(
     deps,
     config.serveStatic ? { staticHandler: await loadStaticHandler() } : {},

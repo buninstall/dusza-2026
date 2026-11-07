@@ -23,6 +23,7 @@ export type ServerConfig = {
   compiled: boolean;
   testMode: boolean;
   trustProxy: boolean;
+  seedCrowd: boolean;
   desktop: DesktopConfig | null;
 };
 
@@ -57,6 +58,7 @@ const OPTIONS = {
   host: { type: "string" },
   "database-url": { type: "string" },
   "no-open": { type: "boolean", default: false },
+  "no-crowd": { type: "boolean", default: false },
   "reset-demo": { type: "boolean", default: false },
   static: { type: "boolean", default: false },
   "test-mode": { type: "boolean", default: false },
@@ -65,7 +67,7 @@ const OPTIONS = {
 
 const USAGE =
   "Használható kapcsolók: --port <szám>, --host <cím>, --database-url <mysql://…>, " +
-  "--no-open, --reset-demo, --static, --test-mode, --trust-proxy.";
+  "--no-open, --no-crowd, --reset-demo, --static, --test-mode, --trust-proxy.";
 
 const TRUTHY = new Set(["1", "true", "yes", "on"]);
 
@@ -83,9 +85,13 @@ function readArguments(argv: string[]) {
 
 const DISABLED = new Set(["0", "off", "false", "no"]);
 
+function isDisabled(value: string | undefined): boolean {
+  return value !== undefined && DISABLED.has(value.trim().toLowerCase());
+}
+
 function resolveDesktop(env: Environment, testMode: boolean): DesktopConfig | null {
   const raw = env.MINESCRIPT_DESKTOP_REPO;
-  if (testMode || (raw !== undefined && DISABLED.has(raw.trim().toLowerCase()))) {
+  if (testMode || isDisabled(raw)) {
     return null;
   }
   const repo = raw?.trim() || DEFAULT_DESKTOP_REPO;
@@ -114,6 +120,7 @@ export function parseConfig(argv: string[], env: Environment = process.env): Ser
     compiled,
     testMode,
     trustProxy: values["trust-proxy"] || isTruthy(env.TRUST_PROXY),
+    seedCrowd: !testMode && !values["no-crowd"] && !isDisabled(env.MINESCRIPT_CROWD),
     desktop: resolveDesktop(env, testMode),
   };
 }

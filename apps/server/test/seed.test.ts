@@ -45,7 +45,7 @@ describe("demó-seed", () => {
     const login = await demo.post("/api/auth/login", { username: "demo1", password: "demo2026" });
     expect(login.status).toBe(200);
     const list = await json<{ maps: { title: string; lampMode: string }[] }>(
-      await demo.get("/api/maps"),
+      await demo.get("/api/maps?pageSize=60"),
     );
     expect(list.maps.map((m) => m.title)).toEqual([
       ...TUTORIAL_MAPS.map((m) => m.title),
@@ -72,7 +72,7 @@ describe("demó-seed", () => {
     const demo = context.client();
     await demo.post("/api/auth/login", { username: "demo1", password: "demo2026" });
     const list = await json<{ maps: { title: string; difficulty: string | null }[] }>(
-      await demo.get("/api/maps"),
+      await demo.get("/api/maps/story"),
     );
     const campaign = new Set(TUTORIAL_MAPS.map((m) => m.title));
     const tally = new Map<string | null, number>();
