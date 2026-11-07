@@ -458,8 +458,13 @@
   visibility: hidden;
 }
 
-.board-field:has(.board-grid:focus-within) .ed-ghost[data-source="cursor"] {
+.board-field:has(.board-grid:focus-within:not([data-pointer])) .ed-ghost[data-source="cursor"] {
   visibility: visible;
+}
+
+.ed-ghost[data-tool="empty"] {
+  outline: var(--border-thin) dashed var(--c-danger-ink);
+  outline-offset: calc(var(--border-thin) * -2);
 }
 
 .ed-shroud .board-fx-art {

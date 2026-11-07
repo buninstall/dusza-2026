@@ -29,7 +29,12 @@ function Ghost({
 }) {
   const turn = tool === "robot" ? ({ "--turns": quarterIndex(dir) } as CSSProperties) : {};
   return (
-    <div className="board-fx ed-ghost" data-source={source} style={{ ...placement(pos), ...turn }}>
+    <div
+      className="board-fx ed-ghost"
+      data-source={source}
+      data-tool={tool}
+      style={{ ...placement(pos), ...turn }}
+    >
       <svg
         aria-hidden="true"
         viewBox={`0 0 ${TILE_SIZE} ${TILE_SIZE}`}

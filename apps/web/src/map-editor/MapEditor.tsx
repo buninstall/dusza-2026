@@ -185,7 +185,7 @@ export function MapEditor({
   const marks = unreachableMarks(unreachable);
   const overlay = canvasOverlay({
     draft,
-    tool,
+    tool: tools.ghostTool,
     cursor: tools.cursor,
     hover: tools.hover,
     rect: tools.rect,

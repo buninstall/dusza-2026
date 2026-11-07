@@ -2,6 +2,7 @@ import type { Pos } from "@minescript/engine";
 import { type Dispatch, type KeyboardEvent, useRef, useState } from "react";
 import { dirNames, hu } from "../i18n/hu.ts";
 import type { BoardInteraction, StrokeKind } from "../mine/board-input.ts";
+import { samePos } from "../mine/grid-nav.ts";
 import {
   type DraftMap,
   floodCells,
@@ -48,6 +49,8 @@ export function useCanvasTools({
   const [cursor, setCursor] = useState<Pos>({ row: 0, col: 0 });
   const [hover, setHover] = useState<Pos | null>(null);
   const [rect, setRect] = useState<RectDraft | null>(null);
+  const [strokeTool, setStrokeTool] = useState<Tool | null>(null);
+  const [quietCell, setQuietCell] = useState<Pos | null>(null);
   const stroke = useRef<{ tool: Tool; isActive: boolean }>({ tool, isActive: false });
   const lastPainted = useRef<Pos | null>(null);
   const draftRef = useRef(draft);
@@ -57,33 +60,48 @@ export function useCanvasTools({
 
   const label = (painted: Tool) => TOOL_LABEL[painted];
 
+  const commit = (next: DraftMap) => {
+    draftRef.current = next;
+    dispatch({ type: "commit", next });
+  };
+
+  const preview = (next: DraftMap) => {
+    draftRef.current = next;
+    dispatch({ type: "preview", next });
+  };
+
+  const beginStroke = (painted: Tool) => {
+    stroke.current = { tool: painted, isActive: true };
+    setStrokeTool(painted);
+  };
+
   const placeRobot = (pos: Pos) => {
     const current = draftRef.current;
     if (isRobotCell(current, pos)) {
       const turned = rotateRobot(current, "left");
-      dispatch({ type: "commit", next: turned });
+      commit(turned);
       announce(hu.mapEditor.robotTurned(dirNames[turned.dir]));
       return;
     }
-    dispatch({ type: "commit", next: paint(current, pos, "robot", current.dir) });
+    commit(paint(current, pos, "robot", current.dir));
     announce(hu.mapEditor.robotPlaced(pos.row + 1, pos.col + 1, dirNames[current.dir]));
   };
 
   const paintOne = (pos: Pos, painted: Tool) => {
-    dispatch({ type: "commit", next: paint(draftRef.current, pos, painted, draftRef.current.dir) });
+    commit(paint(draftRef.current, pos, painted, draftRef.current.dir));
     lastPainted.current = pos;
     announce(hu.mapEditor.painted(label(painted), pos.row + 1, pos.col + 1));
   };
 
   const fillFrom = (pos: Pos, painted: Tool) => {
     const cells = floodCells(draftRef.current, pos);
-    dispatch({ type: "commit", next: paintCells(draftRef.current, cells, painted) });
+    commit(paintCells(draftRef.current, cells, painted));
     announce(hu.mapEditor.filled(cells.length, label(painted)));
   };
 
   const commitRect = (area: RectDraft, painted: Tool) => {
     const cells = rectCells(area.anchor, area.end);
-    dispatch({ type: "commit", next: paintCells(draftRef.current, cells, painted) });
+    commit(paintCells(draftRef.current, cells, painted));
     setRect(null);
     announce(hu.mapEditor.rectPainted(cells.length, label(painted)));
   };
@@ -99,21 +117,18 @@ export function useCanvasTools({
       return;
     }
     if (mode === "rect") {
-      stroke.current = { tool: painted, isActive: true };
+      beginStroke(painted);
       setRect({ anchor: pos, end: pos });
       return;
     }
     if (isShift && lastPainted.current) {
       const cells = lineCells(lastPainted.current, pos);
-      dispatch({ type: "commit", next: paintCells(draftRef.current, cells, painted) });
+      commit(paintCells(draftRef.current, cells, painted));
       lastPainted.current = pos;
       return;
     }
-    stroke.current = { tool: painted, isActive: true };
-    dispatch({
-      type: "preview",
-      next: paint(draftRef.current, pos, painted, draftRef.current.dir),
-    });
+    beginStroke(painted);
+    preview(paint(draftRef.current, pos, painted, draftRef.current.dir));
     lastPainted.current = pos;
   };
 
@@ -127,10 +142,7 @@ export function useCanvasTools({
     }
     const from = lastPainted.current;
     const cells = from ? lineCells(from, pos) : [pos];
-    dispatch({
-      type: "preview",
-      next: paintCells(draftRef.current, cells, stroke.current.tool),
-    });
+    preview(paintCells(draftRef.current, cells, stroke.current.tool));
     lastPainted.current = pos;
   };
 
@@ -139,6 +151,8 @@ export function useCanvasTools({
       return;
     }
     stroke.current = { ...stroke.current, isActive: false };
+    setStrokeTool(null);
+    setQuietCell(rectRef.current?.end ?? lastPainted.current);
     if (rectRef.current) {
       commitRect(rectRef.current, stroke.current.tool);
       return;
@@ -173,7 +187,7 @@ export function useCanvasTools({
     }
     if (event.key === "r" || event.key === "R") {
       const turned = rotateRobot(draftRef.current, event.shiftKey ? "right" : "left");
-      dispatch({ type: "commit", next: turned });
+      commit(turned);
       announce(hu.mapEditor.robotTurned(dirNames[turned.dir]));
       return true;
     }
@@ -211,7 +225,7 @@ export function useCanvasTools({
     }
     if (isShift && mode === "brush" && tool !== "robot") {
       stroke.current = { tool, isActive: false };
-      dispatch({ type: "preview", next: paint(draftRef.current, pos, tool, draftRef.current.dir) });
+      preview(paint(draftRef.current, pos, tool, draftRef.current.dir));
       lastPainted.current = pos;
     }
   };
@@ -229,8 +243,21 @@ export function useCanvasTools({
     onStrokeStart,
     onStrokeMove,
     onStrokeEnd,
-    onHover: setHover,
+    onHover: (pos) => {
+      setHover(pos);
+      setQuietCell((quiet) => (quiet && pos && samePos(quiet, pos) ? quiet : null));
+    },
   };
 
-  return { cursor, setCursor, hover, rect, interaction, onLetter };
+  const shownHover = hover && quietCell && samePos(hover, quietCell) ? null : hover;
+
+  return {
+    cursor,
+    setCursor,
+    hover: shownHover,
+    rect,
+    ghostTool: strokeTool ?? tool,
+    interaction,
+    onLetter,
+  };
 }

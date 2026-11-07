@@ -25,6 +25,7 @@ export type BoardInteraction = {
 
 const PRIMARY = 0;
 const SECONDARY = 2;
+const MENU_GRACE_MS = 400;
 
 function cellPos(element: Element | null): Pos | null {
   const cell = element?.closest<HTMLElement>("[data-row]");
@@ -32,6 +33,10 @@ function cellPos(element: Element | null): Pos | null {
     return null;
   }
   return { row: Number(cell.dataset.row), col: Number(cell.dataset.col) };
+}
+
+function blockMenu(event: Event): void {
+  event.preventDefault();
 }
 
 function sameCell(a: Pos | null, b: Pos | null): boolean {
@@ -63,6 +68,7 @@ export function useBoardInput({ gridRef, rows, cols, interaction }: InputSetup) 
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLTableElement>) => {
+    gridRef.current?.removeAttribute("data-pointer");
     if (interaction?.onKey(event, focus)) {
       event.preventDefault();
       return;
@@ -82,17 +88,35 @@ export function useBoardInput({ gridRef, rows, cols, interaction }: InputSetup) 
       return;
     }
     event.preventDefault();
+    if (gridRef.current?.hasAttribute("data-painting")) {
+      return;
+    }
+    const isErase = event.button === SECONDARY;
+    if (isErase) {
+      window.addEventListener("contextmenu", blockMenu, { once: true, capture: true });
+    }
+    gridRef.current?.setAttribute("data-pointer", "true");
     lastCell.current = pos;
     focusCell(pos);
-    interaction.onStrokeStart(pos, event.button === SECONDARY ? "erase" : "paint", event.shiftKey);
+    interaction.onStrokeStart(pos, isErase ? "erase" : "paint", event.shiftKey);
     const end = () => {
+      if (isErase) {
+        window.setTimeout(
+          () => window.removeEventListener("contextmenu", blockMenu, { capture: true }),
+          MENU_GRACE_MS,
+        );
+      }
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+      window.removeEventListener("blur", end);
       lastCell.current = null;
       gridRef.current?.removeAttribute("data-painting");
       interaction.onStrokeEnd();
     };
     gridRef.current?.setAttribute("data-painting", "true");
-    window.addEventListener("pointerup", end, { once: true });
-    window.addEventListener("pointercancel", end, { once: true });
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    window.addEventListener("blur", end);
   };
 
   const onPointerMove = (event: PointerEvent<HTMLTableElement>) => {

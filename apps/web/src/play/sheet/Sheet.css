@@ -79,14 +79,28 @@
 }
 
 .drawer-popover {
+  display: flex;
+  flex-direction: column;
   max-width: min(26rem, calc(100vw - var(--space-5)));
+  overflow: hidden;
+}
+
+.drawer-popover .overlay-menu {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .drawer-item {
+  display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 2px;
-  padding-block: var(--space-2);
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  outline: none;
 }
 
 .drawer-item-title {
@@ -102,6 +116,7 @@
   color: var(--c-text);
   font: var(--type-mono-sm);
   white-space: pre;
+  overflow-x: auto;
 }
 
 .drawer-code [data-token="keyword"] {
@@ -126,10 +141,22 @@
   color: var(--c-text-muted);
 }
 
+.drawer-item[data-hovered],
 .drawer-item[data-focused] {
   background: var(--c-surface);
   color: var(--c-text);
   box-shadow: inset 4px 0 0 var(--c-accent);
+}
+
+.drawer-item[data-hovered] .drawer-code,
+.drawer-item[data-focused] .drawer-code {
+  border-color: var(--c-accent);
+}
+
+.drawer-item:focus-visible,
+.drawer-item[data-focus-visible] {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: calc(var(--focus-width) * -1);
 }
 
 .sheet-editor {

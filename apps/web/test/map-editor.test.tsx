@@ -141,6 +141,38 @@ describe("új térkép", () => {
     expect(cell("3. sor, 5. oszlop: üres kamra")).toBeTruthy();
   });
 
+  test("jobb gombos húzás a kezdő mezőt is törli, és nem hagy szellemképet", async () => {
+    await openNew();
+    const grid = screen.getByRole("grid");
+    const paintEnd = cell("4. sor, 6. oszlop: üres kamra");
+    document.elementFromPoint = vi.fn(() => paintEnd);
+    fireEvent.pointerDown(cell("4. sor, 2. oszlop: üres kamra"), { button: 0 });
+    fireEvent.pointerMove(paintEnd, { clientX: 1, clientY: 1 });
+    fireEvent.pointerUp(window);
+    expect(cell("4. sor, 2. oszlop: fal")).toBeTruthy();
+    expect(cell("4. sor, 6. oszlop: fal")).toBeTruthy();
+
+    const eraseStart = cell("4. sor, 2. oszlop: fal");
+    const eraseEnd = cell("4. sor, 4. oszlop: fal");
+    fireEvent.pointerDown(eraseStart, { button: 2 });
+    document.elementFromPoint = vi.fn(() => eraseEnd);
+    fireEvent.pointerMove(eraseEnd, { clientX: 1, clientY: 1 });
+    expect(document.querySelector('.ed-ghost[data-source="hover"]')?.getAttribute("data-tool")).toBe(
+      "empty",
+    );
+    fireEvent.pointerUp(window);
+    const menu = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+    document.body.dispatchEvent(menu);
+    expect(menu.defaultPrevented).toBe(true);
+
+    expect(cell("4. sor, 2. oszlop: üres kamra")).toBeTruthy();
+    expect(cell("4. sor, 3. oszlop: üres kamra")).toBeTruthy();
+    expect(cell("4. sor, 4. oszlop: üres kamra")).toBeTruthy();
+    expect(cell("4. sor, 5. oszlop: fal")).toBeTruthy();
+    expect(grid.getAttribute("data-pointer")).toBe("true");
+    expect(document.querySelector('.ed-ghost[data-source="hover"]')).toBeNull();
+  });
+
   test("egérrel: téglalap húzása, kitöltés, robot elhelyezése és forgatása, rávezetett előnézet", async () => {
     const { user } = await openNew();
     const drag = (from: HTMLElement, to: HTMLElement) => {
