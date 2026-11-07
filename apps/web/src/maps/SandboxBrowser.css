@@ -93,6 +93,9 @@
 
 .maps-plate.maps-plate-sandbox {
   --plate-left: 17rem;
+
+  min-height: calc(3 * var(--plate-control) + 2 * var(--space-2) + 2 * var(--space-6) + 28px);
+  padding-block: var(--space-6);
 }
 
 .maps-plate-sandbox .tabs-tab {
