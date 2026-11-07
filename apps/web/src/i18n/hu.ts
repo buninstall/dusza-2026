@@ -187,7 +187,7 @@ export const hu = {
     usernameCharset: "A felhasználónévben csak angol betű, számjegy és aláhúzás állhat.",
     passwordRequired: "Add meg a jelszót.",
     passwordShort: "A jelszó legalább 8 karakter legyen.",
-    sceneCaption: "Bemutató futás",
+    shaftPlate: "Akna 07",
   },
   maps: {
     title: "Pályák",

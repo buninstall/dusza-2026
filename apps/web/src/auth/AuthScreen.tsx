@@ -1,39 +1,34 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import { useDocumentTitle } from "../components/LocationPlate.tsx";
-import { HazardStripe } from "../pixel/HazardStripe.tsx";
+import { hu } from "../i18n/hu.ts";
 import { Logo } from "../pixel/Logo.tsx";
-import { PixelText } from "../pixel/PixelText.tsx";
-import { AttractScene } from "./AttractScene.tsx";
+import { Sign } from "../pixel/PixelText.tsx";
+import { LampScene } from "./LampScene.tsx";
 import "./AuthScreen.css";
 
-type AuthScreenProps = { plate: string; title: string; children: ReactNode; footer: ReactNode };
+type AuthScreenProps = { title: string; children: ReactNode; footer: ReactNode };
 
-export function AuthScreen({ plate, title, children, footer }: AuthScreenProps) {
+export function AuthScreen({ title, children, footer }: AuthScreenProps) {
   useDocumentTitle(title);
+  const panelRef = useRef<HTMLElement>(null);
   return (
-    <main id="main" tabIndex={-1} className="auth">
-      <section aria-labelledby="auth-title" className="auth-console">
-        <HazardStripe />
+    <main id="main" tabIndex={-1} className="auth" data-theme="tarna">
+      <LampScene panelRef={panelRef} plate={hu.auth.shaftPlate} />
+      <section ref={panelRef} aria-labelledby="auth-title" className="auth-console">
         <div className="auth-console-body">
-          <h1 id="auth-title" className="visually-hidden">
-            {title}
-          </h1>
-          <span aria-hidden="true" className="auth-plate">
-            <PixelText text={plate} scale={4} />
+          <span className="auth-logo" data-size="lg" aria-hidden="true">
+            <Logo scale={4} lamp="idle" />
           </span>
+          <span className="auth-logo" data-size="sm" aria-hidden="true">
+            <Logo scale={2} lamp="idle" />
+          </span>
+          <h1 id="auth-title" className="auth-title">
+            <Sign text={title} scale={3} />
+          </h1>
           {children}
           <div className="auth-footer">{footer}</div>
         </div>
       </section>
-      <div className="auth-showcase">
-        <span className="auth-logo" data-size="lg">
-          <Logo scale={4} lamp="idle" />
-        </span>
-        <span className="auth-logo" data-size="sm">
-          <Logo scale={2} lamp="idle" />
-        </span>
-        <AttractScene />
-      </div>
     </main>
   );
 }

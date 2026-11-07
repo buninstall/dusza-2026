@@ -11,11 +11,7 @@ function RegisterPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   return (
-    <AuthScreen
-      plate={hu.signs.register}
-      title={hu.auth.registerTitle}
-      footer={<Link to="/login">{hu.auth.toLogin}</Link>}
-    >
+    <AuthScreen title={hu.auth.registerTitle} footer={<Link to="/login">{hu.auth.toLogin}</Link>}>
       <CredentialsForm
         isNewAccount
         submitLabel={hu.auth.submitRegister}

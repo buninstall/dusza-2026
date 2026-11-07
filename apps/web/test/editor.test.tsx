@@ -2,10 +2,8 @@ import { CompletionContext } from "@codemirror/autocomplete";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import type { Diagnostic } from "@minescript/engine";
-import { act, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { AttractScene } from "../src/auth/AttractScene.tsx";
-import { DEMO_MAP, DEMO_PROGRAM, DEMO_RUN } from "../src/auth/demo-run.ts";
 import { completionSource } from "../src/editor/completion.ts";
 import { lineMarks, scrollToLine, setErrorLines, setExecLine } from "../src/editor/exec-line.ts";
 import { hoverSource } from "../src/editor/hover.ts";
@@ -146,23 +144,5 @@ describe("szerkesztőbővítmények", () => {
       </EngineContext>,
     );
     expect(screen.getByText(realEngine.version())).toBeTruthy();
-  });
-});
-
-describe("bemutató jelenet", () => {
-  test("a demó-futás minden sorhoz egy eseményt ad, és körbejár", () => {
-    expect(DEMO_RUN.events).toHaveLength(DEMO_PROGRAM.length);
-    expect(DEMO_RUN.gold).toBe(3);
-    for (const event of DEMO_RUN.events) {
-      expect(event.robot.pos.row).toBeLessThan(DEMO_MAP.rows);
-      expect(DEMO_MAP.cells[event.robot.pos.row]?.[event.robot.pos.col]).not.toBe("wall");
-    }
-    vi.useFakeTimers();
-    const { container } = render(<AttractScene />);
-    expect(container.querySelector("figure")?.getAttribute("aria-hidden")).toBe("true");
-    act(() => {
-      vi.advanceTimersByTime(720 * 3);
-    });
-    expect(container.querySelector('[data-current="true"]')?.textContent).toContain("turn by 3");
   });
 });

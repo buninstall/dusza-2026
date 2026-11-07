@@ -1,7 +1,7 @@
 import type { PixelRows } from "../../pixel/pixel-art.ts";
 import { drawRows, type Palette, signRows, toneColor } from "./canvas-art.ts";
 
-export const FRAME = { side: 7, top: 12, bottom: 10 } as const;
+const FRAME = { side: 7, top: 12, bottom: 10 } as const;
 
 export type Box = { x: number; y: number; w: number; h: number };
 
@@ -54,7 +54,13 @@ export function paintFrame(
   fill("steel-edge", hx - 1, hy - 1, hw + 2, 6);
   for (let px = 0; px < hw; px += 1) {
     for (let py = 0; py < 4; py += 1) {
-      fill((px + py) % HAZARD_PERIOD < HAZARD_PERIOD / 2 ? "alert" : "alert-ink", hx + px, hy + py, 1, 1);
+      fill(
+        (px + py) % HAZARD_PERIOD < HAZARD_PERIOD / 2 ? "alert" : "alert-ink",
+        hx + px,
+        hy + py,
+        1,
+        1,
+      );
     }
   }
 

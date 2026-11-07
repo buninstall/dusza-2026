@@ -22,13 +22,14 @@ function DemoAccounts({ onFill }: { onFill: (credentials: Credentials) => void }
       </h2>
       <ul className="auth-demo-list">
         {hu.auth.demoAccounts.map((account) => (
-          <li key={account.username} className="auth-demo-row">
+          <li key={account.username}>
             <Button
               size="sm"
               icon="key"
+              aria-label={hu.auth.demoFill(account.username)}
               onPress={() => onFill({ username: account.username, password: account.password })}
             >
-              {hu.auth.demoFill(account.username)}
+              {account.username}
             </Button>
           </li>
         ))}

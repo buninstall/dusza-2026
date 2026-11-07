@@ -104,7 +104,8 @@ export function generateMine(options: MineOptions): Mine {
   for (let b = 0; b < count && ring.length > 0; b += 1) {
     const startCell = ring[Math.floor(((b + rand() * 0.6) / count) * ring.length) % ring.length];
     if (!startCell) continue;
-    let [dc, dr] = options.upward && rand() < UPWARD_CHANCE ? [0, -1] : outwardStep(startCell, hole);
+    let [dc, dr] =
+      options.upward && rand() < UPWARD_CHANCE ? [0, -1] : outwardStep(startCell, hole);
     let [c, r] = startCell;
     const length = 3 + Math.floor(rand() * 6);
     const isWide = rand() < WIDE_CHANCE;

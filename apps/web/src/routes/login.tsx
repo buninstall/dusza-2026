@@ -16,7 +16,6 @@ function LoginPage() {
   const navigate = useNavigate();
   return (
     <AuthScreen
-      plate={hu.signs.login}
       title={hu.auth.loginTitle}
       footer={<Link to="/register">{hu.auth.toRegister}</Link>}
     >
