@@ -2,6 +2,7 @@ import { useMatches, useRouterState } from "@tanstack/react-router";
 import { createContext, type ReactNode, useContext } from "react";
 import type { SessionUser } from "../auth/session.ts";
 import { Link } from "../components/ui/Link.tsx";
+import { DesktopDownload } from "../desktop/DesktopDownload.tsx";
 import { hu } from "../i18n/hu.ts";
 import { HazardStripe } from "../pixel/HazardStripe.tsx";
 import type { IconName } from "../pixel/icons.ts";
@@ -92,6 +93,7 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
             </ul>
           </nav>
           <div className="shell-tools">
+            <DesktopDownload />
             <SoundToggle />
             <UserMenu user={user} />
           </div>

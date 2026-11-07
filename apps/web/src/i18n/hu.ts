@@ -164,6 +164,20 @@ export const hu = {
     signedInAs: (username: string) => `Bejelentkezve: ${username}`,
     logout: "Kijelentkezés",
   },
+  desktop: {
+    label: "Asztali app",
+    menuFor: (version: string) => `Asztali alkalmazás letöltése, ${version}. verzió`,
+    version: (version: string) => `MineScript Desktop ${version}`,
+    recommended: (platform: string) => `${platform} (ajánlott)`,
+    platforms: {
+      mac: "macOS (.dmg)",
+      windows: "Windows telepítő (.exe)",
+      "windows-msi": "Windows MSI (.msi)",
+      linux: "Linux AppImage",
+      "linux-deb": "Linux Debian/Ubuntu (.deb)",
+      "linux-rpm": "Linux Fedora (.rpm)",
+    },
+  },
   auth: {
     loginTitle: "Bejelentkezés",
     registerTitle: "Regisztráció",
