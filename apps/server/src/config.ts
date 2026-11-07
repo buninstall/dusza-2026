@@ -8,6 +8,7 @@ import {
   parseServerUrl,
   temporaryDatabaseName,
 } from "./db/url.ts";
+import { DEFAULT_DESKTOP_REPO, isValidRepo } from "./services/desktop.ts";
 
 export const DEFAULT_PORT = 8080;
 export const PORT_ATTEMPTS = 10;
@@ -22,7 +23,10 @@ export type ServerConfig = {
   compiled: boolean;
   testMode: boolean;
   trustProxy: boolean;
+  desktop: DesktopConfig | null;
 };
+
+export type DesktopConfig = { repo: string; token: string | null };
 
 export type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -77,6 +81,20 @@ function readArguments(argv: string[]) {
   }
 }
 
+const DISABLED = new Set(["0", "off", "false", "no"]);
+
+function resolveDesktop(env: Environment, testMode: boolean): DesktopConfig | null {
+  const raw = env.MINESCRIPT_DESKTOP_REPO;
+  if (testMode || (raw !== undefined && DISABLED.has(raw.trim().toLowerCase()))) {
+    return null;
+  }
+  const repo = raw?.trim() || DEFAULT_DESKTOP_REPO;
+  if (!isValidRepo(repo)) {
+    throw new Error(`Érvénytelen MINESCRIPT_DESKTOP_REPO: ${repo} (formátum: tulajdonos/repó)`);
+  }
+  return { repo, token: env.MINESCRIPT_GITHUB_TOKEN?.trim() || null };
+}
+
 export function parseConfig(argv: string[], env: Environment = process.env): ServerConfig {
   const { values } = readArguments(argv);
   const compiled = isCompiledBinary();
@@ -96,5 +114,6 @@ export function parseConfig(argv: string[], env: Environment = process.env): Ser
     compiled,
     testMode,
     trustProxy: values["trust-proxy"] || isTruthy(env.TRUST_PROXY),
+    desktop: resolveDesktop(env, testMode),
   };
 }

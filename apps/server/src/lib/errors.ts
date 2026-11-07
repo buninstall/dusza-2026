@@ -27,4 +27,5 @@ export const messages = {
   csrf: "A kérés forrása nem engedélyezett.",
   malformedJson: "A kérés törzse nem érvényes JSON.",
   payloadTooLarge: "A kérés túl nagy (legfeljebb 1 MiB lehet).",
+  desktopUnavailable: "Az asztali alkalmazás letöltése most nem érhető el. Próbáld újra később.",
 } as const;

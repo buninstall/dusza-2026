@@ -10,6 +10,7 @@ import { loadEngine } from "./engine.ts";
 import type { Deps } from "./env.ts";
 import { behindProxy } from "./lib/request.ts";
 import { DEMO_ACCOUNTS, type SeedReport, seedDemo } from "./seed/index.ts";
+import { createDesktopReleases } from "./services/desktop.ts";
 import { loadStaticHandler } from "./static.ts";
 
 function isAddressInUse(error: unknown): boolean {
@@ -88,6 +89,7 @@ async function start(config: ServerConfig, database: Database) {
     engine: await loadEngine(),
     limiter: createLoginLimiter({ ...LOGIN_LIMIT, now: Date.now }),
     now: Date.now,
+    desktop: config.desktop ? createDesktopReleases(config.desktop) : undefined,
   };
   printSeedReport(await seedDemo(deps, { reset: config.resetDemo }));
   const app = createApp(

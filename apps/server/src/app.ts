@@ -6,6 +6,7 @@ import type { AppEnv, Deps } from "./env.ts";
 import { apiError, messages } from "./lib/errors.ts";
 import { adminRoutes } from "./routes/admin.ts";
 import { authRoutes } from "./routes/auth.ts";
+import { desktopRoutes } from "./routes/desktop.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { mapRoutes } from "./routes/maps.ts";
 import { meRoutes } from "./routes/me.ts";
@@ -23,7 +24,8 @@ export function buildApi(deps: Deps) {
     .route("/runs", runRoutes(deps))
     .route("/story", storyRoutes(deps))
     .route("/me", meRoutes(deps))
-    .route("/admin", adminRoutes(deps));
+    .route("/admin", adminRoutes(deps))
+    .route("/desktop", desktopRoutes(deps));
 }
 
 export type AppType = ReturnType<typeof buildApi>;
