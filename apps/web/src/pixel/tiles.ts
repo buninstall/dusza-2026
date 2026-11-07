@@ -2,16 +2,16 @@ import { type PixelRows, rotateTimes, type Sprite, sprite, TRANSPARENT } from ".
 
 export const TILE_SIZE = 16;
 
-const FLOOR_TONES = { f: "floor", l: "floor-lo", h: "floor-hi", s: "seam" } as const;
-const WALL_TONES = { h: "wall-hi", s: "wall", d: "wall-lo", m: "mortar" } as const;
-const ORE_TONES = {
+export const FLOOR_TONES = { f: "floor", l: "floor-lo", h: "floor-hi", s: "seam" } as const;
+export const WALL_TONES = { h: "wall-hi", s: "wall", d: "wall-lo", m: "mortar" } as const;
+export const ORE_TONES = {
   o: "ore-edge",
   g: "ore",
   y: "ore-hi",
   b: "ore-lo",
   w: "glint",
 } as const;
-const ROBOT_TONES = {
+export const ROBOT_TONES = {
   k: "steel-edge",
   e: "steel-hi",
   a: "steel",
@@ -23,7 +23,7 @@ const ROBOT_TONES = {
   B: "beam",
 } as const;
 
-const FLOOR_ART: readonly PixelRows[] = [
+export const FLOOR_ART: readonly PixelRows[] = [
   [
     "fffffffffffffffs",
     "fffflfffffffhffs",
@@ -80,7 +80,7 @@ const FLOOR_ART: readonly PixelRows[] = [
   ],
 ];
 
-const WALL_ART: PixelRows = [
+export const WALL_ART: PixelRows = [
   "hhhhhhsmhhhhhhsm",
   "hsssssdmhsssssdm",
   "hsssmsdmhsssssdm",
@@ -99,7 +99,7 @@ const WALL_ART: PixelRows = [
   "mmmmmmmmmmmmmmmm",
 ];
 
-const GOLD_ART: PixelRows = [
+export const GOLD_ART: PixelRows = [
   "................",
   "................",
   "...........w....",
@@ -118,7 +118,7 @@ const GOLD_ART: PixelRows = [
   "................",
 ];
 
-const DUG_ART: PixelRows = [
+export const DUG_ART: PixelRows = [
   "................",
   "................",
   "................",
@@ -173,7 +173,7 @@ function canvas(rows: Readonly<Record<number, string>>): string[] {
   return Array.from({ length: TILE_SIZE }, (_, y) => rows[y] ?? EMPTY_ROW);
 }
 
-const BURST_ART: readonly PixelRows[] = [
+export const BURST_ART: readonly PixelRows[] = [
   canvas({
     5: ".......ww.......",
     6: ".......yy.......",
@@ -219,7 +219,7 @@ const CONE_ART: PixelRows = [
   "......B.B.......",
 ];
 
-const SCAN_ART: PixelRows = canvas({
+export const SCAN_ART: PixelRows = canvas({
   0: "ssss........ssss",
   1: "s..............s",
   2: "s..............s",
@@ -289,7 +289,7 @@ const RUBBLE_ART: PixelRows = canvas({
   15: "mmmmmmmmmmmmmmmm",
 });
 
-const NUGGET_ART: PixelRows = [
+export const NUGGET_ART: PixelRows = [
   "................",
   "................",
   "................",
