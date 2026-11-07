@@ -858,6 +858,12 @@ export const hu = {
     hit: (line: number) => `Megállt ${articleFor(line)} ${line}. sor töréspontján.`,
     gutterTitle: "Kattints a sorszámra: töréspont ki/be (F9)",
   },
+  editor: {
+    fold: {
+      open: "Blokk összecsukása (Ctrl+Shift+[)",
+      closed: "Blokk kinyitása (Ctrl+Shift+])",
+    },
+  },
   trial: {
     button: "Próbajáték",
     buttonHint: "Játssz a pályán mentés nélkül",

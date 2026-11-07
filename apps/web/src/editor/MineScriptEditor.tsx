@@ -3,7 +3,9 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { nextDiagnostic, previousDiagnostic } from "@codemirror/lint";
 import { Compartment, EditorSelection, EditorState, Prec } from "@codemirror/state";
 import {
+  crosshairCursor,
   drawSelection,
+  dropCursor,
   EditorView,
   highlightActiveLine,
   highlightActiveLineGutter,
@@ -12,14 +14,17 @@ import {
   keymap,
   lineNumbers,
   placeholder as placeholderExtension,
+  rectangularSelection,
 } from "@codemirror/view";
 import type { FormatResult, TextEdit } from "@minescript/engine";
 import { type Ref, useEffect, useImperativeHandle, useRef } from "react";
 import { useEngine } from "../engine/useEngine.ts";
+import { hu } from "../i18n/hu.ts";
 import { useKeyboardFocusRing } from "../lib/input-modality.ts";
 import { breakpoints, toggleBreakpoint } from "./breakpoints.ts";
 import { mineScriptCompletion } from "./completion.ts";
 import { errorLens } from "./error-lens.ts";
+import { mineScriptFolding } from "./folding.ts";
 import "./MineScriptEditor.css";
 import {
   lineMarks,
@@ -251,9 +256,14 @@ export function MineScriptEditor({
                 }
               : {},
           ),
+          mineScriptFolding(hu.editor.fold),
           highlightActiveLineGutter(),
           highlightActiveLine(),
+          EditorState.allowMultipleSelections.of(true),
           drawSelection(),
+          dropCursor(),
+          rectangularSelection(),
+          crosshairCursor(),
           history(),
           highlightWhitespace(),
           highlightTrailingWhitespace(),
