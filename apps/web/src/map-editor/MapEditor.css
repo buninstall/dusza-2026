@@ -310,11 +310,9 @@
 
 .ed-drop {
   position: relative;
-  flex: 1 1 0;
+  flex: none;
   display: grid;
-  grid-template-rows: minmax(0, 1fr);
   min-width: 0;
-  min-height: 0;
   padding: var(--space-3);
   outline: none;
 }
@@ -721,6 +719,9 @@
   }
 
   .ed-drop {
+    flex: 1 1 0;
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 0;
     container-type: size;
   }
 }
