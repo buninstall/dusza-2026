@@ -123,7 +123,6 @@ export const hu = {
     name: "MineScript",
     skipToContent: "Ugrás a tartalomra",
     pageChanged: (title: string) => `Új oldal: ${title}`,
-    engineLoading: "A MineScript-motor indul…",
     engineFailed:
       "A MineScript-motor nem tölthető be. Frissítsd az oldalt, vagy próbáld másik böngészővel.",
     unexpected: "Váratlan hiba történt.",

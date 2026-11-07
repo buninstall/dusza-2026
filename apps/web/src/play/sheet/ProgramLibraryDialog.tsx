@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { Form } from "react-aria-components";
-import { Loading } from "../../app/StatusScreens.tsx";
 import { Notice } from "../../components/Notice.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { ConfirmDialog, ModalShell } from "../../components/ui/Dialog.tsx";
@@ -102,7 +101,7 @@ function LibraryList({
     return <Notice tone="error" title={errorMessage(programs.error, hu.programs.loadFailed)} />;
   }
   if (programs.isPending) {
-    return <Loading />;
+    return null;
   }
   if (programs.data.programs.length === 0) {
     return <p className="library-meta">{hu.programs.empty}</p>;

@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loading } from "../app/StatusScreens.tsx";
 import "../components/DataTable.css";
 import { EmptyState } from "../components/EmptyState.tsx";
 import { Led } from "../components/Led.tsx";
@@ -111,7 +110,6 @@ export function MyRunsPage({ page, onPageChange }: MyRunsPageProps) {
       {error ? (
         <LoadFailed error={error} fallback={hu.runs.loadFailed} onRetry={() => void refetch()} />
       ) : null}
-      {!data && !error ? <Loading /> : null}
       {data?.runs.length === 0 ? (
         <div className="runs-empty">
           <EmptyState

@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Loading } from "../app/StatusScreens.tsx";
 import { LoadFailed } from "../components/LoadFailed.tsx";
 import { Notice } from "../components/Notice.tsx";
 import { toast } from "../components/ui/Toast.tsx";
@@ -128,5 +127,5 @@ export function EditMapPage({ mapId }: { mapId: number }) {
       <LoadFailed error={error} fallback={hu.play.loadFailed} onRetry={() => void refetch()} />
     );
   }
-  return data ? <EditMapForm mapId={mapId} detail={data} /> : <Loading />;
+  return data ? <EditMapForm mapId={mapId} detail={data} /> : null;
 }

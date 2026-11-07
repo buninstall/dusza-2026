@@ -3,7 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Loading, NotFound, RouteError } from "./app/StatusScreens.tsx";
+import { NotFound, RouteError } from "./app/StatusScreens.tsx";
 import { sessionQuery } from "./auth/session.ts";
 import { preloadEngine } from "./engine/EngineProvider.tsx";
 import { applyCursor, initialCursor } from "./lib/cursor.ts";
@@ -12,8 +12,6 @@ import { keepScrollbarGap } from "./lib/scrollbar-gap.ts";
 import { applyTheme } from "./lib/theme.ts";
 import { startPixelClock } from "./pixel/pixel-clock.ts";
 import { routeTree } from "./routeTree.gen.ts";
-
-const PENDING_MS = 300;
 
 const SIGNED_OUT_PATHS = new Set(["/login", "/register"]);
 
@@ -34,8 +32,6 @@ const router = createRouter({
   scrollRestoration: true,
   defaultNotFoundComponent: NotFound,
   defaultErrorComponent: RouteError,
-  defaultPendingComponent: () => <Loading />,
-  defaultPendingMs: PENDING_MS,
 });
 
 declare module "@tanstack/react-router" {

@@ -11,7 +11,6 @@ import {
   useLayoutEffect,
 } from "react";
 import { holdReady } from "../app/readiness.ts";
-import { EngineLoading } from "../app/StatusScreens.tsx";
 import { Notice } from "../components/Notice.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -83,7 +82,7 @@ export function EngineProvider({ children }: { children: ReactNode }) {
   }, []);
   return (
     <EngineErrorBoundary>
-      <Suspense fallback={<EngineLoading />}>
+      <Suspense fallback={null}>
         <EngineGate>{children}</EngineGate>
       </Suspense>
     </EngineErrorBoundary>

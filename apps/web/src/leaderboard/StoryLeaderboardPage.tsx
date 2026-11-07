@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import "../components/DataTable.css";
 import { EmptyState } from "../components/EmptyState.tsx";
@@ -87,9 +86,7 @@ export function StoryLeaderboardPage({ user }: { user: SessionUser }) {
           fallback={story.leaderboardEmpty}
           onRetry={() => void refetch()}
         />
-      ) : isPending ? (
-        <Loading />
-      ) : data.entries.length === 0 ? (
+      ) : isPending ? null : data.entries.length === 0 ? (
         <EmptyState text={story.leaderboardEmpty} />
       ) : (
         <BoardTable data={data} user={user} />

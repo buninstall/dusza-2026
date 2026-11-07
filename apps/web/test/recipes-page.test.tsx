@@ -99,10 +99,12 @@ describe("kézikönyv", () => {
     expect(within(pager).getByRole("link", { name: /^Előző\s*Az első program$/ })).toBeTruthy();
     const user = userEvent.setup();
     await user.click(
-      within(pager).getByRole("link", { name: /^Következő\s*A program szabályai$/ }),
+      within(pager).getByRole("link", {
+        name: /^Következő\s*Sötét bányák: Lámpafény és Vaksötét$/,
+      }),
     );
-    await waitFor(() => expect(router.state.location.hash).toBe("felepites"));
-    const heading = await screen.findByRole("heading", { level: 2, name: /A program szabályai/ });
+    await waitFor(() => expect(router.state.location.hash).toBe("lampafeny"));
+    const heading = await screen.findByRole("heading", { level: 2, name: /Sötét bányák/ });
     await waitFor(() => expect(document.activeElement).toBe(heading));
   });
 
@@ -110,7 +112,9 @@ describe("kézikönyv", () => {
     renderApp("/manual");
     const pager = await screen.findByRole("navigation", { name: "Lapozás a fejezetek között" });
     expect(within(pager).getAllByRole("link")).toHaveLength(1);
-    expect(within(pager).getByRole("link", { name: /^Következő\s*Az első program$/ })).toBeTruthy();
+    expect(
+      within(pager).getByRole("link", { name: /^Következő\s*Homokozó és Történet$/ }),
+    ).toBeTruthy();
   });
 
   test("a fejezet próbapadja lejátssza a példát a mini pályán", async () => {

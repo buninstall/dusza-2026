@@ -1,4 +1,5 @@
 import { act, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
 import { toast } from "../src/components/ui/Toast.tsx";
 import { CHAPTERS } from "../src/i18n/hu-story.ts";
@@ -272,6 +273,39 @@ describe("futásaim", () => {
     );
   });
 
+  test("kilencesével lapoz, számokkal és előre-hátra gombbal", async () => {
+    const runs = Array.from({ length: 20 }, (_, index) => ({
+      id: index + 1,
+      mapId: 1,
+      mapTitle: `Pálya ${index + 1}`,
+      mapVersionId: 11,
+      version: 1,
+      gold: 1,
+      steps: 5,
+      outcomeKind: "ok",
+      errorCode: null,
+      errorLine: null,
+      createdAt: index + 1,
+    }));
+    respond("GET", "/me/runs", { runs });
+    const { router } = renderApp("/runs");
+    const user = userEvent.setup();
+    expect(await screen.findByRole("link", { name: "Pálya 1" })).toBeTruthy();
+    expect(screen.getAllByRole("row")).toHaveLength(10);
+    expect(screen.getByText("1–9 / 20")).toBeTruthy();
+    const pager = screen.getByRole("navigation", { name: "Lapozás" });
+    expect(within(pager).getByRole("button", { name: "Előző" }).hasAttribute("disabled")).toBe(
+      true,
+    );
+    await user.click(within(pager).getByRole("button", { name: "3. oldal" }));
+    await waitFor(() => expect(router.state.location.search).toEqual({ page: 3 }));
+    expect(await screen.findByRole("link", { name: "Pálya 19" })).toBeTruthy();
+    expect(screen.getByText("19–20 / 20")).toBeTruthy();
+    await user.click(within(pager).getByRole("button", { name: "Előző" }));
+    expect(await screen.findByRole("link", { name: "Pálya 10" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Pálya 1" })).toBeNull();
+  });
+
   test("üres napló", async () => {
     respond("GET", "/me/runs", { runs: [] });
     renderApp("/runs");
@@ -355,6 +389,17 @@ describe("adminisztráció", () => {
 });
 
 describe("keret, kézikönyv és hibaképernyők", () => {
+  test("a kézikönyv a hangerő mellett, csukott könyv ikonnal nyílik", async () => {
+    respond("GET", "/maps", { maps: [] });
+    renderApp("/maps");
+    const help = await screen.findByRole("navigation", { name: "Kézikönyv" });
+    expect(within(help).getByRole("link", { name: "Kézikönyv" }).getAttribute("href")).toBe(
+      "/manual",
+    );
+    const main = screen.getByRole("navigation", { name: "Fő navigáció" });
+    expect(within(main).queryByRole("link", { name: /Kézikönyv/ })).toBeNull();
+  });
+
   test("a kézikönyv fejezetei választhatók, a kód kiemelt", async () => {
     renderApp("/manual#lepesek");
     const chapters = await screen.findByRole("navigation", { name: "Tartalom" });

@@ -1,5 +1,4 @@
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import "../components/DataTable.css";
 import { LocationPlate } from "../components/LocationPlate.tsx";
@@ -106,7 +105,6 @@ export function AdminPage({ me }: { me: SessionUser }) {
       {error ? (
         <Notice tone="error" title={errorMessage(error, hu.admin.loadFailed)} live="alert" />
       ) : null}
-      {!data && !error ? <Loading /> : null}
       {data ? (
         <div className="data-table">
           <table className="data-table-grid">

@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, type ReactNode, type RefObject, useRef, useState } from "react";
-import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import { EmptyState } from "../components/EmptyState.tsx";
 import { LoadFailed } from "../components/LoadFailed.tsx";
@@ -136,7 +135,7 @@ function ListState({
     );
   }
   if (isPending) {
-    return <Loading />;
+    return null;
   }
   return children(data.maps);
 }
