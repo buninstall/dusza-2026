@@ -51,7 +51,7 @@ flowchart LR
 | `/etc/apache2/conf-available/zz-minescript-hardening.conf`  | globális Apache-szigorítás                                                                    |
 | `/etc/apache2/minescript/gate.conf`, `htpasswd`             | a kapu; ha a `gate.conf` hiányzik, az oldal nyilvános                                         |
 | `/etc/mysql/mysql.conf.d/zz-minescript.cnf`                 | a MySQL csak a localhoston figyel                                                             |
-| `~csapat13/.ssh/minescript_deploy`                          | csak olvasó GitHub deploy key (a `futozs/dusza-2026` repó „Deploy keys” listájában)           |
+| `~csapat13/.ssh/minescript_deploy`                          | csak olvasó GitHub deploy key (a `buninstall/dusza-2026` repó „Deploy keys” listájában)       |
 
 A forrásban mindez a `scripts/deploy/` alatt van: `minescriptctl` (vezérlő), `provision.sh` (egyszeri telepítés) és `templates/` (systemd, Apache, MySQL, karbantartási oldal).
 
@@ -162,7 +162,7 @@ Egy friss szerveren, a `csapat13` felhasználóval (jelszó nélküli sudo kell)
 
    ```bash
    sudo install -d -o csapat13 -g csapat13 /srv/minescript
-   git clone git@github.com:futozs/dusza-2026.git /srv/minescript/repo
+   git clone git@github.com:buninstall/dusza-2026.git /srv/minescript/repo
    ```
 2. Telepítés: `bash /srv/minescript/repo/scripts/deploy/provision.sh`. Idempotens, és a következőket csinálja: csomagok, 2 GiB swap, Rust/Bun/just/wasm-bindgen/wasm-opt, `minescript` felhasználó és könyvtárak, MySQL-adatbázis és -fiók véletlen jelszóval, systemd-egységek, Apache és kapu, végül az első `deploy`. A kapu jelszavát egyszer írja ki. Paraméterek: `MINESCRIPT_DOMAIN`, `MINESCRIPT_GATE_USER`, `MINESCRIPT_REF` (az első telepítés ága).
 
