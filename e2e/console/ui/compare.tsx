@@ -38,7 +38,7 @@ function RunPicker({
     >
       <Label>{label}</Label>
       <Button className="select-button">
-        <SelectValue>{({ selectedText }) => selectedText ?? "Válassz futást…"}</SelectValue>
+        <SelectValue>{({ selectedText }) => selectedText || "Válassz futást…"}</SelectValue>
         <span aria-hidden="true">▾</span>
       </Button>
       <Popover className="popover">
