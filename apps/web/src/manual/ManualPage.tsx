@@ -1,17 +1,34 @@
-import { useLocation, useNavigate } from "@tanstack/react-router";
-import { Tab, TabList, TabPanel, Tabs } from "react-aria-components";
+import { useLocation } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Link } from "../components/ui/Link.tsx";
+import type { ManualSection } from "../i18n/hu-manual.ts";
 import { hu } from "../i18n/hu.ts";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
+import { PixelText } from "../pixel/PixelText.tsx";
 import { TILE_SPRITES } from "../pixel/tiles.ts";
 import { useStartTour } from "../tour/TourPrompt.tsx";
-import { Section } from "./ManualBlocks.tsx";
+import { Block } from "./ManualBlocks.tsx";
 import "./ManualPage.css";
 
 const ORE_GLINT = { "ore-hi": "px-glint" } as const;
-const FIRST_ID = hu.manual.sections[0]?.id ?? "";
+const SECTIONS = hu.manual.sections;
+const TOTAL = SECTIONS.length;
+
+function partOf(id: string): string {
+  return hu.manual.parts.find((part) => part.ids.includes(id))?.title ?? "";
+}
+
+function indexOf(hash: string): number {
+  const found = SECTIONS.findIndex((section) => section.id === hash);
+  return found < 0 ? 0 : found;
+}
+
+function numberOf(index: number): string {
+  return String(index + 1).padStart(2, "0");
+}
 
 function RecipesEntry() {
   const [wall, wallAlt] = TILE_SPRITES.wall;
@@ -47,45 +64,199 @@ function TourRestart() {
   );
 }
 
-function sectionOf(hash: string): string {
-  return hu.manual.sections.some((section) => section.id === hash) ? hash : FIRST_ID;
+type ChapterLinkProps = {
+  section: ManualSection;
+  index: number;
+  isCurrent: boolean;
+  onPick: () => void;
+};
+
+function ChapterLink({ section, index, isCurrent, onPick }: ChapterLinkProps) {
+  return (
+    <Link
+      to="/manual"
+      hash={section.id}
+      resetScroll={false}
+      hashScrollIntoView={false}
+      variant="plain"
+      className="manual-toc-link"
+      aria-current={isCurrent ? "page" : false}
+      data-current={isCurrent || undefined}
+      onPress={onPick}
+    >
+      <span aria-hidden="true" className="manual-toc-no">
+        {numberOf(index)}
+      </span>
+      <span className="manual-toc-title">{section.title}</span>
+    </Link>
+  );
 }
 
-export function ManualPage() {
-  const selected = sectionOf(useLocation({ select: (location) => location.hash }));
-  const navigate = useNavigate();
-  const select = (key: string) => {
-    void navigate({ to: "/manual", hash: key, replace: true, resetScroll: false });
-  };
+function Contents({ current }: { current: number }) {
+  const [isOpen, setOpen] = useState(false);
+  const active = SECTIONS[current];
+  const close = () => setOpen(false);
   return (
-    <div className="manual-page">
-      <LocationPlate name={hu.signs.manual} />
-      <Tabs
-        orientation="vertical"
-        selectedKey={selected}
-        onSelectionChange={(key) => select(String(key))}
-        className="manual-layout"
+    <nav aria-label={hu.manual.tocLabel} className="manual-toc" data-open={isOpen || undefined}>
+      <Button
+        size="sm"
+        icon="list"
+        className="manual-toc-toggle"
+        aria-expanded={isOpen}
+        aria-controls="manual-toc-parts"
+        onPress={() => setOpen((open) => !open)}
       >
-        <div className="manual-lift">
-          <TabList aria-label={hu.manual.tocLabel} className="manual-lift-list">
-            {hu.manual.sections.map((section, index) => (
-              <Tab key={section.id} id={section.id} className="manual-lift-stop">
-                <span aria-hidden="true" className="manual-lift-no">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                {section.title}
-              </Tab>
-            ))}
-          </TabList>
+        {hu.manual.tocToggle}
+        <span className="manual-toc-toggle-current">
+          {numberOf(current)} · {active?.title}
+        </span>
+        <PixelIcon name="chevronDown" />
+      </Button>
+      <div id="manual-toc-parts" className="manual-toc-parts">
+        {hu.manual.parts.map((part) => (
+          <div key={part.title} className="manual-toc-part">
+            <p className="manual-toc-part-title" id={`manual-part-${part.ids[0] ?? ""}`}>
+              {part.title}
+            </p>
+            <ul
+              className="manual-toc-list"
+              aria-labelledby={`manual-part-${part.ids[0] ?? ""}`}
+            >
+              {part.ids.map((id) => {
+                const index = SECTIONS.findIndex((section) => section.id === id);
+                const section = SECTIONS[index];
+                if (!section) {
+                  return null;
+                }
+                return (
+                  <li key={id}>
+                    <ChapterLink
+                      section={section}
+                      index={index}
+                      isCurrent={index === current}
+                      onPick={close}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+        <div className="manual-toc-extra">
           <RecipesEntry />
           <TourRestart />
         </div>
-        {hu.manual.sections.map((section, index) => (
-          <TabPanel key={section.id} id={section.id} className="manual-article">
-            <Section section={section} index={index} />
-          </TabPanel>
+      </div>
+    </nav>
+  );
+}
+
+function Progress({ current }: { current: number }) {
+  return (
+    <span aria-hidden="true" className="manual-progress">
+      {SECTIONS.map((section, index) => (
+        <span
+          key={section.id}
+          className="manual-progress-cell"
+          data-state={index < current ? "done" : index === current ? "current" : undefined}
+        />
+      ))}
+    </span>
+  );
+}
+
+type PagerLinkProps = { index: number; direction: "previous" | "next" };
+
+function PagerLink({ index, direction }: PagerLinkProps) {
+  const section = SECTIONS[index];
+  if (!section) {
+    return <span className="manual-pager-gap" />;
+  }
+  const label = direction === "previous" ? hu.manual.previous : hu.manual.next;
+  return (
+    <Link
+      to="/manual"
+      hash={section.id}
+      resetScroll={false}
+      hashScrollIntoView={false}
+      variant="plain"
+      className="manual-pager-link"
+      data-direction={direction}
+      aria-label={`${label}: ${section.title}`}
+    >
+      <span className="manual-pager-kind">
+        <PixelIcon name={direction === "previous" ? "arrowLeft" : "arrowRight"} />
+        {label}
+      </span>
+      <span className="manual-pager-title">
+        <span aria-hidden="true" className="manual-pager-no">
+          {numberOf(index)}
+        </span>
+        {section.title}
+      </span>
+    </Link>
+  );
+}
+
+function Chapter({ section, index }: { section: ManualSection; index: number }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const shownRef = useRef(section.id);
+  useEffect(() => {
+    if (shownRef.current === section.id) {
+      return;
+    }
+    shownRef.current = section.id;
+    const heading = headingRef.current;
+    if (!heading) {
+      return;
+    }
+    heading.focus({ preventScroll: true });
+    const top = heading.closest(".manual-article")?.getBoundingClientRect().top ?? 0;
+    if (top < 0) {
+      heading.closest(".manual-article")?.scrollIntoView({ block: "start" });
+    }
+  }, [section.id]);
+  const [first, ...rest] = section.blocks;
+  const hasLede = first?.kind === "paragraph";
+  return (
+    <article id={section.id} aria-labelledby={`${section.id}-title`} className="manual-article">
+      <header className="manual-head">
+        <p className="manual-kicker">
+          <span className="manual-kicker-part">{partOf(section.id)}</span>
+          <span className="manual-kicker-count">{hu.manual.chapterOf(index + 1, TOTAL)}</span>
+          <Progress current={index} />
+        </p>
+        <h2 id={`${section.id}-title`} ref={headingRef} tabIndex={-1} className="manual-title">
+          <span aria-hidden="true" className="manual-title-no">
+            <PixelText text={numberOf(index)} scale={3} />
+          </span>
+          <span className="manual-title-text">{section.title}</span>
+        </h2>
+      </header>
+      <div className="manual-body">
+        {first ? <Block block={first} isLede={hasLede} /> : null}
+        {rest.map((block, position) => (
+          <Block key={`${section.id}-${(position + 1).toString()}`} block={block} />
         ))}
-      </Tabs>
+      </div>
+      <nav aria-label={hu.manual.pagerLabel} className="manual-pager">
+        <PagerLink index={index - 1} direction="previous" />
+        <PagerLink index={index + 1} direction="next" />
+      </nav>
+    </article>
+  );
+}
+
+export function ManualPage() {
+  const current = indexOf(useLocation({ select: (location) => location.hash }));
+  const section = SECTIONS[current];
+  return (
+    <div className="manual-page">
+      <LocationPlate name={hu.signs.manual} />
+      <div className="manual-layout">
+        <Contents current={current} />
+        {section ? <Chapter section={section} index={current} /> : null}
+      </div>
     </div>
   );
 }

@@ -1,9 +1,31 @@
 import { InlineText } from "../components/InlineText.tsx";
-import { Notice } from "../components/Notice.tsx";
-import { NumberedHeading } from "../components/NumberedHeading.tsx";
-import type { ManualBlock, ManualSection } from "../i18n/hu-manual.ts";
+import type { ManualBlock } from "../i18n/hu-manual.ts";
+import { hu } from "../i18n/hu.ts";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { Bench } from "./Bench.tsx";
 import { CodeListing } from "./CodeListing.tsx";
+
+const LEAD_MARK = "**";
+
+function LeadText({ text }: { text: string }) {
+  if (!text.startsWith(LEAD_MARK)) {
+    return <InlineText text={text} />;
+  }
+  const end = text.indexOf(LEAD_MARK, LEAD_MARK.length);
+  if (end < 0) {
+    return <InlineText text={text} />;
+  }
+  const lead = text.slice(LEAD_MARK.length, end);
+  const rest = text.slice(end + LEAD_MARK.length).trimStart();
+  return (
+    <>
+      <strong className="manual-lead">
+        <InlineText text={lead} />
+      </strong>{" "}
+      <InlineText text={rest} />
+    </>
+  );
+}
 
 function TableBlock({ block }: { block: Extract<ManualBlock, { kind: "table" }> }) {
   return (
@@ -41,20 +63,37 @@ function TableBlock({ block }: { block: Extract<ManualBlock, { kind: "table" }> 
   );
 }
 
-function Block({ block }: { block: ManualBlock }) {
+function TipBlock({ block }: { block: Extract<ManualBlock, { kind: "tip" }> }) {
+  return (
+    <div role="note" className="manual-tip">
+      <p className="manual-tip-head">
+        <PixelIcon name="lantern" />
+        <span className="manual-tip-kind">{hu.manual.tipLabel}</span>
+        <span className="manual-tip-title">{block.title}</span>
+      </p>
+      <p className="manual-tip-text">
+        <InlineText text={block.text} />
+      </p>
+    </div>
+  );
+}
+
+export function Block({ block, isLede = false }: { block: ManualBlock; isLede?: boolean }) {
   switch (block.kind) {
     case "paragraph":
       return (
-        <p className="manual-paragraph">
+        <p className="manual-paragraph" data-lede={isLede || undefined}>
           <InlineText text={block.text} />
         </p>
       );
+    case "heading":
+      return <h3 className="manual-subhead">{block.text}</h3>;
     case "list":
       return (
         <ul className="manual-list">
           {block.items.map((item) => (
             <li key={item}>
-              <InlineText text={item} />
+              <LeadText text={item} />
             </li>
           ))}
         </ul>
@@ -64,21 +103,13 @@ function Block({ block }: { block: ManualBlock }) {
         <ol className="manual-steps">
           {block.items.map((item) => (
             <li key={item}>
-              <InlineText text={item} />
+              <LeadText text={item} />
             </li>
           ))}
         </ol>
       );
     case "tip":
-      return (
-        <div className="manual-tip">
-          <Notice tone="info" title={block.title}>
-            <p>
-              <InlineText text={block.text} />
-            </p>
-          </Notice>
-        </div>
-      );
+      return <TipBlock block={block} />;
     case "code":
       return block.map ? (
         <Bench code={block.code} map={block.map} caption={block.caption} />
@@ -88,15 +119,4 @@ function Block({ block }: { block: ManualBlock }) {
     case "table":
       return <TableBlock block={block} />;
   }
-}
-
-export function Section({ section, index }: { section: ManualSection; index: number }) {
-  return (
-    <section id={section.id} aria-labelledby={`${section.id}-title`} className="manual-section">
-      <NumberedHeading id={`${section.id}-title`} number={index + 1} title={section.title} />
-      {section.blocks.map((block, position) => (
-        <Block key={`${section.id}-${position.toString()}`} block={block} />
-      ))}
-    </section>
-  );
 }

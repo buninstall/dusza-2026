@@ -1,5 +1,6 @@
 export type ManualBlock =
   | { readonly kind: "paragraph"; readonly text: string }
+  | { readonly kind: "heading"; readonly text: string }
   | {
       readonly kind: "code";
       readonly code: string;
@@ -35,16 +36,21 @@ const sections: readonly ManualSection[] = [
         kind: "paragraph",
         text: "A cél: minél több aranyat kibányászni, minél kevesebb programsor végrehajtásával. A ranglistán az áll előrébb, aki több aranyat gyűjtött; azonos aranynál az, akinek ehhez kevesebb lépés kellett.",
       },
+      { kind: "heading", text: "Egy kör menete" },
       {
         kind: "steps",
         items: [
-          "Nyisd meg a `Pályák` oldalt, válassz egy térképet, és kattints a `Játék` gombra.",
-          "Írd meg a programot a szerkesztőben (széles képernyőn bal oldalt, telefonon a térkép alatt). A `Robot`, `Érzékelés`, `Változók`, `Döntés` és `Ciklus` fiókokból kész parancsmintákat szúrhatsz be, és `.ms` vagy `.txt` fájlból is importálhatsz.",
-          "Kattints a `Futtatás` gombra. A szerkesztő előbb ellenőrzi a programot: ha hibás, nem indul el, hanem megjelöli a hibás sorokat.",
-          "Helyes program esetén a térkép és a robot alaphelyzetbe kerül, és a futás lassítva lejátszódik. A műszersávon látod az éppen végrehajtott sort, az aranyat és a lépéseket; a konzolt és a változókat a `Konzol` gombbal nyithatod meg.",
-          "A térképet a fejléc `+` és `−` gombjával, görgővel vagy érintőpados csippentéssel nagyíthatod a kurzor körül; nagyítva egérrel húzva mozgathatod. A szerkesztő és a bánya közti határt húzással vagy a nyílbillentyűkkel állíthatod, dupla kattintásra visszaáll.",
-          "A lejátszás végén a szerver a programodból újra kiszámolja az eredményt, és rögzíti a ranglistán.",
+          "**Válassz pályát.** A `Pályák` oldalon kattints egy térkép `Játék` gombjára.",
+          "**Írd meg a programot.** A szerkesztő széles képernyőn bal oldalt, telefonon a térkép alatt van. A `Robot`, `Érzékelés`, `Változók`, `Döntés` és `Ciklus` fiókokból kész mintákat szúrhatsz be, vagy `.ms` és `.txt` fájlt importálhatsz.",
+          "**Futtasd.** A `Futtatás` gomb előbb ellenőrzi a programot. Hibás programot nem indít el, hanem megjelöli a hibás sorokat.",
+          "**Nézd a lejátszást.** A térkép és a robot alaphelyzetbe kerül, és a futás lassítva lejátszódik. A műszersávon az éppen végrehajtott sor, az arany és a lépések látszanak; a konzolt és a változókat a `Konzol` gomb nyitja meg.",
+          "**Eredmény.** A lejátszás végén a szerver a programodból újra kiszámolja az eredményt, és rögzíti a ranglistán.",
         ],
+      },
+      {
+        kind: "tip",
+        title: "Nagyítás és elrendezés",
+        text: "A térképet a fejléc `+` és `−` gombjával, görgővel vagy csippentéssel nagyíthatod a kurzor körül, nagyítva pedig húzással mozgathatod. A szerkesztő és a bánya közti határ húzással vagy a nyílbillentyűkkel állítható, dupla kattintásra visszaáll.",
       },
       {
         kind: "tip",
@@ -110,17 +116,29 @@ const sections: readonly ManualSection[] = [
       {
         kind: "list",
         items: [
-          "A térképen pontosan egy robot van, és olyan kamrában áll, amelyben nincs arany.",
-          "A térkép széle falnak számít: a robot nem léphet le róla, és az `isThere` is falat lát a szélen túl.",
-          "A térképszerkesztő csak szabályos térképet ment el. Arany nélküli vagy elérhetetlen aranyat tartalmazó térkép is menthető, de figyelmeztetést kap.",
-          "Hibás térképfájl importálásakor a szerkesztő megmondja, melyik sorban mi a gond, és nem tölti be a hibás tartalmat.",
-          "A `Továbbiak` menüben a `Generálás…` mindig megoldható pályát rajzol a megadott méretben és nehézséggel, a `Falkeret` és a `Mind üres` egy kattintással átrendezi a rácsot. A `Kipróbálás` a még nem mentett pályát mentés és ranglista nélkül játszatja.",
-          "A `Célérték (lépés)` mezőben adhatod meg, hány lépésből jár a harmadik rög. A `Gépi megoldás` gomb kiszámolja, hány lépésből oldja meg a pályát a beépített útvonaltervező.",
+          "**Egy robot.** A térképen pontosan egy robot van, és olyan kamrában áll, amelyben nincs arany.",
+          "**A szél fal.** A robot nem léphet le a térképről, és az `isThere` is falat lát a szélen túl.",
         ],
+      },
+      { kind: "heading", text: "Felfedezés" },
+      {
+        kind: "paragraph",
+        text: "Futás közben a térkép mutatja, mit fedezett fel a robot: a kezdőmezőt, minden mezőt, amelyen áthaladt vagy megállt, és minden mezőt, amelyet `isThere` hívással megvizsgált.",
       },
       {
         kind: "paragraph",
-        text: "Futás közben a térkép mutatja, mit fedezett fel a robot. Felfedezett a kezdőmező, minden mező, amelyen a robot áthaladt vagy megállt, és minden mező, amelyet `isThere` hívással megvizsgált. `Lámpafény` nézetben csak ezek látszanak, a `Teljes térkép` nézet a felderítetlen részt is mutatja, rácsmintával jelölve.",
+        text: "`Lámpafény` nézetben csak ezek látszanak. A `Teljes térkép` nézet a felderítetlen részt is mutatja, rácsmintával jelölve.",
+      },
+      { kind: "heading", text: "Térképszerkesztő" },
+      {
+        kind: "list",
+        items: [
+          "**Csak szabályos térkép menthető.** Arany nélküli vagy elérhetetlen aranyat tartalmazó térkép is elmenthető, de figyelmeztetést kap.",
+          "**Hibás import.** Hibás térképfájlnál a szerkesztő megmondja, melyik sorban mi a gond, és nem tölti be a hibás tartalmat.",
+          "**Gyors eszközök.** A `Továbbiak` menüben a `Generálás…` mindig megoldható pályát rajzol a megadott méretben és nehézséggel, a `Falkeret` és a `Mind üres` egy kattintással átrendezi a rácsot.",
+          "**Kipróbálás.** A még nem mentett pályát mentés és ranglista nélkül játszatja.",
+          "**Célérték.** A `Célérték (lépés)` mezőben adhatod meg, hány lépésből jár a harmadik rög. A `Gépi megoldás` kiszámolja, hány lépésből oldja meg a pályát a beépített útvonaltervező.",
+        ],
       },
     ],
   },
@@ -135,13 +153,13 @@ const sections: readonly ManualSection[] = [
       {
         kind: "list",
         items: [
-          "Minden sor pontosan egy utasítás. Üres sor nem lehet a programban, a program viszont lehet teljesen üres is.",
-          "A szavak között pontosan egy szóköz áll. Dupla szóköz, sor végi szóköz és tabulátor nem lehet.",
-          "A behúzás (csak szóközzel) jelöli, mi tartozik egy `if`, `else` vagy `while` törzséhez. A törzs mélyebben van, mint a fejléce, és egy blokkon belül minden sor ugyanannyira van behúzva. Különböző blokkokban a behúzás mértéke eltérhet.",
-          "Az `else` az `if` sorával azonos behúzáson áll, közvetlenül az `if` törzse után.",
-          "A kis- és nagybetű számít: `isThere` helyes, `isthere` hibás; `arany` és `Arany` két külön változó.",
-          "A számok 0 és 100 közötti egészek. Negatív szám nincs a kódban, kivonással állítható elő: `set x to 0 - 5`.",
-          "A változónév betűvel kezdődik, utána betűk és számjegyek jöhetnek, ékezet és aláhúzás nélkül. Kulcsszó nem lehet változónév.",
+          "**Egy sor, egy utasítás.** Üres sor nem lehet a programban, a program viszont lehet teljesen üres is.",
+          "**Pontosan egy szóköz.** A szavak között egy szóköz áll. Dupla szóköz, sor végi szóköz és tabulátor nem lehet.",
+          "**Behúzás.** A szóközös behúzás jelöli, mi tartozik egy `if`, `else` vagy `while` törzséhez. A törzs mélyebben van, mint a fejléce, és egy blokkon belül minden sor ugyanannyira van behúzva. Különböző blokkokban a mérték eltérhet.",
+          "**Az else helye.** Az `else` az `if` sorával azonos behúzáson áll, közvetlenül az `if` törzse után.",
+          "**Kis- és nagybetű.** `isThere` helyes, `isthere` hibás; `arany` és `Arany` két külön változó.",
+          "**Számok.** 0 és 100 közötti egészek. Negatív szám nincs a kódban, kivonással állítható elő: `set x to 0 - 5`.",
+          "**Változónevek.** Betűvel kezdődnek, utána betűk és számjegyek jöhetnek, ékezet és aláhúzás nélkül. Kulcsszó nem lehet változónév.",
         ],
       },
       {
@@ -369,12 +387,12 @@ const sections: readonly ManualSection[] = [
       {
         kind: "list",
         items: [
-          "Minden végigjátszott futás rögzítésre kerül: a hiba nélküli, a futásidejű hibával és a limit túllépésével végződő is.",
-          "A leállított futás és a szintaktikailag hibás program nem kerül a ranglistára.",
-          "Az eredményt a szerver a forráskódból maga számolja újra, így a ranglista nem hamisítható.",
-          "Játékosonként a legjobb futás számít: több arany előrébb, egyenlőségnél a kevesebb lépés, ha az is egyezik, a korábbi.",
-          "Ha egy térképen már van futás, a tartalma csak új verzióként módosítható. A ranglista verziónként külön van, így a régi eredmények megmaradnak.",
-          "A `Futásaim` oldalon minden korábbi futásodat visszajátszhatod, és a programját újra betöltheted.",
+          "**Mi kerül fel.** Minden végigjátszott futás: a hiba nélküli, a futásidejű hibával és a limit túllépésével végződő is.",
+          "**Mi nem.** A leállított futás és a szintaktikailag hibás program nem kerül a ranglistára.",
+          "**Nem hamisítható.** Az eredményt a szerver a forráskódból maga számolja újra.",
+          "**Sorrend.** Játékosonként a legjobb futás számít: több arany előrébb, egyenlőségnél a kevesebb lépés, ha az is egyezik, a korábbi.",
+          "**Verziók.** Ha egy térképen már van futás, a tartalma csak új verzióként módosítható. A ranglista verziónként külön van, így a régi eredmények megmaradnak.",
+          "**Futásaim.** Ezen az oldalon minden korábbi futásodat visszajátszhatod, és a programját újra betöltheted.",
         ],
       },
     ],
@@ -455,9 +473,26 @@ const sections: readonly ManualSection[] = [
   },
 ];
 
+const parts: readonly { readonly title: string; readonly ids: readonly string[] }[] = [
+  { title: "Kezdés", ids: ["alapok", "elso-program", "terkep"] },
+  {
+    title: "A nyelv",
+    ids: ["felepites", "utasitasok", "isthere", "kifejezesek", "vezerles", "hibak"],
+  },
+  { title: "Eredmény", ids: ["lepesek", "ranglista", "rogok"] },
+  { title: "Referencia", ids: ["billentyuk"] },
+];
+
 export const manual = {
   title: "Kézikönyv",
   tocLabel: "Tartalom",
+  tocToggle: "Fejezetek",
+  pagerLabel: "Lapozás a fejezetek között",
+  previous: "Előző",
+  next: "Következő",
+  chapterOf: (index: number, total: number) => `${index}. fejezet / ${total}`,
+  tipLabel: "Tipp",
+  parts,
   benchPlay: "Lejátszás",
   benchPause: "Szünet",
   benchRestart: "Elölről",
