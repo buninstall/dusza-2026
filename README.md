@@ -74,7 +74,7 @@ A `just setup` a többit maga telepíti: a `wasm32-unknown-unknown` célt, a `Ca
 | `just ci`          | lint, test, build, e2e                                           |
 | `just clean`       | buildtermékek törlése                                            |
 
-## Következő nagy lépés: Lámpafény-mód
+## Lámpafény-mód: sötét bánya a nehezebb pályákon
 
 A bánya a kiírás szerint sötét, és a robot „tapogatózva halad előre”. A Lámpafény-mód ezt játékszabállyá teszi a nehezebb pályákon:
 
@@ -84,7 +84,7 @@ A bánya a kiírás szerint sötét, és a robot „tapogatózva halad előre”
 - **Fal = sötétség:** ha a robot falnak megy, összetörik a lámpa, a vázlat elvész, és a játékos újra vaksötétben áll. Aki lépés előtt `isThere 1`-gyel tapogat, az soha nem veszíti el.
 - **Kiérdemelt térkép:** három rög után feloldódik a Teljes térkép, és jöhet a lépésszám csiszolása a ranglistáért.
 
-A könnyű pályák nyitottak maradnak, ott a játékos az utasításokat tanulja. A mód a nyelv viselkedését, a lépésszámlálást és a ranglista rendezését nem változtatja, a motorhoz nem nyúl. Az ötlet a felkészítő tanárunktól származik; a teljes terv, a kiírással való összevetés és a megvalósítás lépései: [docs/jatekelmeny.md](docs/jatekelmeny.md).
+A kampány 1–4. pályája nyitott, ott a játékos az utasításokat tanulja; az 5–6. pálya Lámpafény, a 7–8. Vaksötét (a lámpa üres akkuval indul). Saját pályán a térképszerkesztőben választható a fokozat. A mód a nyelv viselkedését, a lépésszámlálást és a ranglista rendezését nem változtatja, a motorhoz nem nyúl. Az ötlet a felkészítő tanárunktól származik; a szabályok, a kiírással való összevetés és a megvalósítás állapota: [docs/jatekelmeny.md](docs/jatekelmeny.md).
 
 ## Fejlesztési ötletek és megvalósításuk
 
@@ -110,7 +110,7 @@ A kötelező funkciók után a többi versenymegoldás nyilvános felületét is
 | A robot nyomvonala          | kivettük    | A felfedezett mezők jelölése mellett fölösleges vizuális zaj volt.                                                                                                                                                |
 | Két futás összevetése       | elvetettük  | A ranglista, a saját futások és a visszajátszás együtt már megmutatja a különbséget.                                                                                                                              |
 | Fokozatos tipp-gomb         | elvetettük  | A receptek és a Kézikönyv próbapadjai ezt lefedik; egy félmegoldást adó gomb a verseny jellegét rontaná.                                                                                                          |
-| Lámpafény-mód               | tervezve    | Sötét bánya, arannyal növő fénykör, falnál elvesző vázlat a nehezebb pályákon; lásd fent és a [docs/jatekelmeny.md](docs/jatekelmeny.md) tervét.                                                                  |
+| Lámpafény-mód               | megvalósult | Sötét bánya az 5–8. pályán, arannyal növő fénykör, falnál elvesző vázlat, három rög után Teljes térkép; a szerkesztőben választható. Lásd fent és a [docs/jatekelmeny.md](docs/jatekelmeny.md).                   |
 | Golf-mód, VS Code-bővítmény | később      | Lásd a beadandó továbbfejlesztési javaslatait ([docs/beadando.md](docs/beadando.md)).                                                                                                                             |
 
 ## Dokumentáció

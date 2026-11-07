@@ -11,9 +11,9 @@ Az ötlet a felkészítő tanárunktól, Róberttől jött, miután kipróbálta
 
 Ezekből az alábbi, a kiírással összeegyeztetett terv készült.
 
-## A mostani állapot
+## A kiinduló állapot
 
-A játékoldalon ma is van „Lámpafény” és „Teljes térkép” nézet (`L` billentyű), de a köd csak lejátszás közben érvényesül: futás előtt mindkét nézet a teljes pályát mutatja, futás után pedig a Lámpafény eltünteti a labirintust, így a tervezéshez mindig vissza kell váltani a Teljes térképre (QA-jelentés, J5 és J16). A Lámpafény tehát ma egy megjelenítési kapcsoló, nem játékszabály. A terv ebből játékszabályt csinál.
+A játékoldalon már a mód előtt is volt „Lámpafény” és „Teljes térkép” nézet (`L` billentyű), de a köd csak lejátszás közben érvényesült: futás előtt mindkét nézet a teljes pályát mutatta, futás után pedig a Lámpafény eltüntette a labirintust, így a tervezéshez mindig vissza kellett váltani a Teljes térképre (QA-jelentés, J5 és J16). A Lámpafény tehát egy megjelenítési kapcsoló volt, nem játékszabály. A Lámpafény-mód ebből játékszabályt csinált; a nyitott pályákon a régi kapcsoló változatlanul megmaradt.
 
 ## Mennyire szabad ilyet csinálni: összevetés a kiírással
 
@@ -104,28 +104,35 @@ Az egyes pályák fokozata a nehézségükhöz igazodik: a könnyű pályákon a
 
 ## Kockázatok és válaszok
 
-| Kockázat                                                                            | Válasz                                                                                                                                                                                           |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A zsűri a 3.4-et úgy olvassa, hogy a teljes térképnek látszania kell                | A mód csak a nehezebb pályákon kötelező, a nyitott pályák betű szerint teljesítik a kiírást; a beadandó és a megfelelőségi táblázat plusz szolgáltatásként írja le.                              |
-| Frusztráló a vázlat elvesztése                                                      | A falnak ütközés mindig elkerülhető `isThere`-rel; a Kézikönyvbe egy „Biztonságos lépés” próbapad és egy recept kerül; a fokozatot a szerző választja.                                           |
-| Spoiler a ranglista visszajátszásaiból                                              | Lámpafényes pályán más játékos futása csak akkor nézhető meg, ha a néző már szerzett legalább egy rögöt; a visszajátszás is lámpafénnyel megy.                                                   |
-| Spoiler a térképszerkesztőből és az exportból                                       | Lámpafényes pályát más felhasználó nem nyithat meg a szerkesztőben és nem exportálhat; a szerző és az adminisztrátor igen.                                                                       |
-| A térkép a böngészőben van (a WASM-motor ott fut), fejlesztői eszközzel kiolvasható | Elfogadott kockázat: ez játék, nem vizsga. Eredményt hamisítani így sem lehet, mert a szerver minden futást újraszámol (D13); csak a felfedezés öröme vész el annak, aki csal.                   |
-| Akadálymentesség                                                                    | A három állapot mintával is különbözik; a sötét mező akadálymentes neve „ismeretlen”; a lámpa-animációk `prefers-reduced-motion` alatt egyszerű áttűnések; az akku-jelző szöveges értéket is ad. |
+| Kockázat                                                                            | Válasz                                                                                                                                                                                                                             |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A zsűri a 3.4-et úgy olvassa, hogy a teljes térképnek látszania kell                | A mód csak a nehezebb pályákon kötelező, a nyitott pályák betű szerint teljesítik a kiírást; a beadandó és a megfelelőségi táblázat plusz szolgáltatásként írja le.                                                                |
+| Frusztráló a vázlat elvesztése                                                      | A falnak ütközés mindig elkerülhető `isThere`-rel; a Kézikönyvbe egy „Biztonságos lépés” próbapad és egy recept kerül; a fokozatot a szerző választja.                                                                             |
+| Spoiler a ranglista visszajátszásaiból                                              | Más játékos futása lámpafényes pályán zárolt Lámpafény nézetben megy, csak az látszik, amit az a futás felfedezett; a saját futás visszajátszásában a Teljes térkép is választható.                                                |
+| Spoiler a térképszerkesztőből és az exportból                                       | A szerkesztőt eddig is csak a szerző és az adminisztrátor nyithatta meg; lámpafényes pályát a szerver is csak nekik exportálja (`403 FORBIDDEN`).                                                                                  |
+| A térkép a böngészőben van (a WASM-motor ott fut), fejlesztői eszközzel kiolvasható | Elfogadott kockázat: ez játék, nem vizsga. Eredményt hamisítani így sem lehet, mert a szerver minden futást újraszámol (D13); csak a felfedezés öröme vész el annak, aki csal.                                                     |
+| Akadálymentesség                                                                    | A három állapot mintával is különbözik; a sötét mező akadálymentes neve „felderítetlen”, a tartalma a DOM-ba sem kerül; a lámpa-animációk `prefers-reduced-motion` alatt egyszerű áttűnések; az akku-jelző szöveges értéket is ad. |
 
-## Megvalósítási terv
+## Megvalósítás
 
-A motor nem változik: a futás eseménysora (D20) már ma tartalmazza minden lépés felfedezett mezőit, a robot helyzetét és a bányászásokat, ebből a fénykör és a vázlat a felületen kiszámolható. A munka így teljesen a `apps/web` és a `apps/server` területén marad.
+A motor nem változott: a futás eseménysora (D20) már tartalmazza minden lépés felfedezett mezőit, a robot helyzetét és a bányászásokat, ebből a fénykör és a vázlat a felületen kiszámolható. A munka így teljesen az `apps/web` és az `apps/server` területén maradt.
 
-1. **Tiszta függvény a fénykörre** (`apps/web/src/play`): `lampLight(map, robotPos, radius)` a falon meg nem álló, legfeljebb `radius` Manhattan-távolságú elárasztással; unit tesztek a falárnyékra és a térkép szélére.
-2. **Fénykör a lejátszásban:** a `derive.ts` minden képkockához kiszámolja a megvilágított mezőket a kibányászott rögök száma alapján; a `MapGrid` megkapja a harmadik állapotot.
-3. **Vázlat:** először böngészőben tárolva, majd szerveroldalon (`map_sketches`: felhasználó, pályaverzió, felfedezett és megvilágított mezők bitmaszkként, 15×15 = 225 bit); a falnak ütközés törli.
-4. **Pályabeállítás:** új oszlop a `maps` táblában (`lamp_mode`: nyitott, lámpafény, vaksötét) migrációval; választó a térképszerkesztőben; a kampány 5–8. pályája a seedben megkapja a fokozatát.
-5. **Teljes térkép feloldása:** a Nézet kapcsoló lámpafényes pályán a három rög után aktív.
-6. **Spoilervédelem:** a visszajátszás és a szerkesztő/export jogosultsága a szerveren.
-7. **Hangok, animációk, akku-jelző** a műszersávban.
-8. **Tesztek:** unit (fénykör, vázlatszabályok), szerver (jogosultságok, migráció), e2e (sötét indulás, vázlat megmarad, falnál törlődik, feloldás három rögnél), axe.
-9. **Dokumentáció:** új döntés (javaslat: D26 – Lámpafény-mód) a csapat egyetértésével, a beadandó plusz szolgáltatásai és a megfelelőségi táblázat frissítése, Kézikönyv-fejezet.
+| Rész                       | Állapot   | Hol van                                                                                                                                                                           |
+| -------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fénykör és vázlat logikája | elkészült | `apps/web/src/play/lamp-mode.ts`: `lampLight` (falon meg nem álló elárasztás), `lampTrack` (képkockánkénti fény), `sketchAfterRun`, `lampView`; tesztek: `test/lamp-mode.test.ts` |
+| Pályabeállítás             | elkészült | `maps.lamp_mode` (`open`, `lamp`, `dark`), migráció: `apps/server/drizzle/0002_lamp_mode.sql`; a kampány 5–6. pályája Lámpafény, 7–8. Vaksötét (seed és migráció)                 |
+| Választó a szerkesztőben   | elkészült | a térképszerkesztő jobb oldali paneljén, a láthatóság alatt, magyarázó szöveggel                                                                                                  |
+| Sötét bánya a játékoldalon | elkészült | `PlayScreen.tsx`: a sötét mező tartalma nem is kerül a rajzba; a megvilágított mező rácsmintás; „Lámpafény”/„Vaksötét” címke a fejlécben                                          |
+| Akku-jelző                 | elkészült | a műszersáv állapotjelzője mellett 4 cella, szöveges értékkel a képernyőolvasónak; összetört lámpánál veszélyjelző minta                                                          |
+| Vázlat                     | elkészült | `useLampSketch.ts`: böngészőben, felhasználónként és pályaverziónként; csak a természetes véggel lezárt futás frissíti, falnak ütközés törli                                      |
+| Összetört lámpa            | elkészült | a futás végén csak a robot mezője látszik, és figyelmeztetés magyarázza, mi történt és hogyan kerülhető el                                                                        |
+| Teljes térkép feloldása    | elkészült | a Nézet kapcsoló három rög után (és a szerzőnek, adminisztrátornak) választható, addig zárolt                                                                                     |
+| Spoilervédelem             | elkészült | export csak a szerzőnek és az adminisztrátornak; mások visszajátszása zárolt Lámpafény nézetben                                                                                   |
+| Tesztek                    | elkészült | web: 448 teszt (köztük a sötét indulás, a vázlat, a falnál törlés, a feloldás és a szerkesztő); szerver: beállítás, export-tiltás, seed                                           |
+| Szerveroldali vázlat       | még nincs | a vázlat most böngészőhöz kötött; több eszközhöz `map_sketches` tábla kellene                                                                                                     |
+| Hangok, lámpa-animáció     | még nincs | a falnál a meglévő hiba-hang és ütközés-animáció szól; külön lámpa-csörömpölés nincs                                                                                              |
+| E2E és axe                 | még nincs | az `e2e/` a testing gazda területe, vele egyeztetendő                                                                                                                             |
+| Dokumentáció               | részben   | ez a dokumentum és a README kész; a D26 döntés, a beadandó, a megfelelőségi táblázat és a Kézikönyv-fejezet a csapattal egyeztetendő                                              |
 
 ## Nyitott kérdések a csapatnak
 
