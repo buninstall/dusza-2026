@@ -157,6 +157,18 @@ export function respondRuns<T>(runs: readonly T[]): void {
   onApi("GET", "/me/runs", (request) => ({ body: runPage(runs, request.search) }));
 }
 
+type ProgramItem = { id: number; title: string; updatedAt: number; lines?: number };
+
+export function respondPrograms(programs: readonly ProgramItem[]): void {
+  onApi("GET", "/programs", (request) => {
+    const { items, ...meta } = pageOf(
+      programs.map((program) => ({ lines: 1, ...program })),
+      request.search,
+    );
+    return { body: { ...meta, programs: items, quota: { used: programs.length, limit: 500 } } };
+  });
+}
+
 export const corridorMap: MineMap = {
   rows: 1,
   cols: 4,

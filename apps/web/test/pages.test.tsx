@@ -246,32 +246,32 @@ describe("ranglista részletei", () => {
 describe("futásaim", () => {
   test("a kimenet hibakóddal és sorral", async () => {
     respondRuns([
-        {
-          id: 1,
-          mapId: 2,
-          mapTitle: "Labirintus",
-          mapVersionId: 22,
-          version: 2,
-          gold: 1,
-          steps: 9,
-          outcomeKind: "runtimeError",
-          errorCode: "E_NO_GOLD",
-          errorLine: 4,
-          createdAt: 1,
-        },
-        {
-          id: 2,
-          mapId: 1,
-          mapTitle: "Folyosó",
-          mapVersionId: 11,
-          version: 1,
-          gold: 2,
-          steps: 8,
-          outcomeKind: "ok",
-          errorCode: null,
-          errorLine: null,
-          createdAt: 2,
-        },
+      {
+        id: 1,
+        mapId: 2,
+        mapTitle: "Labirintus",
+        mapVersionId: 22,
+        version: 2,
+        gold: 1,
+        steps: 9,
+        outcomeKind: "runtimeError",
+        errorCode: "E_NO_GOLD",
+        errorLine: 4,
+        createdAt: 1,
+      },
+      {
+        id: 2,
+        mapId: 1,
+        mapTitle: "Folyosó",
+        mapVersionId: 11,
+        version: 1,
+        gold: 2,
+        steps: 8,
+        outcomeKind: "ok",
+        errorCode: null,
+        errorLine: null,
+        createdAt: 2,
+      },
     ]);
     renderApp("/runs");
     expect(await screen.findByText("E_NO_GOLD, 4. sor")).toBeTruthy();
