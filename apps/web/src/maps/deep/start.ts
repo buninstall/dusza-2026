@@ -1,5 +1,5 @@
 import { viewportWidth } from "../../lib/scrollbar-gap.ts";
-import { buildMine, type Level, type LevelInput } from "./build.ts";
+import { buildMine, type ChapterInput, type Level, type LevelInput } from "./build.ts";
 import { readDeepPalette } from "./palette.ts";
 import { runScene } from "./scene.ts";
 import { createView } from "./view.ts";
@@ -59,6 +59,13 @@ function readLevels(
   return { inputs, elements };
 }
 
+function readChapters(root: HTMLElement, scale: number): ChapterInput[] {
+  return [...root.querySelectorAll<HTMLElement>(`[${MINE_ATTR}="chapter"]`)].map((element) => ({
+    box: measureBox(element, scale),
+    stratum: Number(element.dataset.stratum ?? 1),
+  }));
+}
+
 export function startDeepScene(host: DeepHost): (() => void) | null {
   const plate = host.root.querySelector(`[${MINE_ATTR}="plate"]`);
   const front = host.root.querySelector(`[${MINE_ATTR}="front"]`);
@@ -79,6 +86,7 @@ export function startDeepScene(host: DeepHost): (() => void) | null {
     plate: measureBox(plate, scale),
     front: measureBox(front, scale),
     levels: inputs,
+    chapters: readChapters(host.root, scale),
     palette: readDeepPalette(host.paletteSource),
     digId: host.digId,
   });
