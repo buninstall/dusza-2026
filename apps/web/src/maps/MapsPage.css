@@ -242,6 +242,10 @@
   padding-inline: var(--space-3);
 }
 
+.lv-actions > .btn {
+  min-height: var(--control-height);
+}
+
 .maps-page .lv-edit::before,
 .maps-page .lv-edit::after {
   display: none;
@@ -330,7 +334,6 @@
 }
 
 .maps-page .btn:nth-child(2) {
-  translate: 0 calc(var(--border-thin) * -1);
   clip-path: polygon(
     0 2px,
     6px 2px,
@@ -345,7 +348,6 @@
 }
 
 .maps-page .btn:nth-child(3) {
-  translate: 0 var(--border-thin);
   clip-path: polygon(
     4px 0,
     100% 0,
