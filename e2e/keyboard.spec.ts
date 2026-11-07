@@ -116,6 +116,8 @@ test("egy teljes recept betöltése és lefuttatása csak billentyűzettel, mind
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: "Mentett programok" });
   await expect(dialog).toBeVisible();
+  await tabTo("Keresés a programok között");
+  await page.keyboard.type("Recept – 2. Az első kanyar");
   await tabTo("Megnyitás: Recept – 2. Az első kanyar");
   await page.keyboard.press("Enter");
   const confirm = dialog.getByRole("button", { name: "Megnyitás", exact: true });
