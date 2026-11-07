@@ -20,7 +20,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-type NavTarget = "/maps" | "/maps/new" | "/runs" | "/manual" | "/admin";
+type NavTarget = "/maps" | "/maps/new" | "/runs" | "/admin";
 
 type NavItem = { to: NavTarget; label: string; icon: IconName; section: RegExp };
 
@@ -39,7 +39,6 @@ function navItems(user: SessionUser): NavItem[] {
       section: /^\/(maps\/?$|play\/|leaderboard\/)/,
     },
     { to: "/maps/new", label: hu.nav.editor, icon: "pickaxe", section: /^\/maps\/(new|\d+\/edit)/ },
-    { to: "/manual", label: hu.nav.manual, icon: "book", section: /^\/manual/ },
     { to: "/runs", label: hu.nav.runs, icon: "list", section: /^\/runs/ },
   ];
   return user.role === "admin"
@@ -92,6 +91,17 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
             </ul>
           </nav>
           <div className="shell-tools">
+            <nav aria-label={hu.nav.manual} className="shell-help">
+              <Link
+                to="/manual"
+                variant="ghost"
+                size="sm"
+                icon="book"
+                className="shell-help-link"
+                aria-label={hu.nav.manual}
+                data-current={/^\/manual/.test(pathname)}
+              />
+            </nav>
             <SoundToggle />
             <UserMenu user={user} />
           </div>

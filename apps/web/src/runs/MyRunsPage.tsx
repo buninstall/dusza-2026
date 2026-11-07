@@ -5,8 +5,10 @@ import { EmptyState } from "../components/EmptyState.tsx";
 import { Led } from "../components/Led.tsx";
 import { LoadFailed } from "../components/LoadFailed.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
+import { Pager } from "../components/Pager.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
+import { pager } from "../i18n/hu-pager.ts";
 import "./MyRunsPage.css";
 import { myRunsQuery, type RunRow } from "./queries.ts";
 
@@ -81,7 +83,27 @@ function RunsTable({ runs }: { runs: readonly RunRow[] }) {
   );
 }
 
-export function MyRunsPage() {
+export const RUNS_PER_PAGE = 9;
+
+type MyRunsPageProps = { page: number; onPageChange: (page: number) => void };
+
+function PagedRuns({ runs, page, onPageChange }: { runs: readonly RunRow[] } & MyRunsPageProps) {
+  const pageCount = Math.max(1, Math.ceil(runs.length / RUNS_PER_PAGE));
+  const current = Math.min(Math.max(1, page), pageCount);
+  const from = (current - 1) * RUNS_PER_PAGE;
+  const shown = runs.slice(from, from + RUNS_PER_PAGE);
+  return (
+    <>
+      <RunsTable runs={shown} />
+      <div className="runs-pager">
+        <p className="runs-range">{pager.range(from + 1, from + shown.length, runs.length)}</p>
+        <Pager page={current} pageCount={pageCount} onChange={onPageChange} />
+      </div>
+    </>
+  );
+}
+
+export function MyRunsPage({ page, onPageChange }: MyRunsPageProps) {
   const { data, error, refetch } = useQuery(myRunsQuery);
   return (
     <div className="runs-page">
@@ -102,7 +124,9 @@ export function MyRunsPage() {
           />
         </div>
       ) : null}
-      {data && data.runs.length > 0 ? <RunsTable runs={data.runs} /> : null}
+      {data && data.runs.length > 0 ? (
+        <PagedRuns runs={data.runs} page={page} onPageChange={onPageChange} />
+      ) : null}
     </div>
   );
 }

@@ -235,3 +235,12 @@
     animation: none;
   }
 }
+
+.shell-help {
+  display: flex;
+  align-items: center;
+}
+
+.shell-help-link[data-current="true"] {
+  color: var(--c-reward);
+}

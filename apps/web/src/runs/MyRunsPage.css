@@ -25,3 +25,17 @@
   background: var(--c-surface);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
 }
+
+.runs-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.runs-range {
+  margin: 0;
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
