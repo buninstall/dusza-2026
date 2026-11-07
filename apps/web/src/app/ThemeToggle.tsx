@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "../components/ui/Button.tsx";
 import { hu } from "../i18n/hu.ts";
+import { applyCursor, initialCursor } from "../lib/cursor.ts";
 import { initialTheme, nextTheme, saveTheme, type Theme } from "../lib/theme.ts";
 
 export function ThemeToggle() {
@@ -15,6 +16,7 @@ export function ThemeToggle() {
       aria-label={isToLight ? hu.nav.toLightLabel : hu.nav.toDarkLabel}
       onPress={() => {
         saveTheme(target);
+        applyCursor(initialCursor());
         setTheme(target);
       }}
     >

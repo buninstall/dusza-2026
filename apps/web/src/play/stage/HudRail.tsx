@@ -1,7 +1,6 @@
 import type { RobotState } from "@minescript/engine";
 import { Led } from "../../components/Led.tsx";
 import { hu } from "../../i18n/hu.ts";
-import { PixelText } from "../../pixel/PixelText.tsx";
 import { lampFor, type StagePhase } from "../phase.ts";
 import { CartGauge } from "./CartGauge.tsx";
 import { Compass } from "./Compass.tsx";
@@ -23,8 +22,8 @@ function LineReadout({ line, lineText, onReveal }: LineReadoutProps) {
       ) : (
         <button type="button" className="hud-line-button" onClick={() => onReveal(line)}>
           <span className="visually-hidden">{hu.play.lineJump(line)}</span>
-          <span className="hud-value" aria-hidden="true">
-            <PixelText text={String(line)} scale={3} />
+          <span className="hud-line-no" aria-hidden="true">
+            {line}.
           </span>
           {lineText === null ? null : <code className="hud-ticker">{lineText.trim()}</code>}
         </button>

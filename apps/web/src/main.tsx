@@ -5,6 +5,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Loading, NotFound, RouteError } from "./app/StatusScreens.tsx";
 import { sessionQuery } from "./auth/session.ts";
+import { applyCursor, initialCursor } from "./lib/cursor.ts";
 import { createQueryClient } from "./lib/query.ts";
 import { applyTheme, initialTheme } from "./lib/theme.ts";
 import { routeTree } from "./routeTree.gen.ts";
@@ -40,6 +41,7 @@ declare module "@tanstack/react-router" {
 }
 
 applyTheme(initialTheme());
+applyCursor(initialCursor());
 
 const container = document.getElementById("root");
 if (container) {

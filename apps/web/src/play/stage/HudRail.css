@@ -53,10 +53,13 @@
 }
 
 .hud-of {
-  font: var(--type-mono-sm);
-  line-height: 1;
+  display: flex;
   color: var(--c-text-muted);
   white-space: nowrap;
+}
+
+.hud-value .hud-of .px-text {
+  height: 12px;
 }
 
 .hud-cart-art {
@@ -129,6 +132,14 @@
 .hud-line-idle {
   font: var(--type-mono);
   color: var(--c-text-faint);
+}
+
+.hud-line-no {
+  flex: none;
+  color: var(--c-reward);
+  font: var(--type-mono-sm);
+  font-weight: 700;
+  line-height: 1;
 }
 
 .hud-ticker {

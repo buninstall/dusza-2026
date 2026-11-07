@@ -1,7 +1,5 @@
 import type { PixelRows } from "./pixel-art.ts";
 
-export const GEM_TONES = { G: "gem", C: "gem-hi", D: "gem-lo", w: "glint" } as const;
-
 export const PEBBLE_FLOOR_ART: PixelRows = [
   "fffffffffffffffs",
   "fffffffffffffffs",
@@ -36,25 +34,6 @@ export const CRACKED_FLOOR_ART: PixelRows = [
   "fffffffffffsfffs",
   "fflfffffffflsffs",
   "ffffffffffffhffs",
-  "fffffffffffffffs",
-  "ssssssssssssssss",
-];
-
-export const CRYSTAL_FLOOR_ART: PixelRows = [
-  "fffffffffffffffs",
-  "fffffffffffffffs",
-  "ffffffffffffhffs",
-  "ffffhffffffffffs",
-  "ffffffflfffffffs",
-  "fffffffffffffffs",
-  "fflffffffffffffs",
-  "fffffffffffwfffs",
-  "fffffffffffCfffs",
-  "ffffffffffCGGffs",
-  "ffffCfffffCGDffs",
-  "fffCGDfffCGGDDfs",
-  "ffflllffflllllfs",
-  "fffffffffffffffs",
   "fffffffffffffffs",
   "ssssssssssssssss",
 ];

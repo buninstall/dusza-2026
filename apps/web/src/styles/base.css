@@ -98,6 +98,55 @@ table {
   outline-offset: var(--focus-offset);
 }
 
+:root[data-cursor="pickaxe"],
+:root[data-cursor="pickaxe"] * {
+  cursor: var(--cursor-pick);
+}
+
+:root[data-cursor="pickaxe"] :is(input, textarea, [contenteditable="true"], .cm-content) {
+  cursor: text;
+}
+
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--c-screen);
+  box-shadow: inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-lo);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid var(--c-screen);
+  background: var(--c-line-strong);
+  box-shadow:
+    inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-hi),
+    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-shadow);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-text-muted);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--c-accent);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--c-screen);
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-color: var(--c-line-strong) var(--c-screen);
+  }
+}
+
 ::selection {
   background: var(--c-selection);
   color: var(--c-text);

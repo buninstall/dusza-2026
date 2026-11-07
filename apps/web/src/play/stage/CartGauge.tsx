@@ -1,4 +1,5 @@
 import { hu } from "../../i18n/hu.ts";
+import { PixelText } from "../../pixel/PixelText.tsx";
 import { RollingDigits } from "../../pixel/RollingDigits.tsx";
 import { PixelSprite } from "../../pixel/SpriteLayers.tsx";
 import { CART_LEVELS, TILE_SPRITES } from "../../pixel/tiles.ts";
@@ -23,8 +24,12 @@ export function CartGauge({ gold, total, isRolling }: CartGaugeProps) {
         <span className="hud-reward">
           <RollingDigits value={gold} scale={3} isRolling={isRolling} />
         </span>
-        <span className="visually-hidden">{gold}</span>
-        <span className="hud-of">/ {total}</span>
+        <span className="visually-hidden">
+          {gold} / {total}
+        </span>
+        <span aria-hidden="true" className="hud-of">
+          <PixelText text={`/${total}`} scale={2} />
+        </span>
       </span>{" "}
       {sprite ? <PixelSprite sprite={sprite} className="hud-cart-art" /> : null}
     </div>

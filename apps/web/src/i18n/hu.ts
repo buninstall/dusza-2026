@@ -157,6 +157,8 @@ export const hu = {
     admin: "Felhasználók",
     toLight: "Felszín",
     toDark: "Tárna",
+    cursorPickaxe: "Csákány egérmutató",
+    cursorSystem: "Rendes egérmutató",
     toLightLabel: "Váltás a világos Felszín témára",
     toDarkLabel: "Váltás a sötét Tárna témára",
     soundOn: "Hang bekapcsolva",

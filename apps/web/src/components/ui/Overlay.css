@@ -116,6 +116,8 @@
 
 .overlay-popover {
   max-width: min(26rem, calc(100vw - var(--space-5)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface-raised);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
@@ -206,8 +208,10 @@
 
 .dl-keys {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  align-items: start;
   gap: var(--space-2) var(--space-4);
+  margin: 0;
   font: var(--type-help);
 }
 
@@ -218,11 +222,21 @@
 .dl-keys dt {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
   gap: var(--space-1);
+  max-width: 11rem;
   font: var(--type-mono-sm);
 }
 
+.dl-keys kbd {
+  flex: none;
+  white-space: nowrap;
+}
+
 .dl-keys dd {
+  margin: 0;
+  padding-top: 1px;
   color: var(--c-text-muted);
 }
 

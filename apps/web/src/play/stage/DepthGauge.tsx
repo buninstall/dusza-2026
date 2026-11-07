@@ -24,8 +24,12 @@ export function DepthGauge({ steps, isLimit }: DepthGaugeProps) {
       <span className="label">{hu.play.steps}</span>{" "}
       <span className="hud-value">
         <PixelText text={String(steps)} scale={3} />
-        <span className="visually-hidden">{steps}</span>
-        <span className="hud-of">{hu.play.stepsLimit(STEP_LIMIT)}</span>
+        <span className="visually-hidden">
+          {steps} {hu.play.stepsLimit(STEP_LIMIT)}
+        </span>
+        <span aria-hidden="true" className="hud-of">
+          <PixelText text={`/${STEP_LIMIT}`} scale={2} />
+        </span>
       </span>{" "}
       <span aria-hidden="true" className="hud-meter" style={meter}>
         {Array.from({ length: SEGMENTS }, (_, segment) => (

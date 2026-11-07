@@ -26,12 +26,6 @@
     "log";
 }
 
-.stage[data-layout="cab"] > .deck {
-  position: sticky;
-  bottom: 0;
-  z-index: 4;
-}
-
 @media (max-height: 48rem) {
   .stage[data-layout="cab"] {
     --well-min: 8rem;
@@ -113,6 +107,26 @@
   min-height: 0;
   overflow: hidden;
   background: var(--c-screen);
+}
+
+.stage[data-layout="cab"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.stage[data-layout="cab"] > * {
+  flex: none;
+}
+
+.stage[data-layout="cab"] > .stage-well {
+  flex: 1 1 0;
+  min-height: var(--well-min);
+}
+
+.stage[data-layout="cab"] > .deck {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
 }
 
 .well-view {
@@ -293,8 +307,9 @@
 }
 
 .well-zoom-level {
-  min-width: 4ch;
-  font: var(--type-micro);
-  color: var(--c-text-muted);
+  min-width: 5ch;
+  font: var(--type-mono-sm);
+  font-weight: 700;
+  color: var(--c-text);
   text-align: center;
 }
