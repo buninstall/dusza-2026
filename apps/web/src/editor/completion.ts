@@ -1,11 +1,16 @@
 import {
+  acceptCompletion,
   autocompletion,
   type Completion,
   type CompletionContext,
   type CompletionResult,
+  closeCompletion,
+  moveCompletionSelection,
   snippetCompletion,
+  startCompletion,
 } from "@codemirror/autocomplete";
-import type { Extension } from "@codemirror/state";
+import { type Extension, Prec } from "@codemirror/state";
+import { keymap } from "@codemirror/view";
 import type { CompletionKind, Engine } from "@minescript/engine";
 
 const completionType: Record<CompletionKind, string> = {
@@ -38,6 +43,21 @@ export function completionSource(engine: Engine) {
   };
 }
 
+const completionKeys = Prec.highest(
+  keymap.of([
+    { key: "Ctrl-Space", run: startCompletion },
+    { key: "Escape", run: closeCompletion },
+    { key: "ArrowDown", run: moveCompletionSelection(true) },
+    { key: "ArrowUp", run: moveCompletionSelection(false) },
+    { key: "PageDown", run: moveCompletionSelection(true, "page") },
+    { key: "PageUp", run: moveCompletionSelection(false, "page") },
+    { key: "Tab", run: acceptCompletion },
+  ]),
+);
+
 export function mineScriptCompletion(engine: Engine): Extension {
-  return autocompletion({ override: [completionSource(engine)], icons: false });
+  return [
+    autocompletion({ override: [completionSource(engine)], icons: false, defaultKeymap: false }),
+    completionKeys,
+  ];
 }

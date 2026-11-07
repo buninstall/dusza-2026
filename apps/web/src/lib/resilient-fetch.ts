@@ -1,7 +1,7 @@
 export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 export type Wait = (ms: number) => Promise<void>;
 
-export const RETRY_DELAYS_MS = [250, 500, 1000, 2000, 3000] as const;
+export const RETRY_DELAYS_MS = [300, 700, 1500] as const;
 export const RETRY_SAFE_HEADER = "x-retry-safe";
 
 const RETRYABLE_STATUS = new Set([500, 502, 503, 504]);

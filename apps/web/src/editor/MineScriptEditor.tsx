@@ -30,6 +30,7 @@ import {
   setRuntimeMark,
 } from "./exec-line.ts";
 import { mineScriptHover } from "./hover.ts";
+import { mineScriptIndent } from "./indent.ts";
 import { type InsertableBlock, planInsertion } from "./insertion.ts";
 import { formatDocument, mineScriptKeymap } from "./keymap.ts";
 import { mineScriptHighlighting, mineScriptLanguage } from "./language.ts";
@@ -261,6 +262,7 @@ export function MineScriptEditor({
           mineScriptHover(engine),
           errorLens(),
           mineScriptKeymap(engine, (result) => callbacks.current.onFormat?.(result)),
+          mineScriptIndent(),
           keymap.of([...defaultKeymap, ...historyKeymap]),
           readOnly.current.of(readOnlyExtension(initial.current.isReadOnly)),
           initial.current.placeholder ? placeholderExtension(initial.current.placeholder) : [],

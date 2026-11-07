@@ -10,7 +10,7 @@
 
 .board-viewport[data-fit="both"] {
   display: grid;
-  place-items: center;
+  place-items: safe center;
   height: 100%;
   padding: 0;
 }

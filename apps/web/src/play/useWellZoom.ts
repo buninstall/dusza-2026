@@ -10,6 +10,7 @@ const WHEEL_CAP = 100;
 const WHEEL_SCALE = 400;
 const DRAG_THRESHOLD = 4;
 const CENTER = 0.5;
+const SCROLL_SLACK = 1;
 
 type Fraction = { fx: number; fy: number };
 type Anchor = Fraction & { clientX: number; clientY: number };
@@ -64,6 +65,13 @@ function suppressNextClick(well: HTMLElement): void {
   window.setTimeout(() => well.removeEventListener("click", stop, { capture: true }), 0);
 }
 
+function canScroll(well: HTMLElement): boolean {
+  return (
+    well.scrollHeight > well.clientHeight + SCROLL_SLACK ||
+    well.scrollWidth > well.clientWidth + SCROLL_SLACK
+  );
+}
+
 function isOutside(cell: DOMRect, view: DOMRect): boolean {
   return (
     cell.left < view.left ||
@@ -84,7 +92,8 @@ function useWheelZoom(
       return;
     }
     const onWheel = (event: WheelEvent) => {
-      if (!isWheelZoom && !event.ctrlKey && !event.metaKey) {
+      const isPinch = event.ctrlKey || event.metaKey;
+      if (!isPinch && (!isWheelZoom || canScroll(well))) {
         return;
       }
       event.preventDefault();
@@ -108,7 +117,8 @@ function useDragPan(wellRef: RefObject<HTMLElement | null>): void {
     }
     let drag: Drag | null = null;
     const onDown = (event: PointerEvent) => {
-      if (event.button !== 0 || event.pointerType === "touch" || usePlayUi.getState().zoom <= 1) {
+      const isPannable = usePlayUi.getState().zoom > 1 || canScroll(well);
+      if (event.button !== 0 || event.pointerType === "touch" || !isPannable) {
         return;
       }
       drag = {

@@ -3,11 +3,10 @@ import { Loading } from "../app/StatusScreens.tsx";
 import "../components/DataTable.css";
 import { EmptyState } from "../components/EmptyState.tsx";
 import { Led } from "../components/Led.tsx";
+import { LoadFailed } from "../components/LoadFailed.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
-import { Notice } from "../components/Notice.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
-import { errorMessage } from "../lib/api.ts";
 import "./MyRunsPage.css";
 import { myRunsQuery, type RunRow } from "./queries.ts";
 
@@ -83,12 +82,12 @@ function RunsTable({ runs }: { runs: readonly RunRow[] }) {
 }
 
 export function MyRunsPage() {
-  const { data, error } = useQuery(myRunsQuery);
+  const { data, error, refetch } = useQuery(myRunsQuery);
   return (
     <div className="runs-page">
       <LocationPlate name={hu.signs.runs} meta={hu.runs.meta} />
       {error ? (
-        <Notice tone="error" title={errorMessage(error, hu.runs.loadFailed)} live="alert" />
+        <LoadFailed error={error} fallback={hu.runs.loadFailed} onRetry={() => void refetch()} />
       ) : null}
       {!data && !error ? <Loading /> : null}
       {data?.runs.length === 0 ? (

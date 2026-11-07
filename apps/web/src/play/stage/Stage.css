@@ -21,8 +21,8 @@
     "bezel"
     "rail"
     "well"
-    "deck"
     "status"
+    "deck"
     "log";
 }
 
@@ -105,6 +105,8 @@
   min-width: 0;
   min-height: 0;
   container: well / size;
+  overflow: auto;
+  overscroll-behavior: contain;
   padding: var(--space-1);
 }
 
@@ -211,9 +213,7 @@
 }
 
 .well-view[data-zoomed="true"] {
-  overflow: auto;
   cursor: grab;
-  overscroll-behavior: contain;
 }
 
 .well-view[data-panning="true"] {
@@ -249,25 +249,25 @@
   }
 }
 
-.well-view[data-zoomed="true"] .board-corner,
-.well-view[data-zoomed="true"] .board-ruler-top,
-.well-view[data-zoomed="true"] .board-ruler-left {
+.well-view .board-corner,
+.well-view .board-ruler-top,
+.well-view .board-ruler-left {
   position: sticky;
   z-index: 7;
   background: var(--c-screen);
 }
 
-.well-view[data-zoomed="true"] .board-corner {
+.well-view .board-corner {
   top: 0;
   left: 0;
   z-index: 8;
 }
 
-.well-view[data-zoomed="true"] .board-ruler-top {
+.well-view .board-ruler-top {
   top: 0;
 }
 
-.well-view[data-zoomed="true"] .board-ruler-left {
+.well-view .board-ruler-left {
   left: 0;
 }
 

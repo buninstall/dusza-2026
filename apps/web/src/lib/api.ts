@@ -35,7 +35,11 @@ export async function call<R extends ResponseLike>(request: Promise<R>): Promise
   try {
     response = await request;
   } catch {
-    throw new ApiError(0, "NETWORK", "A szerver nem érhető el. Ellenőrizd, hogy fut-e.");
+    throw new ApiError(
+      0,
+      "NETWORK",
+      "Nem érjük el a szervert. Ellenőrizd az internetkapcsolatot, és próbáld újra.",
+    );
   }
   if (!response.ok) {
     const body = await response.json().catch(() => null);

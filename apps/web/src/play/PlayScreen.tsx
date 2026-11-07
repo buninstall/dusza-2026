@@ -20,6 +20,7 @@ import { boardDressing } from "./stage/board-dressing.tsx";
 import { ControlDeck } from "./stage/ControlDeck.tsx";
 import { HudRail } from "./stage/HudRail.tsx";
 import { ConsoleTape, LOG_ID, LogToggle, MemoryTable } from "./stage/LogStrip.tsx";
+import { LongRunNotice } from "./stage/LongRunNotice.tsx";
 import { ShiftReport } from "./stage/ShiftReport.tsx";
 import {
   isTurbo,
@@ -248,6 +249,12 @@ export function PlayScreen(props: PlayScreenProps) {
           </div>
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
         </div>
+        <div className="stage-status">
+          <LongRunNotice />
+          {report}
+          {view.report === "stopped" || blocked ? null : props.reportFooter}
+          {props.wellOverlay}
+        </div>
         <ControlDeck
           mode={mode}
           layout="cab"
@@ -257,11 +264,6 @@ export function PlayScreen(props: PlayScreenProps) {
           onRun={() => run(true)}
           extra={<LogToggle count={consoleCount} isOpen={ui.isLogOpen} onToggle={ui.toggleLog} />}
         />
-        <div className="stage-status">
-          {report}
-          {view.report === "stopped" || blocked ? null : props.reportFooter}
-          {props.wellOverlay}
-        </div>
         {ui.isLogOpen ? (
           <div className="log" id={LOG_ID}>
             <ConsoleTape

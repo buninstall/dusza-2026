@@ -382,6 +382,14 @@ export const hu = {
     stepBack: "Egy sor vissza",
     restart: "Elejére",
     skipToEnd: "Ugrás a végére",
+    longRunTitle: (lines: number, minutes: number) =>
+      minutes < 1
+        ? `Hosszú futás: ${lines} sor, még majdnem egy perc`
+        : `Hosszú futás: ${lines} sor, még kb. ${minutes} perc`,
+    longRunLoop:
+      "Valószínűleg végtelen ciklus: a futás az 1000 soros korlátnál áll meg. Nézd meg, változik-e a while feltétele a ciklusban.",
+    longRunHint: "Nem kell kivárnod: ugorj a végére, vagy gyorsítsd fel.",
+    speedUp: "Maximális sebesség",
     withKey: (label: string, key: string) => `${label} (${key})`,
     speed: "Sebesség",
     speedValue: (perSecond: number) => `${perSecond} sor/s`,

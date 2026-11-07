@@ -39,6 +39,10 @@ function revealDiagnostic(editor: EditorHandle | null, diagnostic: Diagnostic | 
   }
 }
 
+function returnFocusAfterMenu(focus: () => void): void {
+  requestAnimationFrame(() => requestAnimationFrame(focus));
+}
+
 function useSheetDiagnostics() {
   const [report, setReport] = useState<LintReport>({ diagnostics: [], hasFailed: false });
   return { ...report, setReport };
@@ -81,6 +85,7 @@ export function ProgramSheet(props: ProgramSheetProps) {
     const range = editorRef.current?.insertBlock(block);
     if (range) {
       setAnnouncement(hu.blocks.inserted(range.firstLine, range.lastLine));
+      returnFocusAfterMenu(() => editorRef.current?.focus());
     }
   };
 

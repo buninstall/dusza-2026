@@ -44,6 +44,7 @@ export function mineScriptLanguage(keywords: readonly string[]): StreamLanguage<
   const keywordSet = new Set(keywords);
   return StreamLanguage.define<null>({
     name: "minescript",
+    languageData: { indentOnInput: /^\s*else$/ },
     startState: () => null,
     token(stream) {
       if (stream.eatSpace()) {

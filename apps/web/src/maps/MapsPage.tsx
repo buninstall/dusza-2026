@@ -2,14 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import { EmptyState } from "../components/EmptyState.tsx";
+import { LoadFailed } from "../components/LoadFailed.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
-import { Notice } from "../components/Notice.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { Tab, TabList, TabPanel, Tabs } from "../components/ui/Tabs.tsx";
 import { MAX_NUGGETS } from "../game/NuggetRow.tsx";
 import { hu } from "../i18n/hu.ts";
-import { errorMessage } from "../lib/api.ts";
 import { useMediaQuery } from "../lib/useMediaQuery.ts";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { TILE_SPRITES } from "../pixel/tiles.ts";
@@ -39,10 +38,12 @@ function NewMapLink() {
 }
 
 function LevelGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; user: SessionUser }) {
-  const { data, error, isPending } = useQuery(mapsQuery(scope));
+  const { data, error, isPending, refetch } = useQuery(mapsQuery(scope));
   const isWide = useMediaQuery("(min-width: 48rem)", true);
   if (error) {
-    return <Notice tone="error" title={errorMessage(error, hu.maps.loadFailed)} live="alert" />;
+    return (
+      <LoadFailed error={error} fallback={hu.maps.loadFailed} onRetry={() => void refetch()} />
+    );
   }
   if (isPending) {
     return <Loading />;

@@ -1,3 +1,4 @@
+import { indentLess } from "@codemirror/commands";
 import { indentUnit } from "@codemirror/language";
 import { EditorSelection, type Extension } from "@codemirror/state";
 import { type Command, type EditorView, keymap } from "@codemirror/view";
@@ -6,6 +7,9 @@ import type { Engine, FormatResult } from "@minescript/engine";
 export const INDENT = "    ";
 
 export const insertSpacesTab: Command = (view) => {
+  if (view.state.readOnly) {
+    return false;
+  }
   view.dispatch(
     view.state.changeByRange((range) => {
       const line = view.state.doc.lineAt(range.from);
@@ -42,7 +46,7 @@ export function mineScriptKeymap(
   return [
     indentUnit.of(INDENT),
     keymap.of([
-      { key: "Tab", run: insertSpacesTab },
+      { key: "Tab", run: insertSpacesTab, shift: indentLess },
       { key: "Shift-Alt-f", run: format, preventDefault: true },
     ]),
   ];
