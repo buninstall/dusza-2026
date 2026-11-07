@@ -84,13 +84,15 @@ export function ShiftReport(props: ShiftReportProps) {
         <PixelText text={content.stamp} scale={2} />
       </span>
       <div className="report-body">
-        <p className="report-text">{content.text}</p>
-        {content.meta ? (
-          <p className="report-meta">
-            <span className="visually-hidden">{`${hu.play.errorCodeLabel}: `}</span>
-            {content.meta}
-          </p>
-        ) : null}
+        <p className="report-head">
+          <span className="report-text">{content.text}</span>
+          {content.meta ? (
+            <span className="report-meta">
+              <span className="visually-hidden">{`${hu.play.errorCodeLabel}: `}</span>
+              {content.meta}
+            </span>
+          ) : null}
+        </p>
         {content.hint ? <p className="report-hint">{content.hint}</p> : null}
       </div>
       {content.line === null ? null : (

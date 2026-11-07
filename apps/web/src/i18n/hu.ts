@@ -106,6 +106,11 @@ export const dirNames: Record<Dir, string> = {
 
 const lineRef = (line: number) => `${line}. sor`;
 
+function runtimeTitle(code: string): string {
+  const known: Partial<Record<string, { title: string }>> = runtimeErrors;
+  return known[code]?.title ?? code;
+}
+
 export function articleFor(value: number): "a" | "az" {
   const digits = String(Math.abs(Math.trunc(value)));
   const startsWithVowel =
@@ -488,9 +493,9 @@ export const hu = {
       `A program nem indítható: ${count} szintaktikai hiba. Első: ${lineRef(line)}, ${title}.`,
     runtimeErrorTitle: (code: RuntimeErrorCode, line: number) => `${code} · ${lineRef(line)}`,
     runtimeErrorWithCode: (code: RuntimeErrorCode, line: number) =>
-      `${runtimeErrors[code].title} ${articleFor(line)} ${lineRef(line)}ban · ${code}`,
+      `${runtimeTitle(code)} ${articleFor(line)} ${lineRef(line)}ban · ${code}`,
     runtimeErrorSpoken: (code: RuntimeErrorCode, line: number) =>
-      `${runtimeErrors[code].title} ${articleFor(line)} ${lineRef(line)}ban. Hibakód: ${code}.`,
+      `${runtimeTitle(code)} ${articleFor(line)} ${lineRef(line)}ban. Hibakód: ${code}.`,
     errorCodeLabel: "Hibakód",
     finishedBody: (gold: number, steps: number) =>
       `A program hiba nélkül lefutott: ${gold} arany, ${steps} lépés.`,
