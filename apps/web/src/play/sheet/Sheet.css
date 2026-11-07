@@ -80,6 +80,17 @@
   scrollbar-width: none;
 }
 
+@media (pointer: coarse) {
+  .sheet-toolbar .btn,
+  .drawers .btn {
+    min-height: var(--control-height-sm);
+  }
+
+  .sheet-toolbar .btn-icon-only {
+    min-width: var(--control-height-sm);
+  }
+}
+
 .drawer-button {
   flex: 1 0 auto;
   min-width: 0;

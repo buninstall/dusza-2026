@@ -92,23 +92,17 @@ export function RobotLayer({
       data-mood={mood}
       data-idle={isIdle}
     >
-      <div
-        key={motion?.key ?? 0}
-        className="board-robot-motion"
-        data-motion={motion?.kind ?? "still"}
-        data-dir={robot.dir}
-      >
+      <div className="board-robot-heading" style={{ "--turns": turns } as CSSProperties}>
         {beam ? (
-          <div
-            key={beam.key}
-            className="board-robot-cone"
-            data-scan={beam.isScan}
-            style={{ "--turns": turns } as CSSProperties}
-          >
+          <div key={beam.key} className="board-robot-cone" data-scan={beam.isScan}>
             <SpriteUse id={SPRITE_ID.cone} className="board-fx-art" />
           </div>
         ) : null}
-        <div className="board-robot-body" style={{ "--turns": turns } as CSSProperties}>
+        <div
+          key={motion?.key ?? 0}
+          className="board-robot-motion"
+          data-motion={motion?.kind ?? "still"}
+        >
           <div key={drift.key} className="board-robot-drift" data-turn={drift.side}>
             <PixelSprite
               sprite={TILE_SPRITES.robot}

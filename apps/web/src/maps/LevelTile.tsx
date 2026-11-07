@@ -15,7 +15,7 @@ type LevelTileProps = {
 export function MapFacts({ map }: { map: MapSummary }) {
   return (
     <p className="lv-facts">
-      <span>{hu.maps.by(map.ownerName)}</span>
+      <span className="lv-author">{hu.maps.by(map.ownerName)}</span>
       {map.difficulty ? (
         <span className="lv-difficulty" data-level={map.difficulty}>
           {hu.maps.difficulty[map.difficulty]}

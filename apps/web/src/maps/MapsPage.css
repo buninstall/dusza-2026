@@ -126,6 +126,13 @@
   white-space: nowrap;
 }
 
+.lv-author {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .lv-difficulty {
   padding: 1px var(--space-2);
   border: var(--border-thin) solid var(--c-line-strong);
