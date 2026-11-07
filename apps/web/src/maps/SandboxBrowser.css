@@ -128,3 +128,22 @@
     grid-row: 2;
   }
 }
+
+@media (max-width: 26rem) {
+  .maps-plate.maps-plate-sandbox {
+    padding-inline: var(--space-2);
+  }
+
+  .maps-plate-sandbox .maps-plate-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .maps-plate-sandbox .maps-plate-grid > .maps-progress {
+    grid-row: auto;
+  }
+
+  .maps-plate-sandbox .tabs-tab {
+    padding-inline: var(--space-1);
+    font-size: 0.75rem;
+  }
+}

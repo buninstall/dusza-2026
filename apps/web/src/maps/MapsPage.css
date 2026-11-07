@@ -645,7 +645,7 @@
 
 .maps-plate-grid {
   display: grid;
-  grid-template-columns: var(--plate-left) minmax(0, 1fr) var(--plate-right);
+  grid-template-columns: var(--plate-left) minmax(6rem, 1fr) minmax(8rem, var(--plate-right));
   grid-auto-rows: var(--plate-control);
   align-items: center;
   gap: var(--space-2) var(--space-3);
@@ -693,4 +693,38 @@
 .maps-plate-grid > .field,
 .maps-plate-grid .field-select-button {
   width: 100%;
+}
+
+@media (max-width: 48rem) {
+  .maps-plate:not(.maps-plate-sandbox) .maps-plate-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .maps-plate:not(.maps-plate-sandbox) .maps-plate-grid > .maps-mode,
+  .maps-plate:not(.maps-plate-sandbox) .maps-plate-grid > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 40rem) {
+  .mine-front {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 26rem) {
+  .maps-plate:not(.maps-plate-sandbox) .maps-plate-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lv-tile .lv-actions,
+  .daily .lv-actions {
+    grid-template-columns: minmax(0, 1fr) var(--control-height);
+    grid-auto-flow: row dense;
+  }
+
+  .lv-tile .lv-actions > :nth-child(2),
+  .daily .lv-actions > :nth-child(2) {
+    grid-column: 1 / -1;
+  }
 }
