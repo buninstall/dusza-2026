@@ -35,16 +35,21 @@ describe("térképlista", () => {
     );
     respond("GET", "/maps", { maps: story });
     renderApp("/maps?mode=story");
-    const open = await screen.findByRole("list", { name: "A Történet nyitott pályái" });
-    expect(within(open).getAllByRole("listitem")).toHaveLength(5);
-    expect(within(open).getByText("Szint 01")).toBeTruthy();
-    const locked = screen.getByRole("list", { name: "A Történet zárt pályái" });
-    expect(within(locked).getAllByRole("listitem")).toHaveLength(25);
-    expect(within(locked).getAllByText("Zárva")).toHaveLength(25);
-    expect(within(locked).queryByRole("link", { name: /^Játék:/ })).toBeNull();
+    const first = await screen.findByRole("list", { name: "I. fejezet pályái" });
+    expect(within(first).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(first).getByText("Szint 01")).toBeTruthy();
+    const second = screen.getByRole("list", { name: "II. fejezet pályái" });
+    expect(within(second).getAllByText("Zárva")).toHaveLength(5);
+    expect(within(second).queryByRole("link", { name: /^Játék:/ })).toBeNull();
+    expect(screen.getAllByText("Zárva")).toHaveLength(25);
     expect(
       screen.getByText(
-        "Még 5 pályán kell minden aranyat kibányászni, hogy a következő fejezet kinyíljon.",
+        "Még 5 pályán kell minden aranyat kibányászni, hogy kinyíljon a II. fejezet.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Még 5 pályán kell minden aranyat kibányászni, hogy kinyíljon az V. fejezet.",
       ),
     ).toBeTruthy();
   });

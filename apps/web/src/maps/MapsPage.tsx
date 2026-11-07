@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { type ReactNode, type RefObject, useRef, useState } from "react";
+import { Fragment, type ReactNode, type RefObject, useRef, useState } from "react";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import { EmptyState } from "../components/EmptyState.tsx";
@@ -224,36 +224,23 @@ function SandboxGrid({ scope, sort, difficulty, user }: SandboxGridProps) {
 }
 
 function StoryChapters({ campaign, user }: { campaign: Campaign; user: SessionUser }) {
-  const open = campaign.groups.filter((group) => group.lock === null);
-  const locked = campaign.groups.filter((group) => group.lock !== null);
-  const openMaps = open.flatMap((group) => group.maps);
-  const lockedMaps = locked.flatMap((group) => group.maps);
-  const depthOf = new Map(
-    [...openMaps, ...lockedMaps].map((map, index): [number, number] => [map.id, index + 1]),
-  );
-  const next = locked[0];
+  const ordered = campaign.groups.flatMap((group) => group.maps);
+  const depthOf = new Map(ordered.map((map, index): [number, number] => [map.id, index + 1]));
   return (
     <div className="ch-campaign">
-      <Shaft
-        maps={openMaps}
-        depthOf={depthOf}
-        user={user}
-        label={story.openLevels}
-        headingLevel={2}
-      />
-      {next?.lock ? (
-        <ChapterCounter remaining={next.lock.remaining} stratum={next.chapter.stratum} />
-      ) : null}
-      {lockedMaps.length > 0 ? (
-        <Shaft
-          maps={lockedMaps}
-          depthOf={depthOf}
-          user={user}
-          label={story.lockedLevels}
-          headingLevel={2}
-          isLocked
-        />
-      ) : null}
+      {campaign.groups.map((group, index) => (
+        <Fragment key={group.chapter.numeral}>
+          {index > 0 ? <ChapterCounter chapter={group.chapter} lock={group.lock} /> : null}
+          <Shaft
+            maps={group.maps}
+            depthOf={depthOf}
+            user={user}
+            label={story.chapterLevels(group.chapter.numeral)}
+            headingLevel={2}
+            isLocked={group.lock !== null}
+          />
+        </Fragment>
+      ))}
     </div>
   );
 }
@@ -345,6 +332,19 @@ function MineLayer({
   );
 }
 
+function StoryProgress() {
+  const { data } = useQuery(mapsQuery("all"));
+  const campaign = groupCampaign(sortMaps(data?.maps ?? [], "order"));
+  const maps = campaign.groups.flatMap((group) => group.maps);
+  const cleared = campaign.groups.reduce((sum, group) => sum + group.cleared, 0);
+  return (
+    <p className="maps-progress">
+      <PixelIcon name="pickaxe" />
+      <span>{story.progress(cleared, maps.length)}</span>
+    </p>
+  );
+}
+
 function StoryPage({
   user,
   onModeChange,
@@ -361,10 +361,15 @@ function StoryPage({
           name={hu.signs.maps}
           className="maps-plate"
           actions={
-            <div className="maps-plate-row">
-              <ModeSwitch mode="story" onChange={onModeChange} />
-              <StoryBoardLink isCompact />
-            </div>
+            <>
+              <div className="maps-plate-row">
+                <ModeSwitch mode="story" onChange={onModeChange} />
+                <StoryBoardLink isCompact />
+              </div>
+              <div className="maps-plate-row">
+                <StoryProgress />
+              </div>
+            </>
           }
         />
       </div>
@@ -417,20 +422,22 @@ export function MapsPage({
                     <Tab id="all">{hu.maps.scopeAll}</Tab>
                     <Tab id="mine">{hu.maps.scopeMine}</Tab>
                   </TabList>
-                  <Select
-                    label={story.difficultyLabel}
-                    isLabelHidden
-                    value={difficulty}
-                    options={DIFFICULTY_OPTIONS}
-                    onChange={onDifficultyChange}
-                  />
-                  <Select
-                    label={hu.maps.sortLabel}
-                    isLabelHidden
-                    value={sort}
-                    options={SORT_OPTIONS}
-                    onChange={onSortChange}
-                  />
+                  <div className="maps-plate-filters">
+                    <Select
+                      label={story.difficultyLabel}
+                      isLabelHidden
+                      value={difficulty}
+                      options={DIFFICULTY_OPTIONS}
+                      onChange={onDifficultyChange}
+                    />
+                    <Select
+                      label={hu.maps.sortLabel}
+                      isLabelHidden
+                      value={sort}
+                      options={SORT_OPTIONS}
+                      onChange={onSortChange}
+                    />
+                  </div>
                 </div>
               </>
             }

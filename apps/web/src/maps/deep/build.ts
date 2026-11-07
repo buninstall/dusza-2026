@@ -356,12 +356,7 @@ function caves(
   });
 }
 
-function decorateRoom(
-  world: World,
-  level: Level,
-  rand: () => number,
-  lanterns: Lantern[],
-): void {
+function decorateRoom(world: World, level: Level, rand: () => number, lanterns: Lantern[]): void {
   const room = level.room;
   if (!room) {
     const rx = level.x0 + 8 + Math.floor(rand() * 6);
@@ -426,13 +421,7 @@ function decorateRoom(
   }
 }
 
-function decorateLevel(
-  world: World,
-  level: Level,
-  groundY: number,
-  rand: () => number,
-  lanterns: Lantern[],
-): void {
+function decorateLevel(world: World, level: Level, rand: () => number, lanterns: Lantern[]): void {
   const b = level.box;
   rails(world, level.x0, level.x1, level.rail);
   for (
@@ -654,7 +643,7 @@ export function buildMine(input: LayoutInput): Mine {
   paintShaft(world, shaftX, groundY - 1, bottomY + 6);
   const frame = headframe(world, shaftX, groundY);
   const lanterns: Lantern[] = [];
-  for (const level of all) decorateLevel(world, level, groundY, rand, lanterns);
+  for (const level of all) decorateLevel(world, level, rand, lanterns);
   for (const chapter of chapters) decorateChapter(world, chapter, rand, lanterns, front);
   for (const level of all) world.setMask(level.box.x, level.box.y, level.box.w, level.box.h, NICHE);
   for (const { box } of chapters) world.setMask(box.x, box.y, box.w, box.h, NICHE);

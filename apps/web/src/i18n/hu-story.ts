@@ -185,19 +185,26 @@ export const tourModes = {
   back: "Vissza",
 };
 
+export function chapterName(chapter: Chapter): string {
+  return chapter.from.replace(/fejezetből$/, "fejezet");
+}
+
 export const story = {
   modeLabel: "Játékmód",
   modes: { sandbox: "Homokozó", story: "Történet" },
-  openLevels: "A Történet nyitott pályái",
   difficultyLabel: "Nehézség",
   difficulties: { all: "Minden szint", easy: "Könnyű", medium: "Közepes", hard: "Nehéz" },
   more: (count: number) => `Továbbiak (még ${count})`,
   shown: (shown: number, total: number) => `${shown} / ${total} pálya`,
   noMatch: "Ezzel a szűrővel nincs pálya. Válassz másik nehézséget, vagy készíts egyet!",
-  lockedLevels: "A Történet zárt pályái",
   counter: (remaining: number) => `Még ${remaining} pálya`,
-  counterLabel: (remaining: number) =>
-    `Még ${remaining} pályán kell minden aranyat kibányászni, hogy a következő fejezet kinyíljon.`,
+  counterOpen: "Nyitva",
+  progress: (cleared: number, total: number) => `${cleared} / ${total} pálya kész`,
+  counterLabel: (remaining: number, name: string) =>
+    `Még ${remaining} pályán kell minden aranyat kibányászni, hogy kinyíljon ${name}.`,
+  counterOpenLabel: (name: string) =>
+    `${name.charAt(0).toLocaleUpperCase("hu-HU")}${name.slice(1)} nyitva.`,
+  chapterLevels: (numeral: string) => `${numeral} fejezet pályái`,
   chapterHeading: (numeral: string, title: string) => `${numeral} fejezet · ${title}`,
   diaryBy: (date: string) => `Kelemen Bálint főaknász naplója, ${date}`,
   findingHeading: (robot: string) => `Lelet: ${robot}`,

@@ -476,15 +476,39 @@
 
 .maps-plate {
   --plate-control: var(--control-height-xs);
+  --plate-left: 15.5rem;
+
+  min-height: calc(2 * var(--plate-control) + var(--space-2) + 2 * var(--space-3) + 28px);
+  align-items: center;
 }
 
 .maps-plate .plate-actions {
+  flex: 1 1 26rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.maps-plate-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--plate-control);
+}
+
+.maps-plate-filters {
+  display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.maps-mode {
-  margin-inline-end: var(--space-2);
+.maps-mode .seg-track,
+.maps-plate .tabs-list {
+  width: var(--plate-left);
+  min-height: var(--plate-control);
 }
 
 .maps-mode .seg-track {
@@ -493,20 +517,37 @@
 
 .maps-mode .seg-segment,
 .maps-plate .tabs-tab {
+  flex: 1 1 0;
   min-height: calc(var(--plate-control) - 2 * var(--border-thin));
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-2);
   font: var(--type-control-sm);
 }
 
-.maps-plate .tabs-list,
-.maps-plate .seg-track {
-  min-height: var(--plate-control);
+.maps-plate .tabs-list {
+  align-self: center;
 }
 
 .maps-plate .field-select-button {
   min-height: var(--plate-control);
   padding: 0 var(--space-2);
   font: var(--type-control-sm);
+}
+
+.maps-plate-row > .btn {
+  min-height: var(--plate-control);
+}
+
+.maps-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--plate-control);
+  margin: 0;
+  padding: 0 var(--space-3);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+  font: var(--type-control-sm);
+  color: var(--c-text);
 }
 
 .lv-more {
@@ -522,10 +563,6 @@
   margin: 0;
   font: var(--type-mono-sm);
   color: var(--c-text-muted);
-}
-
-.maps-plate .tabs-list {
-  align-self: center;
 }
 
 @container mine-panel (width < 53rem) {
@@ -549,34 +586,8 @@
   }
 }
 
-.maps-plate .plate-actions {
-  flex: 1 1 26rem;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-2);
-}
-
-.maps-plate-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.maps-plate-row > .btn:last-child {
-  margin-inline-start: auto;
-}
-
-.maps-plate-row .maps-mode {
-  margin-inline-end: 0;
-}
-
 .maps-page .lv-actions .lv-edit {
   padding-inline: 0;
-}
-
-.maps-plate-row > .btn {
-  min-height: var(--plate-control);
 }
 
 .lv-window {
@@ -617,4 +628,14 @@
   border: var(--border-thin) dashed var(--c-line-strong);
   font: var(--type-label);
   color: var(--c-text-muted);
+}
+
+.ch-counter {
+  margin-block-start: 4.3rem;
+}
+
+@media (max-width: 48rem) {
+  .ch-counter {
+    margin-block-start: 2.9rem;
+  }
 }
