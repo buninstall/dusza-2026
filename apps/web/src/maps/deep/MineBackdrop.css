@@ -21,3 +21,7 @@
   z-index: 2;
   background: none;
 }
+
+.deep-page {
+  z-index: -1;
+}

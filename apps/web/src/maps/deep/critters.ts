@@ -44,7 +44,7 @@ export type Bats = {
 const MAX_CAVE_BATS = 8;
 const ROOF_GAP = 70;
 
-export function createBats(world: World, rand: () => number, roofY: number): Bats {
+export function createBats(world: World, rand: () => number, roofY: number, isCalm = false): Bats {
   const lit = batSet(world, "rubble-hi", "bat-eye");
   const dim = batSet(world, "bat-lit", "bat-eye");
   const dark = batSet(world, "lantern-off-hi", "bat-eye");
@@ -93,7 +93,7 @@ export function createBats(world: World, rand: () => number, roofY: number): Bat
     b.startle = -3 - rand() * 6;
   };
   const hang = (b: Bat & { isRoof: boolean }, dt: number, view: View, threatX: number) => {
-    if (!view.isVisible(b.ry, 30)) return;
+    if (isCalm || !view.isVisible(b.ry, 30)) return;
     const l = b.isRoof ? 0 : view.lightAt(b.rx, b.ry + 2);
     if (l > 0.55) b.startle += dt;
     else b.startle = b.startle < 0 ? Math.min(0, b.startle + dt) : Math.max(0, b.startle - dt);

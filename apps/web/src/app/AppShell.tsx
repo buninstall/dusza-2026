@@ -9,6 +9,7 @@ import { Logo } from "../pixel/Logo.tsx";
 import "./AppShell.css";
 import { SoundToggle, useAudioUnlock } from "../sound/SoundToggle.tsx";
 import { HeaderSky } from "./HeaderSky.tsx";
+import { PageBackdrop } from "./PageBackdrop.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 import { UserMenu } from "./UserMenu.tsx";
 
@@ -45,6 +46,10 @@ function navItems(user: SessionUser): NavItem[] {
   return user.role === "admin"
     ? [...items, { to: "/admin", label: hu.nav.admin, icon: "key", section: /^\/admin/ }]
     : items;
+}
+
+function isMapsHome(pathname: string): boolean {
+  return /^\/maps\/?$/.test(pathname);
 }
 
 function useShellLayout(): ShellLayout {
@@ -98,6 +103,9 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
       <main id="main" tabIndex={-1} className="shell-main">
         <ShellContext value={true}>{children}</ShellContext>
       </main>
+      {isMapsHome(pathname) ? null : (
+        <PageBackdrop routeKey={pathname} isCalm={layout !== "page"} />
+      )}
     </div>
   );
 }
