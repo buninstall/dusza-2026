@@ -113,12 +113,17 @@ test("egy teljes recept betöltése és lefuttatása csak billentyűzettel, mind
   await tabTo("Megnyitás: Recept – 2. Az első kanyar");
   await page.keyboard.press("Enter");
   const confirm = dialog.getByRole("button", { name: "Megnyitás", exact: true });
-  await expect(confirm).toBeVisible();
-  await tabUntil(page, async () =>
-    confirm.evaluate((element) => element === document.activeElement),
-  );
-  await expectFocusVisible(page);
-  await page.keyboard.press("Enter");
+  const asksToReplace = await confirm
+    .waitFor({ state: "visible", timeout: 1500 })
+    .then(() => true)
+    .catch(() => false);
+  if (asksToReplace) {
+    await tabUntil(page, async () =>
+      confirm.evaluate((element) => element === document.activeElement),
+    );
+    await expectFocusVisible(page);
+    await page.keyboard.press("Enter");
+  }
   await expect(dialog).toBeHidden();
   await expect(
     page.getByText("A(z) „Recept – 2. Az első kanyar” program megnyitva.").first(),

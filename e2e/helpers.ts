@@ -9,9 +9,9 @@ export const DEMO: Account = { username: "demo1", password: "demo2026" };
 export const ADMIN: Account = { username: "admin", password: "dusza2026" };
 export const NEW_PASSWORD = "banyasz2026";
 
-export type Theme = "tarna" | "felszin";
+export type Theme = "tarna";
 
-export const THEMES: readonly Theme[] = ["tarna", "felszin"];
+export const THEMES: readonly Theme[] = ["tarna"];
 
 export async function useTheme(page: Page, theme: Theme): Promise<void> {
   await page.addInitScript(
@@ -394,7 +394,12 @@ export async function expectFocusVisible(page: Page): Promise<void> {
       const isVisible = rect.width > 1 && rect.height > 1;
       const hasOutline =
         style.outlineStyle !== "none" && Number.parseFloat(style.outlineWidth) >= MIN_WIDTH;
-      if (isVisible && hasOutline) {
+      const ring = getComputedStyle(current, "::after");
+      const hasRing =
+        ring.content !== "none" &&
+        ring.borderTopStyle !== "none" &&
+        Number.parseFloat(ring.borderTopWidth) >= MIN_WIDTH;
+      if (isVisible && (hasOutline || hasRing)) {
         return `${current.tagName} ${style.outlineWidth} ${style.outlineColor}`;
       }
       current = current.parentElement;

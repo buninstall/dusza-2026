@@ -335,3 +335,10 @@
   color: var(--c-text);
   text-align: center;
 }
+
+@media (max-width: 47.99rem) {
+  .stage[data-layout="cab"] > .deck,
+  .stage[data-layout="cab"] > .hud {
+    position: static;
+  }
+}

@@ -18,7 +18,7 @@ test("új térkép: festés, ellenőrzés, mentés és exportálás", async ({ p
     }
   });
   await save.click();
-  await expect(page.getByText(/Még nem menthető: \d+ hiba/)).toBeAttached();
+  await expect(page.getByText(/Még nem menthető: \d+ hiba/).first()).toBeAttached();
   await expect(page.getByRole("heading", { level: 2, name: "Ellenőrzés" })).toBeFocused();
   await expect(page).toHaveURL(/\/maps\/new$/);
   expect(posts).toEqual([]);

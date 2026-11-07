@@ -99,7 +99,7 @@ test.describe("rögök és eredmény", () => {
     const result = medal(page);
     await expect(result.getByRole("img", { name: "3 / 3 rög" })).toBeVisible();
     await expect(result).toContainText("3 új rög!");
-    await expect(result).toContainText("Mind a három rög megvan.");
+    await expect(result).toContainText("Hibátlan: mind a 2 elérhető arany megvan, a célon belül.");
     await expect(result.getByRole("link", { name: /^Következő pálya: / })).toBeVisible();
 
     await result.getByRole("button", { name: "Bezárás" }).click();
@@ -237,6 +237,9 @@ test.describe("elrendezés és térkép", () => {
     await page.mouse.move(x, y);
     await page.mouse.wheel(0, -300);
     await expect(zoom).not.toContainText("100%");
+    await expect
+      .poll(async () => (await target.boundingBox())?.width ?? 0)
+      .toBeGreaterThan(start.width);
     await expect
       .poll(async () => {
         const moved = await target.boundingBox();

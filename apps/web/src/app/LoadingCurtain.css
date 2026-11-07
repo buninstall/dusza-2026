@@ -5,13 +5,13 @@
   display: grid;
   place-items: center;
   background: var(--px-void);
+  pointer-events: none;
   opacity: 1;
   transition: opacity var(--motion-reveal) var(--ease-px2);
 }
 
 .curtain[data-phase="leaving"] {
   opacity: 0;
-  pointer-events: none;
 }
 
 .curtain-box {

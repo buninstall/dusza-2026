@@ -798,7 +798,8 @@
     transition: none;
   }
 
-  .board-robot-drift {
+  .board-robot-drift,
+  .board-robot-drift[data-turn] {
     animation: none;
   }
 
