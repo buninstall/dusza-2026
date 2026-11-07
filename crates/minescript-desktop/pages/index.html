@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MineScript Desktop</title>
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="splash.css" />
+    <script src="splash.js" defer></script>
+  </head>
+  <body>
+    <main class="stage" data-state="loading" aria-live="polite">
+      <img class="logo" src="logo.svg" alt="" width="96" height="96" />
+      <h1 class="title">MineScript Desktop</h1>
+      <p class="status" id="status">Kapcsolódás a bányához…</p>
+      <div class="bar" aria-hidden="true"><span></span></div>
+      <div class="offline">
+        <p class="detail" id="detail"></p>
+        <button type="button" id="retry">Újrapróbálás</button>
+      </div>
+    </main>
+  </body>
+</html>

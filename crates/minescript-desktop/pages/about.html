@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>A MineScript Desktop névjegye</title>
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="about.css" />
+    <script src="about.js" defer></script>
+  </head>
+  <body>
+    <div class="hazard" aria-hidden="true"></div>
+    <main class="about">
+      <div class="emblem">
+        <img class="logo" src="logo.svg" alt="" width="88" height="88" />
+        <span class="glint" aria-hidden="true"></span>
+      </div>
+      <h1 class="name">
+        <span class="mine">MineScript</span>
+        <span class="tag">Desktop</span>
+      </h1>
+      <p class="version" id="version">Verzió</p>
+
+      <dl class="plaque">
+        <div class="row">
+          <dt>Szerver</dt>
+          <dd id="server">–</dd>
+        </div>
+        <div class="row">
+          <dt>Kapcsolat</dt>
+          <dd id="link">–</dd>
+        </div>
+        <div class="row">
+          <dt>Motor</dt>
+          <dd>Rust · WebAssembly</dd>
+        </div>
+        <div class="row">
+          <dt>Héj</dt>
+          <dd id="shell">Tauri</dd>
+        </div>
+      </dl>
+
+      <button type="button" class="button" id="website">Megnyitás böngészőben</button>
+
+      <footer class="credits">
+        <p>Dusza Árpád Emlékverseny 2026/27</p>
+        <p>13. csapat · MIT licenc</p>
+      </footer>
+    </main>
+  </body>
+</html>
