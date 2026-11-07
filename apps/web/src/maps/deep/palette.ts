@@ -9,7 +9,7 @@ const DEEP_TONES = [
   "grass",
   "grass-lo",
   "grass-dk",
-  ...[0, 1, 2, 3, 4].flatMap((k) => [
+  ...[0, 1, 2, 3, 4, 5, 6, 7].flatMap((k) => [
     `stratum-${k}-a`,
     `stratum-${k}-b`,
     `stratum-${k}-c`,
@@ -79,6 +79,30 @@ const DEEP_TONES = [
   "iron-hi",
   "iron-lo",
   "iron-dk",
+  "amethyst",
+  "amethyst-hi",
+  "amethyst-lo",
+  "emerald",
+  "emerald-hi",
+  "emerald-lo",
+  "moss",
+  "moss-hi",
+  "lake-top",
+  "lake",
+  "lake-mid",
+  "lake-deep",
+  "lava-top",
+  "lava",
+  "lava-mid",
+  "lava-deep",
+  "lava-crust",
+  "fossil",
+  "fossil-lo",
+  "glass",
+  "hematite",
+  "vakond",
+  "vakond-hi",
+  "vakond-lo",
 ];
 
 const PX_TONES = [
@@ -103,8 +127,30 @@ const PX_TONES = [
   "gem-lo",
 ];
 
-export const STRATUM_COUNT = 5;
-export const STRATUM_DEPTHS = [16, 190, 400, 640, Number.POSITIVE_INFINITY] as const;
+export const TOPSOIL = 0;
+export const CLAY = 1;
+export const LIMESTONE = 2;
+export const AMETHYST = 3;
+export const IRON = 4;
+export const EMERALD = 5;
+export const OBSIDIAN = 6;
+export const CORE = 7;
+export const STRATUM_COUNT = 8;
+export const TOPSOIL_DEPTH = 16;
+export const DEFAULT_STRATA: readonly number[] = [
+  TOPSOIL_DEPTH,
+  190,
+  400,
+  640,
+  900,
+  1160,
+  1420,
+  Number.POSITIVE_INFINITY,
+];
+
+export function isMolten(k: number): boolean {
+  return k >= OBSIDIAN;
+}
 
 export function readDeepPalette(element: Element): Readonly<Record<string, string>> {
   const style = getComputedStyle(element);

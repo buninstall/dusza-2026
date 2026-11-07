@@ -18,6 +18,7 @@ export type ShadeOptions = {
   ambient: (x: number, y: number) => number;
   reveal: (x: number, y: number) => number;
   base: readonly [number, number, number];
+  bounds?: { width: number; height: number };
 };
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
@@ -130,9 +131,11 @@ export function createLighting(
   const shade = (albedo: Uint8ClampedArray, out: Uint8ClampedArray, options: ShadeOptions) => {
     const [br, bg, bb] = options.base;
     const [mr, mg, mb] = options.memoryTint;
-    for (let y = 0; y < height; y += 1) {
+    const rows = Math.min(height, options.bounds?.height ?? height);
+    const cols = Math.min(width, options.bounds?.width ?? width);
+    for (let y = 0; y < rows; y += 1) {
       const row = (y >> 1) * blockWidth;
-      for (let x = 0; x < width; x += 1) {
+      for (let x = 0; x < cols; x += 1) {
         const i = (y * width + x) * 4;
         const k = (row + (x >> 1)) * 3;
         const amb = options.ambient(x, y);

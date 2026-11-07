@@ -10,6 +10,7 @@ import {
   versionValues,
 } from "../services/maps.ts";
 import { executeAndRecord } from "../services/runs.ts";
+import { ensureCampaign } from "./campaign.ts";
 import { TUTORIAL_MAPS } from "./maps.ts";
 import { SAMPLE_PROGRAMS } from "./programs.ts";
 import { RECIPES } from "./recipes.ts";
@@ -138,6 +139,10 @@ export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise
   const [existing] = await deps.db.select({ id: users.id }).from(users).limit(1);
   if (existing) {
     await ensureTutorialPars(deps);
+    await ensureCampaign(
+      deps,
+      DEMO_ACCOUNTS.map((account) => account.username),
+    );
     return {
       seeded: false,
       users: 0,

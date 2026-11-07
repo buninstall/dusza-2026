@@ -3,6 +3,7 @@ import { type CSSProperties, type ReactNode, useMemo, useRef } from "react";
 import { type BoardInteraction, useBoardInput } from "./board-input.ts";
 import { samePos } from "./grid-nav.ts";
 import "./MineBoard.css";
+import { LampShade } from "./LampShade.tsx";
 import { RobotLayer, type RobotMood, type RobotMotion, SparkleBurst } from "./RobotLayer.tsx";
 import { TileArt } from "./TileArt.tsx";
 import { buildTiles, describeTile, type Exploration, posKey } from "./tiles-model.ts";
@@ -26,6 +27,8 @@ export type RulerMarks = { rows: ReadonlySet<number>; cols: ReadonlySet<number> 
 
 export type BoardEdges = { end?: ReactNode; bottom?: ReactNode };
 
+export type BoardShade = { radius: number; isBroken: boolean };
+
 type MineBoardProps = {
   map: MineMap;
   robot: RobotState | null;
@@ -43,6 +46,7 @@ type MineBoardProps = {
   rulerMarks?: RulerMarks;
   edges?: BoardEdges;
   interaction?: BoardInteraction | undefined;
+  shade?: BoardShade | null;
 };
 
 const NO_MARKS: ReadonlyMap<string, string> = new Map();
@@ -105,11 +109,18 @@ export function MineBoard({
   rulerMarks,
   edges,
   interaction,
+  shade = null,
 }: MineBoardProps) {
   const tiles = useMemo(() => buildTiles(map, robot, exploration), [map, robot, exploration]);
   const gridRef = useRef<HTMLTableElement>(null);
   const input = useBoardInput({ gridRef, rows: map.rows, cols: map.cols, interaction });
   const isEditable = interaction !== undefined;
+  const lit = exploration?.lit;
+  const visible = useMemo(
+    () => (lit && exploration ? new Set([...exploration.discovered, ...lit]) : null),
+    [lit, exploration],
+  );
+  const isShaded = shade !== null && visible !== null && robot !== null;
 
   const boardStyle = {
     "--rows": map.rows,
@@ -126,6 +137,7 @@ export function MineBoard({
         data-size={size}
         data-fit={fit}
         data-edges={edges !== undefined}
+        data-shaded={isShaded}
       >
         <Rulers rows={map.rows} cols={map.cols} marks={rulerMarks} />
         <div className="board-field">
@@ -167,6 +179,18 @@ export function MineBoard({
               ))}
             </tbody>
           </table>
+          {isShaded && visible && exploration && robot ? (
+            <LampShade
+              rows={map.rows}
+              cols={map.cols}
+              visible={visible}
+              seen={exploration.discovered}
+              robot={robot}
+              radius={shade.radius}
+              isBroken={shade.isBroken}
+              stepMs={stepMs}
+            />
+          ) : null}
           {overlay}
           {robot ? (
             <RobotLayer

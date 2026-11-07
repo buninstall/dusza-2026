@@ -28,7 +28,7 @@ function SealedLayers({ view }: { view: TileView }) {
     <>
       <rect width={TILE_SIZE} height={TILE_SIZE} className="board-void" data-light="sealed" />
       {view.fringe.map((side) => (
-        <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} />
+        <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} className="board-fringe" />
       ))}
     </>
   );
@@ -49,7 +49,9 @@ function TileLayers({ view }: { view: TileView }) {
       ) : null}
       <rect width={TILE_SIZE} height={TILE_SIZE} className="board-void" data-light={light} />
       {light === "dark"
-        ? view.fringe.map((side) => <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} />)
+        ? view.fringe.map((side) => (
+            <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} className="board-fringe" />
+          ))
         : null}
     </>
   );

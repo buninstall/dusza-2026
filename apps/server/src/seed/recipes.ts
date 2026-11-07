@@ -9,6 +9,31 @@ import best05 from "../../../../docs/receptek/05-kigyo.ms" with { type: "text" }
 import best06 from "../../../../docs/receptek/06-elerhetetlen-kincs.ms" with { type: "text" };
 import best07 from "../../../../docs/receptek/07-aranymezo.ms" with { type: "text" };
 import best08 from "../../../../docs/receptek/08-a-nagy-banya.ms" with { type: "text" };
+import best09 from "../../../../docs/receptek/09-kerulout.ms" with { type: "text" };
+import best10 from "../../../../docs/receptek/10-oszlopcsarnok.ms" with { type: "text" };
+import best11 from "../../../../docs/receptek/11-geoda.ms" with { type: "text" };
+import best12 from "../../../../docs/receptek/12-kristalytukor.ms" with { type: "text" };
+import best13 from "../../../../docs/receptek/13-lila-erek.ms" with { type: "text" };
+import blind13 from "../../../../docs/receptek/13-lila-erek-vakon.ms" with { type: "text" };
+import best14 from "../../../../docs/receptek/14-kilenc-kristaly.ms" with { type: "text" };
+import best15 from "../../../../docs/receptek/15-ametisztkatedralis.ms" with { type: "text" };
+import best16 from "../../../../docs/receptek/16-rozsdas-sinek.ms" with { type: "text" };
+import best17 from "../../../../docs/receptek/17-iranytu.ms" with { type: "text" };
+import blind17 from "../../../../docs/receptek/17-iranytu-vakon.ms" with { type: "text" };
+import best18 from "../../../../docs/receptek/18-vasercfejtes.ms" with { type: "text" };
+import best19 from "../../../../docs/receptek/19-a-voros-labirintus.ms" with { type: "text" };
+import best20 from "../../../../docs/receptek/20-kapuk.ms" with { type: "text" };
+import best21 from "../../../../docs/receptek/21-mohafeny.ms" with { type: "text" };
+import best22 from "../../../../docs/receptek/22-szigetek.ms" with { type: "text" };
+import best23 from "../../../../docs/receptek/23-tukorto.ms" with { type: "text" };
+import best24 from "../../../../docs/receptek/24-smaragdkigyo.ms" with { type: "text" };
+import blind24 from "../../../../docs/receptek/24-smaragdkigyo-vakon.ms" with { type: "text" };
+import best25 from "../../../../docs/receptek/25-a-to-szeme.ms" with { type: "text" };
+import best26 from "../../../../docs/receptek/26-hamureteg.ms" with { type: "text" };
+import best27 from "../../../../docs/receptek/27-lavafolyo.ms" with { type: "text" };
+import best28 from "../../../../docs/receptek/28-obszidiankapu.ms" with { type: "text" };
+import best29 from "../../../../docs/receptek/29-izzo-tarnak.ms" with { type: "text" };
+import best30 from "../../../../docs/receptek/30-a-sziv.ms" with { type: "text" };
 import errorEBadArg from "../../../../docs/receptek/hibak/e-bad-arg.ms" with { type: "text" };
 import errorEBadOperand from "../../../../docs/receptek/hibak/e-bad-operand.ms" with {
   type: "text",
@@ -109,11 +134,186 @@ export const RECIPES: readonly Recipe[] = [
     expected: { kind: "ok", gold: 9, steps: 84 },
   },
   {
+    file: "09-kerulout.ms",
+    title: "Recept – 9. Kerülőút",
+    mapIndex: 8,
+    source: best09,
+    expected: { kind: "ok", gold: 3, steps: 12 },
+  },
+  {
+    file: "10-oszlopcsarnok.ms",
+    title: "Recept – 10. Oszlopcsarnok",
+    mapIndex: 9,
+    source: best10,
+    expected: { kind: "ok", gold: 13, steps: 42 },
+  },
+  {
+    file: "11-geoda.ms",
+    title: "Recept – 11. Geoda",
+    mapIndex: 10,
+    source: best11,
+    expected: { kind: "ok", gold: 3, steps: 9 },
+  },
+  {
+    file: "12-kristalytukor.ms",
+    title: "Recept – 12. Kristálytükör",
+    mapIndex: 11,
+    source: best12,
+    expected: { kind: "ok", gold: 3, steps: 11 },
+  },
+  {
+    file: "13-lila-erek.ms",
+    title: "Recept – 13. Lila erek",
+    mapIndex: 12,
+    source: best13,
+    expected: { kind: "ok", gold: 5, steps: 28 },
+  },
+  {
+    file: "14-kilenc-kristaly.ms",
+    title: "Recept – 14. Kilenc kristály",
+    mapIndex: 13,
+    source: best14,
+    expected: { kind: "ok", gold: 9, steps: 26 },
+  },
+  {
+    file: "15-ametisztkatedralis.ms",
+    title: "Recept – 15. Ametisztkatedrális",
+    mapIndex: 14,
+    source: best15,
+    expected: { kind: "ok", gold: 11, steps: 42 },
+  },
+  {
+    file: "16-rozsdas-sinek.ms",
+    title: "Recept – 16. Rozsdás sínek",
+    mapIndex: 15,
+    source: best16,
+    expected: { kind: "ok", gold: 3, steps: 9 },
+  },
+  {
+    file: "17-iranytu.ms",
+    title: "Recept – 17. Iránytű",
+    mapIndex: 16,
+    source: best17,
+    expected: { kind: "ok", gold: 5, steps: 28 },
+  },
+  {
+    file: "18-vasercfejtes.ms",
+    title: "Recept – 18. Vasércfejtés",
+    mapIndex: 17,
+    source: best18,
+    expected: { kind: "ok", gold: 10, steps: 29 },
+  },
+  {
+    file: "19-a-voros-labirintus.ms",
+    title: "Recept – 19. A vörös labirintus",
+    mapIndex: 18,
+    source: best19,
+    expected: { kind: "ok", gold: 10, steps: 74 },
+  },
+  {
+    file: "20-kapuk.ms",
+    title: "Recept – 20. Kapuk",
+    mapIndex: 19,
+    source: best20,
+    expected: { kind: "ok", gold: 11, steps: 50 },
+  },
+  {
+    file: "21-mohafeny.ms",
+    title: "Recept – 21. Mohafény",
+    mapIndex: 20,
+    source: best21,
+    expected: { kind: "ok", gold: 3, steps: 12 },
+  },
+  {
+    file: "22-szigetek.ms",
+    title: "Recept – 22. Szigetek",
+    mapIndex: 21,
+    source: best22,
+    expected: { kind: "ok", gold: 8, steps: 29 },
+  },
+  {
+    file: "23-tukorto.ms",
+    title: "Recept – 23. Tükörtó",
+    mapIndex: 22,
+    source: best23,
+    expected: { kind: "ok", gold: 8, steps: 36 },
+  },
+  {
+    file: "24-smaragdkigyo.ms",
+    title: "Recept – 24. Smaragdkígyó",
+    mapIndex: 23,
+    source: best24,
+    expected: { kind: "ok", gold: 12, steps: 42 },
+  },
+  {
+    file: "25-a-to-szeme.ms",
+    title: "Recept – 25. A tó szeme",
+    mapIndex: 24,
+    source: best25,
+    expected: { kind: "ok", gold: 12, steps: 59 },
+  },
+  {
+    file: "26-hamureteg.ms",
+    title: "Recept – 26. Hamuréteg",
+    mapIndex: 25,
+    source: best26,
+    expected: { kind: "ok", gold: 3, steps: 12 },
+  },
+  {
+    file: "27-lavafolyo.ms",
+    title: "Recept – 27. Lávafolyó",
+    mapIndex: 26,
+    source: best27,
+    expected: { kind: "ok", gold: 8, steps: 33 },
+  },
+  {
+    file: "28-obszidiankapu.ms",
+    title: "Recept – 28. Obszidiánkapu",
+    mapIndex: 27,
+    source: best28,
+    expected: { kind: "ok", gold: 12, steps: 50 },
+  },
+  {
+    file: "29-izzo-tarnak.ms",
+    title: "Recept – 29. Izzó tárnák",
+    mapIndex: 28,
+    source: best29,
+    expected: { kind: "ok", gold: 13, steps: 65 },
+  },
+  {
+    file: "30-a-sziv.ms",
+    title: "Recept – 30. A Szív",
+    mapIndex: 29,
+    source: best30,
+    expected: { kind: "ok", gold: 13, steps: 55 },
+  },
+  {
     file: "01-egyenes-folyoso-ciklussal.ms",
     title: "Recept – 1. Egyenes folyosó, ciklussal",
     mapIndex: CORRIDOR,
     source: walkAndMine,
     expected: { kind: "ok", gold: 2, steps: 56 },
+  },
+  {
+    file: "13-lila-erek-vakon.ms",
+    title: "Recept – 13. Lila erek, vakon",
+    mapIndex: 12,
+    source: blind13,
+    expected: { kind: "ok", gold: 5, steps: 198 },
+  },
+  {
+    file: "17-iranytu-vakon.ms",
+    title: "Recept – 17. Iránytű, vakon",
+    mapIndex: 16,
+    source: blind17,
+    expected: { kind: "ok", gold: 5, steps: 496 },
+  },
+  {
+    file: "24-smaragdkigyo-vakon.ms",
+    title: "Recept – 24. Smaragdkígyó, vakon",
+    mapIndex: 23,
+    source: blind24,
+    expected: { kind: "ok", gold: 12, steps: 804 },
   },
   {
     file: "hibak/e-bedrock-hit.ms",

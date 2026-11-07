@@ -74,10 +74,14 @@ describe("lámpás jelenet elrendezése", () => {
   });
 
   test("az újrafestett sáv nem lóg ki a vászonról", () => {
-    const rect = repaintRect({ x: 2, y: 1, w: 50, h: 40 }, { x: 0, y: 0, w: 60, h: 80 }, {
-      w: 70,
-      h: 72,
-    });
+    const rect = repaintRect(
+      { x: 2, y: 1, w: 50, h: 40 },
+      { x: 0, y: 0, w: 60, h: 80 },
+      {
+        w: 70,
+        h: 72,
+      },
+    );
     expect(rect).toEqual({ x0: 0, y0: 0, x1: 64, y1: 72 });
   });
 

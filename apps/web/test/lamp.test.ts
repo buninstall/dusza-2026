@@ -125,4 +125,25 @@ describe("fény és felfedés", () => {
     expect(shown.length).toBeGreaterThan(0);
     expect(shown.length).toBeLessThan(W);
   });
+
+  test("a látható sávon kívüli tartalék sorokat nem árnyalja", () => {
+    const lighting = createLighting(W, H, () => false, 2);
+    lighting.compute([{ x: 20, y: 5, radius: 80, intensity: 1, color: [1, 1, 1], falloff: 1 }]);
+    const albedo = new Uint8ClampedArray(W * H * 4).fill(200);
+    const out = new Uint8ClampedArray(W * H * 4);
+    lighting.shade(albedo, out, {
+      levels: 5,
+      memory: () => 0,
+      memoryTint: [1, 1, 1],
+      memoryLevel: 0,
+      memoryDensity: 0,
+      ambient: () => 0,
+      reveal: () => 1,
+      base: [7, 6, 5],
+      bounds: { width: 30, height: 6 },
+    });
+    expect(out[(5 * W + 20) * 4 + 3]).toBe(255);
+    expect(out[(5 * W + 32) * 4 + 3]).toBe(0);
+    expect(out[(8 * W + 20) * 4 + 3]).toBe(0);
+  });
 });

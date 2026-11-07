@@ -1,5 +1,6 @@
 import { bayer } from "../../auth/lamp/lighting.ts";
 import type { PixelRows } from "../../pixel/pixel-art.ts";
+import { DEFAULT_STRATA } from "./palette.ts";
 
 export const OPEN = 0;
 export const ROCK = 1;
@@ -8,6 +9,7 @@ export const PANEL = 3;
 export const WATER = 4;
 export const TIMBER = 5;
 export const NICHE = 6;
+export const LAVA = 7;
 
 export type Rgb = readonly [number, number, number];
 export type Tone = string | Rgb;
@@ -21,7 +23,14 @@ export type Vein = {
   phase: number;
 };
 export type Drip = { x: number; top: number; floor: number };
-export type Glow = { x: number; y: number; phase: number; kind: "worm" | "mushroom" };
+export type Glow = {
+  x: number;
+  y: number;
+  phase: number;
+  kind: "worm" | "mushroom" | "moss" | "lava";
+};
+export type CrystalKind = "gem" | "amethyst" | "emerald";
+export type Crystal = { x: number; y: number; phase: number; kind: CrystalKind };
 export type Twinkle = { x: number; y: number; phase: number; bright: number };
 
 export type World = {
@@ -30,9 +39,11 @@ export type World = {
   data: Uint8ClampedArray;
   mask: Uint8Array;
   groundY: number;
+  strata: number[];
   palette: Readonly<Record<string, string>>;
   veins: Vein[];
-  crystals: { x: number; y: number; phase: number }[];
+  crystals: Crystal[];
+  lavas: Point[];
   roosts: Point[];
   drips: Drip[];
   puddles: Point[];
@@ -184,9 +195,11 @@ export function createWorld(
     data,
     mask,
     groundY: 0,
+    strata: [...DEFAULT_STRATA],
     palette,
     veins: [],
     crystals: [],
+    lavas: [],
     roosts: [],
     drips: [],
     puddles: [],

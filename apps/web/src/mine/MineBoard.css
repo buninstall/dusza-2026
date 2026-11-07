@@ -249,6 +249,25 @@
   opacity: 0.45;
 }
 
+.board-lamp-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.board-lamp-shade canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.board[data-shaded="true"] .board-void,
+.board[data-shaded="true"] .board-fringe {
+  opacity: 0;
+}
+
 .board-void[data-light="sealed"] {
   opacity: 1;
 }

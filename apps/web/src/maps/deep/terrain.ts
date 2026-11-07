@@ -1,8 +1,21 @@
 import { glyphRows, toSignCase } from "../../pixel/aknajel.ts";
-import { STRATUM_DEPTHS, stratumTone } from "./palette.ts";
 import {
+  AMETHYST,
+  CLAY,
+  CORE,
+  EMERALD,
+  IRON,
+  isMolten,
+  LIMESTONE,
+  OBSIDIAN,
+  STRATUM_COUNT,
+  stratumTone,
+} from "./palette.ts";
+import {
+  type CrystalKind,
   dither,
   hash,
+  LAVA,
   noise,
   OPEN,
   ROCK,
@@ -14,10 +27,13 @@ import {
   type World,
 } from "./world.ts";
 
-export function stratumAt(depth: number, x: number, y: number): number {
-  const d = depth + Math.sin(x * 0.045 + y * 0.004) * 4 + noise(x, y, 23) * 9;
-  const k = STRATUM_DEPTHS.findIndex((until) => d < until);
-  return k < 0 ? STRATUM_DEPTHS.length - 1 : k;
+function stratumIndex(strata: readonly number[], d: number): number {
+  for (let k = 0; k < strata.length; k += 1) if (d < (strata[k] ?? 0)) return k;
+  return strata.length - 1;
+}
+
+export function stratumAt(world: World, x: number, y: number): number {
+  return stratumIndex(world.strata, y - world.groundY + (world.shift[x] ?? 0));
 }
 
 function surfaceAt(groundY: number, x: number): number {
@@ -69,7 +85,7 @@ function pebbles(world: World, groundY: number, rand: () => number): void {
     const x = Math.floor(rand() * W);
     const y = groundY + 6 + Math.floor(rand() * Math.max(1, H - groundY - 6));
     const r = 1 + rand() * 1.8;
-    const k = stratumAt(y - groundY, x, y);
+    const k = stratumAt(world, x, y);
     for (let dy = -2; dy <= 2; dy += 1) {
       for (let dx = -3; dx <= 3; dx += 1) {
         if ((dx * dx) / (r * r * 1.6) + (dy * dy) / (r * r) <= 1) {
@@ -77,7 +93,7 @@ function pebbles(world: World, groundY: number, rand: () => number): void {
         }
       }
     }
-    put(x - 1, y - 1, stratumTone(Math.min(4, k + 1), "stratum", 2));
+    put(x - 1, y - 1, stratumTone(Math.min(STRATUM_COUNT - 1, k + 1), "stratum", 2));
   }
 }
 
@@ -95,17 +111,55 @@ function roots(world: World, groundY: number, rand: () => number): void {
   }
 }
 
+const FOSSIL_ART = [".ff.", "f..f", "f.ff", ".f.."];
+
+function crack(world: World, x: number, y: number, rand: () => number, length: number): void {
+  let cx = x;
+  let cy = y;
+  for (let k = 0; k < length; k += 1) {
+    if (world.maskAt(cx, cy) !== ROCK) return;
+    world.put(cx, cy, k === 0 || rand() < 0.2 ? "lava-top" : rand() < 0.5 ? "lava" : "lava-mid");
+    world.mask[cy * world.W + cx] = LAVA;
+    cx += rand() < 0.5 ? 1 : -1;
+    cy += rand() < 0.6 ? 1 : 0;
+  }
+}
+
+function fleck(world: World, x: number, y: number, k: number, rand: () => number): void {
+  if (k === LIMESTONE) {
+    if (rand() < 0.04) world.rows(FOSSIL_ART, { f: "fossil" }, x, y);
+    else world.put(x, y, "quartz");
+  } else if (k === AMETHYST) {
+    world.put(x, y, "amethyst-lo");
+    if (rand() < 0.45) world.put(x, y - 1, "amethyst");
+  } else if (k === IRON) {
+    world.put(x, y, rand() < 0.3 ? "hematite" : "rust");
+    if (rand() < 0.3) world.put(x + 1, y, "rust-lo");
+  } else if (k === EMERALD) {
+    world.put(x, y, "emerald-lo");
+    if (rand() < 0.35) world.put(x, y - 1, "emerald");
+  } else if (k === OBSIDIAN) {
+    world.put(x, y, "glass");
+  }
+}
+
 function flecks(world: World, groundY: number, rand: () => number): void {
   const { W, H } = world;
   for (let i = 0; i < Math.round((W * H) / 380); i += 1) {
     const x = Math.floor(rand() * W);
     const y = groundY + 30 + Math.floor(rand() * Math.max(1, H - groundY - 30));
-    const k = stratumAt(y - groundY, x, y);
-    if (k === 2 || k === 3) world.put(x, y, k === 2 ? "quartz" : "fleck");
-    if (k === 4 && rand() < 0.4) {
-      world.put(x, y, "gem-lo");
-      world.put(x, y - 1, "gem");
-    }
+    fleck(world, x, y, stratumAt(world, x, y), rand);
+  }
+}
+
+export function moltenCracks(world: World, rand: () => number): void {
+  const { W, H } = world;
+  for (let i = 0; i < Math.round((W * H) / 900); i += 1) {
+    const x = Math.floor(rand() * W);
+    const y = Math.floor(rand() * H);
+    const k = stratumAt(world, x, y);
+    if (!isMolten(k) || (k === OBSIDIAN && rand() < 0.6)) continue;
+    crack(world, x, y, rand, 3 + Math.floor(rand() * (k === CORE ? 8 : 5)));
   }
 }
 
@@ -130,13 +184,10 @@ function tiles(): { rock: Uint8Array; cavity: Uint8Array } {
   return { rock: rockTile, cavity: cavityTile };
 }
 
-function stratumIndex(d: number): number {
-  for (let k = 0; k < STRATUM_DEPTHS.length; k += 1) if (d < (STRATUM_DEPTHS[k] ?? 0)) return k;
-  return STRATUM_DEPTHS.length - 1;
-}
-
 function strataTones(world: World, kind: "stratum" | "cavity") {
-  return STRATUM_DEPTHS.map((_, k) => [0, 1, 2].map((v) => world.rgb(stratumTone(k, kind, v))));
+  return Array.from({ length: STRATUM_COUNT }, (_, k) =>
+    [0, 1, 2].map((v) => world.rgb(stratumTone(k, kind, v))),
+  );
 }
 
 function fill(
@@ -160,7 +211,7 @@ function fill(
     const depth = y - groundY;
     for (let x = xa; x < xb; x += 1) {
       if (test && !test(x, y)) continue;
-      const k = stratumIndex(depth + (shift[x] ?? 0));
+      const k = stratumIndex(world.strata, depth + (shift[x] ?? 0));
       const tone =
         tones[k]?.[tile[((y + k * 37) & TILE_MASK) * TILE + ((x + k * 53) & TILE_MASK)] ?? 0];
       if (!tone) continue;
@@ -335,24 +386,39 @@ export function sign(world: World, text: string, x: number, y: number, ink: stri
   return w + 6;
 }
 
+const CRYSTAL_TONES: Record<CrystalKind, { body: string; hi: string; lo: string }> = {
+  gem: { body: "gem", hi: "gem-hi", lo: "gem-lo" },
+  amethyst: { body: "amethyst", hi: "amethyst-hi", lo: "amethyst-lo" },
+  emerald: { body: "emerald", hi: "emerald-hi", lo: "emerald-lo" },
+};
+
+export function crystalKindAt(k: number): CrystalKind | null {
+  if (k === AMETHYST) return "amethyst";
+  if (k === EMERALD) return "emerald";
+  if (k === LIMESTONE || k === IRON) return "gem";
+  return null;
+}
+
 export function crystal(
   world: World,
   x: number,
   y: number,
   rand: () => number,
   isUp: boolean,
+  kind: CrystalKind = "gem",
 ): void {
-  const h = 3 + Math.floor(rand() * 4);
+  const tones = CRYSTAL_TONES[kind];
+  const h = 3 + Math.floor(rand() * (kind === "amethyst" ? 6 : 4));
   for (let k = 0; k < h; k += 1) {
     const yy = isUp ? y - k : y + k;
-    world.put(x, yy, k === h - 1 ? "gem-hi" : "gem");
-    if (k < h - 2) world.put(x + 1, yy, "gem-lo");
+    world.put(x, yy, k === h - 1 ? tones.hi : tones.body);
+    if (k < h - 2) world.put(x + 1, yy, tones.lo);
   }
   if (rand() < 0.7) {
-    world.put(x - 1, isUp ? y - 1 : y + 1, "gem");
-    world.put(x - 1, isUp ? y - 2 : y + 2, "gem-hi");
+    world.put(x - 1, isUp ? y - 1 : y + 1, tones.body);
+    world.put(x - 1, isUp ? y - 2 : y + 2, tones.hi);
   }
-  world.crystals.push({ x, y: isUp ? y - 2 : y + 2, phase: rand() * 6 });
+  world.crystals.push({ x, y: isUp ? y - 2 : y + 2, phase: rand() * 6, kind });
 }
 
 export function stalactite(world: World, x: number, y: number, len: number): number {
@@ -377,13 +443,29 @@ const MUSHROOM_ART = [".ccc.", "cCCCc", "..s..", "..s.."];
 
 type CaveOptions = { hasPool?: boolean; hasCrystals?: boolean };
 
+type PoolKind = "water" | "lake" | "lava";
+
+const POOL_TONES: Record<PoolKind, readonly [string, string, string, string]> = {
+  water: ["water-top", "water", "water-mid", "water-deep"],
+  lake: ["lake-top", "lake", "lake-mid", "lake-deep"],
+  lava: ["lava-top", "lava", "lava-mid", "lava-deep"],
+};
+
+function poolKindAt(k: number): PoolKind {
+  if (isMolten(k)) return "lava";
+  return k === EMERALD ? "lake" : "water";
+}
+
 function pool(
   world: World,
   x0: number,
   x1: number,
   level: number,
   floorOf: (x: number) => number | null,
+  kind: PoolKind,
 ): void {
+  const [top, shallow, mid, deep] = POOL_TONES[kind];
+  const maskValue = kind === "lava" ? LAVA : WATER;
   for (let x = x0; x <= x1; x += 1) {
     const f = floorOf(x);
     if (f === null || f < level) continue;
@@ -391,20 +473,35 @@ function pool(
       if (world.maskAt(x, y) !== OPEN) continue;
       const v = dither(x, y);
       const tone =
-        y === level
-          ? "water-top"
-          : y - level < 2
-            ? v > 0.5
-              ? "water"
-              : "water-mid"
-            : v > 0.6
-              ? "water-mid"
-              : "water-deep";
+        y === level ? top : y - level < 2 ? (v > 0.5 ? shallow : mid) : v > 0.6 ? mid : deep;
       world.put(x, y, tone);
-      world.mask[y * world.W + x] = WATER;
-      if (y === level) world.puddles.push({ x, y });
+      world.mask[y * world.W + x] = maskValue;
+      if (y !== level) continue;
+      if (kind === "lava") {
+        world.lavas.push({ x, y });
+        if (x % 6 === 0) world.glows.push({ x, y: y - 1, phase: hash(x, y) * 6, kind: "lava" });
+      } else {
+        world.puddles.push({ x, y });
+      }
     }
   }
+}
+
+function rustStain(world: World, x: number, roof: number, rand: () => number): void {
+  for (let k = 0; k < 3 + Math.floor(rand() * 5); k += 1) {
+    const y = roof - 1 - k;
+    if (world.maskAt(x, y) !== ROCK) return;
+    world.put(x, y, k < 2 ? "rust-hi" : "rust");
+  }
+}
+
+function moss(world: World, x: number, f: number, rand: () => number): void {
+  for (let dx = -2; dx <= 2; dx += 1) {
+    if (world.maskAt(x + dx, f + 1) !== ROCK || world.maskAt(x + dx, f) !== OPEN) continue;
+    world.put(x + dx, f + 1, rand() < 0.4 ? "moss-hi" : "moss");
+    if (rand() < 0.5) world.put(x + dx, f, "moss");
+  }
+  world.glows.push({ x, y: f, phase: rand() * 6, kind: "moss" });
 }
 
 export function cave(
@@ -434,37 +531,59 @@ export function cave(
     while (y < cy && world.maskAt(x, y) !== OPEN) y += 1;
     return y < cy ? y : null;
   };
-  const depth = stratumAt(cy - world.groundY, cx, cy);
-  if (options.hasPool ?? rand() < 0.55)
-    pool(world, x0, x1, Math.round(cy + ry * (0.25 + rand() * 0.3)), floorOf);
+  const depth = stratumAt(world, Math.round(cx), Math.round(cy));
+  const molten = isMolten(depth);
+  if (options.hasPool ?? rand() < (molten ? 0.8 : 0.55))
+    pool(
+      world,
+      x0,
+      x1,
+      Math.round(cy + ry * (0.25 + rand() * 0.3)),
+      floorOf,
+      poolKindAt(depth),
+    );
   for (let k = 0; k < 2 + Math.floor(rand() * 3); k += 1) {
     const x = Math.round(cx + (rand() - 0.5) * rx * 1.4);
     const r = roofOf(x);
     if (r === null) continue;
-    if (world.maskAt(x, r - 1) === ROCK && rand() < 0.55) {
+    if (depth === IRON) rustStain(world, x, r, rand);
+    if (world.maskAt(x, r - 1) === ROCK && rand() < (molten ? 0.15 : 0.55)) {
       world.roosts.push({ x, y: r });
-    } else if (depth >= 2) {
+    } else if (depth >= LIMESTONE) {
       const tip = stalactite(world, x, r, 2 + Math.floor(rand() * 4));
       const f = floorOf(x);
-      if (f !== null && f > tip + 3) world.drips.push({ x, top: tip - 1, floor: f });
+      if (!molten && f !== null && f > tip + 3) world.drips.push({ x, top: tip - 1, floor: f });
     }
   }
-  if (depth >= 3 || options.hasCrystals) {
-    for (let k = 0; k < 2 + Math.floor(rand() * 2); k += 1) {
+  const kind = options.hasCrystals ? "gem" : crystalKindAt(depth);
+  const isCrystalCave = kind !== null && (depth !== LIMESTONE || options.hasCrystals === true);
+  if (kind && isCrystalCave) {
+    const count = kind === "amethyst" ? 4 + Math.floor(rand() * 3) : 2 + Math.floor(rand() * 2);
+    for (let k = 0; k < count; k += 1) {
       const x = Math.round(cx + (rand() - 0.5) * rx * 1.6);
       const r = roofOf(x);
-      if (r !== null && rand() < 0.5) crystal(world, x, r, rand, false);
+      if (r !== null && rand() < 0.5) crystal(world, x, r, rand, false, kind);
       const f = floorOf(x);
       if (f !== null && world.maskAt(x, f + 1) === ROCK && world.maskAt(x, f) === OPEN)
-        crystal(world, x, f, rand, true);
+        crystal(world, x, f, rand, true, kind);
     }
+  }
+  if (depth === LIMESTONE || depth === EMERALD || depth === AMETHYST) {
     for (let k = 0; k < 6; k += 1) {
       const x = Math.round(cx + (rand() - 0.5) * rx * 1.8);
       const r = roofOf(x);
       if (r !== null) world.glows.push({ x, y: r, phase: rand() * 6, kind: "worm" });
     }
   }
-  if (depth >= 1 && rand() < 0.7) {
+  if (depth === EMERALD) {
+    for (let k = 0; k < 4; k += 1) {
+      const x = Math.round(cx + (rand() - 0.5) * rx * 1.6);
+      const f = floorOf(x);
+      if (f !== null) moss(world, x, f, rand);
+    }
+    return;
+  }
+  if (depth >= CLAY && !molten && rand() < 0.7) {
     for (let k = 0; k < 2; k += 1) {
       const x = Math.round(cx + (rand() - 0.5) * rx * 1.4);
       const f = floorOf(x);

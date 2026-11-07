@@ -317,6 +317,7 @@ export function PlayScreen(props: PlayScreenProps) {
               label={hu.play.mapLabel(facts.title)}
               describedBy={facts.description ? facts.descriptionId : undefined}
               exploration={motion.sight.exploration}
+              shade={lampSight ? { radius: lampSight.radius, isBroken: lampSight.isBroken } : null}
               sparkle={motion.sparkle}
               stepMs={motion.stepMs}
               fit="both"
