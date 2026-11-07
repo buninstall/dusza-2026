@@ -13,7 +13,7 @@ const MINE_LINE = "mine here";
 type Placement = "top" | "bottom" | "left" | "right";
 
 const ANCHOR: Record<TourStep, { selector: string; placement: Placement }> = {
-  board: { selector: ".stage-well", placement: "bottom" },
+  board: { selector: ".hud", placement: "bottom" },
   editor: { selector: ".sheet-editor", placement: "left" },
   run: { selector: ".deck-lever", placement: "top" },
   watch: { selector: ".sheet-editor", placement: "left" },
