@@ -184,8 +184,8 @@ test("a játék oldal minden tabulátor-megállóján látható a fókusz", asyn
 
 test("a játék billentyűparancsai: Ctrl+Enter, Szóköz, nyilak, L és Shift+F5", async ({ page }) => {
   await login(page);
-  await gotoPlay(page, "5. Kígyó");
-  await openFromLibrary(page, "Recept – 5. Kígyó");
+  await gotoPlay(page, "3. Kis labirintus");
+  await openFromLibrary(page, "Recept – 3. Kis labirintus");
   await setSpeed(page, "min");
   await editor(page).click();
   await page.keyboard.press("ControlOrMeta+Enter");
