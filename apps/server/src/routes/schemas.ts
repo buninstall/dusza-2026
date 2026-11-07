@@ -176,6 +176,13 @@ export const RUN_PAGE_MAX = 100;
 
 export const runsPageQuery = pageQuery(RUN_PAGE_DEFAULT, RUN_PAGE_MAX);
 
+export const USER_PAGE_DEFAULT = 20;
+export const USER_PAGE_MAX = 100;
+
+export const adminUsersQuery = pageQuery(USER_PAGE_DEFAULT, USER_PAGE_MAX).extend({
+  q: searchText,
+});
+
 export const PROGRAM_PAGE_DEFAULT = 20;
 export const PROGRAM_PAGE_MAX = 100;
 export const PROGRAM_SORTS = ["recent", "title"] as const;

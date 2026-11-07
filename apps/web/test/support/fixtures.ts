@@ -169,6 +169,18 @@ export function respondPrograms(programs: readonly ProgramItem[]): void {
   });
 }
 
+type UserItem = { id: number; username: string; role: string; createdAt: number };
+
+export function respondUsers(accounts: readonly UserItem[]): void {
+  onApi("GET", "/admin/users", (request) => {
+    const q = (request.search.get("q") ?? "").toLowerCase();
+    const shown = accounts.filter((account) => account.username.toLowerCase().includes(q));
+    const { items, ...meta } = pageOf(shown, request.search);
+    const admins = accounts.filter((account) => account.role === "admin").length;
+    return { body: { ...meta, users: items, admins } };
+  });
+}
+
 export const corridorMap: MineMap = {
   rows: 1,
   cols: 4,

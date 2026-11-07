@@ -32,3 +32,10 @@ export const library = {
   range: (from: number, to: number, total: number) => `${from}–${to} / ${total} program`,
   listLabel: "Mentett programok",
 };
+
+export const people = {
+  searchLabel: "Keresés a felhasználók között",
+  searchPlaceholder: "Felhasználónév",
+  noMatch: (q: string) =>
+    q.length > 0 ? `Nincs felhasználó erre: „${q}”.` : "Még nincs felhasználó.",
+};

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { MyRunsPage } from "../../../runs/MyRunsPage.tsx";
 
 const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).max(100).default(1).catch(1),
+  page: z.coerce.number().int().min(1).max(100_000).default(1).catch(1),
 });
 
 function MyRunsRoute() {

@@ -6,13 +6,13 @@ Ez a recept azt mutatja meg lépésről lépésre, hogyan bírja a játék a sok
 
 Induláskor a seed a homokozót egy valószerű közösséggel tölti fel (`apps/server/src/seed/crowd.ts`):
 
-| Mi                | Mennyi                                                                                     |
-| ----------------- | ------------------------------------------------------------------------------------------ |
-| Bányász-fiók      | 100 (`vajar_anna` … `furo_jazmin`), véletlen jelszóval, ezért belépni nem lehet velük        |
-| Generált pálya    | 300 (fiókonként 3), 5×5 és 15×15 közötti méret, könnyű, közepes és nehéz vegyesen          |
-| Privát pálya      | minden 11. pálya (27 darab), ezeket csak a készítőjük és az admin látja                    |
-| Kedvenc           | fiókonként 0–6, így a „Népszerű” rendezésnek van értelme                                    |
-| Rögzített futás   | pályánként 0–3 rivális futás (a teljes megoldás vagy annak eleje), így a ranglisták élnek  |
+| Mi              | Mennyi                                                                                    |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| Bányász-fiók    | 100 (`vajar_anna` … `furo_jazmin`), véletlen jelszóval, ezért belépni nem lehet velük     |
+| Generált pálya  | 300 (fiókonként 3), 5×5 és 15×15 közötti méret, könnyű, közepes és nehéz vegyesen         |
+| Privát pálya    | minden 11. pálya (27 darab), ezeket csak a készítőjük és az admin látja                   |
+| Kedvenc         | fiókonként 0–6, így a „Népszerű” rendezésnek van értelme                                  |
+| Rögzített futás | pályánként 0–3 rivális futás (a teljes megoldás vagy annak eleje), így a ranglisták élnek |
 
 A seed idempotens: ha a fiókok már megvannak, nem nyúl hozzájuk. Két egyszerre induló szerver sem akad össze, a már létező fiókot a második kihagyja. Kikapcsolás: `--no-crowd` kapcsoló vagy `MINESCRIPT_CROWD=0`; teszt módban (`--test-mode`, e2e) magától ki van kapcsolva. Teljes újratöltés: `--reset-demo`.
 
@@ -94,15 +94,15 @@ curl -s -b /tmp/ms.jar 'http://127.0.0.1:8080/api/programs?q=step&sort=title&pag
 curl -s -b /tmp/ms.jar 'http://127.0.0.1:8080/api/me/runs?page=1&pageSize=9'
 ```
 
-| Végpont                              | Mit ad                                                                                                   |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `GET /api/maps`                      | `{ maps, page, pageSize, total, pageCount }`; paraméterek: `world`, `scope`, `q`, `sort`, `level`, `page`, `pageSize` (≤ 60) |
-| `GET /api/maps/story`                | a Történet pályái egyben (fix, legfeljebb 30)                                                             |
-| `GET /api/maps/stats`                | a homokozó pályáinak és készítőinek száma                                                                |
-| `POST /api/maps/match`               | térképszövegekhez (≤ 64) a kanonikus tartalom alapján a pálya azonosítója; a Receptek oldal ezt használja |
-| `PUT` / `DELETE /api/maps/:id/favorite` | kedvenc be és ki, idempotensen; válasz: `{ isFavorite, favoriteCount }`                               |
-| `GET /api/programs`                  | `{ programs, …lapadatok, quota }`; paraméterek: `q`, `sort` (`recent`, `title`), `page`, `pageSize` (≤ 100) |
-| `GET /api/me/runs`                   | `{ runs, …lapadatok }`; paraméterek: `page`, `pageSize` (≤ 100)                                           |
+| Végpont                                 | Mit ad                                                                                                                       |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/maps`                         | `{ maps, page, pageSize, total, pageCount }`; paraméterek: `world`, `scope`, `q`, `sort`, `level`, `page`, `pageSize` (≤ 60) |
+| `GET /api/maps/story`                   | a Történet pályái egyben (fix, legfeljebb 30)                                                                                |
+| `GET /api/maps/stats`                   | a homokozó pályáinak és készítőinek száma                                                                                    |
+| `POST /api/maps/match`                  | térképszövegekhez (≤ 64) a kanonikus tartalom alapján a pálya azonosítója; a Receptek oldal ezt használja                    |
+| `PUT` / `DELETE /api/maps/:id/favorite` | kedvenc be és ki, idempotensen; válasz: `{ isFavorite, favoriteCount }`                                                      |
+| `GET /api/programs`                     | `{ programs, …lapadatok, quota }`; paraméterek: `q`, `sort` (`recent`, `title`), `page`, `pageSize` (≤ 100)                  |
+| `GET /api/me/runs`                      | `{ runs, …lapadatok }`; paraméterek: `page`, `pageSize` (≤ 100)                                                              |
 
 Hibás paraméterre (például `page=0`, `pageSize=61`, `sort=nincs`) a válasz `400 VALIDATION`, magyar mezőhibával.
 
@@ -110,14 +110,14 @@ Hibás paraméterre (például `page=0`, `pageSize=61`, `sort=nincs`) a válasz 
 
 Feltöltött adatbázison (340 pálya, 104 fiók), helyi MySQL-lel, Apple Silicon gépen:
 
-| Kérés                                              | p50    | p95     | Méret    |
-| -------------------------------------------------- | ------ | ------- | -------- |
-| homokozó 1. oldal, legújabb                        | 5,9 ms | 10,1 ms | 4,8 KiB  |
-| homokozó 35. oldal, népszerű                       | 7,0 ms | 9,6 ms  | 4,1 KiB  |
-| keresés + nehézség                                 | 5,7 ms | 8,8 ms  | 5,1 KiB  |
-| programtár keresés                                 | 2,1 ms | 8,7 ms  | 0,8 KiB  |
-| futásnapló 1. oldal                                | 1,5 ms | 3,7 ms  | 0,4 KiB  |
-| 200 párhuzamos lapkérés                            | összesen 437 ms | |          |
+| Kérés                        | p50             | p95     | Méret   |
+| ---------------------------- | --------------- | ------- | ------- |
+| homokozó 1. oldal, legújabb  | 5,9 ms          | 10,1 ms | 4,8 KiB |
+| homokozó 35. oldal, népszerű | 7,0 ms          | 9,6 ms  | 4,1 KiB |
+| keresés + nehézség           | 5,7 ms          | 8,8 ms  | 5,1 KiB |
+| programtár keresés           | 2,1 ms          | 8,7 ms  | 0,8 KiB |
+| futásnapló 1. oldal          | 1,5 ms          | 3,7 ms  | 0,4 KiB |
+| 200 párhuzamos lapkérés      | összesen 437 ms |         |         |
 
 A korábbi lista minden pályát egyben küldött, és kérésenként minden pálya nehézségét útvonalkeresővel számolta. 340 pályánál ez kb. 200 KiB volt kérésenként, és a pályák számával egyenesen nőtt; a lapozott lista oldalanként állandó méretű.
 
