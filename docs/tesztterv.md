@@ -192,7 +192,8 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 | D20    | Eseménysor                    | r023, r045, r046, r077, r078, r083, r087, r088, r092–r096, r102, r107                    | zöld (Rust, WASM, referencia) |
 | D21    | Kiértékelés lépésről lépésre  | r030, r032, r043, r047–r053, r058–r072, r077–r081, r084–r086, r099, r100                 | zöld (Rust, WASM, referencia) |
 | D22    | Formázó                       | `core:format` unit-tesztek, `core:properties` (idempotencia, `run(format(x)) == run(x)`) | zöld                          |
-| D23    | Programfájl importja          | s129 (a motor oldala), `web` import, `e2e:program`                                       | zöld (Rust, WASM, referencia) |
+| D23    | Programfájl importja          | felváltotta: D26                                                                         | –                             |
+| D26    | Szigorú programimport         | s129 (a motor oldala), `web:play` (import), `e2e:program`, `e2e:play`                    | zöld                          |
 
 ## 8. Felhasználók, térképek, ranglista (spec 3.1, 3.2, 3.5)
 
