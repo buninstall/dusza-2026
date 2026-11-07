@@ -3,8 +3,7 @@ import { type CSSProperties, useEffect, useId, useState } from "react";
 import { IconButton } from "../components/ui/IconButton.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
-import { mapsQuery } from "../maps/queries.ts";
-import { sortMaps } from "../maps/sort.ts";
+import { mapQuery } from "../maps/queries.ts";
 import { usePlayback } from "../play/playback-store.ts";
 import type { Submission } from "../play/useRunSession.ts";
 import { playCue } from "../sound/sfx.ts";
@@ -56,13 +55,8 @@ function MedalConfetti() {
 }
 
 function useNextMap(mapId: number, isDaily: boolean) {
-  const { data } = useQuery({ ...mapsQuery("all"), enabled: !isDaily });
-  if (!data || isDaily) {
-    return null;
-  }
-  const ordered = sortMaps(data.maps, "order");
-  const position = ordered.findIndex((map) => map.id === mapId);
-  return position === -1 ? null : (ordered[position + 1] ?? null);
+  const { data } = useQuery({ ...mapQuery(mapId), enabled: !isDaily });
+  return isDaily ? null : (data?.next ?? null);
 }
 
 export function RunMedal({ mapId, submission, reachableGold, isDaily }: RunMedalProps) {

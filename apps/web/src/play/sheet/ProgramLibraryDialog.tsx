@@ -1,16 +1,30 @@
-import { useQuery } from "@tanstack/react-query";
+import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { Form } from "react-aria-components";
 import { Notice } from "../../components/Notice.tsx";
+import { Pager } from "../../components/Pager.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { ConfirmDialog, ModalShell } from "../../components/ui/Dialog.tsx";
+import { SearchField } from "../../components/ui/SearchField.tsx";
+import { Select } from "../../components/ui/Select.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { formatTime, hu } from "../../i18n/hu.ts";
+import { browse, library } from "../../i18n/hu-browse.ts";
 import { errorMessage } from "../../lib/api.ts";
 import { hasVisibleText } from "../../lib/text.ts";
 import type { ProgramDraft } from "../program-draft.ts";
-import { type ProgramListItem, programsQuery } from "../programs.ts";
+import {
+  PROGRAM_SORTS,
+  type ProgramListItem,
+  type ProgramPage,
+  type ProgramParams,
+  type ProgramSort,
+  programsQuery,
+} from "../programs.ts";
 import type { ProgramPersistence } from "./useProgramPersistence.ts";
+
+const SEARCH_MAX = 80;
+const SORT_OPTIONS = PROGRAM_SORTS.map((id) => ({ id, label: library.sorts[id] }));
 
 const TITLE_MAX = 80;
 
@@ -26,7 +40,9 @@ function ProgramRow({ program, isCurrent, onLoad, onDelete }: ProgramRowProps) {
     <li className="library-row" data-current={isCurrent}>
       <span className="library-title">
         {program.title}
-        <span className="library-meta">{hu.programs.updated(formatTime(program.updatedAt))}</span>
+        <span className="library-meta">
+          {hu.programs.updated(formatTime(program.updatedAt))} · {library.lines(program.lines)}
+        </span>
       </span>
       <span className="library-actions">
         <Button
@@ -92,32 +108,104 @@ type ProgramLibraryDialogProps = {
   persistence: ProgramPersistence;
 };
 
+function LibraryFooter({
+  page,
+  onPageChange,
+}: {
+  page: ProgramPage;
+  onPageChange: (page: number) => void;
+}) {
+  const from = (page.page - 1) * page.pageSize + 1;
+  const to = from + page.programs.length - 1;
+  return (
+    <div className="library-footer">
+      <p className="library-meta">
+        {library.range(from, to, page.total)} · {library.quota(page.quota.used, page.quota.limit)}
+      </p>
+      <Pager page={page.page} pageCount={page.pageCount} onChange={onPageChange} />
+    </div>
+  );
+}
+
 function LibraryList({
   draft,
   persistence,
 }: Pick<ProgramLibraryDialogProps, "draft" | "persistence">) {
-  const programs = useQuery(programsQuery);
+  const [params, setParams] = useState<ProgramParams>({ q: "", sort: "recent", page: 1 });
+  const programs = useQuery(programsQuery(params));
+  const tools = (
+    <div className="library-tools">
+      <SearchField
+        label={library.searchLabel}
+        clearLabel={browse.searchClear}
+        placeholder={library.searchPlaceholder}
+        maxLength={SEARCH_MAX}
+        value={params.q}
+        onCommit={(q) => setParams((current) => ({ ...current, q, page: 1 }))}
+      />
+      <Select
+        label={library.sortLabel}
+        value={params.sort}
+        options={SORT_OPTIONS}
+        onChange={(sort: ProgramSort) => setParams((current) => ({ ...current, sort, page: 1 }))}
+      />
+    </div>
+  );
+  return (
+    <>
+      {tools}
+      <LibraryBody
+        programs={programs}
+        params={params}
+        draft={draft}
+        persistence={persistence}
+        onPageChange={(next) => setParams((current) => ({ ...current, page: next }))}
+      />
+    </>
+  );
+}
+
+type LibraryBodyProps = Pick<ProgramLibraryDialogProps, "draft" | "persistence"> & {
+  programs: UseQueryResult<ProgramPage>;
+  params: ProgramParams;
+  onPageChange: (page: number) => void;
+};
+
+function LibraryBody({ programs, params, draft, persistence, onPageChange }: LibraryBodyProps) {
   if (programs.error) {
     return <Notice tone="error" title={errorMessage(programs.error, hu.programs.loadFailed)} />;
   }
-  if (programs.isPending) {
+  if (!programs.data) {
     return null;
   }
-  if (programs.data.programs.length === 0) {
-    return <p className="library-meta">{hu.programs.empty}</p>;
+  const page = programs.data;
+  if (page.total === 0) {
+    return (
+      <p className="library-meta">
+        {params.q.length > 0 ? library.noMatch(params.q) : hu.programs.empty}
+      </p>
+    );
   }
   return (
-    <ul className="library-list">
-      {programs.data.programs.map((program) => (
-        <ProgramRow
-          key={program.id}
-          program={program}
-          isCurrent={draft.linked?.id === program.id}
-          onLoad={() => persistence.requestOpen(program)}
-          onDelete={() => void persistence.deleteProgram(program.id)}
-        />
-      ))}
-    </ul>
+    <>
+      <ul
+        className="library-list"
+        aria-label={library.listLabel}
+        aria-busy={programs.isPlaceholderData}
+        data-turning={programs.isPlaceholderData}
+      >
+        {page.programs.map((program) => (
+          <ProgramRow
+            key={program.id}
+            program={program}
+            isCurrent={draft.linked?.id === program.id}
+            onLoad={() => persistence.requestOpen(program)}
+            onDelete={() => void persistence.deleteProgram(program.id)}
+          />
+        ))}
+      </ul>
+      <LibraryFooter page={page} onPageChange={onPageChange} />
+    </>
   );
 }
 

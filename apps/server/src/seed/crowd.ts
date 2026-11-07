@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { eq, inArray, sql } from "drizzle-orm";
 import { hashPassword } from "../auth/password.ts";
+import { isDuplicateEntry } from "../db/errors.ts";
 import { firstRow } from "../db/rows.ts";
 import { mapFavorites, maps, mapVersions, users, type Visibility } from "../db/schema.ts";
 import type { Deps } from "../env.ts";
@@ -100,6 +101,7 @@ const MOODS: Record<Difficulty, readonly string[]> = {
 };
 
 export const CROWD_MAPS_PER_PLAYER = 3;
+const NOUN_STRIDE = 7;
 const PRIVATE_EVERY = 11;
 const MAX_RIVALS = 3;
 const MAX_FAVORITES = 6;
@@ -117,9 +119,11 @@ export function crowdPlayers(): CrowdPlayer[] {
 }
 
 export function crowdTitle(serial: number): string {
-  const adjective = ADJECTIVES[serial % ADJECTIVES.length] ?? ADJECTIVES[0];
-  const noun = NOUNS[Math.floor(serial / ADJECTIVES.length) % NOUNS.length] ?? NOUNS[0];
-  const round = Math.floor(serial / (ADJECTIVES.length * NOUNS.length));
+  const column = serial % ADJECTIVES.length;
+  const row = Math.floor(serial / ADJECTIVES.length);
+  const adjective = ADJECTIVES[column] ?? ADJECTIVES[0];
+  const noun = NOUNS[(row + column * NOUN_STRIDE) % NOUNS.length] ?? NOUNS[0];
+  const round = Math.floor(row / NOUNS.length);
   return round === 0 ? `${adjective} ${noun}` : `${adjective} ${noun} ${round + 1}.`;
 }
 
@@ -198,14 +202,26 @@ async function recordRivals(
   return recorded;
 }
 
-async function createPlayer(deps: Deps, username: string, passwordHash: string, createdAt: number) {
-  const created = firstRow(
-    await deps.db
-      .insert(users)
-      .values({ username, passwordHash, role: "user", createdAt })
-      .$returningId(),
-  );
-  return created.id;
+async function createPlayer(
+  deps: Deps,
+  username: string,
+  passwordHash: string,
+  createdAt: number,
+): Promise<number | null> {
+  try {
+    const created = firstRow(
+      await deps.db
+        .insert(users)
+        .values({ username, passwordHash, role: "user", createdAt })
+        .$returningId(),
+    );
+    return created.id;
+  } catch (error) {
+    if (isDuplicateEntry(error)) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 async function addFavorites(
@@ -275,10 +291,10 @@ export async function ensureCrowd(deps: Deps, base: number): Promise<CrowdReport
   const passwordHash = await hashPassword(randomBytes(PASSWORD_BYTES).toString("base64url"));
   const playerIds = new Map<string, number>();
   for (const player of missing) {
-    playerIds.set(
-      player.username,
-      await createPlayer(deps, player.username, passwordHash, base + player.index),
-    );
+    const id = await createPlayer(deps, player.username, passwordHash, base + player.index);
+    if (id !== null) {
+      playerIds.set(player.username, id);
+    }
   }
   const created: CrowdMap[] = [];
   const routes = new Map<number, string | null>();

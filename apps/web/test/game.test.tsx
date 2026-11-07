@@ -15,7 +15,14 @@ import { isSoundOn, playCue, SOUND_KEY, setSoundOn } from "../src/sound/sfx.ts";
 import { activeStep, TOUR_KEY, useTour } from "../src/tour/tour-state.ts";
 import { callsTo, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { CORRIDOR, corridorStart, LABYRINTH, mapSummary, walkTrace } from "./support/fixtures.ts";
+import {
+  CORRIDOR,
+  corridorStart,
+  LABYRINTH,
+  mapSummary,
+  respondMaps,
+  walkTrace,
+} from "./support/fixtures.ts";
 
 describe("rögök", () => {
   test("a rögsor olvasható címkét kap", () => {
@@ -112,7 +119,7 @@ describe("bevezető", () => {
 
   test("a pályák oldala felugró ablakban megkérdezi, a Nem választ megjegyzi", async () => {
     useTour.setState({ data: { status: "unasked" } });
-    respond("GET", "/maps", { maps: [mapSummary(1, "Folyosó", CORRIDOR)] });
+    respondMaps([mapSummary(1, "Folyosó", CORRIDOR)]);
     const { user } = renderApp("/maps");
     const prompt = await screen.findByRole("dialog", { name: "Kérsz egy rövid bevezetőt?" });
     await user.click(within(prompt).getByRole("button", { name: "Nem, köszönöm" }));
@@ -126,9 +133,7 @@ describe("bevezető", () => {
 describe("napi kihívás a pályák oldalán", () => {
   test("a napi kártya és az összegyűjtött csillagok látszanak", async () => {
     const daily = { ...mapSummary(50, "Napi kihívás · 2026. november 6.", LABYRINTH), stars: 2 };
-    respond("GET", "/maps", {
-      maps: [{ ...mapSummary(1, "Folyosó", CORRIDOR), stars: 3, best: { gold: 2, steps: 4 } }],
-    });
+    respondMaps([{ ...mapSummary(1, "Folyosó", CORRIDOR), stars: 3, best: { gold: 2, steps: 4 } }]);
     respond("GET", "/maps/daily", { map: daily, date: "2026-11-06" });
     renderApp("/maps");
     const card = await screen.findByRole("region", { name: "Napi kihívás" });

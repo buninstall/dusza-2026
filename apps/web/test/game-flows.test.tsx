@@ -5,7 +5,14 @@ import { useTour } from "../src/tour/tour-state.ts";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
 import { realEngine } from "./support/engine.ts";
-import { CORRIDOR, LABYRINTH, mapDetail, mapSummary, walkTrace } from "./support/fixtures.ts";
+import {
+  CORRIDOR,
+  LABYRINTH,
+  mapDetail,
+  mapSummary,
+  respondMaps,
+  walkTrace,
+} from "./support/fixtures.ts";
 
 const MAP_ID = 3;
 
@@ -15,9 +22,7 @@ function editorText(): string {
 
 async function openPlay(options: Parameters<typeof mapDetail>[3] = {}) {
   respond("GET", `/maps/${MAP_ID}`, mapDetail(MAP_ID, "Labirintus", LABYRINTH, options));
-  respond("GET", "/maps", {
-    maps: [mapSummary(MAP_ID, "Labirintus", LABYRINTH), mapSummary(4, "Folyosó", CORRIDOR)],
-  });
+  respondMaps([mapSummary(MAP_ID, "Labirintus", LABYRINTH), mapSummary(4, "Folyosó", CORRIDOR)]);
   const app = renderApp(`/play/${MAP_ID}`);
   await screen.findByRole("grid", { name: "Labirintus térképe" });
   await waitFor(() => expect(document.querySelector(".cm-content")).not.toBeNull());

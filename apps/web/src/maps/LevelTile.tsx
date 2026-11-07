@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Link } from "../components/ui/Link.tsx";
 import { NuggetRow } from "../game/NuggetRow.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -5,6 +6,7 @@ import { story } from "../i18n/hu-story.ts";
 import { MapPreview, type PreviewBox } from "../mine/MapPreview.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { PixelText } from "../pixel/PixelText.tsx";
+import { FavoriteButton } from "./FavoriteButton.tsx";
 import type { MapSummary } from "./queries.ts";
 
 type LevelTileProps = {
@@ -15,6 +17,8 @@ type LevelTileProps = {
   headingLevel?: 2 | 3;
   isLocked?: boolean;
   hasDepth?: boolean;
+  hasFavorite?: boolean;
+  style?: CSSProperties | undefined;
 };
 
 export function MapFacts({ map }: { map: MapSummary }) {
@@ -75,6 +79,8 @@ export function LevelTile({
   headingLevel = 2,
   isLocked = false,
   hasDepth = true,
+  hasFavorite = false,
+  style,
 }: LevelTileProps) {
   const mapId = String(map.id);
   const level = hu.signs.level(depth);
@@ -86,6 +92,7 @@ export function LevelTile({
       data-map-id={mapId}
       data-stars={isLocked ? -1 : (map.stars ?? -1)}
       data-locked={isLocked}
+      style={style}
     >
       <div className="lv-window" data-mine-pit="">
         <MapPreview content={map.content} box={box} className="lv-preview" isFitted />
@@ -107,6 +114,7 @@ export function LevelTile({
         </div>
         <div className="lv-meta">
           <MapFacts map={map} />
+          {hasFavorite ? <FavoriteButton map={map} /> : null}
           {isLocked ? null : <Progress map={map} />}
         </div>
       </div>

@@ -6,6 +6,8 @@ type PagerProps = {
   page: number;
   pageCount: number;
   onChange: (page: number) => void;
+  onIntent?: ((page: number) => void) | undefined;
+  label?: string | undefined;
 };
 
 const EDGE = 1;
@@ -29,13 +31,21 @@ export function pageItems(page: number, pageCount: number): (number | "gap")[] {
   return items;
 }
 
-export function Pager({ page, pageCount, onChange }: PagerProps) {
+export function Pager({ page, pageCount, onChange, onIntent, label }: PagerProps) {
   if (pageCount <= 1) {
     return null;
   }
+  const intent = (target: number) =>
+    onIntent ? { onHoverStart: () => onIntent(target), onFocus: () => onIntent(target) } : {};
   return (
-    <nav className="pager" aria-label={pager.label}>
-      <Button size="sm" icon="arrowLeft" isDisabled={page <= 1} onPress={() => onChange(page - 1)}>
+    <nav className="pager" aria-label={label ?? pager.label}>
+      <Button
+        size="sm"
+        icon="arrowLeft"
+        isDisabled={page <= 1}
+        onPress={() => onChange(page - 1)}
+        {...intent(page - 1)}
+      >
         {pager.previous}
       </Button>
       <ol className="pager-pages">
@@ -57,6 +67,7 @@ export function Pager({ page, pageCount, onChange }: PagerProps) {
                   className="pager-page"
                   aria-label={pager.page(item)}
                   onPress={() => onChange(item)}
+                  {...intent(item)}
                 >
                   {String(item)}
                 </Button>
@@ -70,6 +81,7 @@ export function Pager({ page, pageCount, onChange }: PagerProps) {
         icon="arrowRight"
         isDisabled={page >= pageCount}
         onPress={() => onChange(page + 1)}
+        {...intent(page + 1)}
       >
         {pager.next}
       </Button>

@@ -1,9 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
 import { Slider } from "../src/components/ui/Slider.tsx";
-import { respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { CORRIDOR, mapSummary } from "./support/fixtures.ts";
+import { CORRIDOR, mapSummary, respondMaps } from "./support/fixtures.ts";
 
 describe("csúszka", () => {
   test("a képernyőolvasó a mértékegységes értéket kapja, frissítéskor is", () => {
@@ -21,7 +20,7 @@ describe("csúszka", () => {
 
 describe("billentyűzettel aktivált link", () => {
   test("az Enter nem tölti újra az oldalt, a router navigál; módosítóbillentyűvel a böngészőé", async () => {
-    respond("GET", "/maps", { maps: [mapSummary(1, "Folyosó", CORRIDOR)] });
+    respondMaps([mapSummary(1, "Folyosó", CORRIDOR)]);
     const { router } = renderApp("/maps");
     const link = await screen.findByRole("link", { name: "Ranglista: Folyosó" });
     link.focus();

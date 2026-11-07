@@ -1,0 +1,130 @@
+.sb {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mine-gap);
+}
+
+.sb-anchor {
+  scroll-margin-block-start: calc(var(--header-height) + var(--space-6));
+}
+
+.sb-shaft {
+  --sb-rise: 1.5rem;
+  --sb-stagger: 55ms;
+}
+
+.sb-shaft:focus {
+  outline: none;
+}
+
+.sb-shaft:focus-visible {
+  outline: var(--focus-width) dashed var(--c-focus);
+  outline-offset: var(--space-2);
+}
+
+.sb-shaft[data-direction="prev"] {
+  --sb-rise: -1.5rem;
+}
+
+.sb-shaft .lv-tile {
+  animation: sb-surface var(--motion-reveal) var(--ease-px4) both;
+  animation-delay: calc(var(--i, 0) * var(--sb-stagger));
+}
+
+.sb-shaft .lv-tile > .lv-body,
+.sb-shaft .lv-tile > .lv-actions {
+  animation: sb-rise var(--motion-burst) var(--ease-px6) both;
+  animation-delay: calc(var(--i, 0) * var(--sb-stagger));
+}
+
+.sb-shaft[data-turning="true"] .lv-tile {
+  opacity: 0.35;
+  transition: opacity var(--motion-enter) var(--ease-px2);
+}
+
+.sb-pager {
+  justify-content: space-between;
+}
+
+.lv-fav.btn {
+  min-height: var(--control-height-xs);
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
+.lv-fav.btn[data-selected] {
+  color: var(--c-danger-ink);
+  border-color: var(--c-danger-ink);
+}
+
+.lv-fav-count {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes sb-surface {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sb-rise {
+  from {
+    transform: translateY(var(--sb-rise));
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-shaft .lv-tile,
+  .sb-shaft .lv-tile > .lv-body,
+  .sb-shaft .lv-tile > .lv-actions {
+    animation: none;
+  }
+}
+
+.maps-plate.maps-plate-sandbox {
+  --plate-left: 17rem;
+}
+
+.maps-plate-sandbox .tabs-tab {
+  padding-inline: var(--space-1);
+}
+
+.maps-plate-grid > .maps-search {
+  grid-column: 1 / -1;
+}
+
+.maps-plate-grid > .maps-search .field-input {
+  min-height: var(--plate-control);
+  padding-block: 0;
+  font: var(--type-control-sm);
+}
+
+@media (max-width: 48rem) {
+  .maps-plate.maps-plate-sandbox {
+    --plate-left: 100%;
+  }
+
+  .maps-plate-sandbox .maps-plate-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .maps-plate-sandbox .maps-plate-grid > .maps-mode,
+  .maps-plate-sandbox .maps-plate-grid > .tabs-list {
+    grid-column: 1 / -1;
+  }
+
+  .maps-plate-sandbox .maps-plate-grid > .maps-progress {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

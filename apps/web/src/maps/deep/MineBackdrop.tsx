@@ -14,6 +14,7 @@ type MineBackdropProps = {
 
 const SEEN_KEY = "minescript.mine.seen";
 const REBUILD_GAP_MS = 220;
+const LAYOUT_SETTLE_MS = 900;
 
 function readSeen(key: string): Set<number> | null {
   const raw = readStorage(key);
@@ -58,6 +59,7 @@ export function MineBackdrop({
   const targetRef = useRef<number | null>(null);
   const digRef = useRef<number | null>(null);
   const hasStartedRef = useRef(false);
+  const sceneRef = useRef<(() => void) | null>(null);
   const idsKey = mapIds.join(",");
   const isStatic = usePrefersReducedMotion();
 
@@ -92,7 +94,6 @@ export function MineBackdrop({
     const mid = midRef.current;
     const wrap = wrapRef.current;
     if (!root || !canvas || !mid || !wrap || layoutKey.length === 0) return;
-    let stop: () => void = () => undefined;
     let timer = 0;
     let lastBuild = 0;
     let signature = "";
@@ -100,11 +101,12 @@ export function MineBackdrop({
       `${window.innerWidth}:${root.offsetWidth}x${root.offsetHeight}:${root.querySelectorAll(`[${MINE_ATTR}]`).length}`;
     const start = () => {
       window.clearTimeout(timer);
-      stop();
+      sceneRef.current?.();
+      sceneRef.current = null;
       signature = shape();
       lastBuild = performance.now();
       const digId = digRef.current;
-      const release = holdReady();
+      const release = hasStartedRef.current ? () => undefined : holdReady();
       const next = startDeepScene({
         root,
         canvas,
@@ -118,7 +120,7 @@ export function MineBackdrop({
         onDigStart: () => undefined,
         onDigDone: () => undefined,
       });
-      stop = next ?? (() => undefined);
+      sceneRef.current = next;
       releaseAfterPaint(release);
       if (next) {
         digRef.current = null;
@@ -150,7 +152,12 @@ export function MineBackdrop({
         onContent();
       }
     };
-    start();
+    if (hasStartedRef.current && sceneRef.current) {
+      signature = shape();
+      timer = window.setTimeout(start, LAYOUT_SETTLE_MS);
+    } else {
+      start();
+    }
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onLayout);
     observer?.observe(root);
     const mutations = new MutationObserver(onContent);
@@ -162,9 +169,16 @@ export function MineBackdrop({
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", onResize);
       window.clearTimeout(timer);
-      stop();
     };
   }, [rootRef, layoutKey, isStatic]);
+
+  useEffect(
+    () => () => {
+      sceneRef.current?.();
+      sceneRef.current = null;
+    },
+    [],
+  );
 
   return (
     <>

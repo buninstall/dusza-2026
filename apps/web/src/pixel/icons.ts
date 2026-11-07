@@ -615,6 +615,45 @@ const COPY: PixelRows = [
   "..........",
 ];
 
+const HEART: PixelRows = [
+  "..........",
+  ".###..###.",
+  "##########",
+  "##########",
+  "##########",
+  ".########.",
+  "..######..",
+  "...####...",
+  "....##....",
+  "..........",
+];
+
+const HEART_EMPTY: PixelRows = [
+  "..........",
+  ".###..###.",
+  "#...##...#",
+  "#........#",
+  "#........#",
+  ".#......#.",
+  "..#....#..",
+  "...#..#...",
+  "....##....",
+  "..........",
+];
+
+const SEARCH: PixelRows = [
+  ".####.....",
+  "#....#....",
+  "#....#....",
+  "#....#....",
+  "#....#....",
+  ".####.....",
+  ".....##...",
+  "......##..",
+  ".......##.",
+  "........##",
+];
+
 const ART = {
   play: PLAY,
   pause: PAUSE,
@@ -670,6 +709,9 @@ const ART = {
   dice: DICE,
   calendar: CALENDAR,
   copy: COPY,
+  heart: HEART,
+  heartEmpty: HEART_EMPTY,
+  search: SEARCH,
 } satisfies Record<string, PixelRows>;
 
 export type IconName = keyof typeof ART;

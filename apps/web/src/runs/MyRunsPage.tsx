@@ -9,7 +9,7 @@ import { Link } from "../components/ui/Link.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
 import { pager } from "../i18n/hu-pager.ts";
 import "./MyRunsPage.css";
-import { myRunsQuery, type RunRow } from "./queries.ts";
+import { myRunsQuery, type RunPage, type RunRow } from "./queries.ts";
 
 function outcomeText(run: RunRow): string {
   if (run.outcomeKind === "ok" || run.errorCode === null || run.errorLine === null) {
@@ -82,35 +82,40 @@ function RunsTable({ runs }: { runs: readonly RunRow[] }) {
   );
 }
 
-export const RUNS_PER_PAGE = 9;
-
 type MyRunsPageProps = { page: number; onPageChange: (page: number) => void };
 
-function PagedRuns({ runs, page, onPageChange }: { runs: readonly RunRow[] } & MyRunsPageProps) {
-  const pageCount = Math.max(1, Math.ceil(runs.length / RUNS_PER_PAGE));
-  const current = Math.min(Math.max(1, page), pageCount);
-  const from = (current - 1) * RUNS_PER_PAGE;
-  const shown = runs.slice(from, from + RUNS_PER_PAGE);
+function PagedRuns({
+  data,
+  isTurning,
+  onPageChange,
+}: {
+  data: RunPage;
+  isTurning: boolean;
+  onPageChange: (page: number) => void;
+}) {
+  const from = (data.page - 1) * data.pageSize;
   return (
     <>
-      <RunsTable runs={shown} />
+      <div aria-busy={isTurning} data-turning={isTurning} className="runs-paged">
+        <RunsTable runs={data.runs} />
+      </div>
       <div className="runs-pager">
-        <p className="runs-range">{pager.range(from + 1, from + shown.length, runs.length)}</p>
-        <Pager page={current} pageCount={pageCount} onChange={onPageChange} />
+        <p className="runs-range">{pager.range(from + 1, from + data.runs.length, data.total)}</p>
+        <Pager page={data.page} pageCount={data.pageCount} onChange={onPageChange} />
       </div>
     </>
   );
 }
 
 export function MyRunsPage({ page, onPageChange }: MyRunsPageProps) {
-  const { data, error, refetch } = useQuery(myRunsQuery);
+  const { data, error, refetch, isPlaceholderData } = useQuery(myRunsQuery(Math.max(1, page)));
   return (
     <div className="runs-page">
       <LocationPlate name={hu.signs.runs} meta={hu.runs.meta} />
       {error ? (
         <LoadFailed error={error} fallback={hu.runs.loadFailed} onRetry={() => void refetch()} />
       ) : null}
-      {data?.runs.length === 0 ? (
+      {data?.total === 0 ? (
         <div className="runs-empty">
           <EmptyState
             text={hu.runs.empty}
@@ -122,8 +127,8 @@ export function MyRunsPage({ page, onPageChange }: MyRunsPageProps) {
           />
         </div>
       ) : null}
-      {data && data.runs.length > 0 ? (
-        <PagedRuns runs={data.runs} page={page} onPageChange={onPageChange} />
+      {data && data.total > 0 ? (
+        <PagedRuns data={data} isTurning={isPlaceholderData} onPageChange={onPageChange} />
       ) : null}
     </div>
   );

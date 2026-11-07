@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { LABYRINTH, mapDetail } from "./support/fixtures.ts";
+import { LABYRINTH, mapDetail, respondMaps } from "./support/fixtures.ts";
 
 function textFile(name: string, content: string): File {
   return new File([content], name, { type: "text/plain" });
@@ -334,7 +334,7 @@ describe("térkép szerkesztése", () => {
     respond("GET", "/maps/4", mapDetail(4, "Labirintus", LABYRINTH));
     respond("PUT", "/maps/4", { map: { id: 4 }, createdNewVersion: false });
     respond("DELETE", "/maps/4", { ok: true });
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { user, router } = renderApp("/maps/4/edit");
     expect(await screen.findByText(/még nincs futás/)).toBeTruthy();
     await user.click(saveButton());
@@ -348,7 +348,7 @@ describe("térkép szerkesztése", () => {
 
   test("nem mentett módosítással kilépéskor megerősítést kér", async () => {
     respond("GET", "/maps/4", mapDetail(4, "Labirintus", LABYRINTH));
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { user, router } = renderApp("/maps/4/edit");
     await screen.findByRole("grid", { name: "Térképrács" });
     await user.type(screen.getByRole("textbox", { name: /Leírás/ }), " új");

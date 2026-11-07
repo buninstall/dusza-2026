@@ -4,7 +4,7 @@ import { detectPlatform, isDesktopShell } from "../src/desktop/platform.ts";
 import { type DesktopRelease, pickOffer } from "../src/desktop/release.ts";
 import { respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { mapSummary } from "./support/fixtures.ts";
+import { respondMaps } from "./support/fixtures.ts";
 
 const MAC_SAFARI =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15";
@@ -144,7 +144,7 @@ describe("letöltés a felületen", () => {
     pretend(WINDOWS_EDGE, "Win32");
     const { user } = renderApp("/maps");
     respond("GET", "/desktop", { release: RELEASE });
-    respond("GET", "/maps", { maps: [mapSummary] });
+    respondMaps([]);
     await user.click(await screen.findByRole("button", { name: /Felhasználói menü/ }));
     const item = await screen.findByRole("menuitem", {
       name: "Asztali alkalmazás letöltése Windowsra",

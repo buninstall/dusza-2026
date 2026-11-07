@@ -34,7 +34,9 @@ export function LoadingCurtain() {
   const path = useRouterState({ select: (state) => state.location.pathname });
   const lastPath = useRef(path);
   const waiting = useIsFetching({
-    predicate: (query) => query.state.data === undefined && query.getObserversCount() > 0,
+    predicate: (query) =>
+      query.state.data === undefined &&
+      query.observers.some((observer) => !observer.getCurrentResult().isPlaceholderData),
   });
   const holds = useReadyHolds();
   const isFontsReady = useFontsReady();

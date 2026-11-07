@@ -4,7 +4,7 @@ import { describe, expect, test, vi } from "vitest";
 import { MAP_RECIPES, normaliseMap, recipeText } from "../src/recipes/catalog.ts";
 import { respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { mapDetail, mapSummary } from "./support/fixtures.ts";
+import { mapDetail, mapSummary, respondMaps } from "./support/fixtures.ts";
 
 const CORRIDOR = recipeText("palyak/01-egyenes-folyoso.txt");
 const RECIPE = recipeText("01-egyenes-folyoso.ms");
@@ -21,7 +21,7 @@ function openCorridor(search: string) {
 
 describe("receptek oldal", () => {
   test("a pályához illesztett recept megnyitható, a hiányzó pályáé letiltva, minden letölthető", async () => {
-    respond("GET", "/maps", { maps: [mapSummary(1, "1. Egyenes folyosó", CORRIDOR)] });
+    respondMaps([mapSummary(1, "1. Egyenes folyosó", CORRIDOR)]);
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, "click")
       .mockImplementation(() => undefined);

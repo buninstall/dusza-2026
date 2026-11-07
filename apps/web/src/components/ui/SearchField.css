@@ -1,0 +1,50 @@
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-box > .px-icon {
+  position: absolute;
+  inset-inline-start: var(--space-2);
+  color: var(--c-text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding-inline: calc(var(--space-2) + 1rem + var(--space-2))
+    calc(var(--control-height-xs) + var(--space-1));
+}
+
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration {
+  appearance: none;
+}
+
+.search-clear {
+  position: absolute;
+  inset-inline-end: var(--space-1);
+  display: inline-grid;
+  place-items: center;
+  width: var(--control-height-xs);
+  height: var(--control-height-xs);
+  padding: 0;
+  border: var(--border-thin) solid transparent;
+  background: transparent;
+  color: var(--c-text-muted);
+  cursor: pointer;
+}
+
+.search-clear[data-hovered] {
+  border-color: var(--c-line-strong);
+  color: var(--c-text);
+}
+
+.search-clear[data-focus-visible] {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: var(--focus-offset);
+}
+
+.search-field[data-empty] .search-clear {
+  display: none;
+}

@@ -6,8 +6,7 @@ import { ModalShell } from "../components/ui/Dialog.tsx";
 import { hu } from "../i18n/hu.ts";
 import { tourModes } from "../i18n/hu-story.ts";
 import type { PlayMode } from "../maps/mode.ts";
-import { mapsQuery } from "../maps/queries.ts";
-import { sortMaps } from "../maps/sort.ts";
+import { firstSandboxMapQuery, storyMapsQuery } from "../maps/queries.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { useTour } from "./tour-state.ts";
 import "./Tour.css";
@@ -15,10 +14,9 @@ import "./Tour.css";
 export function useStartTour(mode: PlayMode = "story") {
   const navigate = useNavigate();
   const start = useTour((state) => state.start);
-  const { data } = useQuery(mapsQuery("all"));
-  const ordered = data ? sortMaps(data.maps, "order") : [];
-  const first =
-    ordered.find((map) => (mode === "story" ? map.isStory : !map.isStory)) ?? ordered[0];
+  const storyList = useQuery({ ...storyMapsQuery(), enabled: mode === "story" });
+  const sandboxList = useQuery({ ...firstSandboxMapQuery(), enabled: mode === "sandbox" });
+  const first = mode === "story" ? storyList.data?.maps[0] : sandboxList.data?.maps[0];
   if (!first) {
     return null;
   }
@@ -75,7 +73,7 @@ export function TourPrompt() {
   const status = useTour((state) => state.data.status);
   const decline = useTour((state) => state.decline);
   const [stage, setStage] = useState<"ask" | "modes">("ask");
-  const { data } = useQuery(mapsQuery("all"));
+  const { data } = useQuery(storyMapsQuery());
   if (status !== "unasked" || !data || data.maps.length === 0) {
     return null;
   }

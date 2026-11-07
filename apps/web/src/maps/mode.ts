@@ -6,4 +6,6 @@ export const DIFFICULTY_FILTERS = ["all", "easy", "medium", "hard"] as const;
 
 export type DifficultyFilter = (typeof DIFFICULTY_FILTERS)[number];
 
-export const SANDBOX_PAGE = 8;
+export const MAP_SCOPES = ["all", "mine", "favorites"] as const;
+
+export const SEARCH_MAX = 80;

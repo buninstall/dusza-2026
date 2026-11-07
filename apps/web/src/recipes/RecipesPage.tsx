@@ -6,15 +6,20 @@ import { NumberedHeading } from "../components/NumberedHeading.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
 import { recipePage } from "../i18n/hu-recipes.ts";
-import { mapsQuery } from "../maps/queries.ts";
-import { CORRIDOR_FILE, MAP_RECIPES, normaliseMap, recipeText } from "./catalog.ts";
+import { api, call } from "../lib/api.ts";
+import { CORRIDOR_FILE, MAP_RECIPES, recipeText } from "./catalog.ts";
 import { BadMapTable, ErrorRecipeTable, type MapLookup, MapRecipeList } from "./RecipeRows.tsx";
 import "./RecipesPage.css";
 
+const RECIPE_MAP_FILES = [...new Set([CORRIDOR_FILE, ...MAP_RECIPES.map((r) => r.mapFile)])];
+
+const matchRecipeMaps = () =>
+  call(api.maps.match.$post({ json: { contents: RECIPE_MAP_FILES.map(recipeText) } }));
+
 function useMapLookup(): MapLookup {
-  const { data } = useQuery(mapsQuery("all"));
-  const byContent = new Map((data?.maps ?? []).map((map) => [normaliseMap(map.content), map.id]));
-  return (mapFile) => byContent.get(normaliseMap(recipeText(mapFile)));
+  const { data } = useQuery({ queryKey: ["maps", "match", "recipes"], queryFn: matchRecipeMaps });
+  const byFile = new Map(RECIPE_MAP_FILES.map((file, index) => [file, data?.ids[index] ?? null]));
+  return (mapFile) => byFile.get(mapFile) ?? undefined;
 }
 
 const STORY_RECIPES = MAP_RECIPES.filter((recipe) => recipe.world === "story");

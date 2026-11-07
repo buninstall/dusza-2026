@@ -5,20 +5,29 @@ import { toast } from "../src/components/ui/Toast.tsx";
 import { CHAPTERS } from "../src/i18n/hu-story.ts";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { CORRIDOR, demoUser, LABYRINTH, mapDetail, mapSummary } from "./support/fixtures.ts";
+import {
+  CORRIDOR,
+  demoUser,
+  LABYRINTH,
+  mapDetail,
+  mapPage,
+  mapSummary,
+  respondMaps,
+  respondRuns,
+} from "./support/fixtures.ts";
 
 const MAPS = [mapSummary(1, "Folyosó", CORRIDOR), mapSummary(2, "Labirintus", LABYRINTH, 2)];
 
 describe("térképlista", () => {
   test("a homokozó szintszám nélkül, a legújabbal kezdve listáz; szerkeszteni csak a sajátot lehet", async () => {
-    respond("GET", "/maps", { maps: MAPS });
+    respondMaps(MAPS);
     renderApp("/maps");
     const list = await screen.findByRole("list", { name: "Pályák listája" });
     const levels = within(list).getAllByRole("listitem");
     expect(levels).toHaveLength(2);
     expect(within(list).queryByText(/^Szint \d+$/)).toBeNull();
     expect(within(list).getByText("Készítette: admin")).toBeTruthy();
-    expect(screen.getByText("2 / 2 pálya")).toBeTruthy();
+    expect(screen.getByText("1–2 / 2 pálya")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Játék: Folyosó" }).getAttribute("href")).toBe(
       "/play/1",
     );
@@ -34,7 +43,7 @@ describe("térképlista", () => {
         isStory: true,
       })),
     );
-    respond("GET", "/maps", { maps: story });
+    respondMaps(story);
     renderApp("/maps?mode=story");
     const first = await screen.findByRole("list", { name: "I. fejezet pályái" });
     expect(within(first).getAllByRole("listitem")).toHaveLength(5);
@@ -57,8 +66,9 @@ describe("térképlista", () => {
   });
 
   test("a Sajátjaim fül a scope=mine lekérdezést használja, üresen tippet ad", async () => {
+    respondMaps(MAPS);
     onApi("GET", "/maps", (request) => ({
-      body: { maps: request.search.get("scope") === "mine" ? [] : MAPS },
+      body: mapPage(request.search.get("scope") === "mine" ? [] : MAPS, request.search),
     }));
     const { user } = renderApp("/maps");
     await screen.findByRole("list", { name: "Pályák listája" });
@@ -69,9 +79,7 @@ describe("térképlista", () => {
   });
 
   test("az admin minden térképet szerkeszthet", async () => {
-    respond("GET", "/maps", {
-      maps: [{ ...mapSummary(3, "Titkos", CORRIDOR, 2), visibility: "private" }],
-    });
+    respondMaps([{ ...mapSummary(3, "Titkos", CORRIDOR, 2), visibility: "private" }]);
     renderApp("/maps", "admin");
     expect(await screen.findByRole("link", { name: "Szerkesztés: Titkos" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Felhasználók" })).toBeTruthy();
@@ -79,11 +87,12 @@ describe("térképlista", () => {
 
   test("betöltési hiba magyar üzenettel és újrapróbálással", async () => {
     let attempts = 0;
-    onApi("GET", "/maps", () => {
+    respondMaps([]);
+    onApi("GET", "/maps", (request) => {
       attempts += 1;
       return attempts < 2
         ? apiError(500, "INTERNAL", "Belső hiba történt.")
-        : { body: { maps: [] } };
+        : { body: mapPage([], request.search) };
     });
     const { user } = renderApp("/maps");
     expect((await screen.findByRole("alert", undefined, { timeout: 4000 })).textContent).toContain(
@@ -236,8 +245,7 @@ describe("ranglista részletei", () => {
 
 describe("futásaim", () => {
   test("a kimenet hibakóddal és sorral", async () => {
-    respond("GET", "/me/runs", {
-      runs: [
+    respondRuns([
         {
           id: 1,
           mapId: 2,
@@ -264,8 +272,7 @@ describe("futásaim", () => {
           errorLine: null,
           createdAt: 2,
         },
-      ],
-    });
+    ]);
     renderApp("/runs");
     expect(await screen.findByText("E_NO_GOLD, 4. sor")).toBeTruthy();
     expect(screen.getByText("hiba nélkül")).toBeTruthy();
@@ -288,7 +295,7 @@ describe("futásaim", () => {
       errorLine: null,
       createdAt: index + 1,
     }));
-    respond("GET", "/me/runs", { runs });
+    respondRuns(runs);
     const { router } = renderApp("/runs");
     const user = userEvent.setup();
     expect(await screen.findByRole("link", { name: "Pálya 1" })).toBeTruthy();
@@ -308,7 +315,7 @@ describe("futásaim", () => {
   });
 
   test("üres napló", async () => {
-    respond("GET", "/me/runs", { runs: [] });
+    respondRuns([]);
     renderApp("/runs");
     expect(await screen.findByText(/Még nincs rögzített futásod/)).toBeTruthy();
   });
@@ -382,7 +389,7 @@ describe("adminisztráció", () => {
   });
 
   test("játékos nem éri el", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { router } = renderApp("/admin");
     await screen.findByRole("heading", { level: 1, name: "Pályák" });
     expect(router.state.location.pathname).toBe("/maps");
@@ -391,7 +398,7 @@ describe("adminisztráció", () => {
 
 describe("keret, kézikönyv és hibaképernyők", () => {
   test("a kézikönyv a hangerő mellett, csukott könyv ikonnal nyílik", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     renderApp("/maps");
     const help = await screen.findByRole("navigation", { name: "Kézikönyv" });
     expect(within(help).getByRole("link", { name: "Kézikönyv" }).getAttribute("href")).toBe(
@@ -413,7 +420,7 @@ describe("keret, kézikönyv és hibaképernyők", () => {
   });
 
   test("kijelentkezés a felhasználói menüből", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     respond("POST", "/auth/logout", { ok: true });
     const { user, router } = renderApp("/maps");
     await user.click(
@@ -425,7 +432,7 @@ describe("keret, kézikönyv és hibaképernyők", () => {
   });
 
   test("kijelentkezéskor az előző felhasználó értesítései eltűnnek", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     respond("POST", "/auth/logout", { ok: true });
     const { user, router } = renderApp("/maps");
     act(() => {
@@ -447,7 +454,7 @@ describe("keret, kézikönyv és hibaképernyők", () => {
   });
 
   test("a gyökér a térképekhez irányít", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { router } = renderApp("/");
     await screen.findByRole("heading", { level: 1, name: "Pályák" });
     expect(router.state.location.pathname).toBe("/maps");
