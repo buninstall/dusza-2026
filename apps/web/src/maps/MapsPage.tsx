@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { type ReactNode, type RefObject, useRef } from "react";
+import { type ReactNode, type RefObject, useRef, useState } from "react";
 import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import { EmptyState } from "../components/EmptyState.tsx";
 import { LoadFailed } from "../components/LoadFailed.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
+import { Button } from "../components/ui/Button.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Segmented } from "../components/ui/Segmented.tsx";
 import { Select } from "../components/ui/Select.tsx";
@@ -13,13 +14,19 @@ import { hu } from "../i18n/hu.ts";
 import { story } from "../i18n/hu-story.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { TourPrompt } from "../tour/TourPrompt.tsx";
-import { ChapterSign, EpilogueSign } from "./ChapterPlate.tsx";
-import { type Campaign, groupCampaign, isCampaignMap, STRATUM_INDEX } from "./campaign.ts";
+import { ChapterCounter } from "./ChapterPlate.tsx";
+import { type Campaign, groupCampaign, isCampaignMap } from "./campaign.ts";
 import { DailyCard } from "./DailyCard.tsx";
 import { MineBackdrop } from "./deep/MineBackdrop.tsx";
 import { LevelTile } from "./LevelTile.tsx";
 import "./MapsPage.css";
-import { PLAY_MODES, type PlayMode } from "./mode.ts";
+import {
+  DIFFICULTY_FILTERS,
+  type DifficultyFilter,
+  PLAY_MODES,
+  type PlayMode,
+  SANDBOX_PAGE,
+} from "./mode.ts";
 import { dailyQuery, type MapScope, type MapSummary, mapsQuery } from "./queries.ts";
 import { MAP_SORTS, type MapSort, sortMaps } from "./sort.ts";
 
@@ -27,13 +34,20 @@ type MapsPageProps = {
   mode: PlayMode;
   scope: MapScope;
   sort: MapSort;
+  difficulty: DifficultyFilter;
   user: SessionUser;
   onModeChange: (mode: PlayMode) => void;
   onScopeChange: (scope: MapScope) => void;
   onSortChange: (sort: MapSort) => void;
+  onDifficultyChange: (difficulty: DifficultyFilter) => void;
 };
 
-const SORT_OPTIONS = MAP_SORTS.map((id) => ({ id, label: hu.maps.sorts[id] }));
+const SORT_ORDER: readonly MapSort[] = ["recent", ...MAP_SORTS.filter((id) => id !== "recent")];
+const SORT_OPTIONS = SORT_ORDER.map((id) => ({ id, label: hu.maps.sorts[id] }));
+const DIFFICULTY_OPTIONS = DIFFICULTY_FILTERS.map((id) => ({
+  id,
+  label: story.difficulties[id],
+}));
 const MODE_OPTIONS = PLAY_MODES.map((id) => ({
   id,
   label: story.modes[id],
@@ -69,9 +83,18 @@ type ShaftProps = {
   label: string;
   headingLevel: 2 | 3;
   isLocked?: boolean;
+  hasDepth?: boolean;
 };
 
-function Shaft({ maps, depthOf, user, label, headingLevel, isLocked = false }: ShaftProps) {
+function Shaft({
+  maps,
+  depthOf,
+  user,
+  label,
+  headingLevel,
+  isLocked = false,
+  hasDepth = true,
+}: ShaftProps) {
   return (
     <ol className="lv-shaft" aria-label={label}>
       {maps.map((map) => (
@@ -83,6 +106,7 @@ function Shaft({ maps, depthOf, user, label, headingLevel, isLocked = false }: S
           canEdit={map.ownerId === user.id || user.role === "admin"}
           headingLevel={headingLevel}
           isLocked={isLocked}
+          hasDepth={hasDepth}
         />
       ))}
     </ol>
@@ -120,26 +144,78 @@ function sandboxMaps(maps: readonly MapSummary[]): MapSummary[] {
   return maps.filter((map) => !isCampaignMap(map));
 }
 
-function SandboxGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; user: SessionUser }) {
+type SandboxGridProps = {
+  scope: MapScope;
+  sort: MapSort;
+  difficulty: DifficultyFilter;
+  user: SessionUser;
+};
+
+function SandboxShaft({
+  maps,
+  all,
+  user,
+}: {
+  maps: MapSummary[];
+  all: readonly MapSummary[];
+  user: SessionUser;
+}) {
+  const [visible, setVisible] = useState(SANDBOX_PAGE);
+  const shown = maps.slice(0, visible);
+  const rest = maps.length - shown.length;
+  return (
+    <>
+      <Shaft
+        maps={shown}
+        depthOf={depthsOf(all)}
+        user={user}
+        label={hu.maps.listLabel}
+        headingLevel={2}
+        hasDepth={false}
+      />
+      <div className="lv-more">
+        <p className="lv-more-count">{story.shown(shown.length, maps.length)}</p>
+        {rest > 0 ? (
+          <Button icon="arrowDown" onPress={() => setVisible((count) => count + SANDBOX_PAGE)}>
+            {story.more(rest)}
+          </Button>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
+function SandboxGrid({ scope, sort, difficulty, user }: SandboxGridProps) {
   return (
     <ListState scope={scope}>
       {(all) => {
-        const maps = sandboxMaps(all);
-        return maps.length === 0 ? (
-          <EmptyState
-            text={scope === "mine" ? hu.maps.emptyMine : hu.maps.empty}
-            action={<NewMapLink />}
-          />
-        ) : (
-          <>
-            <Shaft
-              maps={sortMaps(maps, sort)}
-              depthOf={depthsOf(maps)}
-              user={user}
-              label={hu.maps.listLabel}
-              headingLevel={2}
+        const sandbox = sandboxMaps(all);
+        const maps = sortMaps(
+          sandbox.filter((map) => difficulty === "all" || map.difficulty === difficulty),
+          sort,
+        );
+        const silent = groupCampaign(sortMaps(all, "order")).isSilent;
+        if (sandbox.length === 0) {
+          return (
+            <EmptyState
+              text={scope === "mine" ? hu.maps.emptyMine : hu.maps.empty}
+              action={<NewMapLink />}
             />
-            <DrillFront isSilent={groupCampaign(sortMaps(all, "order")).isSilent} />
+          );
+        }
+        return (
+          <>
+            {maps.length === 0 ? (
+              <EmptyState text={story.noMatch} action={<NewMapLink />} />
+            ) : (
+              <SandboxShaft
+                key={`${scope}|${sort}|${difficulty}`}
+                maps={maps}
+                all={sandbox}
+                user={user}
+              />
+            )}
+            <DrillFront isSilent={silent} />
           </>
         );
       }}
@@ -148,29 +224,35 @@ function SandboxGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; us
 }
 
 function StoryChapters({ campaign, user }: { campaign: Campaign; user: SessionUser }) {
-  const visible = campaign.groups.flatMap((group) => group.maps);
-  const depthOf = new Map(visible.map((map, index) => [map.id, index + 1]));
-  const last = campaign.groups.at(-1);
+  const open = campaign.groups.filter((group) => group.lock === null);
+  const locked = campaign.groups.filter((group) => group.lock !== null);
+  const openMaps = open.flatMap((group) => group.maps);
+  const lockedMaps = locked.flatMap((group) => group.maps);
+  const depthOf = new Map(
+    [...openMaps, ...lockedMaps].map((map, index): [number, number] => [map.id, index + 1]),
+  );
+  const next = locked[0];
   return (
     <div className="ch-campaign">
-      {campaign.groups.map((group, index) => {
-        const headingId = `ch-title-${index + 1}`;
-        return (
-          <section key={group.chapter.numeral} className="ch-section" aria-labelledby={headingId}>
-            <ChapterSign group={group} headingId={headingId} />
-            <Shaft
-              maps={group.maps}
-              depthOf={depthOf}
-              user={user}
-              label={story.chapterLevels(group.chapter.numeral)}
-              headingLevel={3}
-              isLocked={group.lock !== null}
-            />
-          </section>
-        );
-      })}
-      {campaign.isSilent && last ? (
-        <EpilogueSign stratum={STRATUM_INDEX[last.chapter.stratum]} />
+      <Shaft
+        maps={openMaps}
+        depthOf={depthOf}
+        user={user}
+        label={story.openLevels}
+        headingLevel={2}
+      />
+      {next?.lock ? (
+        <ChapterCounter remaining={next.lock.remaining} stratum={next.chapter.stratum} />
+      ) : null}
+      {lockedMaps.length > 0 ? (
+        <Shaft
+          maps={lockedMaps}
+          depthOf={depthOf}
+          user={user}
+          label={story.lockedLevels}
+          headingLevel={2}
+          isLocked
+        />
       ) : null}
     </div>
   );
@@ -279,10 +361,10 @@ function StoryPage({
           name={hu.signs.maps}
           className="maps-plate"
           actions={
-            <>
+            <div className="maps-plate-row">
               <ModeSwitch mode="story" onChange={onModeChange} />
               <StoryBoardLink isCompact />
-            </>
+            </div>
           }
         />
       </div>
@@ -298,10 +380,12 @@ export function MapsPage({
   mode,
   scope,
   sort,
+  difficulty,
   user,
   onModeChange,
   onScopeChange,
   onSortChange,
+  onDifficultyChange,
 }: MapsPageProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   if (mode === "story") {
@@ -324,19 +408,30 @@ export function MapsPage({
             className="maps-plate"
             actions={
               <>
-                <ModeSwitch mode="sandbox" onChange={onModeChange} />
-                <TabList aria-label={hu.maps.scopeLabel}>
-                  <Tab id="all">{hu.maps.scopeAll}</Tab>
-                  <Tab id="mine">{hu.maps.scopeMine}</Tab>
-                </TabList>
-                <Select
-                  label={hu.maps.sortLabel}
-                  isLabelHidden
-                  value={sort}
-                  options={SORT_OPTIONS}
-                  onChange={onSortChange}
-                />
-                <NewMapLink isCompact />
+                <div className="maps-plate-row">
+                  <ModeSwitch mode="sandbox" onChange={onModeChange} />
+                  <NewMapLink isCompact />
+                </div>
+                <div className="maps-plate-row">
+                  <TabList aria-label={hu.maps.scopeLabel}>
+                    <Tab id="all">{hu.maps.scopeAll}</Tab>
+                    <Tab id="mine">{hu.maps.scopeMine}</Tab>
+                  </TabList>
+                  <Select
+                    label={story.difficultyLabel}
+                    isLabelHidden
+                    value={difficulty}
+                    options={DIFFICULTY_OPTIONS}
+                    onChange={onDifficultyChange}
+                  />
+                  <Select
+                    label={hu.maps.sortLabel}
+                    isLabelHidden
+                    value={sort}
+                    options={SORT_OPTIONS}
+                    onChange={onSortChange}
+                  />
+                </div>
               </>
             }
           />
@@ -346,14 +441,14 @@ export function MapsPage({
             <div className="maps-panel">
               <TourPrompt />
               <DailyCard />
-              <SandboxGrid scope="all" sort={sort} user={user} />
+              <SandboxGrid scope="all" sort={sort} difficulty={difficulty} user={user} />
             </div>
           ) : null}
         </TabPanel>
         <TabPanel id="mine">
           {scope === "mine" ? (
             <div className="maps-panel">
-              <SandboxGrid scope="mine" sort={sort} user={user} />
+              <SandboxGrid scope="mine" sort={sort} difficulty={difficulty} user={user} />
             </div>
           ) : null}
         </TabPanel>

@@ -1,6 +1,7 @@
 import { act, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 import { toast } from "../src/components/ui/Toast.tsx";
+import { CHAPTERS } from "../src/i18n/hu-story.ts";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
 import { CORRIDOR, demoUser, LABYRINTH, mapDetail, mapSummary } from "./support/fixtures.ts";
@@ -8,20 +9,44 @@ import { CORRIDOR, demoUser, LABYRINTH, mapDetail, mapSummary } from "./support/
 const MAPS = [mapSummary(1, "Folyosó", CORRIDOR), mapSummary(2, "Labirintus", LABYRINTH, 2)];
 
 describe("térképlista", () => {
-  test("szintenként mutatja a térképeket, a szerkesztés csak a sajátnál látszik", async () => {
+  test("a homokozó szintszám nélkül, a legújabbal kezdve listáz; szerkeszteni csak a sajátot lehet", async () => {
     respond("GET", "/maps", { maps: MAPS });
     renderApp("/maps");
     const list = await screen.findByRole("list", { name: "Pályák listája" });
     const levels = within(list).getAllByRole("listitem");
     expect(levels).toHaveLength(2);
-    expect(within(levels[0] as HTMLElement).getByText("Szint 01")).toBeTruthy();
-    expect(within(levels[0] as HTMLElement).getByText("Készítette: admin")).toBeTruthy();
+    expect(within(list).queryByText(/^Szint \d+$/)).toBeNull();
+    expect(within(list).getByText("Készítette: admin")).toBeTruthy();
+    expect(screen.getByText("2 / 2 pálya")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Játék: Folyosó" }).getAttribute("href")).toBe(
       "/play/1",
     );
     expect(screen.getByRole("link", { name: "Ranglista: Labirintus" })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Szerkesztés: Folyosó" })).toBeNull();
     expect(screen.getByRole("link", { name: "Szerkesztés: Labirintus" })).toBeTruthy();
+  });
+
+  test("a történet mód szintenként mutatja a kampányt, a zárt fejezet pályáin lakat van", async () => {
+    const story = CHAPTERS.flatMap((chapter, c) =>
+      chapter.levels.map((title, k) => ({
+        ...mapSummary(c * 5 + k + 1, title, CORRIDOR),
+        isStory: true,
+      })),
+    );
+    respond("GET", "/maps", { maps: story });
+    renderApp("/maps?mode=story");
+    const open = await screen.findByRole("list", { name: "A Történet nyitott pályái" });
+    expect(within(open).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(open).getByText("Szint 01")).toBeTruthy();
+    const locked = screen.getByRole("list", { name: "A Történet zárt pályái" });
+    expect(within(locked).getAllByRole("listitem")).toHaveLength(25);
+    expect(within(locked).getAllByText("Zárva")).toHaveLength(25);
+    expect(within(locked).queryByRole("link", { name: /^Játék:/ })).toBeNull();
+    expect(
+      screen.getByText(
+        "Még 5 pályán kell minden aranyat kibányászni, hogy a következő fejezet kinyíljon.",
+      ),
+    ).toBeTruthy();
   });
 
   test("a Sajátjaim fül a scope=mine lekérdezést használja, üresen tippet ad", async () => {

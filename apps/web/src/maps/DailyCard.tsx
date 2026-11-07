@@ -31,9 +31,16 @@ export function DailyCard() {
         <MapFacts map={map} />
         <Progress map={map} />
       </div>
-      <div className="daily-actions">
-        <Link to="/play/$mapId" params={{ mapId }} variant="primary" icon="play">
-          {hu.daily.play}
+      <div className="lv-actions">
+        <Link
+          to="/play/$mapId"
+          params={{ mapId }}
+          variant="primary"
+          icon="play"
+          className="lv-play"
+          aria-label={hu.daily.play}
+        >
+          {hu.maps.play}
         </Link>
         <Link
           to="/leaderboard/$mapId"
@@ -41,9 +48,11 @@ export function DailyCard() {
           variant="secondary"
           size="sm"
           icon="trophy"
+          aria-label={hu.daily.leaderboard}
         >
-          {hu.daily.leaderboard}
+          {hu.maps.leaderboard}
         </Link>
+        <span className="lv-action-slot" aria-hidden="true" />
       </div>
     </section>
   );

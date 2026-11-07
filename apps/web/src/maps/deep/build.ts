@@ -55,7 +55,7 @@ export type LevelInput = {
   id: number;
 };
 
-export type ChapterInput = { box: Box; stratum: number };
+export type ChapterInput = { box: Box; stratum: number; isFramed?: boolean };
 
 export type LayoutInput = {
   W: number;
@@ -65,6 +65,7 @@ export type LayoutInput = {
   front: Box;
   levels: readonly LevelInput[];
   chapters?: readonly ChapterInput[];
+  hasDepthSigns?: boolean;
   palette: Readonly<Record<string, string>>;
   digId: number | null;
 };
@@ -75,6 +76,7 @@ const CHAPTER_LEAD = 8;
 export type Cart = { x: number; y: number; fill: number };
 
 export type Level = LevelInput & {
+  hasDepthSign: boolean;
   y0: number;
   y1: number;
   rail: number;
@@ -157,6 +159,12 @@ function decorateChapter(
   level: Level,
 ): void {
   const b = chapter.box;
+  if (chapter.isFramed === false) {
+    for (let x = b.x - 3; x < b.x + b.w + 3; x += 1) {
+      if (world.maskAt(x, b.y + b.h + 2) === ROCK) world.put(x, b.y + b.h + 2, "rubble-hi");
+    }
+    return;
+  }
   wood(world, b.x - 7, b.y - 9, b.w + 14, 3, false);
   wood(world, b.x - 7, b.y - 6, 3, b.h + 10, true);
   wood(world, b.x + b.w + 4, b.y - 6, 3, b.h + 10, true);
@@ -351,7 +359,6 @@ function caves(
 function decorateRoom(
   world: World,
   level: Level,
-  groundY: number,
   rand: () => number,
   lanterns: Lantern[],
 ): void {
@@ -365,7 +372,7 @@ function decorateRoom(
   }
   const depth = stratumAt(world, level.box.x, level.y0);
   const cx = Math.round((room.x0 + room.x1) / 2);
-  if (!level.isDaily)
+  if (!level.isDaily && level.hasDepthSign)
     sign(
       world,
       `-${String((level.index + 1) * 12).padStart(2, "0")} M`,
@@ -481,7 +488,7 @@ function decorateLevel(
       : level.x1 - 10;
     vein(world, vx, level.y1 + 3 + Math.floor(rand() * 4), 3, rand, 3);
   }
-  decorateRoom(world, level, groundY, rand, lanterns);
+  decorateRoom(world, level, rand, lanterns);
 }
 
 function toLevel(
@@ -494,6 +501,7 @@ function toLevel(
   const b = input.box;
   const rail = b.y + b.h + 19;
   return {
+    hasDepthSign: true,
     ...input,
     y0: b.y + b.h + 3,
     rail,
@@ -607,7 +615,10 @@ export function buildMine(input: LayoutInput): Mine {
   const shaftX = Math.max(3, firstX - (isNarrow ? 22 : 44));
   const xEnd = W - (isNarrow ? 4 : 7);
   const bottomY = input.front.y + input.front.h + 18;
-  const levels = input.levels.map((l) => toLevel(l, shaftX, xEnd, false, input.digId));
+  const levels = input.levels.map((l) => ({
+    ...toLevel(l, shaftX, xEnd, false, input.digId),
+    hasDepthSign: input.hasDepthSigns ?? true,
+  }));
   const front = toLevel(
     { box: input.front, pit: null, stars: -1, isDaily: false, index: -1, id: -1 },
     shaftX,

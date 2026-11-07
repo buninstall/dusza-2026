@@ -60,9 +60,13 @@ function readLevels(
 }
 
 function readChapters(root: HTMLElement, scale: number): ChapterInput[] {
-  return [...root.querySelectorAll<HTMLElement>(`[${MINE_ATTR}="chapter"]`)].map((element) => ({
+  const marks = root.querySelectorAll<HTMLElement>(
+    `[${MINE_ATTR}="chapter"], [${MINE_ATTR}="counter"]`,
+  );
+  return [...marks].map((element) => ({
     box: measureBox(element, scale),
     stratum: Number(element.dataset.stratum ?? 1),
+    isFramed: element.dataset.mine === "chapter",
   }));
 }
 
@@ -87,6 +91,7 @@ export function startDeepScene(host: DeepHost): (() => void) | null {
     front: measureBox(front, scale),
     levels: inputs,
     chapters: readChapters(host.root, scale),
+    hasDepthSigns: host.root.dataset.mode !== "sandbox",
     palette: readDeepPalette(host.paletteSource),
     digId: host.digId,
   });

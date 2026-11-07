@@ -14,6 +14,7 @@ type LevelTileProps = {
   canEdit: boolean;
   headingLevel?: 2 | 3;
   isLocked?: boolean;
+  hasDepth?: boolean;
 };
 
 export function MapFacts({ map }: { map: MapSummary }) {
@@ -73,6 +74,7 @@ export function LevelTile({
   canEdit,
   headingLevel = 2,
   isLocked = false,
+  hasDepth = true,
 }: LevelTileProps) {
   const mapId = String(map.id);
   const level = hu.signs.level(depth);
@@ -95,10 +97,12 @@ export function LevelTile({
       </div>
       <div className="lv-body">
         <div className="lv-head">
-          <p className="lv-depth">
-            <PixelText text={level} scale={2} />
-            <span className="visually-hidden">{level}</span>
-          </p>
+          {hasDepth ? (
+            <p className="lv-depth">
+              <PixelText text={level} scale={2} />
+              <span className="visually-hidden">{level}</span>
+            </p>
+          ) : null}
           <Title className="lv-title">{map.title}</Title>
         </div>
         <div className="lv-meta">
@@ -130,7 +134,9 @@ export function LevelTile({
           >
             <span className="visually-hidden">{hu.maps.edit}</span>
           </Link>
-        ) : null}
+        ) : (
+          <span className="lv-action-slot" aria-hidden="true" />
+        )}
       </div>
     </li>
   );
