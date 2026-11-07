@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { create } from "zustand";
 import {
   api,
@@ -165,6 +165,15 @@ export function navigate(route: Route): void {
   window.location.hash = href(route);
 }
 
+export const PAGE_ORDER: Route["page"][] = [
+  "overview",
+  "suites",
+  "runs",
+  "findings",
+  "compare",
+  "settings",
+];
+
 export function useRoute(): Route {
   const hash = useSyncExternalStore(
     (notify) => {
@@ -174,6 +183,21 @@ export function useRoute(): Route {
     () => window.location.hash,
   );
   return parseRoute(hash);
+}
+
+export function useDescent(page: Route["page"]): "down" | "up" | "none" {
+  const previous = useRef<Route["page"] | null>(null);
+  const direction = useRef<"down" | "up" | "none">("none");
+  if (previous.current !== page) {
+    direction.current =
+      previous.current === null
+        ? "none"
+        : PAGE_ORDER.indexOf(page) >= PAGE_ORDER.indexOf(previous.current)
+          ? "down"
+          : "up";
+    previous.current = page;
+  }
+  return direction.current;
 }
 
 export const OPEN_STATUSES = new Set(["új", "megerősítve", "jelentve"]);

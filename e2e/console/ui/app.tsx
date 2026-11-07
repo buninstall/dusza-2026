@@ -23,6 +23,7 @@ import {
   OPEN_STATUSES,
   type Route,
   setFinishedHandler,
+  useDescent,
   useLive,
   useRoute,
 } from "./state.ts";
@@ -145,6 +146,7 @@ function useGoKeys() {
 function App() {
   const ready = useLive((state) => state.ready);
   const route = useRoute();
+  const descent = useDescent(route.page);
   const [help, setHelp] = useState(false);
   const main = useRef<HTMLElement>(null);
   useHotkey("?", () => setHelp(true));
@@ -196,23 +198,28 @@ function App() {
             <kbd>K</kbd>
           </Button>
         </header>
-        <main id="main" ref={main} tabIndex={-1}>
+        <main id="main" className="page-stage" ref={main} tabIndex={-1}>
           {!ready ? (
             <p className="muted page" role="status">
               Betöltés…
             </p>
-          ) : route.page === "suites" ? (
-            <Suites />
-          ) : route.page === "runs" ? (
-            <Runs runId={route.run} />
-          ) : route.page === "findings" ? (
-            <Findings findingId={route.finding} />
-          ) : route.page === "compare" ? (
-            <Compare a={route.a} b={route.b} />
-          ) : route.page === "settings" ? (
-            <Settings />
           ) : (
-            <Overview />
+            <div key={route.page} className={`page-enter descent-${descent}`}>
+              <span className="lamp-sweep" aria-hidden="true" />
+              {route.page === "suites" ? (
+                <Suites />
+              ) : route.page === "runs" ? (
+                <Runs runId={route.run} />
+              ) : route.page === "findings" ? (
+                <Findings findingId={route.finding} />
+              ) : route.page === "compare" ? (
+                <Compare a={route.a} b={route.b} />
+              ) : route.page === "settings" ? (
+                <Settings />
+              ) : (
+                <Overview />
+              )}
+            </div>
           )}
         </main>
       </div>
