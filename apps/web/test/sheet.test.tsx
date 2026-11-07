@@ -43,15 +43,17 @@ describe("programlap", () => {
     await waitFor(() => expect(editorText()).toContain("set szamlalo to 0"));
   });
 
-  test("a programlap saját gombja is futtat, futás közben leállít", async () => {
+  test("egyetlen futtatógomb van, futás közben leállítássá vált", async () => {
     const { user } = await openPlay("step forward 1\nstep forward 1\nstep forward 1\n");
-    await user.click(screen.getByRole("button", { name: "Futtasd" }));
+    expect(screen.getAllByRole("button", { name: "Futtatás" })).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: "Futtasd" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Futtatás" }));
     await waitFor(() => expect(usePlayback.getState().result).not.toBeNull());
-    const stop = screen.queryByRole("button", { name: "Állítsd le" });
+    const stop = screen.queryByRole("button", { name: "Leállítás" });
     if (stop) {
       await user.click(stop);
     }
-    expect(await screen.findByRole("button", { name: "Futtasd" })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Futtatás" })).toBeTruthy();
   });
 
   test("a 100 000 karakternél hosszabb program jelzést kap, és nem fut", async () => {

@@ -20,6 +20,7 @@ type TextFieldProps = Omit<AriaTextFieldProps, "className"> & {
   className?: string | undefined;
   inputRef?: Ref<HTMLInputElement> | undefined;
   isLabelHidden?: boolean;
+  errorMessage?: string | undefined;
 };
 
 const DEFAULT_ROWS = 3;
@@ -33,6 +34,7 @@ export function TextField({
   className,
   inputRef,
   isLabelHidden = false,
+  errorMessage,
   ...props
 }: TextFieldProps) {
   const inputProps = placeholder === undefined ? {} : { placeholder };
@@ -49,7 +51,7 @@ export function TextField({
           {description}
         </Text>
       ) : null}
-      <FieldError className="field-error" />
+      <FieldError className="field-error">{errorMessage}</FieldError>
     </AriaTextField>
   );
 }

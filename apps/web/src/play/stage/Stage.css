@@ -279,18 +279,18 @@
 }
 
 .well-view[data-zoomed="true"] .board {
-  --tile-snap: 16px;
+  --tile-snap: 8px;
   --tile: calc(clamp(var(--tile-min), var(--tile-fit), var(--tile-max)) * var(--zoom, 1));
 
   margin: auto;
 }
 
-@supports (width: round(nearest, 10px, 4px)) {
+@supports (width: round(up, 10px, 4px)) {
   .well-view[data-zoomed="true"] .board {
     --tile: max(
       var(--tile-min),
       round(
-        nearest,
+        up,
         clamp(var(--tile-min), var(--tile-fit), var(--tile-max)) *
         var(--zoom, 1),
         var(--tile-snap)
@@ -340,5 +340,16 @@
   .stage[data-layout="cab"] > .deck,
   .stage[data-layout="cab"] > .hud {
     position: static;
+  }
+
+  .stage[data-layout="panes"] .stage-well {
+    grid-template-rows: auto auto;
+  }
+
+  .stage[data-layout="panes"] .stage-status {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    box-shadow: none;
   }
 }

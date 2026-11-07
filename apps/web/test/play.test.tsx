@@ -145,17 +145,16 @@ describe("futtatás", () => {
     const { user } = await openPlay();
     await user.click(runButton());
     expect(
-      await screen.findByText("E_BEDROCK_HIT · 2. sor · Falba ütközés", undefined, {
-        timeout: 3000,
-      }),
+      await screen.findByText("Hibakód: E_BEDROCK_HIT · 2. sor", undefined, { timeout: 3000 }),
     ).toBeTruthy();
+    expect(screen.getByText("Falba ütközés")).toBeTruthy();
     await waitFor(() => expect(callsTo("POST", "/runs")).toHaveLength(1));
     expect(screen.getByText("Hiba")).toBeTruthy();
     await waitFor(() =>
       expect(document.querySelector(".cm-runtime-line")?.textContent).toMatch(/^step forward 1/),
     );
     expect(document.querySelector(".cm-lens-line")?.getAttribute("data-lens")).toBe(
-      "◂ E_BEDROCK_HIT · Falba ütközés",
+      "◂ Falba ütközés · E_BEDROCK_HIT",
     );
   });
 

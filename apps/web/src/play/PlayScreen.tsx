@@ -12,7 +12,6 @@ import { type Blocked, moodFor } from "./phase.ts";
 import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
 import { SplitHandle } from "./SplitHandle.tsx";
-import { SheetRunContext } from "./sheet/SheetRun.tsx";
 import { useBreakpointNotice } from "./useBreakpointNotice.ts";
 import { useWellZoom } from "./useWellZoom.ts";
 import "./PlayScreen.css";
@@ -23,8 +22,10 @@ import { ConsoleTape, LOG_ID, LogToggle, MemoryTable } from "./stage/LogStrip.ts
 import { LongRunNotice } from "./stage/LongRunNotice.tsx";
 import { ShiftReport } from "./stage/ShiftReport.tsx";
 import {
+  eventBeats,
   isTurbo,
   segmentDuration,
+  settleWindow,
   stepDuration,
   usePrevious,
   useStepWindow,
@@ -78,7 +79,7 @@ function finalAnnouncement(view: PlayView): string | undefined {
     return undefined;
   }
   return result.outcome.kind === "runtimeError"
-    ? hu.play.runtimeErrorTitle(result.outcome.code, result.outcome.line)
+    ? hu.play.runtimeErrorSpoken(result.outcome.code, result.outcome.line)
     : hu.play.finishedBody(result.gold, result.steps);
 }
 
@@ -90,10 +91,17 @@ function useStageMotion(map: MineMap, view: PlayView, start: RobotState) {
   const fogMode = usePlayUi((state) => state.fogMode);
   const previousIndex = usePrevious(index);
   const isReduced = usePrefersReducedMotion();
-  const isAdvancing = useStepWindow(`${runId}:${index}`, index === previousIndex + 1);
-  const stepMs = isReduced || !isAdvancing ? 0 : stepDuration(previousIndex, index, speed);
-  const turbo = isTurbo(speed);
   const frame = view.frame;
+  const plannedMs = isReduced
+    ? 0
+    : stepDuration(previousIndex, index, speed, eventBeats(frame?.event));
+  const isAdvancing = useStepWindow(
+    `${runId}:${index}`,
+    index === previousIndex + 1,
+    settleWindow(plannedMs),
+  );
+  const stepMs = isAdvancing ? plannedMs : 0;
+  const turbo = isTurbo(speed);
   const robot = frame?.robot ?? start;
   const fault = useMemo(() => (result ? deriveFault(result, map) : null), [result, map]);
   const segmentMs = segmentDuration(frame?.event?.path.length ?? 0, stepMs);
@@ -176,7 +184,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const outcome = result?.outcome;
   const urgent =
     frame?.atEnd && outcome?.kind === "runtimeError" && view.report !== null
-      ? hu.play.runtimeErrorTitle(outcome.code, outcome.line)
+      ? hu.play.runtimeErrorSpoken(outcome.code, outcome.line)
       : undefined;
 
   const report =
@@ -283,9 +291,7 @@ export function PlayScreen(props: PlayScreenProps) {
 
   const sheet = (
     <RegionBoundary key="sheet" message={hu.play.sheetFailed}>
-      <SheetRunContext value={mode === "play" ? () => run(false) : null}>
-        {props.sheet}
-      </SheetRunContext>
+      {props.sheet}
     </RegionBoundary>
   );
   const skip = (

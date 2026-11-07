@@ -17,7 +17,7 @@ type Anchor = Fraction & { clientX: number; clientY: number };
 type Drag = { id: number; x: number; y: number; left: number; top: number; isMoving: boolean };
 
 function boardOf(well: HTMLElement): HTMLElement | null {
-  return well.querySelector(".board");
+  return well.querySelector(".board-grid") ?? well.querySelector(".board");
 }
 
 function fractionAt(well: HTMLElement, clientX: number, clientY: number): Fraction | null {

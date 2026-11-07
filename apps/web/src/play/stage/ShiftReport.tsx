@@ -17,7 +17,13 @@ type ShiftReportProps = {
   ref?: Ref<HTMLDivElement>;
 };
 
-type Content = { stamp: string; text: string; line: number | null };
+type Content = {
+  stamp: string;
+  text: string;
+  line: number | null;
+  meta?: string;
+  hint?: string;
+};
 
 function blockedContent(blocked: Blocked): Content {
   if (blocked.kind === "engine") {
@@ -49,8 +55,10 @@ function reportContent({ kind, result, blocked }: ShiftReportProps): Content | n
     const { code, line } = result.outcome;
     return {
       stamp: kind === "limit" ? hu.stamps.limit : hu.stamps.error,
-      text: `${hu.play.runtimeErrorTitle(code, line)} · ${runtimeErrors[code].title}`,
+      text: runtimeErrors[code].title,
       line,
+      meta: hu.play.runtimeErrorTitle(code, line),
+      hint: runtimeErrors[code].hint,
     };
   }
   return null;
@@ -75,7 +83,16 @@ export function ShiftReport(props: ShiftReportProps) {
       <span className="report-stamp" aria-hidden="true">
         <PixelText text={content.stamp} scale={2} />
       </span>
-      <p className="report-text">{content.text}</p>
+      <div className="report-body">
+        <p className="report-text">{content.text}</p>
+        {content.meta ? (
+          <p className="report-meta">
+            <span className="visually-hidden">{`${hu.play.errorCodeLabel}: `}</span>
+            {content.meta}
+          </p>
+        ) : null}
+        {content.hint ? <p className="report-hint">{content.hint}</p> : null}
+      </div>
       {content.line === null ? null : (
         <Button size="sm" icon="arrowRight" onPress={() => props.onShowLine(content.line ?? 1)}>
           {hu.play.showLine(content.line)}
