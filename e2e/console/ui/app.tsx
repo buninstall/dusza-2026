@@ -13,6 +13,7 @@ import { Findings } from "./findings.tsx";
 import { Cart, Cog, Exit, Gauge, Lamp, Nugget, Shaft, Split } from "./icons.tsx";
 import { Overview } from "./overview.tsx";
 import { CommandPalette } from "./palette.tsx";
+import { type NavItem, Rail } from "./rail.tsx";
 import { Runs } from "./runs.tsx";
 import { notificationsEnabled, Settings } from "./settings.tsx";
 import {
@@ -33,18 +34,13 @@ try {
   document.documentElement.dataset.theme = "mine";
 }
 
-const NAV: {
-  page: Route["page"];
-  label: string;
-  icon: (props: { size?: number }) => ReactNode;
-  key: string;
-}[] = [
-  { page: "overview", label: "Áttekintés", icon: Gauge, key: "o" },
-  { page: "suites", label: "Csomagok", icon: Shaft, key: "s" },
-  { page: "runs", label: "Futások", icon: Cart, key: "r" },
-  { page: "findings", label: "Találatok", icon: Nugget, key: "f" },
-  { page: "compare", label: "Összevetés", icon: Split, key: "c" },
-  { page: "settings", label: "Beállítások", icon: Cog, key: "," },
+const NAV: NavItem[] = [
+  { page: "overview", label: "Áttekintés", hint: "aknajelentés", icon: Gauge, key: "o" },
+  { page: "suites", label: "Csomagok", hint: "fúrási terv", icon: Shaft, key: "s" },
+  { page: "runs", label: "Futások", hint: "csillék", icon: Cart, key: "r" },
+  { page: "findings", label: "Találatok", hint: "hibanapló", icon: Nugget, key: "f" },
+  { page: "compare", label: "Összevetés", hint: "rétegek", icon: Split, key: "c" },
+  { page: "settings", label: "Beállítások", hint: "gépház", icon: Cog, key: "," },
 ];
 
 function StatusStrip() {
@@ -181,46 +177,12 @@ function App() {
       <a className="skip" href="#main">
         Ugrás a tartalomra
       </a>
-      <nav className="rail" aria-label="Fő navigáció">
-        <a
-          className="brand"
-          href={href({ page: "overview" })}
-          aria-label="MineScript tesztkonzol – áttekintés"
-        >
-          <Lamp size={22} />
-          <span className="brand-word">TESZTAKNA</span>
-        </a>
-        <ul>
-          {NAV.map((item) => {
-            const Glyph = item.icon;
-            const active = route.page === item.page;
-            return (
-              <li key={item.page}>
-                <a
-                  className={`rail-link${active ? " active" : ""}`}
-                  href={href({ page: item.page } as Route)}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <Glyph size={20} />
-                  <span>{item.label}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="rail-foot">
-          <Hint label="Billentyűparancsok (?)">
-            <Button className="rail-link" onPress={() => setHelp(true)}>
-              <kbd>?</kbd>
-              <span>Súgó</span>
-            </Button>
-          </Hint>
-          <Button className="rail-link" onPress={() => void logout()}>
-            <Exit size={20} />
-            <span>Kijelentkezés</span>
-          </Button>
-        </div>
-      </nav>
+      <Rail
+        items={NAV}
+        current={route.page}
+        onHelp={() => setHelp(true)}
+        onLogout={() => void logout()}
+      />
       <div className="workspace">
         <header className="topbar">
           <StatusStrip />
