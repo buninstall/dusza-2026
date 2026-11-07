@@ -1,6 +1,6 @@
 import type { Light } from "../../auth/lamp/lighting.ts";
 import { viewportWidth } from "../../lib/scrollbar-gap.ts";
-import { createBats, createDrips } from "./critters.ts";
+import { createDrips } from "./critters.ts";
 import { readDeepPalette } from "./palette.ts";
 import { createSprites, drawGlows, drawVeinGlints, glowLights, type Sprites } from "./sprites.ts";
 import { cave, edges, paintRock, vein } from "./terrain.ts";
@@ -203,14 +203,12 @@ export function startWall(host: WallHost): (() => void) | null {
       });
     });
   }
-  const bats = createBats(world, seeded(31), roof, host.isCalm);
   const drips = createDrips(world, seeded(32));
   const flies = fireflies(W, H - roof, seeded(33)).map((f) => ({ ...f, y: f.y + roof }));
   let time = 0;
 
   const sim = (dt: number) => {
     time += dt;
-    bats.update(dt, view, W / 2);
     drips.update(dt);
   };
   const render = () => {
@@ -222,10 +220,7 @@ export function startWall(host: WallHost): (() => void) | null {
     }
     drawSpiders(view, sprites, spiders, time, spiderArt);
     drips.draw(view);
-    if (view.front) {
-      bats.draw(view, view.front);
-      if (!host.isCalm) drawFireflies(view, sprites, flies, time);
-    }
+    if (view.front && !host.isCalm) drawFireflies(view, sprites, flies, time);
   };
 
   if (host.isStatic) {
