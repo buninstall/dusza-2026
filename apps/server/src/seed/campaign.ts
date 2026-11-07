@@ -4,6 +4,7 @@ import type { Deps } from "../env.ts";
 import { createMapWithVersion, validateMapContent } from "../services/maps.ts";
 import { TUTORIAL_MAPS } from "./maps.ts";
 import { RECIPES } from "./recipes.ts";
+import { SANDBOX_MAPS } from "./sandbox.ts";
 
 const LEGACY_DESCRIPTIONS: Readonly<Record<string, string>> = {
   "1. Egyenes folyosó": "Egyetlen sor, két aranyrög. Elég a step forward és a mine here.",
@@ -17,7 +18,53 @@ const LEGACY_DESCRIPTIONS: Readonly<Record<string, string>> = {
   "8. A nagy bánya": "A legnagyobb, 15×15-ös bánya, sok elágazással és szétszórt arannyal.",
 };
 
-export type CampaignReport = { created: number; retold: number; recipes: number };
+export type CampaignReport = {
+  created: number;
+  retold: number;
+  recipes: number;
+  sandbox: number;
+};
+
+const SANDBOX_OFFSET = 1000;
+
+export async function ensureSandbox(deps: Deps, base: number): Promise<number> {
+  const owners = await deps.db
+    .select({ id: users.id, username: users.username })
+    .from(users)
+    .where(inArray(users.username, [...new Set(SANDBOX_MAPS.map((map) => map.owner))]));
+  const idOf = new Map(owners.map((owner) => [owner.username, owner.id]));
+  let created = 0;
+  for (const [index, sandbox] of SANDBOX_MAPS.entries()) {
+    const ownerId = idOf.get(sandbox.owner);
+    if (ownerId === undefined) {
+      continue;
+    }
+    const [existing] = await deps.db
+      .select({ id: maps.id })
+      .from(maps)
+      .where(and(eq(maps.ownerId, ownerId), eq(maps.title, sandbox.title)))
+      .limit(1);
+    if (existing) {
+      continue;
+    }
+    const valid = validateMapContent(deps.engine, sandbox.content);
+    if (!valid.ok) {
+      throw new Error(`Hibás homokozó-térkép a seedben: ${sandbox.title}`);
+    }
+    await createMapWithVersion(deps.db, {
+      ownerId,
+      title: sandbox.title,
+      description: sandbox.description,
+      visibility: "public",
+      parSteps: sandbox.parSteps,
+      lampMode: "open",
+      valid,
+      now: base + SANDBOX_OFFSET + index,
+    });
+    created += 1;
+  }
+  return created;
+}
 
 type SeedMap = { id: number; title: string; description: string; createdAt: number };
 
@@ -76,7 +123,10 @@ async function ensureMaps(deps: Deps, ownerId: number, base: number) {
       throw new Error(`Hibás kampánytérkép a seedben: ${tutorial.title}`);
     }
     const recipe = RECIPES.find(
-      (candidate) => candidate.mapIndex === index && candidate.expected.kind === "ok",
+      (candidate) =>
+        candidate.world === undefined &&
+        candidate.mapIndex === index &&
+        candidate.expected.kind === "ok",
     );
     await createMapWithVersion(deps.db, {
       ownerId,
@@ -129,9 +179,10 @@ export async function ensureCampaign(
 ): Promise<CampaignReport> {
   const owner = await campaignOwner(deps);
   if (!owner) {
-    return { created: 0, retold: 0, recipes: 0 };
+    return { created: 0, retold: 0, recipes: 0, sandbox: 0 };
   }
   const { created, retold } = await ensureMaps(deps, owner.ownerId, owner.base);
+  const sandbox = await ensureSandbox(deps, owner.base);
   const recipes = await ensureRecipePrograms(deps, usernames);
-  return { created, retold, recipes };
+  return { created, retold, recipes, sandbox };
 }

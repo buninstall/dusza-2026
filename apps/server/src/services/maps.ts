@@ -5,6 +5,7 @@ import { firstRow } from "../db/rows.ts";
 import { type MapRow, type MapVersionRow, maps, mapVersions, runs, users } from "../db/schema.ts";
 import type { SessionUser } from "../env.ts";
 import { sha256Hex } from "../lib/crypto.ts";
+import { TUTORIAL_MAPS } from "../seed/maps.ts";
 import { difficultyOf } from "./generator.ts";
 import { bestRunsOf, progressOf } from "./progress.ts";
 
@@ -105,6 +106,8 @@ export async function runCount(db: Db, mapVersionId: number): Promise<number> {
   return row?.value ?? 0;
 }
 
+const STORY_TITLES = new Set(TUTORIAL_MAPS.map((tutorial) => tutorial.title));
+
 export async function mapSummaries(
   db: Db,
   engine: Engine,
@@ -120,6 +123,7 @@ export async function mapSummaries(
       visibility: maps.visibility,
       ownerId: maps.ownerId,
       ownerName: users.username,
+      ownerRole: users.role,
       parSteps: maps.parSteps,
       lampMode: maps.lampMode,
       createdAt: maps.createdAt,
@@ -141,8 +145,9 @@ export async function mapSummaries(
     .leftJoin(mine, and(eq(mine.mapVersionId, mapVersions.id), eq(mine.position, 1)))
     .where(filter)
     .orderBy(asc(maps.createdAt), asc(maps.id));
-  return rows.map(({ bestGold, bestSteps, contentHash, ...row }) => ({
+  return rows.map(({ bestGold, bestSteps, contentHash, ownerRole, ...row }) => ({
     ...row,
+    isStory: ownerRole === "admin" && STORY_TITLES.has(row.title),
     difficulty: difficultyOf(engine, row.content, contentHash),
     ...progressOf(
       bestGold === null || bestSteps === null ? null : { gold: bestGold, steps: bestSteps },

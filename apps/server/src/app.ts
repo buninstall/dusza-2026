@@ -11,6 +11,7 @@ import { mapRoutes } from "./routes/maps.ts";
 import { meRoutes } from "./routes/me.ts";
 import { programRoutes } from "./routes/programs.ts";
 import { runRoutes } from "./routes/runs.ts";
+import { storyRoutes } from "./routes/story.ts";
 import { originCheck, securityHeaders } from "./security.ts";
 
 export function buildApi(deps: Deps) {
@@ -20,6 +21,7 @@ export function buildApi(deps: Deps) {
     .route("/maps", mapRoutes(deps))
     .route("/programs", programRoutes(deps))
     .route("/runs", runRoutes(deps))
+    .route("/story", storyRoutes(deps))
     .route("/me", meRoutes(deps))
     .route("/admin", adminRoutes(deps));
 }

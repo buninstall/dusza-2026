@@ -5,7 +5,8 @@ import type { DiagCode, Engine, RunResult } from "@minescript/engine";
 import { loadEngine } from "../src/engine.ts";
 import { seedDemo } from "../src/seed/index.ts";
 import { TUTORIAL_MAPS } from "../src/seed/maps.ts";
-import { RECIPES, type RecipeOutcome } from "../src/seed/recipes.ts";
+import { RECIPES, type Recipe, type RecipeOutcome } from "../src/seed/recipes.ts";
+import { SANDBOX_MAPS } from "../src/seed/sandbox.ts";
 import { createTestContext, json } from "./helpers.ts";
 
 const recipesDir = join(import.meta.dir, "..", "..", "..", "docs", "receptek");
@@ -48,10 +49,21 @@ function mapText(index: number): string {
   return tutorial.content;
 }
 
+function recipeMap(recipe: Recipe): string {
+  if (recipe.world !== "sandbox") {
+    return mapText(recipe.mapIndex);
+  }
+  const sandbox = SANDBOX_MAPS[recipe.mapIndex];
+  if (!sandbox) {
+    throw new Error(`Nincs ${recipe.mapIndex + 1}. homokozó-térkép.`);
+  }
+  return sandbox.content;
+}
+
 describe("receptek (docs/receptek)", () => {
   for (const recipe of RECIPES) {
     test(`${recipe.file} pontosan a dokumentált eredményt adja`, () => {
-      const result = engine.run(recipe.source, mapText(recipe.mapIndex));
+      const result = engine.run(recipe.source, recipeMap(recipe));
       expect(outcomeOf(result)).toEqual(recipe.expected);
     });
   }
@@ -64,11 +76,28 @@ describe("receptek (docs/receptek)", () => {
       }
       const reachable = engine.mapInfo(parsed.map).reachableGold;
       const best = RECIPES.filter(
-        (recipe) => recipe.mapIndex === index && recipe.expected.kind === "ok",
+        (recipe) =>
+          recipe.world === undefined && recipe.mapIndex === index && recipe.expected.kind === "ok",
       );
       expect(best.length).toBeGreaterThan(0);
       for (const recipe of best) {
         expect(engine.run(recipe.source, tutorial.content).gold).toBe(reachable);
+      }
+    });
+  });
+
+  test("a homokozó minden pályájához van bemutató recept, és a fájlok egyeznek", () => {
+    SANDBOX_MAPS.forEach((sandbox, index) => {
+      const recipe = RECIPES.find((item) => item.world === "sandbox" && item.mapIndex === index);
+      expect(recipe).toBeDefined();
+      const parsed = engine.parseMap(sandbox.content);
+      expect(parsed.map).not.toBeNull();
+      const file = recipe?.file.replace(/\.ms$/, ".txt") ?? "";
+      expect(readFileSync(join(recipesDir, file), "utf8")).toBe(sandbox.content);
+      if (parsed.map && recipe) {
+        expect(engine.run(recipe.source, sandbox.content).gold).toBe(
+          engine.mapInfo(parsed.map).reachableGold,
+        );
       }
     });
   });

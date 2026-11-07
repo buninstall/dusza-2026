@@ -10,7 +10,7 @@ import {
   versionValues,
 } from "../services/maps.ts";
 import { executeAndRecord } from "../services/runs.ts";
-import { ensureCampaign } from "./campaign.ts";
+import { ensureCampaign, ensureSandbox } from "./campaign.ts";
 import { TUTORIAL_MAPS } from "./maps.ts";
 import { SAMPLE_PROGRAMS } from "./programs.ts";
 import { RECIPES } from "./recipes.ts";
@@ -61,7 +61,10 @@ async function createUsers(deps: Deps, now: number): Promise<Map<string, number>
 
 export function tutorialPar(mapIndex: number): number | null {
   const recipe = RECIPES.find(
-    (candidate) => candidate.mapIndex === mapIndex && candidate.expected.kind === "ok",
+    (candidate) =>
+      candidate.world === undefined &&
+      candidate.mapIndex === mapIndex &&
+      candidate.expected.kind === "ok",
   );
   return recipe && recipe.expected.kind === "ok" ? recipe.expected.steps : null;
 }
@@ -157,6 +160,7 @@ export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise
   const userIds = await createUsers(deps, now);
   const adminId = userIds.get("admin") ?? 0;
   const createdMaps = await createMaps(deps, adminId, now);
+  await ensureSandbox(deps, now);
   let recordedRuns = 0;
   let skippedRuns = 0;
   for (const [index, sample] of SAMPLE_PROGRAMS.entries()) {

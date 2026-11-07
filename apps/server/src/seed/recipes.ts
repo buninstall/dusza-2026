@@ -60,6 +60,19 @@ import errorInstructionCountLimitExceeded from "../../../../docs/receptek/hibak/
 import syntaxErrors from "../../../../docs/receptek/hibak/szintaktikai-hibak.ms" with {
   type: "text",
 };
+import sandbox01 from "../../../../docs/receptek/homokozo/01-lepes-es-csakany.ms" with {
+  type: "text",
+};
+import sandbox02 from "../../../../docs/receptek/homokozo/02-negy-irany.ms" with { type: "text" };
+import sandbox03 from "../../../../docs/receptek/homokozo/03-tapogatozas.ms" with { type: "text" };
+import sandbox04 from "../../../../docs/receptek/homokozo/04-menj-a-falig.ms" with { type: "text" };
+import sandbox05 from "../../../../docs/receptek/homokozo/05-szamlalas.ms" with { type: "text" };
+import sandbox06 from "../../../../docs/receptek/homokozo/06-logikai-kapuk.ms" with {
+  type: "text",
+};
+import sandbox07 from "../../../../docs/receptek/homokozo/07-jobb-kez-a-falon.ms" with {
+  type: "text",
+};
 
 export type RecipeOutcome =
   | { kind: "ok"; gold: number; steps: number }
@@ -69,6 +82,7 @@ export type RecipeOutcome =
 export type Recipe = {
   file: string;
   title: string;
+  world?: "sandbox";
   mapIndex: number;
   source: string;
   expected: RecipeOutcome;
@@ -314,6 +328,62 @@ export const RECIPES: readonly Recipe[] = [
     mapIndex: 23,
     source: blind24,
     expected: { kind: "ok", gold: 12, steps: 804 },
+  },
+  {
+    file: "homokozo/01-lepes-es-csakany.ms",
+    title: "Recept – Homokozó: Lépés és csákány",
+    world: "sandbox",
+    mapIndex: 0,
+    source: sandbox01,
+    expected: { kind: "ok", gold: 2, steps: 4 },
+  },
+  {
+    file: "homokozo/02-negy-irany.ms",
+    title: "Recept – Homokozó: Négy irány",
+    world: "sandbox",
+    mapIndex: 1,
+    source: sandbox02,
+    expected: { kind: "ok", gold: 4, steps: 13 },
+  },
+  {
+    file: "homokozo/03-tapogatozas.ms",
+    title: "Recept – Homokozó: Tapogatózás",
+    world: "sandbox",
+    mapIndex: 2,
+    source: sandbox03,
+    expected: { kind: "ok", gold: 1, steps: 11 },
+  },
+  {
+    file: "homokozo/04-menj-a-falig.ms",
+    title: "Recept – Homokozó: Menj a falig",
+    world: "sandbox",
+    mapIndex: 3,
+    source: sandbox04,
+    expected: { kind: "ok", gold: 3, steps: 71 },
+  },
+  {
+    file: "homokozo/05-szamlalas.ms",
+    title: "Recept – Homokozó: Számlálás",
+    world: "sandbox",
+    mapIndex: 4,
+    source: sandbox05,
+    expected: { kind: "ok", gold: 4, steps: 34 },
+  },
+  {
+    file: "homokozo/06-logikai-kapuk.ms",
+    title: "Recept – Homokozó: Logikai kapuk",
+    world: "sandbox",
+    mapIndex: 5,
+    source: sandbox06,
+    expected: { kind: "ok", gold: 3, steps: 93 },
+  },
+  {
+    file: "homokozo/07-jobb-kez-a-falon.ms",
+    title: "Recept – Homokozó: Jobb kéz a falon",
+    world: "sandbox",
+    mapIndex: 6,
+    source: sandbox07,
+    expected: { kind: "ok", gold: 3, steps: 444 },
   },
   {
     file: "hibak/e-bedrock-hit.ms",
