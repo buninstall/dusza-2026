@@ -22,6 +22,7 @@ impl Target {
             .and_then(|local| local.join(SPLASH_PATH).ok())
     }
 
+    #[cfg(any(target_os = "macos", test))]
     pub fn to_remote(&self, url: &Url) -> Url {
         match &self.local {
             Some(local) if same_origin(url, local) => rebase(url, &self.remote),
