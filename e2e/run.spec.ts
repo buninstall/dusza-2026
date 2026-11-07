@@ -33,6 +33,7 @@ import {
   LOOP_RECIPE,
   OPTIMAL_RECIPES,
   recipePath,
+  recipeText,
   SYNTAX_RECIPE,
 } from "./recipes.ts";
 
@@ -274,7 +275,7 @@ test.describe("3.4 futtatás új fiókkal", () => {
   }) => {
     await register(page, "szintaxis");
     await gotoPlay(page, CORRIDOR);
-    await importProgramFile(page, recipePath(SYNTAX_RECIPE.file));
+    await replaceProgram(page, recipeText(SYNTAX_RECIPE.file));
     await run(page);
     const report = syntaxReport(page);
     await expect(report).toContainText("Hibás sorok: 1, 2, 3, 4.");

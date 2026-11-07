@@ -6,6 +6,8 @@ test("bejelentkezés → térképlista → játék → kijelentkezés", async ({
   await expect(page).toHaveURL(/\/login/);
   await login(page);
 
+  await page.getByRole("radiogroup", { name: "Játékmód" }).getByText("Történet").click();
+  await expect(page).toHaveURL(/mode=story/);
   await expect(page.getByRole("heading", { level: 2, name: "1. Egyenes folyosó" })).toBeVisible();
   await openPlay(page, "1. Egyenes folyosó");
   await expect(editor(page)).toBeVisible();
