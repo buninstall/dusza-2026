@@ -193,7 +193,6 @@ export const hu = {
     passwordShort: "A jelszó legalább 8 karakter legyen.",
   },
   desktop: {
-    title: "Asztali alkalmazás",
     platforms: { macos: "macOS", windows: "Windows", linux: "Linux" },
     primary: {
       macos: "Asztali alkalmazás macOS-re",
@@ -222,7 +221,8 @@ export const hu = {
       dmg: "Ha a macOS nem engedi megnyitni: Rendszerbeállítások › Adatvédelem és biztonság › Megnyitás mindenképp.",
       exe: "Ha a Windows figyelmeztet: További információ › Futtatás mindenképp.",
       msi: "Ha a Windows figyelmeztet: További információ › Futtatás mindenképp.",
-      appimage: "Indítás előtt tedd futtathatóvá: Tulajdonságok › Futtatható programként, vagy chmod +x.",
+      appimage:
+        "Indítás előtt tedd futtathatóvá: Tulajdonságok › Futtatható programként, vagy chmod +x.",
       deb: null,
       rpm: null,
     },

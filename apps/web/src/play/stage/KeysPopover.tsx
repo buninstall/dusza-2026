@@ -1,11 +1,5 @@
-import {
-  Dialog,
-  DialogTrigger,
-  Heading,
-  Popover,
-  type PopoverProps,
-} from "react-aria-components";
-import { type ButtonVariant } from "../../components/ui/Button.tsx";
+import { Dialog, DialogTrigger, Heading, Popover, type PopoverProps } from "react-aria-components";
+import type { ButtonVariant } from "../../components/ui/Button.tsx";
 import { IconButton } from "../../components/ui/IconButton.tsx";
 import { hu } from "../../i18n/hu.ts";
 
@@ -17,7 +11,11 @@ type KeysPopoverProps = {
   variant?: ButtonVariant;
 };
 
-export function KeysPopover({ rows, placement = "bottom end", variant = "ghost" }: KeysPopoverProps) {
+export function KeysPopover({
+  rows,
+  placement = "bottom end",
+  variant = "ghost",
+}: KeysPopoverProps) {
   return (
     <DialogTrigger>
       <IconButton icon="key" label={hu.play.keys} variant={variant} />

@@ -64,7 +64,10 @@ export function announceDownload(format: DesktopFormat): void {
   toast.info(hint ? `${hu.desktop.started} ${hint}` : hu.desktop.started);
 }
 
-export function useDesktopOffer(): { platform: DesktopPlatform | null; offer: DesktopOffer | null } {
+export function useDesktopOffer(): {
+  platform: DesktopPlatform | null;
+  offer: DesktopOffer | null;
+} {
   const [platform] = useState(currentPlatform);
   const { data } = useQuery({ ...desktopReleaseQuery, enabled: platform !== null });
   return { platform, offer: platform && data ? pickOffer(data, platform) : null };

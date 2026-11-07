@@ -22,7 +22,7 @@ export function DesktopPlate() {
 function DesktopPlateBody({ offer }: { offer: DesktopOffer }) {
   const { platform, primary, others, version } = offer;
   return (
-    <div className="desktop-plate" role="group" aria-label={hu.desktop.title}>
+    <div className="desktop-plate">
       <AriaLink
         href={downloadHref(primary.format)}
         download

@@ -39,6 +39,7 @@ import {
 } from "./Inspector.tsx";
 import { LeaveGuard } from "./LeaveGuard.tsx";
 import "./MapEditor.css";
+import { KeysPopover } from "../play/stage/KeysPopover.tsx";
 import {
   doomNotes,
   rectTag,
@@ -46,7 +47,6 @@ import {
   splitDiagnostics,
   unreachableMarks,
 } from "./editor-issues.ts";
-import { KeysPopover } from "../play/stage/KeysPopover.tsx";
 import { parseMapFile } from "./map-file.ts";
 import { ToolRail } from "./ToolRail.tsx";
 import { TrialPlay } from "./TrialPlay.tsx";

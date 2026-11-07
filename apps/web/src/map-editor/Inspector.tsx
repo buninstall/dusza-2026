@@ -36,19 +36,25 @@ function InspectorSection({
   title,
   headingRef,
   className,
+  isTitleHidden = false,
   children,
 }: {
   title: string;
   headingRef?: Ref<HTMLHeadingElement>;
   className?: string;
+  isTitleHidden?: boolean;
   children: ReactNode;
 }) {
   return (
     <section className={clsx("ed-section", className)} aria-label={title}>
-      <h2 ref={headingRef} tabIndex={-1} className="ed-section-title">
-        <PixelText text={title} scale={2} />
-        <span className="visually-hidden">{title}</span>
-      </h2>
+      {isTitleHidden ? (
+        <h2 className="visually-hidden">{title}</h2>
+      ) : (
+        <h2 ref={headingRef} tabIndex={-1} className="ed-section-title">
+          <PixelText text={title} scale={2} />
+          <span className="visually-hidden">{title}</span>
+        </h2>
+      )}
       {children}
     </section>
   );
@@ -297,7 +303,11 @@ type VersionBlockProps = {
 
 export function VersionBlock({ mapId, title, version, onDelete }: VersionBlockProps) {
   return (
-    <InspectorSection title={hu.mapEditor.versionHeading} className="ed-version-block">
+    <InspectorSection
+      title={hu.mapEditor.versionHeading}
+      className="ed-version-block"
+      isTitleHidden
+    >
       <p className="ed-version">
         {version.runCount > 0
           ? hu.mapEditor.versionSummary(version.current, version.runCount)

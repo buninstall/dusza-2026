@@ -170,7 +170,8 @@ describe("asztali kiadások forrása", () => {
   });
 
   test("tokennel az asset API aláírt átirányítását adja tovább", async () => {
-    const signed = "https://release-assets.githubusercontent.com/github-production-release-asset/1?sig=x";
+    const signed =
+      "https://release-assets.githubusercontent.com/github-production-release-asset/1?sig=x";
     const github = fakeGithub((url) =>
       url.includes("/releases/assets/")
         ? new Response(null, { status: 302, headers: { location: signed } })

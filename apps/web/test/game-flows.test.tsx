@@ -161,6 +161,15 @@ describe("térképszerkesztő extrák", () => {
     expect(await screen.findByText("A térkép azóta változott, számold újra.")).toBeTruthy();
   });
 
+  test("a bal sáv Generálás gombja és billentyűgombja menü nélkül nyílik", async () => {
+    const { user } = await openNew();
+    await user.click(screen.getByRole("button", { name: "Billentyűk" }));
+    expect(await screen.findByText("festés a kijelölt mezőre")).toBeTruthy();
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("button", { name: "Generálás…" }));
+    expect(await screen.findByRole("dialog", { name: "Pálya generálása" })).toBeTruthy();
+  });
+
   test("a gépi megoldás a szerver számát írja a célértékbe, hibánál üzen", async () => {
     respond("POST", "/maps/par", { parSteps: null });
     const { user } = await openNew();
