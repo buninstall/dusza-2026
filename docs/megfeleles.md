@@ -25,6 +25,24 @@ A skálázási átalakítás (lapozott homokozó, kedvencek, lapozott programtá
 
 A 3.5 (ranglista) és a 3.4 (futás és lépésszámlálás) viselkedése nem változott; a `GET /api/maps` alapértelmezésben továbbra is minden világot létrehozási sorrendben ad, így a régi kliensek és az e2e-tesztek is működnek.
 
+## Második utóellenőrzés (2026. november 8.)
+
+Teljes újraellenőrzés a kiírás minden pontjára (CLI-vel 40 program és 12 térkép, böngészőben 320 és 1920 px között), majd az alábbi javítások:
+
+- Programimport (1.20, 3.3.2): a szintaktikailag hibás programfájl sem töltődik be, hibaablak mutatja a fájl nevét és a hibás sorokat (D26, a D23 helyett).
+- Futás megjelenítése (3.4): 1366×768-on a hibajelentés és az eredménysáv nem takarja a térképet, nyitott konzolnál a 15×15-ös pálya is teljes egészében látszik; a térkép széléről lelépés címe „Lelépés a térképről”.
+- Pályák oldal, térképszerkesztő, programtár: 320 px-en sincs levágott vagy kilógó vezérlő, a léptetőgombok legalább 24 px-esek.
+- Szövegek: pontos a/az névelő a felületen és a szerver üzeneteiben, a Futásaim fejléce a valódi darabszámot mutatja.
+- A Playwright-tesztek a mai felületet követik (Homokozó/Történet mód, lapozott programtár, módválasztós bevezető).
+
+Eredmény ugyanazon a commiton:
+
+- `just lint`: Rustfmt, Clippy, Biome és típusellenőrzés hiba és figyelmeztetés nélkül;
+- `just conformance`: Rust, WASM és referencia-interpreter, 618 eset és 6 differenciális teszt zöld;
+- `just test`: Rust 278 + 38, WASM-motor 637, referencia 420, szerver 203, web 527 teszt zöld;
+- `just e2e`: 138/138 Playwright-teszt zöld;
+- `e2e/spec/kiiras-live.test.ts` 25/25 és `e2e/spec/beadando.test.ts` 17/17.
+
 ## Bevezető
 
 | ID   | Hely     | Követelmény                                                                           | Megvalósítás                                                                        | Ellenőrzés                                                          | Ítélet                        |
