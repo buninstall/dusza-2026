@@ -133,3 +133,13 @@ export const Wave = (props: IconProps) => (
     <path d="M2 12h3l3-7 4 14 3-9 2 2h5" />
   </Icon>
 );
+export const Engine = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 9h3l2-3h6l2 3h3v8h-3l-2 2H9l-2-2H4zM9 12h6M12 9v6" />
+  </Icon>
+);
+export const Scroll = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M6 4h11v14a2 2 0 0 1-2 2H6zM6 4a2 2 0 0 0-2 2v2h2M9 9h5M9 12h5M9 15h3" />
+  </Icon>
+);

@@ -9,8 +9,9 @@ import { createRoot } from "react-dom/client";
 import { api } from "./api.ts";
 import { Compare } from "./compare.tsx";
 import { Hint, STATUS_TEXT, Toasts, toast, useHotkey } from "./components.tsx";
+import { EngineRoom } from "./engine.tsx";
 import { Findings } from "./findings.tsx";
-import { Cart, Cog, Exit, Gauge, Lamp, Nugget, Shaft, Split } from "./icons.tsx";
+import { Cart, Cog, Engine, Exit, Gauge, Lamp, Nugget, Scroll, Shaft, Split } from "./icons.tsx";
 import { Overview } from "./overview.tsx";
 import { CommandPalette } from "./palette.tsx";
 import { type NavItem, Rail } from "./rail.tsx";
@@ -28,6 +29,7 @@ import {
   useRoute,
 } from "./state.ts";
 import { Suites } from "./suites.tsx";
+import { SummaryPage } from "./summary.tsx";
 
 try {
   document.documentElement.dataset.theme = localStorage.getItem("tc-theme") ?? "mine";
@@ -37,8 +39,10 @@ try {
 
 const NAV: NavItem[] = [
   { page: "overview", label: "Áttekintés", hint: "aknajelentés", icon: Gauge, key: "o" },
+  { page: "summary", label: "Összegzés", hint: "mi jó, mi nem", icon: Scroll, key: "j" },
   { page: "suites", label: "Csomagok", hint: "fúrási terv", icon: Shaft, key: "s" },
   { page: "runs", label: "Futások", hint: "csillék", icon: Cart, key: "r" },
+  { page: "engine", label: "Motortér", hint: "belülről élőben", icon: Engine, key: "m" },
   { page: "findings", label: "Találatok", hint: "hibanapló", icon: Nugget, key: "f" },
   { page: "compare", label: "Összevetés", hint: "rétegek", icon: Split, key: "c" },
   { page: "settings", label: "Beállítások", hint: "gépház", icon: Cog, key: "," },
@@ -214,6 +218,10 @@ function App() {
                 <Findings findingId={route.finding} />
               ) : route.page === "compare" ? (
                 <Compare a={route.a} b={route.b} />
+              ) : route.page === "summary" ? (
+                <SummaryPage />
+              ) : route.page === "engine" ? (
+                <EngineRoom runId={route.run} testCase={route.testCase} />
               ) : route.page === "settings" ? (
                 <Settings />
               ) : (

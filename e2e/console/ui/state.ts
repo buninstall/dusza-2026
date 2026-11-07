@@ -4,6 +4,7 @@ import {
   api,
   type ConsoleState,
   type Finding,
+  type LiveCase,
   type QueueState,
   type RunSummary,
   type SuiteView,
@@ -20,6 +21,8 @@ type LiveState = {
   dataDir: string;
   clockSkew: number;
   logListeners: Set<(runId: string, lines: string[]) => void>;
+  live: Map<string, Map<number, LiveCase>>;
+  mergeLive: (runId: string, cases: LiveCase[], replace?: boolean) => void;
   load: () => Promise<void>;
   upsertRun: (run: RunSummary) => void;
   setFindings: (findings: Finding[]) => void;
@@ -36,6 +39,15 @@ export const useLive = create<LiveState>((set, get) => ({
   dataDir: "",
   clockSkew: 0,
   logListeners: new Set(),
+  live: new Map(),
+  mergeLive: (runId, cases, replace = false) => {
+    const live = new Map(get().live);
+    const current = new Map(replace ? [] : (live.get(runId) ?? []));
+    for (const item of cases) current.set(item.seq, item);
+    live.set(runId, current);
+    if (live.size > 20) live.delete(live.keys().next().value ?? "");
+    set({ live });
+  },
   load: async () => {
     const state = await api<ConsoleState>("/api/state");
     set({
@@ -84,6 +96,14 @@ export function connectEvents(): () => void {
     source.addEventListener("queue", (event) => {
       useLive.setState({ queue: JSON.parse((event as MessageEvent<string>).data) as QueueState });
     });
+    source.addEventListener("cases", (event) => {
+      const { runId, cases, complete } = JSON.parse((event as MessageEvent<string>).data) as {
+        runId: string;
+        cases: LiveCase[];
+        complete?: boolean;
+      };
+      useLive.getState().mergeLive(runId, cases, complete === true);
+    });
     source.addEventListener("log", (event) => {
       const { runId, lines } = JSON.parse((event as MessageEvent<string>).data) as {
         runId: string;
@@ -122,6 +142,8 @@ export function useNow(intervalMs = 1000): number {
 
 export type Route =
   | { page: "overview" }
+  | { page: "summary" }
+  | { page: "engine"; run?: string; testCase?: string }
   | { page: "suites"; suite?: string }
   | { page: "runs"; run?: string }
   | { page: "findings"; finding?: string }
@@ -141,6 +163,12 @@ export function parseRoute(hash: string): Route {
     return { page, ...(a ? { a } : {}), ...(b ? { b } : {}) };
   }
   if (page === "settings") return { page };
+  if (page === "summary") return { page };
+  if (page === "engine") {
+    const run = params.get("run");
+    const testCase = params.get("case");
+    return { page, ...(run ? { run } : {}), ...(testCase ? { testCase } : {}) };
+  }
   return { page: "overview" };
 }
 
@@ -158,6 +186,15 @@ export function href(route: Route): string {
       return `#/compare?${new URLSearchParams({ ...(route.a ? { a: route.a } : {}), ...(route.b ? { b: route.b } : {}) })}`;
     case "settings":
       return "#/settings";
+    case "summary":
+      return "#/summary";
+    case "engine": {
+      const query = new URLSearchParams({
+        ...(route.run ? { run: route.run } : {}),
+        ...(route.testCase ? { case: route.testCase } : {}),
+      }).toString();
+      return query ? `#/engine?${query}` : "#/engine";
+    }
   }
 }
 
@@ -167,8 +204,10 @@ export function navigate(route: Route): void {
 
 export const PAGE_ORDER: Route["page"][] = [
   "overview",
+  "summary",
   "suites",
   "runs",
+  "engine",
   "findings",
   "compare",
   "settings",

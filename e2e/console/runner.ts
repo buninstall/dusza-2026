@@ -1,5 +1,10 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { connect } from "node:net";
+import { freemem, setPriority } from "node:os";
+
+const MIN_FREE_MB = Number(process.env.TEST_CONSOLE_MIN_FREE_MB ?? "4096");
+const THREADS = process.env.TEST_CONSOLE_THREADS ?? "2";
+
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -67,8 +72,145 @@ export function tailOf(runId: string): string[] {
 let pending: Map<string, string[]> = new Map();
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
+export type LiveCase = {
+  seq: number;
+  name: string | null;
+  status: "running" | "passed" | "failed" | "skipped";
+  startedAt: number;
+  durationMs: number | null;
+  output: string[];
+};
+
+const LIVE_LIMIT = 6000;
+const OUTPUT_LIMIT = 60;
+const liveCases = new Map<string, LiveCase[]>();
+const liveChanged = new Map<string, Map<number, LiveCase>>();
+
+export function liveOf(runId: string): LiveCase[] {
+  return liveCases.get(runId) ?? [];
+}
+
+function touch(runId: string, item: LiveCase): void {
+  const changed = liveChanged.get(runId) ?? new Map<number, LiveCase>();
+  changed.set(item.seq, item);
+  liveChanged.set(runId, changed);
+}
+
+function addLive(runId: string, item: Omit<LiveCase, "seq">): LiveCase {
+  const list = liveCases.get(runId) ?? [];
+  const entry = { ...item, seq: list.length + 1 };
+  list.push(entry);
+  if (list.length > LIVE_LIMIT) list.splice(0, list.length - LIVE_LIMIT);
+  liveCases.set(runId, list);
+  touch(runId, entry);
+  return entry;
+}
+
+function track(run: Run, line: string): boolean {
+  const list = liveCases.get(run.id) ?? [];
+  const marker = line.match(/^@@TC (START|END) (\d+)(?: ([\d.]+))?$/);
+  if (marker) {
+    if (marker[1] === "START") {
+      addLive(run.id, {
+        name: null,
+        status: "running",
+        startedAt: Date.now(),
+        durationMs: null,
+        output: [],
+      });
+    } else {
+      const current = [...list].reverse().find((item) => item.status === "running");
+      if (current) {
+        current.status = "passed";
+        current.durationMs = Number(marker[3] ?? "0");
+        touch(run.id, current);
+      }
+    }
+    return true;
+  }
+  const bunVerdict = line.match(/^\((pass|fail|skip|todo)\) (.+?)(?: \[([\d.]+)ms\])?$/);
+  if (bunVerdict) {
+    const status =
+      bunVerdict[1] === "pass" ? "passed" : bunVerdict[1] === "fail" ? "failed" : "skipped";
+    const last = [...list]
+      .reverse()
+      .find((item) => item.name === null && item.status !== "running");
+    if (last && status !== "skipped") {
+      last.status = status;
+      last.name = bunVerdict[2] ?? null;
+      touch(run.id, last);
+    } else {
+      addLive(run.id, {
+        name: bunVerdict[2] ?? null,
+        status,
+        startedAt: Date.now(),
+        durationMs: Number(bunVerdict[3] ?? "0"),
+        output: [],
+      });
+    }
+    return false;
+  }
+  const cargo = line.match(/^test (\S+) \.\.\. (ok|FAILED|ignored)/);
+  if (cargo) {
+    addLive(run.id, {
+      name: cargo[1] ?? null,
+      status: cargo[2] === "ok" ? "passed" : cargo[2] === "FAILED" ? "failed" : "skipped",
+      startedAt: Date.now(),
+      durationMs: null,
+      output: [],
+    });
+    return false;
+  }
+  const playwright = line.match(
+    /^\s+(✓|✘|-|ok|x)\s+\d+ \[[^\]]+\] › (.+?)(?: \(([\d.]+)(ms|s|m)\))?$/,
+  );
+  if (playwright) {
+    const value = Number(playwright[3] ?? "0");
+    const unit = playwright[4] ?? "ms";
+    addLive(run.id, {
+      name: playwright[2] ?? null,
+      status:
+        playwright[1] === "✓" || playwright[1] === "ok"
+          ? "passed"
+          : playwright[1] === "-"
+            ? "skipped"
+            : "failed",
+      startedAt: Date.now(),
+      durationMs: unit === "s" ? value * 1000 : unit === "m" ? value * 60_000 : value,
+      output: [],
+    });
+    return false;
+  }
+  const running = [...list].reverse().find((item) => item.status === "running");
+  if (running && line.trim()) {
+    running.output.push(line);
+    if (running.output.length > OUTPUT_LIMIT)
+      running.output.splice(0, running.output.length - OUTPUT_LIMIT);
+    touch(run.id, running);
+  }
+  return false;
+}
+
+function backfillNames(run: Run, cases: TestCase[]): void {
+  const list = liveCases.get(run.id);
+  if (!list) return;
+  const anonymous = list.filter((item) => item.name === null);
+  const ordered = cases.filter((item) => item.status !== "skipped");
+  if (anonymous.length === 0 || list.length !== ordered.length) return;
+  list.forEach((item, index) => {
+    const match = ordered[index];
+    if (!match) return;
+    if (item.name === null) item.name = match.name;
+    if (match.status === "failed") item.status = "failed";
+    touch(run.id, item);
+  });
+}
+
 function writeLine(run: Run, text: string): void {
-  const clean = stripAnsi(text).replaceAll("\r\n", "\n");
+  const raw = stripAnsi(text).replaceAll("\r\n", "\n");
+  const kept = raw.split("\n").filter((line) => !track(run, line));
+  const clean = kept.join("\n");
+  if (!clean.trim()) return;
   appendLog(run.id, clean.endsWith("\n") ? clean : `${clean}\n`);
   const lines = clean.split("\n");
   if (lines.at(-1) === "") lines.pop();
@@ -94,6 +236,9 @@ function writeLine(run: Run, text: string): void {
       const sent = pending;
       pending = new Map();
       for (const [runId, batchLines] of sent) emit("log", { runId, lines: batchLines });
+      for (const [runId, changed] of liveChanged)
+        emit("cases", { runId, cases: [...changed.values()] });
+      liveChanged.clear();
       for (const runId of progressed) {
         const current = runs.find((candidate) => candidate.id === runId);
         if (current) emit("run", summaryOf(current));
@@ -255,6 +400,15 @@ function finish(
     run.summary = `${cases.filter((item) => item.status === "passed").length} sikeres eset.`;
   }
   run.cases = cases;
+  if (!run.label?.includes("véletlen")) backfillNames(run, cases);
+  for (const item of liveCases.get(run.id) ?? []) {
+    if (item.status === "running") {
+      item.status = "failed";
+      touch(run.id, item);
+    }
+  }
+  liveChanged.delete(run.id);
+  emit("cases", { runId: run.id, cases: liveOf(run.id), complete: true });
   run.counts = {
     passed: cases.filter((item) => item.status === "passed").length,
     failed: cases.filter((item) => item.status === "failed").length,
@@ -370,12 +524,36 @@ async function execute(job: Job): Promise<void> {
   try {
     const child = Bun.spawn(command.cmd, {
       cwd: command.cwd,
-      env: { ...process.env, ...command.env, NO_COLOR: "1" },
+      env: {
+        ...process.env,
+        CARGO_BUILD_JOBS: THREADS,
+        RUST_TEST_THREADS: THREADS,
+        UV_THREADPOOL_SIZE: THREADS,
+        ...command.env,
+        NO_COLOR: "1",
+      },
       stdout: "pipe",
       stderr: "pipe",
       stdin: "ignore",
     });
     active = { job, abort, kill: () => killTree(child.pid, child) };
+    try {
+      setPriority(child.pid, 10);
+    } catch {
+      writeLine(run, "! A folyamat prioritása nem csökkenthető.");
+    }
+    const guard = setInterval(() => {
+      const freeMb = freemem() / 1024 / 1024;
+      if (freeMb >= MIN_FREE_MB) return;
+      clearInterval(guard);
+      timedOut = true;
+      writeLine(
+        run,
+        `✗ Memóriavédelem: csak ${Math.round(freeMb)} MB szabad RAM maradt (határ: ${MIN_FREE_MB} MB), a futást leállítottam, hogy a gép ne fagyjon le.`,
+      );
+      killTree(child.pid, child);
+    }, 1000);
+    void child.exited.finally(() => clearInterval(guard));
     const timer = setTimeout(() => {
       timedOut = true;
       killTree(child.pid, child);

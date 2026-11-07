@@ -1,7 +1,9 @@
+import type { EngineCase, Trace } from "../engine.ts";
 import type { TestCase } from "../parsers.ts";
-import type { Settings } from "../runner.ts";
+import type { LiveCase, Settings } from "../runner.ts";
 import type { Finding, Run, Target } from "../store.ts";
 import type { DiscoveredTest, Suite } from "../suites.ts";
+import type { Summary } from "../summary.ts";
 
 export type SuiteView = Omit<Suite, "command" | "builtin">;
 export type RunSummary = Omit<Run, "cases"> & { failedCases: number };
@@ -25,7 +27,8 @@ export type Comparison = {
   added: TestCase[];
   removed: TestCase[];
 };
-export type { DiscoveredTest, Finding, Target, TestCase };
+export type { DiscoveredTest, Finding, LiveCase, Summary, Target, TestCase, Trace };
+export type EngineCaseLite = Pick<EngineCase, "id" | "source" | "group" | "ref" | "name" | "kind">;
 
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") ?? "";
 

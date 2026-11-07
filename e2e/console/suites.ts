@@ -6,6 +6,7 @@ import { probeLive, type ScanContext, scanComments, scanHygiene, scanSecrets } f
 import type { Target } from "./store.ts";
 
 export const root = join(import.meta.dir, "..", "..");
+const LIVE_PRELOAD = join(import.meta.dir, "live-preload.ts");
 const bun = process.execPath;
 
 export type Parser =
@@ -72,7 +73,13 @@ function bunTest(cwd: string, defaultFiles: string[], extraEnv: Record<string, s
     const files = target?.file
       ? [relative(join(root, cwd), join(root, target.file)).replaceAll("\\", "/")]
       : defaultFiles;
-    const cmd = [bun, "test", ...files.map((file) => (file.startsWith(".") ? file : `./${file}`))];
+    const cmd = [
+      bun,
+      "test",
+      "--preload",
+      LIVE_PRELOAD,
+      ...files.map((file) => (file.startsWith(".") ? file : `./${file}`)),
+    ];
     if (target?.name) cmd.push("--test-name-pattern", namePattern(target.name));
     if (options.randomizeSeed !== null)
       cmd.push("--randomize", "--seed", String(options.randomizeSeed));

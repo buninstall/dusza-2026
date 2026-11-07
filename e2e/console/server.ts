@@ -11,11 +11,13 @@ import {
   sessionOf,
   setPassword,
 } from "./auth.ts";
+import { engineCases, trace } from "./engine.ts";
 import {
   cancel,
   clearQueue,
   enqueue,
   findRun,
+  liveOf,
   queueState,
   settings,
   subscribe,
@@ -33,6 +35,7 @@ import {
   runs,
 } from "./store.ts";
 import { discover, SUITES } from "./suites.ts";
+import { buildSummary, summaryMarkdown } from "./summary.ts";
 import { type Asset, buildUi } from "./ui/build.ts";
 
 const MAX_BODY = 64 * 1024;
@@ -478,14 +481,55 @@ export function createHandler(options: ConsoleOptions) {
     }
     if (url.pathname === "/api/queue/clear" && method === "POST")
       return json({ removed: clearQueue() });
+    if (url.pathname === "/api/summary" && method === "GET") return json(buildSummary());
+    if (url.pathname === "/api/summary.md" && method === "GET") {
+      return download(summaryMarkdown(buildSummary()), "text/markdown", "tesztosszegzes.md");
+    }
+    if (url.pathname === "/api/engine/cases" && method === "GET") {
+      try {
+        return json({
+          cases: engineCases().map(({ id, source, group, ref, name, kind }) => ({
+            id,
+            source,
+            group,
+            ref,
+            name,
+            kind,
+          })),
+        });
+      } catch (error) {
+        return problem(500, error instanceof Error ? error.message : String(error));
+      }
+    }
+    if (url.pathname === "/api/engine/trace" && method === "GET") {
+      try {
+        return json(trace({ id: url.searchParams.get("id") ?? "" }));
+      } catch (error) {
+        return problem(404, error instanceof Error ? error.message : String(error));
+      }
+    }
+    if (url.pathname === "/api/engine/trace" && method === "POST") {
+      const body = await readJson(request);
+      if (body instanceof Response) return body;
+      if (typeof body.program !== "string" || typeof body.map !== "string")
+        return problem(400, "Adj meg programot és térképet.");
+      if (body.program.length > 20_000 || body.map.length > 2_000)
+        return problem(413, "Túl nagy program vagy térkép.");
+      try {
+        return json(trace({ program: body.program, map: body.map }));
+      } catch (error) {
+        return problem(500, error instanceof Error ? error.message : String(error));
+      }
+    }
     if (url.pathname === "/api/compare" && method === "GET") {
       const result = compareRuns(url.searchParams.get("a") ?? "", url.searchParams.get("b") ?? "");
       return result ? json(result) : problem(404, "Nincs ilyen futás.");
     }
-    const runMatch = url.pathname.match(/^\/api\/runs\/([0-9a-f-]{36})(\/log|\/cancel)?$/);
+    const runMatch = url.pathname.match(/^\/api\/runs\/([0-9a-f-]{36})(\/log|\/cancel|\/live)?$/);
     if (runMatch) {
       const run = findRun(runMatch[1] ?? "");
       if (!run) return problem(404, "Nincs ilyen futás.");
+      if (runMatch[2] === "/live" && method === "GET") return json({ cases: liveOf(run.id) });
       if (runMatch[2] === "/cancel" && method === "POST")
         return json({ cancelled: cancel(run.id) });
       if (runMatch[2] === "/log" && method === "GET")
