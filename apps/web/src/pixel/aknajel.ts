@@ -52,6 +52,7 @@ const CAPS: Readonly<Record<string, PixelRows>> = {
   ".": [BLANK, BLANK, BLANK, BLANK, BLANK, ".##..", ".##.."],
   ":": [BLANK, ".##..", ".##..", BLANK, ".##..", ".##..", BLANK],
   "/": ["....#", "....#", "...#.", "..#..", ".#...", "#....", "#...."],
+  "+": [BLANK, "..#..", "..#..", "#####", "..#..", "..#..", BLANK],
   "-": [BLANK, BLANK, BLANK, ".###.", BLANK, BLANK, BLANK],
   "–": [BLANK, BLANK, BLANK, "#####", BLANK, BLANK, BLANK],
   "#": [".#.#.", ".#.#.", "#####", ".#.#.", "#####", ".#.#.", ".#.#."],

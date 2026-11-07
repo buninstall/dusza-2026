@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { GoldFlight } from "../src/play/GoldFlight.tsx";
+import { flightFrames, GoldFlight } from "../src/play/GoldFlight.tsx";
 
 function rect(left: number, top: number, size: number): DOMRect {
   return {
@@ -39,7 +39,7 @@ afterEach(() => {
 });
 
 describe("aranyrög röppályája", () => {
-  test("a bányászott mezőről ívben, felpattanva a csille felé repül", () => {
+  test("a bányászott mezőről felpattan, és a csillébe esik", () => {
     const cancel = vi.fn();
     const animate = vi.fn(() => ({ finished: Promise.resolve(), cancel }));
     HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
@@ -52,14 +52,29 @@ describe("aranyrög röppályája", () => {
       KeyframeAnimationOptions,
     ];
     expect(options).toEqual({ duration: 1300 });
-    expect(frames).toHaveLength(5);
     expect(String(frames[0]?.transform)).toContain("translate(116px, 66px)");
-    expect(String(frames[1]?.transform)).toContain("translate(116px, 44px)");
-    expect(String(frames[3]?.transform)).toContain("translate(18px, 18px)");
-    expect(frames[4]?.opacity).toBe(0);
+    expect(String(frames[1]?.transform)).toContain("translate(116px, 48px)");
+    expect(String(frames.at(-1)?.transform)).toContain("translate(18px, 22px)");
+    expect(frames.at(-1)?.opacity).toBe(0);
     rerender(<GoldFlight flight={null} rootRef={rootRef} />);
     expect(cancel).toHaveBeenCalledOnce();
     unmount();
+  });
+
+  test("az út sosem emelkedik a csille fölé, és a csillében ér véget", () => {
+    const cart = { x: 600, y: 200 };
+    for (const from of [
+      { x: 100, y: 500 },
+      { x: 900, y: 480 },
+      { x: 600, y: 260 },
+    ]) {
+      const frames = flightFrames(from, cart);
+      const ys = frames.map((frame) =>
+        Number(/translate\(-?\d+px, (-?\d+)px\)/.exec(String(frame.transform))?.[1]),
+      );
+      expect(Math.min(...ys)).toBeGreaterThanOrEqual(cart.y - 14);
+      expect(String(frames.at(-1)?.transform)).toContain("translate(600px, 204px)");
+    }
   });
 
   test("ha a csille ki van görgetve vagy le van vágva, nem repül sehová", () => {
