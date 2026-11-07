@@ -7,6 +7,7 @@ import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
 import "./AuthScreen.css";
 import { type Credentials, passwordProblem, usernameProblem } from "./credentials.ts";
+import { isDemoShown } from "./demo.ts";
 
 type CredentialsFormProps = {
   isNewAccount: boolean;
@@ -96,7 +97,7 @@ export function CredentialsForm({ isNewAccount, submitLabel, onSubmit }: Credent
           {submitLabel}
         </Button>
       </Form>
-      {isNewAccount ? null : <DemoAccounts onFill={setValues} />}
+      {isNewAccount || !isDemoShown() ? null : <DemoAccounts onFill={setValues} />}
     </>
   );
 }
