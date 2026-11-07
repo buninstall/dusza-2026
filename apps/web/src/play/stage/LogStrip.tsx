@@ -45,7 +45,7 @@ function useRovingLine(count: number) {
   const [picked, setPicked] = useState<number | null>(null);
   const last = count - 1;
   const active = picked === null || picked > last ? last : picked;
-  const onKeyDown = (event: KeyboardEvent<HTMLOListElement>) => {
+  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const move = LINE_KEYS[event.key];
     if (!move || count === 0) {
       return;
@@ -53,7 +53,8 @@ function useRovingLine(count: number) {
     event.preventDefault();
     const next = move(active, last);
     setPicked(next === last ? null : next);
-    event.currentTarget.querySelectorAll<HTMLButtonElement>(".log-line-button")[next]?.focus();
+    const list = event.currentTarget.closest(".log-lines");
+    list?.querySelectorAll<HTMLButtonElement>(".log-line-button")[next]?.focus();
   };
   return {
     active,
@@ -81,7 +82,7 @@ export function ConsoleTape({ entries, canSeek, onSeek }: ConsoleTapeProps) {
           {entries.length === 0 ? (
             <p className="log-empty">{hu.play.consoleEmpty}</p>
           ) : (
-            <ol className="log-lines" onKeyDown={roving.onKeyDown}>
+            <ol className="log-lines">
               {entries.map((entry, position) => (
                 <li
                   key={`${entry.index.toString()}-${position.toString()}`}
@@ -94,6 +95,7 @@ export function ConsoleTape({ entries, canSeek, onSeek }: ConsoleTapeProps) {
                     disabled={!canSeek}
                     tabIndex={position === roving.active ? 0 : -1}
                     onFocus={() => roving.pick(position)}
+                    onKeyDown={roving.onKeyDown}
                     aria-label={hu.play.consoleJump(entry.step, entry.text)}
                     onClick={() => onSeek(entry.index)}
                   >

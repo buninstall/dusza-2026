@@ -10,6 +10,7 @@ import {
   LABYRINTH,
   mapDetail,
   respondPrograms,
+  trace,
   walkTrace,
 } from "./support/fixtures.ts";
 
@@ -74,7 +75,7 @@ describe("futtatás", () => {
     expect(run).toHaveBeenCalledWith(PROGRAM, LABYRINTH);
     expect(document.querySelector(".cm-error-line")?.textContent).toBe("step forward 2");
     expect(usePlayback.getState().status).toBe("idle");
-    await user.click(within(alert).getByRole("button", { name: "Mutasd a(z) 2. sort" }));
+    await user.click(within(alert).getByRole("button", { name: "Mutasd a 2. sort" }));
     expect(callsTo("POST", "/runs")).toHaveLength(0);
   });
 
@@ -164,6 +165,27 @@ describe("futtatás", () => {
     );
   });
 
+  test("a térkép széléről lelépést nem falba ütközésnek nevezi", async () => {
+    seedProgram("turn by 1\nstep forward 1\n");
+    const edge = trace(
+      [{ line: 1, robot: { pos: { row: 0, col: 0 }, dir: "north" } }, { line: 2 }],
+      { kind: "runtimeError", code: "E_BEDROCK_HIT", line: 2, message: "Falba ütközés" },
+    );
+    vi.spyOn(realEngine, "run").mockReturnValue(edge);
+    respond(
+      "POST",
+      "/runs",
+      { run: { gold: 0, steps: 2 }, outcome: edge.outcome, console: [] },
+      201,
+    );
+    const { user } = await openPlay();
+    await user.click(runButton());
+    expect(
+      await screen.findByText("Lelépés a térképről", undefined, { timeout: 3000 }),
+    ).toBeTruthy();
+    expect(screen.queryByText("Falba ütközés")).toBeNull();
+  });
+
   test("sikertelen beküldés újrapróbálható", async () => {
     seedProgram(PROGRAM);
     vi.spyOn(realEngine, "run").mockReturnValue(walkTrace);
@@ -238,8 +260,9 @@ describe("lejátszásvezérlés", () => {
 });
 
 describe("program kezelése", () => {
-  test("importálás: a hibás program betöltődik, a NUL-t tartalmazó fájl nem", async () => {
+  test("importálás: a hibás és a NUL-t tartalmazó fájl nem töltődik be, a helyes igen", async () => {
     const { user } = await openPlay();
+    const before = editorText();
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const choose = (file: File) => {
       const list = { 0: file, length: 1, item: () => file };
@@ -247,17 +270,20 @@ describe("program kezelése", () => {
       fireEvent.change(input);
     };
     choose(new File(["step  forward 1\r\n"], "hibas.ms"));
-    expect(await screen.findByText("A(z) hibas.ms program betöltve.")).toBeTruthy();
-    expect(
-      await screen.findByText(
-        /A betöltött program 1 szintaktikai hibát tartalmaz, az első az 1\. sorban\./,
-      ),
-    ).toBeTruthy();
-    await waitFor(() => expect(editorText()).toBe("step  forward 1\n"));
+    const rejected = await screen.findByRole("alertdialog", { name: "A program nem tölthető be" });
+    expect(rejected.textContent).toContain("Fájl: hibas.ms");
+    expect(rejected.textContent).toContain("1. sor");
+    expect(rejected.textContent).toContain("Dupla szóköz");
+    expect(editorText()).toBe(before);
+    await user.click(within(rejected).getByRole("button", { name: "Bezárás" }));
     choose(new File(["print 1\u0000"], "bin.ms"));
-    expect(await screen.findByText(/NUL karaktert tartalmaz/)).toBeTruthy();
-    expect(editorText()).toBe("step  forward 1\n");
-    expect(user).toBeTruthy();
+    const binary = await screen.findByRole("alertdialog", { name: "A program nem tölthető be" });
+    expect(binary.textContent).toMatch(/NUL karaktert tartalmaz/);
+    expect(editorText()).toBe(before);
+    await user.click(within(binary).getByRole("button", { name: "Bezárás" }));
+    choose(new File(["print 1\r\n"], "egy.ms"));
+    expect(await screen.findByText("Az egy.ms program betöltve.")).toBeTruthy();
+    await waitFor(() => expect(editorText()).toBe("print 1\n"));
   });
 
   test("exportálás és formázás", async () => {

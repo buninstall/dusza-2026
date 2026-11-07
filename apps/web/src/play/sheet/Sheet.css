@@ -452,3 +452,35 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.import-file {
+  font: var(--type-mono-sm);
+  color: var(--c-text);
+  overflow-wrap: anywhere;
+}
+
+.import-issues {
+  display: grid;
+  gap: var(--space-1);
+  max-height: 16rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.import-issue {
+  display: grid;
+  grid-template-columns: 6ch minmax(0, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-left: var(--border-thick) solid var(--c-danger-ink);
+  background: var(--c-error-line);
+  font: var(--type-help);
+  color: var(--c-text);
+}
+
+.import-issue-line {
+  font: var(--type-mono-sm);
+  font-weight: 700;
+}

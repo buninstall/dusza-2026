@@ -26,7 +26,7 @@ export function TrialPlay({ map, text, title, onBack }: TrialPlayProps) {
   const info = useMemo(() => engine.mapInfo(map), [engine, map]);
   const [draft, setDraft] = useProgramDraft(TRIAL_DRAFT_ID);
   const engineRun = useEngineRun(text, start);
-  const view = usePlayView(draft.source, engineRun.blocked);
+  const view = usePlayView(draft.source, engineRun.blocked, map);
   const onDraftChange = (next: typeof draft) => {
     setDraft(next);
     engineRun.clearBlocked();

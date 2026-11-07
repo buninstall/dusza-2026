@@ -195,6 +195,8 @@
   grid-area: 1 / 2;
   grid-template-columns: repeat(var(--cols), var(--tile));
   align-items: center;
+  font-size: min(0.75rem, calc(var(--tile) / 1.5));
+  white-space: nowrap;
   text-align: center;
 }
 

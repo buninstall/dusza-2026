@@ -66,7 +66,7 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
   const start = useMemo<RobotState>(() => ({ pos: map.robot, dir: map.dir }), [map]);
   const info = useMemo(() => engine.mapInfo(map), [engine, map]);
   const engineRun = useEngineRun(detail.map.content, start);
-  const view = usePlayView(run.source, engineRun.blocked);
+  const view = usePlayView(run.source, engineRun.blocked, map);
   const isOld = useIsOldVersion(run.mapId, run.mapVersionId);
   useAutoplay(engineRun.run, run.source);
 

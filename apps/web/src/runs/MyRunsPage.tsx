@@ -111,7 +111,7 @@ export function MyRunsPage({ page, onPageChange }: MyRunsPageProps) {
   const { data, error, refetch, isPlaceholderData } = useQuery(myRunsQuery(Math.max(1, page)));
   return (
     <div className="runs-page">
-      <LocationPlate name={hu.signs.runs} meta={hu.runs.meta} />
+      <LocationPlate name={hu.signs.runs} meta={hu.runs.meta(data?.total ?? null)} />
       {error ? (
         <LoadFailed error={error} fallback={hu.runs.loadFailed} onRetry={() => void refetch()} />
       ) : null}

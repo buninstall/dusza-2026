@@ -121,7 +121,7 @@ describe("migrátor", () => {
     };
     const error = await rejection(migrate(database.target, [...migrations, broken]));
     expect(error).toBeInstanceOf(DatabaseError);
-    expect((error as DatabaseError).message).toStartWith("A(z) 9999_hibas migráció sikertelen:");
+    expect((error as DatabaseError).message).toStartWith("A 9999_hibas migráció sikertelen:");
     expect((error as DatabaseError).hint).toContain("azonnal véglegesíti");
     const applied = await query<NameRow>(database.target, "SELECT name FROM __migrations");
     expect(applied.map((row) => row.name)).not.toContain(broken.name);

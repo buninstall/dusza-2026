@@ -8,6 +8,7 @@ import { migrate } from "./db/migrate.ts";
 import { describeTarget } from "./db/url.ts";
 import { loadEngine } from "./engine.ts";
 import type { Deps } from "./env.ts";
+import { capitalArticle } from "./lib/article.ts";
 import { behindProxy } from "./lib/request.ts";
 import { DEMO_ACCOUNTS, type SeedReport, seedDemo } from "./seed/index.ts";
 import { createDesktopReleases } from "./services/desktop.ts";
@@ -29,7 +30,7 @@ function serve(
       if (!isAddressInUse(error) || offset === PORT_ATTEMPTS) {
         throw error;
       }
-      console.warn(`A(z) ${port} port foglalt, próbálom a következőt…`);
+      console.warn(`${capitalArticle(port)} ${port} port foglalt, próbálom a következőt…`);
     }
   }
   throw new Error(`Nincs szabad port ${config.port} és ${config.port + PORT_ATTEMPTS} között.`);

@@ -8,7 +8,7 @@ import { useStableCallback } from "../lib/stable-callback.ts";
 import { MineBoard } from "../mine/MineBoard.tsx";
 import type { Exploration, FogMode } from "../mine/tiles-model.ts";
 import { usePlaybackSounds } from "../sound/usePlaybackSounds.ts";
-import { deriveFault } from "./fault.ts";
+import { deriveFault, isOffMapHit } from "./fault.ts";
 import { GoldFlight } from "./GoldFlight.tsx";
 import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
 import {
@@ -86,7 +86,7 @@ function isFocusLost(): boolean {
   return document.activeElement === null || document.activeElement === document.body;
 }
 
-function finalAnnouncement(view: PlayView): string | undefined {
+function finalAnnouncement(view: PlayView, map: MineMap): string | undefined {
   const result = usePlayback.getState().result;
   if (view.report === "stopped") {
     return hu.play.stoppedBody;
@@ -95,7 +95,7 @@ function finalAnnouncement(view: PlayView): string | undefined {
     return undefined;
   }
   return result.outcome.kind === "runtimeError"
-    ? hu.play.runtimeErrorSpoken(result.outcome.code, result.outcome.line)
+    ? hu.play.runtimeErrorSpoken(result.outcome.code, result.outcome.line, isOffMapHit(result, map))
     : hu.play.finishedBody(result.gold, result.steps);
 }
 
@@ -256,7 +256,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const outcome = result?.outcome;
   const urgent =
     frame?.atEnd && outcome?.kind === "runtimeError" && view.report !== null
-      ? hu.play.runtimeErrorSpoken(outcome.code, outcome.line)
+      ? hu.play.runtimeErrorSpoken(outcome.code, outcome.line, isOffMapHit(result, map))
       : undefined;
 
   const report =
@@ -266,6 +266,7 @@ export function PlayScreen(props: PlayScreenProps) {
         kind={view.report}
         result={result}
         blocked={blocked}
+        isOffMap={isOffMapHit(result, map)}
         onShowLine={props.revealLine}
       />
     );
@@ -396,7 +397,7 @@ export function PlayScreen(props: PlayScreenProps) {
     <div ref={rootRef} className="play" data-layout={layout} data-mode={mode} style={share}>
       {panes}
       <GoldFlight flight={motion.flight} rootRef={rootRef} />
-      <LiveAnnouncer frame={frame} final={finalAnnouncement(view)} urgent={urgent} />
+      <LiveAnnouncer frame={frame} final={finalAnnouncement(view, map)} urgent={urgent} />
     </div>
   );
 }

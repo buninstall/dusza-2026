@@ -2,7 +2,7 @@ import type { RunResult } from "@minescript/engine";
 import type { Ref } from "react";
 import { Led } from "../../components/Led.tsx";
 import { Button } from "../../components/ui/Button.tsx";
-import { formatCount, hu, runtimeErrors } from "../../i18n/hu.ts";
+import { formatCount, hu, runtimeErrorText } from "../../i18n/hu.ts";
 import { PixelText } from "../../pixel/PixelText.tsx";
 import { type Blocked, errorLinesOf, type ReportKind } from "../phase.ts";
 import { PROGRAM_MAX_CHARS } from "../program-file.ts";
@@ -13,6 +13,7 @@ type ShiftReportProps = {
   kind: ReportKind;
   result: RunResult | null;
   blocked: Blocked | null;
+  isOffMap?: boolean;
   onShowLine: (line: number) => void;
   ref?: Ref<HTMLDivElement>;
 };
@@ -44,7 +45,12 @@ function blockedContent(blocked: Blocked): Content {
   };
 }
 
-function reportContent({ kind, result, blocked }: ShiftReportProps): Content | null {
+function reportContent({
+  kind,
+  result,
+  blocked,
+  isOffMap = false,
+}: ShiftReportProps): Content | null {
   if ((kind === "blocked" || kind === "crash") && blocked) {
     return blockedContent(blocked);
   }
@@ -53,12 +59,13 @@ function reportContent({ kind, result, blocked }: ShiftReportProps): Content | n
   }
   if ((kind === "error" || kind === "limit") && result?.outcome.kind === "runtimeError") {
     const { code, line } = result.outcome;
+    const text = runtimeErrorText(code, isOffMap);
     return {
       stamp: kind === "limit" ? hu.stamps.limit : hu.stamps.error,
-      text: runtimeErrors[code].title,
+      text: text.title,
       line,
       meta: hu.play.runtimeErrorTitle(code, line),
-      hint: runtimeErrors[code].hint,
+      hint: text.hint,
     };
   }
   return null;

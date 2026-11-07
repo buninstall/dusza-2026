@@ -56,7 +56,7 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
     mapId,
     mapVersionId: detail.version.id,
   });
-  const view = usePlayView(draft.source, engineRun.blocked);
+  const view = usePlayView(draft.source, engineRun.blocked, map);
   const onDraftChange = (next: ProgramDraft) => {
     setDraft(next);
     engineRun.clearBlocked();
