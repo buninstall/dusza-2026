@@ -44,17 +44,21 @@ export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
   const level = hu.signs.level(depth);
   return (
     <li className="lv-tile" data-mine="level" data-map-id={mapId} data-stars={map.stars ?? -1}>
-      <p className="lv-depth">
-        <PixelText text={level} scale={2} />
-        <span className="visually-hidden">{level}</span>
-      </p>
       <div className="lv-window" data-mine-pit="">
-        <MapPreview content={map.content} box={box} className="lv-preview" />
+        <MapPreview content={map.content} box={box} className="lv-preview" isFitted />
       </div>
       <div className="lv-body">
-        <h2 className="lv-title">{map.title}</h2>
-        <MapFacts map={map} />
-        <Progress map={map} />
+        <div className="lv-head">
+          <p className="lv-depth">
+            <PixelText text={level} scale={2} />
+            <span className="visually-hidden">{level}</span>
+          </p>
+          <h2 className="lv-title">{map.title}</h2>
+        </div>
+        <div className="lv-meta">
+          <MapFacts map={map} />
+          <Progress map={map} />
+        </div>
       </div>
       <div className="lv-actions">
         <Link

@@ -70,6 +70,10 @@ export function previewSprite(content: string): Sprite {
   };
 }
 
+export function fittedScale(sprite: Sprite, box: number): number {
+  return box / Math.max(sprite.width, sprite.height, 1);
+}
+
 export function previewScale(sprite: Sprite, box: number = PREVIEW_BOX): number {
   const longest = Math.max(sprite.width, sprite.height, 1);
   const ceiling = Math.max(MAX_SCALE, Math.floor(box / SCALE_PER_BOX));
