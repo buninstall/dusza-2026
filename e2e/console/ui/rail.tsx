@@ -83,7 +83,11 @@ export function Rail({
           const active = item.page === current;
           const counter = counters[item.page];
           return (
-            <li key={item.page} className={`rail-stop${active ? " active" : ""}`}>
+            <li
+              key={item.page}
+              className={`rail-stop${active ? " active" : ""}${position < index ? " passed" : ""}${position === index - 1 ? " approach" : ""}`}
+              style={{ "--step": position, "--depth": index } as CSSProperties}
+            >
               <a
                 className="rail-link"
                 href={href({ page: item.page } as Route)}
@@ -109,7 +113,9 @@ export function Rail({
                 )}
               </a>
               {position < items.length - 1 ? (
-                <span className="rail-cable" aria-hidden="true" />
+                <span className="rail-cable" aria-hidden="true">
+                  <span className="rail-light" />
+                </span>
               ) : null}
             </li>
           );

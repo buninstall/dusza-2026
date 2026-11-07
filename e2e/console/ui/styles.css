@@ -288,6 +288,54 @@ mark {
   pointer-events: none;
 }
 
+.rail-light {
+  position: absolute;
+  inset: -2px -1px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #f5b83d59, #f5b83d8c);
+  box-shadow: 0 0 6px #f5b83d40;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 260ms cubic-bezier(0.3, 0.7, 0.2, 1);
+  transition-delay: calc((var(--depth) - var(--step) - 1) * 70ms);
+}
+
+.rail-stop.passed .rail-light {
+  transform: scaleY(1);
+  transition-delay: calc(var(--step) * 70ms);
+}
+
+.rail-stop.approach .rail-light {
+  background: linear-gradient(180deg, #f5b83d8c, var(--gold));
+  box-shadow:
+    0 0 8px #f5b83d80,
+    0 6px 14px #f5b83d66;
+}
+
+.rail-stop.passed .rail-node {
+  border-color: color-mix(in srgb, var(--gold) 65%, transparent);
+  background: color-mix(in srgb, var(--gold) 28%, var(--rock));
+  box-shadow: 0 0 6px #f5b83d40;
+  transition-delay: calc(var(--step) * 70ms);
+}
+
+.rail-stop.passed .rail-icon {
+  color: color-mix(in srgb, var(--gold) 55%, var(--muted));
+}
+
+.rail-stop.active .rail-node {
+  animation: lamp 2.6s ease-in-out infinite;
+  transition-delay: calc(var(--step) * 70ms);
+}
+
+@keyframes lamp {
+  50% {
+    box-shadow:
+      0 0 0 6px #f5b83d1f,
+      0 0 22px #f5b83dcc;
+  }
+}
+
 .rail-link {
   position: relative;
   display: grid;
