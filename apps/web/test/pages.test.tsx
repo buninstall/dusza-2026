@@ -272,6 +272,41 @@ describe("adminisztráció", () => {
     expect(await screen.findByText("demo1 fiókja törölve.")).toBeTruthy();
   });
 
+  test("új felhasználó létrehozása szerepkörrel, foglalt névre hibaüzenet", async () => {
+    respond("GET", "/admin/users", { users: USERS });
+    onApi("POST", "/admin/users", () =>
+      apiError(409, "USERNAME_TAKEN", "Ez a felhasználónév már foglalt."),
+    );
+    const { user } = renderApp("/admin", "admin");
+    await user.click(await screen.findByRole("button", { name: "Új felhasználó" }));
+    const dialog = await screen.findByRole("dialog", { name: "Új felhasználó létrehozása" });
+    await user.type(within(dialog).getByLabelText(/Felhasználónév/), "demo1");
+    await user.type(within(dialog).getByLabelText(/Jelszó/), "titkos123");
+    await user.click(within(dialog).getByRole("button", { name: "Fiók létrehozása" }));
+    expect(await within(dialog).findByText("Ez a felhasználónév már foglalt.")).toBeTruthy();
+
+    respond(
+      "POST",
+      "/admin/users",
+      { user: { id: 3, username: "ujbanyasz", role: "admin", createdAt: 3 } },
+      201,
+    );
+    const name = within(dialog).getByLabelText(/Felhasználónév/);
+    await user.clear(name);
+    await user.type(name, "ujbanyasz");
+    await user.click(within(dialog).getByRole("radio", { name: "adminisztrátor" }));
+    await user.click(within(dialog).getByRole("button", { name: "Fiók létrehozása" }));
+    await waitFor(() =>
+      expect(callsTo("POST", "/admin/users").at(-1)?.body).toEqual({
+        username: "ujbanyasz",
+        password: "titkos123",
+        role: "admin",
+      }),
+    );
+    expect(await screen.findByText("ujbanyasz fiókja elkészült (adminisztrátor).")).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
   test("hibás művelet hibaüzenetet ad, a nem admin visszakerül a térképekhez", async () => {
     respond("GET", "/admin/users", { users: USERS });
     onApi("PATCH", "/admin/users/2", () => apiError(409, "SELF_CHANGE", "Nem módosítható."));

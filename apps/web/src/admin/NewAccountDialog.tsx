@@ -9,7 +9,7 @@ import { TextField } from "../components/ui/TextField.tsx";
 import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
 
-export type AccountRole = "admin" | "user";
+type AccountRole = "admin" | "user";
 
 export type NewAccount = { username: string; password: string; role: AccountRole };
 
@@ -86,7 +86,11 @@ function NewAccountForm({
   );
 }
 
-export function NewAccountDialog({ onCreate }: { onCreate: (account: NewAccount) => Promise<void> }) {
+export function NewAccountDialog({
+  onCreate,
+}: {
+  onCreate: (account: NewAccount) => Promise<void>;
+}) {
   return (
     <DialogTrigger>
       <Button variant="primary" size="sm" icon="plus">

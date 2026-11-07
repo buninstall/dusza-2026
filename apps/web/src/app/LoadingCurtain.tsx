@@ -1,6 +1,6 @@
 import { useIsFetching } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { hu } from "../i18n/hu.ts";
 import { LogoMark } from "../pixel/Logo.tsx";
 import { useReadyHolds } from "./readiness.ts";
@@ -10,6 +10,7 @@ const SHOW_DELAY_MS = 220;
 const SETTLE_MS = 120;
 const MAX_WAIT_MS = 8000;
 const FADE_MS = 240;
+const ENTRY_PATHS = new Set(["/login", "/register"]);
 
 type Phase = "shown" | "leaving" | "hidden";
 
@@ -30,6 +31,8 @@ function useFontsReady(): boolean {
 
 export function LoadingCurtain() {
   const isRouting = useRouterState({ select: (state) => state.status === "pending" });
+  const path = useRouterState({ select: (state) => state.location.pathname });
+  const lastPath = useRef(path);
   const waiting = useIsFetching({
     predicate: (query) => query.state.data === undefined && query.getObserversCount() > 0,
   });
@@ -47,6 +50,15 @@ export function LoadingCurtain() {
   useEffect(() => {
     document.getElementById("boot-splash")?.remove();
   }, []);
+
+  useLayoutEffect(() => {
+    const from = lastPath.current;
+    lastPath.current = path;
+    if (from !== path && ENTRY_PATHS.has(from) && !ENTRY_PATHS.has(path)) {
+      setGivenUp(false);
+      setPhase("shown");
+    }
+  }, [path]);
 
   useEffect(() => {
     if (isBusy) {

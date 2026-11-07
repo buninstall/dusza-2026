@@ -13,7 +13,6 @@ import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import "./AdminPage.css";
 import { type NewAccount, NewAccountDialog } from "./NewAccountDialog.tsx";
 
-
 const fetchUsers = () => call(api.admin.users.$get());
 
 const usersQuery = queryOptions({ queryKey: ["admin", "users"], queryFn: fetchUsers });

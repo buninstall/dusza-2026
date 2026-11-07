@@ -197,11 +197,12 @@ A `GET /api/me/runs` elemei ugyanezek a mezők a `source` nélkül.
 
 ### Adminisztráció (csak admin)
 
-| Metódus és útvonal            | Kérés      | Válasz                                           |
-| ----------------------------- | ---------- | ------------------------------------------------ |
-| `GET /api/admin/users`        | –          | `200 { users }`                                  |
-| `PATCH /api/admin/users/:id`  | `{ role }` | `200 { user }`; `409 SELF_CHANGE` a saját fiókra |
-| `DELETE /api/admin/users/:id` | –          | `200 { ok: true }`; `409 SELF_CHANGE`            |
+| Metódus és útvonal            | Kérés                           | Válasz                                                                |
+| ----------------------------- | ------------------------------- | --------------------------------------------------------------------- |
+| `GET /api/admin/users`        | –                               | `200 { users }`                                                       |
+| `POST /api/admin/users`       | `{ username, password, role? }` | `201 { user }`; `409 USERNAME_TAKEN`; a `role` alapból `user`         |
+| `PATCH /api/admin/users/:id`  | `{ role }`                      | `200 { user }`; `409 SELF_CHANGE` a saját fiókra                      |
+| `DELETE /api/admin/users/:id` | –                               | `200 { ok: true }`; `409 SELF_CHANGE`                                 |
 
 ## Fixture-formátumok
 
