@@ -10,6 +10,21 @@ Ez a kézikönyv a [receptekhez](README.md) tartozik. Minden pályánál leírja
 - 1 rög: van arany. 2 rög: minden elérhető arany. 3 rög: minden arany legfeljebb a célértéknyi lépésből. A kampánypályák célértéke a pontos optimum.
 - A ciklus kényelmes, de minden körben a feltétel is sornak számít, ezért a ranglistán az egyenes program nyer. Sötét pályán viszont a ciklus visz el a térképig.
 
+## Nyitott, Lámpafény, Vaksötét
+
+A pályák táblázatában a „Mód” oszlop azt mutatja, mennyire sötét a bánya. A robot érzékelése egyik módban sem változik, a lámpa csak a játékosnak világít.
+
+| Mód | Induló fény | Teljes térkép | Falnak ütközés |
+| --- | --- | --- | --- |
+| nyitott | minden mező látszik | mindig | csak hibaüzenet |
+| Lámpafény | a robot körüli 1 mező | három rög után | összetörik a lámpa, a vázlat törlődik |
+| Vaksötét | csak a bejárt és megvizsgált mezők | három rög után | összetörik a lámpa, a vázlat törlődik |
+
+- Minden kibányászott rög eggyel növeli a lámpa fénykörét, legfeljebb 4 mezőig; a fény falon nem megy át.
+- Ami egy futásban felfedezett vagy megvilágított lett, a vázlatra kerül, és a következő futás előtt is látszik. A vázlat ebben a böngészőben, felhasználónként és pályaverziónként tárolódik.
+- `E_BEDROCK_HIT` hibánál összetörik a lámpa, és a vázlat törlődik; a többi hiba nem töri össze. A biztonságos lépés: előbb `isThere 1`, csak utána `step forward 1`.
+- Sötét pálya térképét csak a szerző és az adminisztrátor exportálhatja, más játékos futása Lámpafény nézetben nézhető vissza.
+
 ## A bányász szabályai
 
 1. **A távolság ingyen van, a kanyar nem.** A rövidebb, de kanyargós út gyakran több sor, mint a hosszú egyenes (9. Kerülőút).
