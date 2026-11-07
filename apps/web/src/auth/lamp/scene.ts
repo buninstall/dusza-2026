@@ -33,7 +33,6 @@ export type SceneHost = {
   root: HTMLElement;
   canvas: HTMLCanvasElement;
   panel: HTMLElement;
-  plate: string;
   isStatic: boolean;
 };
 
@@ -186,7 +185,7 @@ export function startLampScene(host: SceneHost): () => void {
 
   for (let r = 0; r < rows; r += 1) for (let c = 0; c < cols; c += 1) paintTile(c, r);
   for (let r = 0; r < rows; r += 1) for (let c = 0; c < cols; c += 1) paintEdges(c, r);
-  paintFrame(paint, palette, box, host.plate);
+  paintFrame(paint, palette, box);
   const albedo = paint.getImageData(0, 0, W, H).data;
 
   const refreshTile = (c: number, r: number) => {

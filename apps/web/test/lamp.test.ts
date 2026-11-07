@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import { signRows } from "../src/auth/lamp/canvas-art.ts";
 import { createLighting } from "../src/auth/lamp/lighting.ts";
 import { GOLD, generateMine, HOLE, isOpen, planTour } from "../src/auth/lamp/mine.ts";
 import { createWalker, MINE_TIME } from "../src/auth/lamp/walker.ts";
@@ -125,12 +124,5 @@ describe("fény és felfedés", () => {
     );
     expect(shown.length).toBeGreaterThan(0);
     expect(shown.length).toBeLessThan(W);
-  });
-
-  test("a táblafelirat az Aknajel betűiből áll össze", () => {
-    const rows = signRows("Akna 07");
-    expect(rows).toHaveLength(10);
-    expect(new Set(rows.map((row) => row.length)).size).toBe(1);
-    expect(rows.join("")).toContain("#");
   });
 });

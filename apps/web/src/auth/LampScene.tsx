@@ -2,11 +2,11 @@ import { type RefObject, useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { startLampScene } from "./lamp/scene.ts";
 
-type LampSceneProps = { panelRef: RefObject<HTMLElement | null>; plate: string };
+type LampSceneProps = { panelRef: RefObject<HTMLElement | null> };
 
 const RESTART_DELAY_MS = 120;
 
-export function LampScene({ panelRef, plate }: LampSceneProps) {
+export function LampScene({ panelRef }: LampSceneProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isStatic = usePrefersReducedMotion();
 
@@ -17,13 +17,13 @@ export function LampScene({ panelRef, plate }: LampSceneProps) {
     if (!canvas || !panel || !root || typeof ResizeObserver === "undefined") {
       return;
     }
-    let stop = startLampScene({ root, canvas, panel, plate, isStatic });
+    let stop = startLampScene({ root, canvas, panel, isStatic });
     let timer = 0;
     const observer = new ResizeObserver(() => {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         stop();
-        stop = startLampScene({ root, canvas, panel, plate, isStatic });
+        stop = startLampScene({ root, canvas, panel, isStatic });
       }, RESTART_DELAY_MS);
     });
     observer.observe(root);
@@ -33,7 +33,7 @@ export function LampScene({ panelRef, plate }: LampSceneProps) {
       window.clearTimeout(timer);
       stop();
     };
-  }, [panelRef, plate, isStatic]);
+  }, [panelRef, isStatic]);
 
   return (
     <div className="auth-scene" data-theme="tarna" aria-hidden="true">

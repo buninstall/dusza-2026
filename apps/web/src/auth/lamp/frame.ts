@@ -1,7 +1,7 @@
 import type { PixelRows } from "../../pixel/pixel-art.ts";
-import { drawRows, type Palette, signRows, toneColor } from "./canvas-art.ts";
+import { type Palette, toneColor } from "./canvas-art.ts";
 
-const FRAME = { side: 7, top: 12, bottom: 10 } as const;
+const FRAME = { side: 7, top: 12, bottom: 7 } as const;
 
 export type Box = { x: number; y: number; w: number; h: number };
 
@@ -21,12 +21,7 @@ export const LANTERN_ART: PixelRows = [
 export const LANTERN_TONES = { k: "steel-edge", L: "beam", w: "glint" } as const;
 export const LANTERN_DIM_TONES = { k: "steel-edge", L: "ore-lo", w: "ore" } as const;
 
-export function paintFrame(
-  ctx: CanvasRenderingContext2D,
-  palette: Palette,
-  box: Box,
-  plate: string,
-): void {
+export function paintFrame(ctx: CanvasRenderingContext2D, palette: Palette, box: Box): void {
   const { x, y, w, h } = box;
   const fill = (tone: string, fx: number, fy: number, fw: number, fh: number) => {
     ctx.fillStyle = toneColor(palette, tone);
@@ -75,16 +70,6 @@ export function paintFrame(
     rivet(x + w - 4, ry);
   }
   for (let rx = x + 10; rx < x + w - 10; rx += RIVET_STEP) {
-    rivet(rx, y + h - 6);
+    rivet(rx, y + h - 4);
   }
-
-  const sign = signRows(plate).slice(2);
-  const signWidth = sign[0]?.length ?? 0;
-  const sx = Math.round(x + w / 2 - signWidth / 2);
-  const sy = y + h - 9;
-  fill("tread", sx - 3, sy - 1, signWidth + 6, 9);
-  fill("steel-edge", sx - 3, sy + 7, signWidth + 6, 1);
-  fill("tread", sx - 6, y + h - 6, 4, 2);
-  fill("tread", sx + signWidth + 2, y + h - 6, 4, 2);
-  drawRows(ctx, sign, { "#": "steel-hi" }, palette, sx, sy);
 }

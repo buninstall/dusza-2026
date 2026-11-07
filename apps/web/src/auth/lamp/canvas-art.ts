@@ -1,4 +1,3 @@
-import { glyphRows, toSignCase } from "../../pixel/aknajel.ts";
 import { type PixelRows, TRANSPARENT } from "../../pixel/pixel-art.ts";
 
 export type Tones = Readonly<Record<string, string>>;
@@ -83,20 +82,4 @@ export function spriteCanvas(rows: PixelRows, tones: Tones, palette: Palette): H
     drawRows(ctx, rows, tones, palette, 0, 0);
   }
   return canvas;
-}
-
-const SIGN_HEIGHT = 10;
-const SPACE = "..";
-
-export function signRows(text: string): PixelRows {
-  const rows = Array.from({ length: SIGN_HEIGHT }, () => "");
-  const chars = [...toSignCase(text)];
-  chars.forEach((char, index) => {
-    const glyph = char === " " ? null : glyphRows(char);
-    const gap = index < chars.length - 1 ? TRANSPARENT : "";
-    for (let r = 0; r < SIGN_HEIGHT; r += 1) {
-      rows[r] = `${rows[r] ?? ""}${glyph ? (glyph[r] ?? "") : SPACE}${gap}`;
-    }
-  });
-  return rows;
 }

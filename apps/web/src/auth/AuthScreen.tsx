@@ -1,6 +1,5 @@
 import { type ReactNode, useRef } from "react";
 import { useDocumentTitle } from "../components/LocationPlate.tsx";
-import { hu } from "../i18n/hu.ts";
 import { Logo } from "../pixel/Logo.tsx";
 import { Sign } from "../pixel/PixelText.tsx";
 import { LampScene } from "./LampScene.tsx";
@@ -13,7 +12,7 @@ export function AuthScreen({ title, children, footer }: AuthScreenProps) {
   const panelRef = useRef<HTMLElement>(null);
   return (
     <main id="main" tabIndex={-1} className="auth" data-theme="tarna">
-      <LampScene panelRef={panelRef} plate={hu.auth.shaftPlate} />
+      <LampScene panelRef={panelRef} />
       <section ref={panelRef} aria-labelledby="auth-title" className="auth-console">
         <div className="auth-console-body">
           <span className="auth-logo" data-size="lg" aria-hidden="true">
