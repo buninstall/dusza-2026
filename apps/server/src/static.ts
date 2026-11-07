@@ -1,4 +1,5 @@
-import { brotliCompressSync, constants } from "node:zlib";
+import { promisify } from "node:util";
+import { brotliCompress, constants, gzip } from "node:zlib";
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "./env.ts";
 
@@ -38,7 +39,11 @@ const GZIP_LEVEL = 9;
 
 type Encoding = "br" | "gzip";
 
-const encodedCache = new Map<string, Uint8Array>();
+const brotliAsync = promisify(brotliCompress);
+const gzipAsync = promisify(gzip);
+
+const encodedCache = new Map<string, Promise<Uint8Array | null>>();
+const tagCache = new Map<string, Promise<string>>();
 
 function extensionOf(path: string): string {
   const dot = path.lastIndexOf(".");
@@ -54,20 +59,58 @@ export function pickEncoding(accept: string | undefined): Encoding | null {
   return null;
 }
 
-async function encodedBody(target: string, encoding: Encoding): Promise<Uint8Array | null> {
+async function compress(raw: Uint8Array, encoding: Encoding): Promise<Uint8Array> {
+  const compressed =
+    encoding === "br"
+      ? await brotliAsync(raw, { params: { [constants.BROTLI_PARAM_QUALITY]: BROTLI_QUALITY } })
+      : await gzipAsync(raw, { level: GZIP_LEVEL });
+  return new Uint8Array(compressed);
+}
+
+async function encode(target: string, encoding: Encoding): Promise<Uint8Array | null> {
+  const raw = new Uint8Array(await Bun.file(target).arrayBuffer());
+  if (raw.byteLength < MIN_COMPRESS_BYTES) return null;
+  return compress(raw, encoding);
+}
+
+function encodedBody(target: string, encoding: Encoding): Promise<Uint8Array | null> {
   const key = `${encoding}:${target}`;
   const hit = encodedCache.get(key);
   if (hit) return hit;
+  const pending = encode(target, encoding);
+  encodedCache.set(key, pending);
+  pending.catch(() => encodedCache.delete(key));
+  return pending;
+}
+
+async function hashOf(target: string): Promise<string> {
   const raw = new Uint8Array(await Bun.file(target).arrayBuffer());
-  if (raw.byteLength < MIN_COMPRESS_BYTES) return null;
-  const body =
-    encoding === "br"
-      ? new Uint8Array(
-          brotliCompressSync(raw, { params: { [constants.BROTLI_PARAM_QUALITY]: BROTLI_QUALITY } }),
-        )
-      : Bun.gzipSync(raw, { level: GZIP_LEVEL });
-  encodedCache.set(key, body);
-  return body;
+  return Bun.hash(raw).toString(36);
+}
+
+function contentTag(target: string): Promise<string> {
+  const hit = tagCache.get(target);
+  if (hit) return hit;
+  const pending = hashOf(target);
+  tagCache.set(target, pending);
+  pending.catch(() => tagCache.delete(target));
+  return pending;
+}
+
+function matchesTag(header: string | undefined, tag: string): boolean {
+  if (!header) return false;
+  return header
+    .split(",")
+    .map((part) => part.trim())
+    .some((part) => part === tag || part === `W/${tag}` || part === "*");
+}
+
+function decodedPath(url: string): string | null {
+  try {
+    return decodeURIComponent(new URL(url).pathname);
+  } catch {
+    return null;
+  }
 }
 
 export function mimeTypeOf(path: string): string {
@@ -77,8 +120,8 @@ export function mimeTypeOf(path: string): string {
 export function createStaticHandler(files: Record<string, string>) {
   const indexFile = files["/index.html"];
   return createMiddleware<AppEnv>(async (c, next) => {
-    const path = decodeURIComponent(new URL(c.req.url).pathname);
-    if (path.startsWith("/api/") || path === "/api") {
+    const path = decodedPath(c.req.url);
+    if (path === null || path.startsWith("/api/") || path === "/api") {
       await next();
       return undefined;
     }
@@ -89,17 +132,29 @@ export function createStaticHandler(files: Record<string, string>) {
       return undefined;
     }
     const servedPath = exact ? path : "/index.html";
+    const isImmutable = servedPath.startsWith("/assets/");
     const headers: Record<string, string> = {
       "Content-Type": mimeTypeOf(servedPath),
-      "Cache-Control": servedPath.startsWith("/assets/") ? IMMUTABLE : REVALIDATE,
+      "Cache-Control": isImmutable ? IMMUTABLE : REVALIDATE,
       Vary: "Accept-Encoding",
     };
     const encoding = COMPRESSIBLE.has(extensionOf(servedPath))
       ? pickEncoding(c.req.header("accept-encoding"))
       : null;
     const body = encoding ? await encodedBody(target, encoding) : null;
-    if (encoding && body) {
-      return new Response(body, { headers: { ...headers, "Content-Encoding": encoding } });
+    const sentEncoding = encoding && body ? encoding : null;
+    if (!isImmutable) {
+      const tag = `"${await contentTag(target)}${sentEncoding ? `-${sentEncoding}` : ""}"`;
+      headers.ETag = tag;
+      if (matchesTag(c.req.header("if-none-match"), tag)) {
+        return new Response(null, {
+          status: 304,
+          headers: sentEncoding ? { ...headers, "Content-Encoding": sentEncoding } : headers,
+        });
+      }
+    }
+    if (sentEncoding && body) {
+      return new Response(body, { headers: { ...headers, "Content-Encoding": sentEncoding } });
     }
     return new Response(Bun.file(target), { headers });
   });
@@ -108,12 +163,10 @@ export function createStaticHandler(files: Record<string, string>) {
 export async function warmCompression(files: Record<string, string>): Promise<void> {
   for (const [path, target] of Object.entries(files)) {
     if (!COMPRESSIBLE.has(extensionOf(path))) continue;
-    try {
-      await encodedBody(target, "br");
-      await encodedBody(target, "gzip");
-    } catch {
-      encodedCache.delete(`br:${target}`);
-    }
+    await Promise.all([
+      encodedBody(target, "br").catch(() => null),
+      encodedBody(target, "gzip").catch(() => null),
+    ]);
   }
 }
 

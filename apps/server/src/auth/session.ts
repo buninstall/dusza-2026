@@ -7,6 +7,18 @@ import { randomToken, sha256Hex } from "../lib/crypto.ts";
 
 export const SESSION_COOKIE = "ms_session";
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+export const SESSION_PURGE_INTERVAL_MS = 60 * 1000;
+
+const lastPurge = new WeakMap<Deps, number>();
+
+async function purgeExpired(deps: Deps, now: number): Promise<void> {
+  const last = lastPurge.get(deps);
+  if (last !== undefined && now - last < SESSION_PURGE_INTERVAL_MS && now >= last) {
+    return;
+  }
+  lastPurge.set(deps, now);
+  await deps.db.delete(sessions).where(lte(sessions.expiresAt, now));
+}
 
 function isHttps(c: Context): boolean {
   const forwarded = c.req.header("x-forwarded-proto");
@@ -23,7 +35,7 @@ export async function createSession(deps: Deps, userId: number): Promise<string>
 
 export async function findSessionUser(deps: Deps, token: string): Promise<SessionUser | null> {
   const now = deps.now();
-  await deps.db.delete(sessions).where(lte(sessions.expiresAt, now));
+  await purgeExpired(deps, now);
   const [row] = await deps.db
     .select({
       id: users.id,

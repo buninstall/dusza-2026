@@ -84,6 +84,36 @@ describe("statikus kiszolgálás", () => {
     expect(small.headers.get("content-encoding")).toBeNull();
   });
 
+  test("az index.html ETaggel újraellenőrizhető, a hibás URL-kódolás nem szerverhiba", async () => {
+    await using context = await createTestContext();
+    const page = "<!doctype html><title>MineScript</title>".repeat(60);
+    const handler = createStaticHandler({ "/index.html": file("index3.html", page) });
+    const app = createApp(context.deps, { staticHandler: handler });
+
+    const first = await app.request("http://localhost/maps", {
+      headers: { "accept-encoding": "br" },
+    });
+    const tag = first.headers.get("etag");
+    expect(first.status).toBe(200);
+    expect(tag).toMatch(/^".+-br"$/);
+
+    const again = await app.request("http://localhost/play/2", {
+      headers: { "accept-encoding": "br", "if-none-match": tag ?? "" },
+    });
+    expect(again.status).toBe(304);
+    expect(await again.text()).toBe("");
+
+    const plain = await app.request("http://localhost/maps", {
+      headers: { "if-none-match": tag ?? "" },
+    });
+    expect(plain.status).toBe(200);
+    expect(await plain.text()).toBe(page);
+
+    const broken = await app.request("http://localhost/%E0%A4%A");
+    expect(broken.status).toBe(404);
+    expect(broken.headers.get("content-type")).toContain("application/json");
+  });
+
   test("a tömörítés választása az Accept-Encoding alapján", () => {
     expect(pickEncoding("gzip, br;q=1")).toBe("br");
     expect(pickEncoding("gzip")).toBe("gzip");
