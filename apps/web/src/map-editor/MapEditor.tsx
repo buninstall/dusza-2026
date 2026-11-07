@@ -1,6 +1,7 @@
 import type { Pos } from "@minescript/engine";
 import { useId, useMemo, useReducer, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { Button } from "../components/ui/Button.tsx";
 import { Menu, MenuItem } from "../components/ui/Menu.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import { useEngine } from "../engine/useEngine.ts";
@@ -45,6 +46,7 @@ import {
   splitDiagnostics,
   unreachableMarks,
 } from "./editor-issues.ts";
+import { KeysPopover } from "../play/stage/KeysPopover.tsx";
 import { parseMapFile } from "./map-file.ts";
 import { ToolRail } from "./ToolRail.tsx";
 import { TrialPlay } from "./TrialPlay.tsx";
@@ -277,6 +279,35 @@ export function MapEditor({
           onToolChange={setTool}
           onModeChange={setMode}
           onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
+          actions={
+            <>
+              <Button size="sm" icon="dice" onPress={() => setGenerating(true)}>
+                {hu.generator.menuItem}
+              </Button>
+              <span className="ed-actions-row">
+                <Menu
+                  label={hu.shape.heading}
+                  ariaLabel={hu.shape.heading}
+                  icon="chevronDown"
+                  variant="secondary"
+                  placement="bottom start"
+                >
+                  <MenuItem onAction={() => commitShape(frameDraft(draft), hu.shape.framed)}>
+                    {hu.shape.frame}
+                  </MenuItem>
+                  <MenuItem onAction={() => commitShape(clearDraft(draft), hu.shape.cleared)}>
+                    {hu.shape.clear}
+                  </MenuItem>
+                  <MenuItem onAction={() => setGenerating(true)}>{hu.generator.menuItem}</MenuItem>
+                </Menu>
+                <KeysPopover
+                  rows={hu.mapEditor.shortcuts}
+                  placement="end bottom"
+                  variant="secondary"
+                />
+              </span>
+            </>
+          }
         />
         {version && mapId !== null ? (
           <VersionBlock mapId={mapId} title={details.title} version={version} onDelete={leave} />
@@ -307,23 +338,6 @@ export function MapEditor({
         onDropFile={(file) => void importFile(file)}
         onRows={(rows) => dispatch({ type: "commit", next: resizeDraft(draft, rows, draft.cols) })}
         onCols={(cols) => dispatch({ type: "commit", next: resizeDraft(draft, draft.rows, cols) })}
-        sizeActions={
-          <Menu
-            label={hu.shape.heading}
-            ariaLabel={hu.shape.heading}
-            icon="chevronDown"
-            variant="secondary"
-            placement="bottom end"
-          >
-            <MenuItem onAction={() => commitShape(frameDraft(draft), hu.shape.framed)}>
-              {hu.shape.frame}
-            </MenuItem>
-            <MenuItem onAction={() => commitShape(clearDraft(draft), hu.shape.cleared)}>
-              {hu.shape.clear}
-            </MenuItem>
-            <MenuItem onAction={() => setGenerating(true)}>{hu.generator.menuItem}</MenuItem>
-          </Menu>
-        }
         doomNotes={doomNotes(draft)}
         cursorText={hu.mapEditor.cursorAt(tools.cursor.row + 1, tools.cursor.col + 1)}
         canUndo={history.past.length > 0}

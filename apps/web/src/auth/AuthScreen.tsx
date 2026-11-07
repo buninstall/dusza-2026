@@ -1,5 +1,6 @@
 import { type ReactNode, useRef } from "react";
 import { useDocumentTitle } from "../components/LocationPlate.tsx";
+import { DesktopPlate } from "../desktop/DesktopPlate.tsx";
 import { Logo } from "../pixel/Logo.tsx";
 import { Sign } from "../pixel/PixelText.tsx";
 import { LampScene } from "./LampScene.tsx";
@@ -28,6 +29,7 @@ export function AuthScreen({ title, children, footer }: AuthScreenProps) {
           <div className="auth-footer">{footer}</div>
         </div>
       </section>
+      <DesktopPlate />
     </main>
   );
 }

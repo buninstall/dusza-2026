@@ -7,14 +7,12 @@ import { hu } from "../i18n/hu.ts";
 import type { BoardInteraction } from "../mine/board-input.ts";
 import { MineBoard, type RulerMarks } from "../mine/MineBoard.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
-import { KeysPopover } from "../play/stage/KeysPopover.tsx";
 import { MAX_SIZE, MIN_SIZE } from "./editor-state.ts";
 
 type SizeProps = {
   onRows: (rows: number) => void;
   onCols: (cols: number) => void;
   doomNotes: { row: string | null; col: string | null };
-  sizeActions?: ReactNode;
 };
 
 function SizeStepper({
@@ -85,7 +83,6 @@ function CanvasStrip(props: StripProps) {
         <PixelIcon name="eye" />
         {hu.mapEditor.reach}
       </ToggleButton>
-      <KeysPopover rows={hu.mapEditor.shortcuts} />
     </div>
   );
 }
@@ -121,7 +118,6 @@ export function EditorCanvas(props: EditorCanvasProps) {
           kind="col"
           onChange={props.onCols}
         />
-        {props.sizeActions ? <div className="ed-size-actions">{props.sizeActions}</div> : null}
       </div>
       <DropZone
         aria-label={hu.mapEditor.dropZone}

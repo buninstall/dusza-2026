@@ -1,0 +1,75 @@
+.desktop-slot {
+  --desktop-slot-h: 3.75rem;
+
+  position: absolute;
+  inset-inline: 0;
+  bottom: var(--space-5);
+  display: flex;
+  justify-content: center;
+  padding-inline: var(--space-4);
+  pointer-events: none;
+}
+
+.desktop-plate {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-5);
+  background: var(--c-surface);
+  box-shadow:
+    inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-hi),
+    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-bevel-lo);
+  pointer-events: auto;
+  animation: enter-drop var(--motion-enter) var(--ease-px3);
+}
+
+.desktop-plate::before,
+.desktop-plate::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: var(--border-thin);
+  height: var(--border-thin);
+  background: var(--c-bevel-lo);
+  box-shadow: 0 var(--border-thin) 0 var(--c-bevel-hi);
+}
+
+.desktop-plate::before {
+  left: var(--space-2);
+}
+
+.desktop-plate::after {
+  right: var(--space-2);
+}
+
+.desktop-plate-meta {
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
+  color: var(--c-text-muted);
+}
+
+.desktop-menu-item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.desktop-menu-size {
+  color: var(--c-text-muted);
+}
+
+@media (max-height: 56rem) {
+  .auth:has(.desktop-slot) {
+    padding-bottom: calc(var(--space-8) + var(--desktop-slot-h, 3.75rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktop-plate {
+    animation: none;
+  }
+}
