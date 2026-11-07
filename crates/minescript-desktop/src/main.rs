@@ -8,6 +8,7 @@ mod gateway;
 mod menu;
 mod navigation;
 mod target;
+mod updater;
 mod window;
 #[cfg(target_os = "macos")]
 mod zoom;
@@ -38,6 +39,8 @@ fn main() {
                 .build(),
         )
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(Target { remote, local })
         .setup(move |app| {
             let handle = app.handle();
@@ -46,6 +49,9 @@ fn main() {
                 handle.manage(Gateway::new(handle, target.remote.clone(), &local, token)?);
             }
             window::open(handle)?;
+            if updater::enabled() {
+                updater::spawn(handle);
+            }
             Ok(())
         });
 
