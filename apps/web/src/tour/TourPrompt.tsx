@@ -6,7 +6,7 @@ import { ModalShell } from "../components/ui/Dialog.tsx";
 import { hu } from "../i18n/hu.ts";
 import { tourModes } from "../i18n/hu-story.ts";
 import type { PlayMode } from "../maps/mode.ts";
-import { firstSandboxMapQuery, storyMapsQuery } from "../maps/queries.ts";
+import { firstSandboxMapQuery, sandboxStatsQuery, storyMapsQuery } from "../maps/queries.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { useTour } from "./tour-state.ts";
 import "./Tour.css";
@@ -73,8 +73,10 @@ export function TourPrompt() {
   const status = useTour((state) => state.data.status);
   const decline = useTour((state) => state.decline);
   const [stage, setStage] = useState<"ask" | "modes">("ask");
-  const { data } = useQuery(storyMapsQuery());
-  if (status !== "unasked" || !data || data.maps.length === 0) {
+  const story = useQuery(storyMapsQuery());
+  const stats = useQuery(sandboxStatsQuery());
+  const total = (story.data?.maps.length ?? 0) + (stats.data?.maps ?? 0);
+  if (status !== "unasked" || total === 0) {
     return null;
   }
   return (

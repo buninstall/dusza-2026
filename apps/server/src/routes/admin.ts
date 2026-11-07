@@ -1,13 +1,14 @@
 import { zValidator } from "@hono/zod-validator";
-import { asc, eq } from "drizzle-orm";
+import { asc, count, eq, like } from "drizzle-orm";
 import { Hono } from "hono";
 import { requireAdmin, requireUser } from "../auth/middleware.ts";
 import { users } from "../db/schema.ts";
 import type { AppEnv, Deps } from "../env.ts";
 import { apiError, messages } from "../lib/errors.ts";
+import { containsPattern, offsetOf, pageMeta } from "../lib/paging.ts";
 import { validationHook } from "../lib/validation.ts";
 import { createAccount } from "../services/accounts.ts";
-import { idParam, newAccountSchema, roleSchema } from "./schemas.ts";
+import { adminUsersQuery, idParam, newAccountSchema, roleSchema } from "./schemas.ts";
 
 export function adminRoutes(deps: Deps) {
   const userColumns = {
@@ -20,9 +21,26 @@ export function adminRoutes(deps: Deps) {
   return new Hono<AppEnv>()
     .use(requireUser(deps))
     .use(requireAdmin)
-    .get("/users", async (c) => {
-      const list = await deps.db.select(userColumns).from(users).orderBy(asc(users.id));
-      return c.json({ users: list }, 200);
+    .get("/users", zValidator("query", adminUsersQuery, validationHook), async (c) => {
+      const query = c.req.valid("query");
+      const filter =
+        query.q.length > 0 ? like(users.username, containsPattern(query.q)) : undefined;
+      const [[counted], [admins]] = await Promise.all([
+        deps.db.select({ value: count() }).from(users).where(filter),
+        deps.db.select({ value: count() }).from(users).where(eq(users.role, "admin")),
+      ]);
+      const meta = pageMeta(query, counted?.value ?? 0);
+      const list =
+        meta.total === 0
+          ? []
+          : await deps.db
+              .select(userColumns)
+              .from(users)
+              .where(filter)
+              .orderBy(asc(users.id))
+              .limit(meta.pageSize)
+              .offset(offsetOf(meta));
+      return c.json({ ...meta, users: list, admins: admins?.value ?? 0 }, 200);
     })
     .post("/users", zValidator("json", newAccountSchema, validationHook), async (c) => {
       const created = await createAccount(deps, c.req.valid("json"));

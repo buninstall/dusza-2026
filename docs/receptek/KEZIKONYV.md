@@ -14,11 +14,11 @@ Ez a kézikönyv a [receptekhez](README.md) tartozik. Minden pályánál leírja
 
 A pályák táblázatában a „Mód” oszlop azt mutatja, mennyire sötét a bánya. A robot érzékelése egyik módban sem változik, a lámpa csak a játékosnak világít.
 
-| Mód | Induló fény | Teljes térkép | Falnak ütközés |
-| --- | --- | --- | --- |
-| nyitott | minden mező látszik | mindig | csak hibaüzenet |
-| Lámpafény | a robot körüli 1 mező | három rög után | összetörik a lámpa, a vázlat törlődik |
-| Vaksötét | csak a bejárt és megvizsgált mezők | három rög után | összetörik a lámpa, a vázlat törlődik |
+| Mód       | Induló fény                        | Teljes térkép  | Falnak ütközés                        |
+| --------- | ---------------------------------- | -------------- | ------------------------------------- |
+| nyitott   | minden mező látszik                | mindig         | csak hibaüzenet                       |
+| Lámpafény | a robot körüli 1 mező              | három rög után | összetörik a lámpa, a vázlat törlődik |
+| Vaksötét  | csak a bejárt és megvizsgált mezők | három rög után | összetörik a lámpa, a vázlat törlődik |
 
 - Minden kibányászott rög eggyel növeli a lámpa fénykörét, legfeljebb 4 mezőig; a fény falon nem megy át.
 - Ami egy futásban felfedezett vagy megvilágított lett, a vázlatra kerül, és a következő futás előtt is látszik. A vázlat ebben a böngészőben, felhasználónként és pályaverziónként tárolódik.
@@ -46,7 +46,7 @@ A kampány harminc pályája hat fejezetre, hat kőzetrétegre oszlik. A fejezet
 > Gazdag ér, jó kőzet. Ha így megy, karácsonyra kifizetjük a társulat adósságát.
 > — Kelemen Bálint főaknász naplója, 1926. november 3.
 
-**Lelet: R-01.** A folyosó végén, a falnak préselődve. Lépett, mielőtt megnézte volna, mi van előtte. *Tanulság:* Lépés előtt: isThere 1. (`E_BEDROCK_HIT`)
+**Lelet: R-01.** A folyosó végén, a falnak préselődve. Lépett, mielőtt megnézte volna, mi van előtte. _Tanulság:_ Lépés előtt: isThere 1. (`E_BEDROCK_HIT`)
 
 ### II. fejezet · A visszhangok csarnoka (−72 … −120 m, mészkő)
 
@@ -55,7 +55,7 @@ Mészkőcsarnokok, ahol minden hang ezerszer verődik vissza. Itt hallja meg R-0
 > Harmadik napja halljuk a kopogást. Mélyről jön, egyenletesen, mint egy ingaóra.
 > — Kelemen Bálint főaknász naplója, 1926. november 19.
 
-**Lelet: R-02.** Egy oszlop tövében, lemerült akkuval. Körbe-körbe járt, mert a ciklusából nem vezetett kiút. *Tanulság:* Minden while-nak kell egy feltétel, amely egyszer hamis lesz. (`INSTRUCTION_COUNT_LIMIT_EXCEEDED`)
+**Lelet: R-02.** Egy oszlop tövében, lemerült akkuval. Körbe-körbe járt, mert a ciklusából nem vezetett kiút. _Tanulság:_ Minden while-nak kell egy feltétel, amely egyszer hamis lesz. (`INSTRUCTION_COUNT_LIMIT_EXCEEDED`)
 
 ### III. fejezet · Az ametisztüregek (−132 … −180 m, ametiszt)
 
@@ -64,7 +64,7 @@ A kőzet lilán dereng. Üreges geodák, kristályerdők, tükröző falak. A sz
 > Ametisztet találtunk. Az emberek meg akartak állni, de a kopogás tovább hívta őket.
 > — Kelemen Bálint főaknász naplója, 1926. december 2.
 
-**Lelet: R-03.** Kettétört csákánnyal egy geoda mellett. Üres kőbe vágott, újra és újra. *Tanulság:* Csak aranyon bányássz: előbb isThere 2, utána lépés és mine here. (`E_NO_GOLD`)
+**Lelet: R-03.** Kettétört csákánnyal egy geoda mellett. Üres kőbe vágott, újra és újra. _Tanulság:_ Csak aranyon bányássz: előbb isThere 2, utána lépés és mine here. (`E_NO_GOLD`)
 
 ### IV. fejezet · A vörös ér (−192 … −240 m, vasérc)
 
@@ -73,7 +73,7 @@ Rozsdavörös vasérc és egy iránytű, amely megbolondul. A sínek itt régebb
 > A kőzet meleg, az iránytű körbe forog. Szabó Pista azt mondja, a hegy él. Nem merem megmondani nekik az igazat.
 > — Kelemen Bálint főaknász naplója, 1926. december 11.
 
-**Lelet: R-04.** Rozsdás roncs a sínek között. Egy változója egyszer szám volt, aztán igaz-hamis akart lenni. *Tanulság:* A változó típusa az első set-kor végleg rögzül. (`E_TYPE_MISMATCH`)
+**Lelet: R-04.** Rozsdás roncs a sínek között. Egy változója egyszer szám volt, aztán igaz-hamis akart lenni. _Tanulság:_ A változó típusa az első set-kor végleg rögzül. (`E_TYPE_MISMATCH`)
 
 ### V. fejezet · A smaragdtó (−252 … −300 m, malachit)
 
@@ -82,7 +82,7 @@ Föld alatti tó, zölden derengő moha, csepegő csend. A víz tükrében a kop
 > Bevallom: a kopogás az én művem. Megépítettem a Vakondot, hogy oda menjen, ahová ember már nem mehet. Egyetlen paranccsal küldtem le: amíg aranyat talál, bányásszon.
 > — Kelemen Bálint főaknász naplója, 1926. december 18.
 
-**Lelet: R-05.** A tó partján, mohával benőve. Olyasmire próbált emlékezni, amit sosem tudott: egy változót olvasott, mielőtt értéket adott volna neki. *Tanulság:* Előbb set, aztán használat. (`E_UNINITIALIZED`)
+**Lelet: R-05.** A tó partján, mohával benőve. Olyasmire próbált emlékezni, amit sosem tudott: egy változót olvasott, mielőtt értéket adott volna neki. _Tanulság:_ Előbb set, aztán használat. (`E_UNINITIALIZED`)
 
 ### VI. fejezet · A hegy szíve (−312 … −360 m, obszidián)
 
@@ -91,7 +91,7 @@ Fekete üveg és izzó láva. Itt már nem visszhang a kopogás: a falakból jö
 > A Vakond elérte a hegy szívét, és a Szív aranya sosem fogy el. A kopogás nem áll meg. Holnap lezárjuk az aknát. Aki ezt olvassa: vigye el az utolsó rögöt is, és a Vakond végre megpihen.
 > — Kelemen Bálint főaknász naplója, 1926. december 21.
 
-**Lelet: R-06.** Egy lépésre a Szívtől. Olyat kérdezett a kőtől, amire nincs szó: isThere 3. *Tanulság:* Az isThere csak a 0, az 1 és a 2 értéket ismeri. (`E_BAD_ARG`)
+**Lelet: R-06.** Egy lépésre a Szívtől. Olyat kérdezett a kőtől, amire nincs szó: isThere 3. _Tanulság:_ Az isThere csak a 0, az 1 és a 2 értéket ismeri. (`E_BAD_ARG`)
 
 ### Epilógus · Csend
 
@@ -103,17 +103,17 @@ A „kézenfekvő terv” mindig a legkevesebb sorból elérhető legközelebbi 
 
 ### I. fejezet · Az elhagyott tárna
 
-| Pálya | Nehézség | Mód | Arany | Recept | Kézenfekvő terv | Legrövidebb úton |
-| --- | --- | --- | --- | --- | --- | --- |
-| [1. Egyenes folyosó](#01-egyenes-folyoso) | könnyű | nyitott | 2 / 2 | 4 | 4 | 4 |
-| [2. Az első kanyar](#02-az-elso-kanyar) | könnyű | nyitott | 2 / 2 | 5 | 5 | 5 |
-| [3. Kis labirintus](#03-kis-labirintus) | közepes | nyitott | 3 / 3 | 24 | 28 | 24 |
-| [4. Zsákutcák](#04-zsakutcak) | közepes | nyitott | 5 / 5 | 31 | 33 | 37 |
-| [5. Kígyó](#05-kigyo) | könnyű | Lámpafény | 3 / 3 | 12 | 12 | 12 |
+| Pálya                                     | Nehézség | Mód       | Arany | Recept | Kézenfekvő terv | Legrövidebb úton |
+| ----------------------------------------- | -------- | --------- | ----- | ------ | --------------- | ---------------- |
+| [1. Egyenes folyosó](#01-egyenes-folyoso) | könnyű   | nyitott   | 2 / 2 | 4      | 4               | 4                |
+| [2. Az első kanyar](#02-az-elso-kanyar)   | könnyű   | nyitott   | 2 / 2 | 5      | 5               | 5                |
+| [3. Kis labirintus](#03-kis-labirintus)   | közepes  | nyitott   | 3 / 3 | 24     | 28              | 24               |
+| [4. Zsákutcák](#04-zsakutcak)             | közepes  | nyitott   | 5 / 5 | 31     | 33              | 37               |
+| [5. Kígyó](#05-kigyo)                     | könnyű   | Lámpafény | 3 / 3 | 12     | 12              | 12               |
 
 #### <a id="01-egyenes-folyoso"></a>1. Egyenes folyosó
 
-*R-07 első métere a Dusza-tárnában. Egyetlen sor, két aranyrög. Elég a step forward és a mine here.*
+_R-07 első métere a Dusza-tárnában. Egyetlen sor, két aranyrög. Elég a step forward és a mine here._
 
 ```text
 1 8
@@ -126,7 +126,7 @@ Fájlok: [01-egyenes-folyoso.ms](01-egyenes-folyoso.ms) · [palyak/01-egyenes-fo
 
 #### <a id="02-az-elso-kanyar"></a>2. Az első kanyar
 
-*A régi sín itt délnek fordul. A folyosó a végén kanyarodik: itt kell először a turn by.*
+_A régi sín itt délnek fordul. A folyosó a végén kanyarodik: itt kell először a turn by._
 
 ```text
 4 6
@@ -142,7 +142,7 @@ Fájlok: [02-az-elso-kanyar.ms](02-az-elso-kanyar.ms) · [palyak/02-az-elso-kany
 
 #### <a id="03-kis-labirintus"></a>3. Kis labirintus
 
-*A bányászok sietve vájt járatai. Három arany kanyargós járatokban. Érdemes az isThere-rel tapogatózni.*
+_A bányászok sietve vájt járatai. Három arany kanyargós járatokban. Érdemes az isThere-rel tapogatózni._
 
 ```text
 7 7
@@ -161,7 +161,7 @@ Fájlok: [03-kis-labirintus.ms](03-kis-labirintus.ms) · [palyak/03-kis-labirint
 
 #### <a id="04-zsakutcak"></a>4. Zsákutcák
 
-*Felhagyott fejtések, mindegyik végében maradt valami. Öt arany, több zsákutcával. A rövid út a kevesebb lépés.*
+_Felhagyott fejtések, mindegyik végében maradt valami. Öt arany, több zsákutcával. A rövid út a kevesebb lépés._
 
 ```text
 7 9
@@ -180,7 +180,7 @@ Fájlok: [04-zsakutcak.ms](04-zsakutcak.ms) · [palyak/04-zsakutcak.txt](palyak/
 
 #### <a id="05-kigyo"></a>5. Kígyó
 
-*Hosszú, oda-vissza kanyargó folyosó, a végén R-01 roncsa. Kialszik a fény: jó terep a while ciklushoz.*
+_Hosszú, oda-vissza kanyargó folyosó, a végén R-01 roncsa. Kialszik a fény: jó terep a while ciklushoz._
 
 ```text
 5 11
@@ -197,17 +197,17 @@ Fájlok: [05-kigyo.ms](05-kigyo.ms) · [palyak/05-kigyo.txt](palyak/05-kigyo.txt
 
 ### II. fejezet · A visszhangok csarnoka
 
-| Pálya | Nehézség | Mód | Arany | Recept | Kézenfekvő terv | Legrövidebb úton |
-| --- | --- | --- | --- | --- | --- | --- |
-| [6. Elérhetetlen kincs](#06-elerhetetlen-kincs) | könnyű | Lámpafény | 2 / 3 | 6 | 6 | 6 |
-| [7. Aranymező](#07-aranymezo) | közepes | Vaksötét | 12 / 12 | 29 | 31 | 31 |
-| [8. A nagy bánya](#08-a-nagy-banya) | nehéz | Vaksötét | 9 / 9 | 84 | 84 | 94 |
-| [9. Kerülőút](#09-kerulout) | könnyű | nyitott | 3 / 3 | 12 | 12 | 26 |
-| [10. Oszlopcsarnok](#10-oszlopcsarnok) | nehéz | Lámpafény | 13 / 13 | 42 | 49 | 61 |
+| Pálya                                           | Nehézség | Mód       | Arany   | Recept | Kézenfekvő terv | Legrövidebb úton |
+| ----------------------------------------------- | -------- | --------- | ------- | ------ | --------------- | ---------------- |
+| [6. Elérhetetlen kincs](#06-elerhetetlen-kincs) | könnyű   | Lámpafény | 2 / 3   | 6      | 6               | 6                |
+| [7. Aranymező](#07-aranymezo)                   | közepes  | Vaksötét  | 12 / 12 | 29     | 31              | 31               |
+| [8. A nagy bánya](#08-a-nagy-banya)             | nehéz    | Vaksötét  | 9 / 9   | 84     | 84              | 94               |
+| [9. Kerülőút](#09-kerulout)                     | könnyű   | nyitott   | 3 / 3   | 12     | 12              | 26               |
+| [10. Oszlopcsarnok](#10-oszlopcsarnok)          | nehéz    | Lámpafény | 13 / 13 | 42     | 49              | 61               |
 
 #### <a id="06-elerhetetlen-kincs"></a>6. Elérhetetlen kincs
 
-*Az első mészkőcsarnok. Az egyik arany falakkal körülzárt kamrában van: nem minden kincs vihető el. A robot észak felé néz.*
+_Az első mészkőcsarnok. Az egyik arany falakkal körülzárt kamrában van: nem minden kincs vihető el. A robot észak felé néz._
 
 ```text
 5 7
@@ -224,7 +224,7 @@ Fájlok: [06-elerhetetlen-kincs.ms](06-elerhetetlen-kincs.ms) · [palyak/06-eler
 
 #### <a id="07-aranymezo"></a>7. Aranymező
 
-*Tágas, visszhangos csarnok. Nyílt terep tizenkét arannyal. Ki gyűjti össze a legkevesebb lépésből?*
+_Tágas, visszhangos csarnok. Nyílt terep tizenkét arannyal. Ki gyűjti össze a legkevesebb lépésből?_
 
 ```text
 6 10
@@ -242,7 +242,7 @@ Fájlok: [07-aranymezo.ms](07-aranymezo.ms) · [palyak/07-aranymezo.txt](palyak/
 
 #### <a id="08-a-nagy-banya"></a>8. A nagy bánya
 
-*A legnagyobb, 15×15-ös bánya, sok elágazással és szétszórt arannyal. Valahol mélyen egyenletesen kopog valami.*
+_A legnagyobb, 15×15-ös bánya, sok elágazással és szétszórt arannyal. Valahol mélyen egyenletesen kopog valami._
 
 ```text
 15 15
@@ -269,7 +269,7 @@ Fájlok: [08-a-nagy-banya.ms](08-a-nagy-banya.ms) · [palyak/08-a-nagy-banya.txt
 
 #### <a id="09-kerulout"></a>9. Kerülőút
 
-*A rövid út kanyarog, a hosszú egyenes. Egy step forward tíz mezőt is visz egyetlen sorban: itt nem a távolság számít, hanem a kanyar.*
+_A rövid út kanyarog, a hosszú egyenes. Egy step forward tíz mezőt is visz egyetlen sorban: itt nem a távolság számít, hanem a kanyar._
 
 ```text
 7 9
@@ -288,7 +288,7 @@ Fájlok: [09-kerulout.ms](09-kerulout.ms) · [palyak/09-kerulout.txt](palyak/09-
 
 #### <a id="10-oszlopcsarnok"></a>10. Oszlopcsarnok
 
-*Oszlopok erdeje, R-02 nyomai körbe-körbe a porban. A rögök az oszlopok közt szóródtak szét: a sorrend dönti el, hány kanyar kell.*
+_Oszlopok erdeje, R-02 nyomai körbe-körbe a porban. A rögök az oszlopok közt szóródtak szét: a sorrend dönti el, hány kanyar kell._
 
 ```text
 11 13
@@ -311,17 +311,17 @@ Fájlok: [10-oszlopcsarnok.ms](10-oszlopcsarnok.ms) · [palyak/10-oszlopcsarnok.
 
 ### III. fejezet · Az ametisztüregek
 
-| Pálya | Nehézség | Mód | Arany | Recept | Kézenfekvő terv | Legrövidebb úton |
-| --- | --- | --- | --- | --- | --- | --- |
-| [11. Geoda](#11-geoda) | könnyű | nyitott | 3 / 3 | 9 | 11 | 17 |
-| [12. Kristálytükör](#12-kristalytukor) | könnyű | nyitott | 3 / 3 | 11 | 13 | 12 |
-| [13. Lila erek](#13-lila-erek) | közepes | Lámpafény | 5 / 5 | 28 | 38 | 32 |
-| [14. Kilenc kristály](#14-kilenc-kristaly) | közepes | nyitott | 9 / 9 | 26 | 34 | 35 |
-| [15. Ametisztkatedrális](#15-ametisztkatedralis) | nehéz | Vaksötét | 11 / 11 | 42 | 55 | 67 |
+| Pálya                                            | Nehézség | Mód       | Arany   | Recept | Kézenfekvő terv | Legrövidebb úton |
+| ------------------------------------------------ | -------- | --------- | ------- | ------ | --------------- | ---------------- |
+| [11. Geoda](#11-geoda)                           | könnyű   | nyitott   | 3 / 3   | 9      | 11              | 17               |
+| [12. Kristálytükör](#12-kristalytukor)           | könnyű   | nyitott   | 3 / 3   | 11     | 13              | 12               |
+| [13. Lila erek](#13-lila-erek)                   | közepes  | Lámpafény | 5 / 5   | 28     | 38              | 32               |
+| [14. Kilenc kristály](#14-kilenc-kristaly)       | közepes  | nyitott   | 9 / 9   | 26     | 34              | 35               |
+| [15. Ametisztkatedrális](#15-ametisztkatedralis) | nehéz    | Vaksötét  | 11 / 11 | 42     | 55              | 67               |
 
 #### <a id="11-geoda"></a>11. Geoda
 
-*Lila kristályokkal bélelt üreg, a kristályok fényt adnak. Három rög, egy kézenfekvő út és egy, amelyik két sorral rövidebb.*
+_Lila kristályokkal bélelt üreg, a kristályok fényt adnak. Három rög, egy kézenfekvő út és egy, amelyik két sorral rövidebb._
 
 ```text
 5 7
@@ -338,7 +338,7 @@ Fájlok: [11-geoda.ms](11-geoda.ms) · [palyak/11-geoda.txt](palyak/11-geoda.txt
 
 #### <a id="12-kristalytukor"></a>12. Kristálytükör
 
-*Tükrös kristályfal: a bánya két fele majdnem egyforma, de csak majdnem. Számít, merre néz induláskor a robot.*
+_Tükrös kristályfal: a bánya két fele majdnem egyforma, de csak majdnem. Számít, merre néz induláskor a robot._
 
 ```text
 5 9
@@ -355,7 +355,7 @@ Fájlok: [12-kristalytukor.ms](12-kristalytukor.ms) · [palyak/12-kristalytukor.
 
 #### <a id="13-lila-erek"></a>13. Lila erek
 
-*Az ametisztér lépcsőzetesen fut lefelé. A lépcsőn minden fok két sor: néha a kerülő a rövidebb, és a sorrend mindent eldönt.*
+_Az ametisztér lépcsőzetesen fut lefelé. A lépcsőn minden fok két sor: néha a kerülő a rövidebb, és a sorrend mindent eldönt._
 
 ```text
 9 11
@@ -396,7 +396,7 @@ while megy
 
 #### <a id="14-kilenc-kristaly"></a>14. Kilenc kristály
 
-*Kilenc kristály szabálytalan rácsban. Ahol úgyis megállsz bányászni, ott fordulj: a kanyar ott csak egy sor.*
+_Kilenc kristály szabálytalan rácsban. Ahol úgyis megállsz bányászni, ott fordulj: a kanyar ott csak egy sor._
 
 ```text
 7 7
@@ -415,7 +415,7 @@ Fájlok: [14-kilenc-kristaly.ms](14-kilenc-kristaly.ms) · [palyak/14-kilenc-kri
 
 #### <a id="15-ametisztkatedralis"></a>15. Ametisztkatedrális
 
-*Szimmetrikus kristálycsarnok kápolnákkal, tizenegy röggel. Ha egy rög holtágban van, hagyd a végére: a programnak nem kell visszajönnie.*
+_Szimmetrikus kristálycsarnok kápolnákkal, tizenegy röggel. Ha egy rög holtágban van, hagyd a végére: a programnak nem kell visszajönnie._
 
 ```text
 13 13
@@ -440,17 +440,17 @@ Fájlok: [15-ametisztkatedralis.ms](15-ametisztkatedralis.ms) · [palyak/15-amet
 
 ### IV. fejezet · A vörös ér
 
-| Pálya | Nehézség | Mód | Arany | Recept | Kézenfekvő terv | Legrövidebb úton |
-| --- | --- | --- | --- | --- | --- | --- |
-| [16. Rozsdás sínek](#16-rozsdas-sinek) | könnyű | nyitott | 3 / 3 | 9 | 9 | 16 |
-| [17. Iránytű](#17-iranytu) | közepes | Lámpafény | 5 / 5 | 28 | 34 | 40 |
-| [18. Vasércfejtés](#18-vasercfejtes) | közepes | nyitott | 10 / 10 | 29 | 36 | 43 |
-| [19. A vörös labirintus](#19-a-voros-labirintus) | nehéz | Vaksötét | 10 / 10 | 74 | 113 | 125 |
-| [20. Kapuk](#20-kapuk) | nehéz | Lámpafény | 11 / 11 | 50 | 64 | 73 |
+| Pálya                                            | Nehézség | Mód       | Arany   | Recept | Kézenfekvő terv | Legrövidebb úton |
+| ------------------------------------------------ | -------- | --------- | ------- | ------ | --------------- | ---------------- |
+| [16. Rozsdás sínek](#16-rozsdas-sinek)           | könnyű   | nyitott   | 3 / 3   | 9      | 9               | 16               |
+| [17. Iránytű](#17-iranytu)                       | közepes  | Lámpafény | 5 / 5   | 28     | 34              | 40               |
+| [18. Vasércfejtés](#18-vasercfejtes)             | közepes  | nyitott   | 10 / 10 | 29     | 36              | 43               |
+| [19. A vörös labirintus](#19-a-voros-labirintus) | nehéz    | Vaksötét  | 10 / 10 | 74     | 113             | 125              |
+| [20. Kapuk](#20-kapuk)                           | nehéz    | Lámpafény | 11 / 11 | 50     | 64              | 73               |
 
 #### <a id="16-rozsdas-sinek"></a>16. Rozsdás sínek
 
-*Két párhuzamos rozsdás sín. Nem az számít, melyik rög van közelebb, hanem hogy utána merre mész tovább.*
+_Két párhuzamos rozsdás sín. Nem az számít, melyik rög van közelebb, hanem hogy utána merre mész tovább._
 
 ```text
 3 10
@@ -465,7 +465,7 @@ Fájlok: [16-rozsdas-sinek.ms](16-rozsdas-sinek.ms) · [palyak/16-rozsdas-sinek.
 
 #### <a id="17-iranytu"></a>17. Iránytű
 
-*Megbolondult iránytű egy kereszteződésben. Öt rög négy irányban: az első ötlet itt nem a legjobb. Sötétben a jobb kéz szabálya is hazavisz.*
+_Megbolondult iránytű egy kereszteződésben. Öt rög négy irányban: az első ötlet itt nem a legjobb. Sötétben a jobb kéz szabálya is hazavisz._
 
 ```text
 9 9
@@ -506,7 +506,7 @@ while megy
 
 #### <a id="18-vasercfejtes"></a>18. Vasércfejtés
 
-*Nyitott vasércfejtés tíz szétszórt röggel. Egy kígyózó út mindet felszedi, ha a rögökön fordulsz, nem mellettük.*
+_Nyitott vasércfejtés tíz szétszórt röggel. Egy kígyózó út mindet felszedi, ha a rögökön fordulsz, nem mellettük._
 
 ```text
 7 9
@@ -525,7 +525,7 @@ Fájlok: [18-vasercfejtes.ms](18-vasercfejtes.ms) · [palyak/18-vasercfejtes.txt
 
 #### <a id="19-a-voros-labirintus"></a>19. A vörös labirintus
 
-*Vörös kőzetbe vájt, körökkel teli útvesztő, teljes sötétben. Vigyázz a falkövetéssel: egy kör körül a robot a végtelenségig járhat, ahogy R-02.*
+_Vörös kőzetbe vájt, körökkel teli útvesztő, teljes sötétben. Vigyázz a falkövetéssel: egy kör körül a robot a végtelenségig járhat, ahogy R-02._
 
 ```text
 13 13
@@ -550,7 +550,7 @@ Fájlok: [19-a-voros-labirintus.ms](19-a-voros-labirintus.ms) · [palyak/19-a-vo
 
 #### <a id="20-kapuk"></a>20. Kapuk
 
-*Kilenc kamra, keskeny kapuk, a kapuk mögött R-04 roncsa. Melyik kapun át, milyen sorrendben? Aki mindig a legközelebbi rög felé indul, tizennégy sorral többet ír.*
+_Kilenc kamra, keskeny kapuk, a kapuk mögött R-04 roncsa. Melyik kapun át, milyen sorrendben? Aki mindig a legközelebbi rög felé indul, tizennégy sorral többet ír._
 
 ```text
 13 13
@@ -575,17 +575,17 @@ Fájlok: [20-kapuk.ms](20-kapuk.ms) · [palyak/20-kapuk.txt](palyak/20-kapuk.txt
 
 ### V. fejezet · A smaragdtó
 
-| Pálya | Nehézség | Mód | Arany | Recept | Kézenfekvő terv | Legrövidebb úton |
-| --- | --- | --- | --- | --- | --- | --- |
-| [21. Mohafény](#21-mohafeny) | könnyű | nyitott | 3 / 3 | 12 | 13 | 14 |
-| [22. Szigetek](#22-szigetek) | közepes | nyitott | 8 / 8 | 29 | 39 | 52 |
-| [23. Tükörtó](#23-tukorto) | közepes | Lámpafény | 8 / 8 | 36 | 48 | 49 |
-| [24. Smaragdkígyó](#24-smaragdkigyo) | nehéz | Vaksötét | 12 / 12 | 42 | 43 | 51 |
-| [25. A tó szeme](#25-a-to-szeme) | nehéz | Lámpafény | 12 / 13 | 59 | 75 | 90 |
+| Pálya                                | Nehézség | Mód       | Arany   | Recept | Kézenfekvő terv | Legrövidebb úton |
+| ------------------------------------ | -------- | --------- | ------- | ------ | --------------- | ---------------- |
+| [21. Mohafény](#21-mohafeny)         | könnyű   | nyitott   | 3 / 3   | 12     | 13              | 14               |
+| [22. Szigetek](#22-szigetek)         | közepes  | nyitott   | 8 / 8   | 29     | 39              | 52               |
+| [23. Tükörtó](#23-tukorto)           | közepes  | Lámpafény | 8 / 8   | 36     | 48              | 49               |
+| [24. Smaragdkígyó](#24-smaragdkigyo) | nehéz    | Vaksötét  | 12 / 12 | 42     | 43              | 51               |
+| [25. A tó szeme](#25-a-to-szeme)     | nehéz    | Lámpafény | 12 / 13 | 59     | 75              | 90               |
 
 #### <a id="21-mohafeny"></a>21. Mohafény
 
-*Zölden derengő moha egy fésűs járatban. A program bárhol véget érhet: a legmélyebb ágat hagyd utoljára.*
+_Zölden derengő moha egy fésűs járatban. A program bárhol véget érhet: a legmélyebb ágat hagyd utoljára._
 
 ```text
 5 7
@@ -602,7 +602,7 @@ Fájlok: [21-mohafeny.ms](21-mohafeny.ms) · [palyak/21-mohafeny.txt](palyak/21-
 
 #### <a id="22-szigetek"></a>22. Szigetek
 
-*Kőszigetek a smaragdtó partján, nyolc röggel. A sziget megkerülése néha olcsóbb, mint az átkelés.*
+_Kőszigetek a smaragdtó partján, nyolc röggel. A sziget megkerülése néha olcsóbb, mint az átkelés._
 
 ```text
 9 11
@@ -623,7 +623,7 @@ Fájlok: [22-szigetek.ms](22-szigetek.ms) · [palyak/22-szigetek.txt](palyak/22-
 
 #### <a id="23-tukorto"></a>23. Tükörtó
 
-*A tó közepén kőfal, két oldalán tükörképek. Melyik partot járod be először, és hol kelsz át?*
+_A tó közepén kőfal, két oldalán tükörképek. Melyik partot járod be először, és hol kelsz át?_
 
 ```text
 7 11
@@ -642,7 +642,7 @@ Fájlok: [23-tukorto.ms](23-tukorto.ms) · [palyak/23-tukorto.txt](palyak/23-tuk
 
 #### <a id="24-smaragdkigyo"></a>24. Smaragdkígyó
 
-*Hosszú, kígyózó járat a víz szintje alatt, tizenkét röggel, sötétben. A falak mentén tapogatózva is célba érsz.*
+_Hosszú, kígyózó járat a víz szintje alatt, tizenkét röggel, sötétben. A falak mentén tapogatózva is célba érsz._
 
 ```text
 11 11
@@ -685,7 +685,7 @@ while megy
 
 #### <a id="25-a-to-szeme"></a>25. A tó szeme
 
-*A tó közepén zárt kamra, benne egy rög: a tó szeme, amit senki nem érhet el. Körülötte tizenkét rög a moha alatt.*
+_A tó közepén zárt kamra, benne egy rög: a tó szeme, amit senki nem érhet el. Körülötte tizenkét rög a moha alatt._
 
 ```text
 15 15
@@ -712,17 +712,17 @@ Fájlok: [25-a-to-szeme.ms](25-a-to-szeme.ms) · [palyak/25-a-to-szeme.txt](paly
 
 ### VI. fejezet · A hegy szíve
 
-| Pálya | Nehézség | Mód | Arany | Recept | Kézenfekvő terv | Legrövidebb úton |
-| --- | --- | --- | --- | --- | --- | --- |
-| [26. Hamuréteg](#26-hamureteg) | könnyű | nyitott | 3 / 3 | 12 | 14 | 16 |
-| [27. Lávafolyó](#27-lavafolyo) | közepes | nyitott | 8 / 8 | 33 | 39 | 55 |
-| [28. Obszidiánkapu](#28-obszidiankapu) | nehéz | Lámpafény | 12 / 12 | 50 | 73 | 74 |
-| [29. Izzó tárnák](#29-izzo-tarnak) | nehéz | Vaksötét | 13 / 13 | 65 | 91 | 96 |
-| [30. A Szív](#30-a-sziv) | nehéz | Vaksötét | 13 / 13 | 55 | 63 | 94 |
+| Pálya                                  | Nehézség | Mód       | Arany   | Recept | Kézenfekvő terv | Legrövidebb úton |
+| -------------------------------------- | -------- | --------- | ------- | ------ | --------------- | ---------------- |
+| [26. Hamuréteg](#26-hamureteg)         | könnyű   | nyitott   | 3 / 3   | 12     | 14              | 16               |
+| [27. Lávafolyó](#27-lavafolyo)         | közepes  | nyitott   | 8 / 8   | 33     | 39              | 55               |
+| [28. Obszidiánkapu](#28-obszidiankapu) | nehéz    | Lámpafény | 12 / 12 | 50     | 73              | 74               |
+| [29. Izzó tárnák](#29-izzo-tarnak)     | nehéz    | Vaksötét  | 13 / 13 | 65     | 91              | 96               |
+| [30. A Szív](#30-a-sziv)               | nehéz    | Vaksötét  | 13 / 13 | 55     | 63              | 94               |
 
 #### <a id="26-hamureteg"></a>26. Hamuréteg
 
-*Hamu és izzó parázs, az első lávaerek. Kevés rög, de csak egyetlen útvonal fér bele a célértékbe.*
+_Hamu és izzó parázs, az első lávaerek. Kevés rög, de csak egyetlen útvonal fér bele a célértékbe._
 
 ```text
 5 9
@@ -739,7 +739,7 @@ Fájlok: [26-hamureteg.ms](26-hamureteg.ms) · [palyak/26-hamureteg.txt](palyak/
 
 #### <a id="27-lavafolyo"></a>27. Lávafolyó
 
-*Láva szeli ketté a csarnokot, két kőhíddal. Minden átkelés drága: tervezd meg, hányszor mész át.*
+_Láva szeli ketté a csarnokot, két kőhíddal. Minden átkelés drága: tervezd meg, hányszor mész át._
 
 ```text
 11 13
@@ -762,7 +762,7 @@ Fájlok: [27-lavafolyo.ms](27-lavafolyo.ms) · [palyak/27-lavafolyo.txt](palyak/
 
 #### <a id="28-obszidiankapu"></a>28. Obszidiánkapu
 
-*Fekete üveg kapui, zsákutcák és körök. Itt állt meg R-06. Aki mindig a legközelebbi rög felé indul, huszonhárom sorral hosszabb programot ír, mint kellene.*
+_Fekete üveg kapui, zsákutcák és körök. Itt állt meg R-06. Aki mindig a legközelebbi rög felé indul, huszonhárom sorral hosszabb programot ír, mint kellene._
 
 ```text
 11 13
@@ -785,7 +785,7 @@ Fájlok: [28-obszidiankapu.ms](28-obszidiankapu.ms) · [palyak/28-obszidiankapu.
 
 #### <a id="29-izzo-tarnak"></a>29. Izzó tárnák
 
-*Egymás alatt futó izzó tárnák, egyetlen közös aknával. Sötét van és fullasztó meleg. A kopogás már a talpad alól jön.*
+_Egymás alatt futó izzó tárnák, egyetlen közös aknával. Sötét van és fullasztó meleg. A kopogás már a talpad alól jön._
 
 ```text
 15 15
@@ -812,7 +812,7 @@ Fájlok: [29-izzo-tarnak.ms](29-izzo-tarnak.ms) · [palyak/29-izzo-tarnak.txt](p
 
 #### <a id="30-a-sziv"></a>30. A Szív
 
-*A hegy szíve. Gyűrűk gyűrűkben, a közepén dolgozik a Vakond. Gyűjtsd össze az utolsó rögöt is, és a kopogás végre elhallgat.*
+_A hegy szíve. Gyűrűk gyűrűkben, a közepén dolgozik a Vakond. Gyűjtsd össze az utolsó rögöt is, és a kopogás végre elhallgat._
 
 ```text
 15 15

@@ -2,9 +2,9 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
 import { MAP_RECIPES, normaliseMap, recipeText } from "../src/recipes/catalog.ts";
-import { respond } from "./support/api.ts";
+import { onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { mapDetail, mapSummary, respondMaps } from "./support/fixtures.ts";
+import { mapDetail } from "./support/fixtures.ts";
 
 const CORRIDOR = recipeText("palyak/01-egyenes-folyoso.txt");
 const RECIPE = recipeText("01-egyenes-folyoso.ms");
@@ -21,7 +21,16 @@ function openCorridor(search: string) {
 
 describe("receptek oldal", () => {
   test("a pályához illesztett recept megnyitható, a hiányzó pályáé letiltva, minden letölthető", async () => {
-    respondMaps([mapSummary(1, "1. Egyenes folyosó", CORRIDOR)]);
+    onApi("POST", "/maps/match", (request) => {
+      const { contents } = request.body as { contents: string[] };
+      return {
+        body: {
+          ids: contents.map((content) =>
+            normaliseMap(content) === normaliseMap(CORRIDOR) ? 1 : null,
+          ),
+        },
+      };
+    });
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, "click")
       .mockImplementation(() => undefined);

@@ -21,7 +21,11 @@ function editorText(): string {
 }
 
 async function openPlay(options: Parameters<typeof mapDetail>[3] = {}) {
-  respond("GET", `/maps/${MAP_ID}`, mapDetail(MAP_ID, "Labirintus", LABYRINTH, options));
+  respond(
+    "GET",
+    `/maps/${MAP_ID}`,
+    mapDetail(MAP_ID, "Labirintus", LABYRINTH, { next: { id: 4, title: "Folyosó" }, ...options }),
+  );
   respondMaps([mapSummary(MAP_ID, "Labirintus", LABYRINTH), mapSummary(4, "Folyosó", CORRIDOR)]);
   const app = renderApp(`/play/${MAP_ID}`);
   await screen.findByRole("grid", { name: "Labirintus térképe" });

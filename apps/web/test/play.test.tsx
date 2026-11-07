@@ -5,7 +5,13 @@ import { SPEED_MAX, usePlayback } from "../src/play/playback-store.ts";
 import { callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
 import { realEngine } from "./support/engine.ts";
-import { crashTrace, LABYRINTH, mapDetail, walkTrace } from "./support/fixtures.ts";
+import {
+  crashTrace,
+  LABYRINTH,
+  mapDetail,
+  respondPrograms,
+  walkTrace,
+} from "./support/fixtures.ts";
 
 const MAP_ID = 3;
 const VERSION_ID = 31;
@@ -279,7 +285,7 @@ describe("program kezelése", () => {
 
   test("mentés újként, majd gyorsmentés a megnyitott programba", async () => {
     seedProgram("print 1\n");
-    respond("GET", "/programs", { programs: [] });
+    respondPrograms([]);
     respond(
       "POST",
       "/programs",
@@ -304,7 +310,7 @@ describe("program kezelése", () => {
 
   test("ha a csatolt program már nincs meg a szerveren, a mentés újként menti", async () => {
     seedProgram("print 2\n", { id: 77, title: "Régi", savedSource: "print 1\n" });
-    respond("GET", "/programs", { programs: [] });
+    respondPrograms([]);
     respond(
       "PUT",
       "/programs/77",
@@ -326,12 +332,10 @@ describe("program kezelése", () => {
 
   test("megnyitás nem mentett módosítás esetén megerősítést kér, a törlés lecsatol", async () => {
     seedProgram("print 2\n", { id: 5, title: "Első", savedSource: "print 1\n" });
-    respond("GET", "/programs", {
-      programs: [
-        { id: 5, title: "Első", updatedAt: 1 },
-        { id: 6, title: "Második", updatedAt: 2 },
-      ],
-    });
+    respondPrograms([
+      { id: 5, title: "Első", updatedAt: 1 },
+      { id: 6, title: "Második", updatedAt: 2 },
+    ]);
     respond("GET", "/programs/6", {
       program: { id: 6, title: "Második", source: "turn by 1\n", ownerId: 2, updatedAt: 2 },
     });

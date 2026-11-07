@@ -4,7 +4,7 @@ import { usePlayUi } from "../src/play/play-ui-store.ts";
 import { usePlayback } from "../src/play/playback-store.ts";
 import { respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { LABYRINTH, mapDetail } from "./support/fixtures.ts";
+import { LABYRINTH, mapDetail, respondPrograms } from "./support/fixtures.ts";
 
 const PROGRAM = "step forward 2\nturn by 3\nstep forward 2\nmine here\n";
 
@@ -15,7 +15,7 @@ function seedProgram(source: string) {
 async function openPlay() {
   seedProgram(PROGRAM);
   respond("GET", "/maps/4", mapDetail(4, "Labirintus", LABYRINTH));
-  respond("GET", "/programs", { programs: [] });
+  respondPrograms([]);
   const app = renderApp("/play/4");
   await screen.findByRole("grid", { name: "Labirintus térképe" });
   await waitFor(() => expect(document.querySelector(".cm-content")).not.toBeNull());

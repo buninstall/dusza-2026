@@ -319,6 +319,36 @@ describe("programtár és futásnapló", () => {
   });
 });
 
+describe("felhasználók lapozva", () => {
+  test("az admin lista lapoz, keres a névben, és megadja az adminok számát", async () => {
+    await using context = await createTestContext();
+    const admin = context.client();
+    const { user: boss } = await admin.register("fonok");
+    await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, boss.id));
+    for (let index = 1; index <= 11; index += 1) {
+      await context.client().register(`banyasz_${String(index).padStart(2, "0")}`);
+    }
+    const first = await json<Page<{ username: string }, "users"> & { admins: number }>(
+      await admin.get("/api/admin/users?pageSize=9"),
+    );
+    expect(first).toMatchObject({ total: 12, pageCount: 2, admins: 1 });
+    expect(first.users[0]?.username).toBe("fonok");
+    const second = await json<Page<{ username: string }, "users">>(
+      await admin.get("/api/admin/users?pageSize=9&page=2"),
+    );
+    expect(second.users.map((user) => user.username)).toEqual([
+      "banyasz_09",
+      "banyasz_10",
+      "banyasz_11",
+    ]);
+    const found = await json<Page<{ username: string }, "users">>(
+      await admin.get("/api/admin/users?q=SZ_1"),
+    );
+    expect(found.users.map((user) => user.username)).toEqual(["banyasz_10", "banyasz_11"]);
+    expect((await admin.get("/api/admin/users?pageSize=101")).status).toBe(400);
+  }, 60_000);
+});
+
 describe("homokozó-tömeg a seedben", () => {
   test("száz bányász háromszáz pályája, idempotensen, belépés nélkül", async () => {
     await using context = await createTestContext();

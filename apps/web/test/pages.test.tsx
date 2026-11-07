@@ -14,6 +14,7 @@ import {
   mapSummary,
   respondMaps,
   respondRuns,
+  respondUsers,
 } from "./support/fixtures.ts";
 
 const MAPS = [mapSummary(1, "Folyosó", CORRIDOR), mapSummary(2, "Labirintus", LABYRINTH, 2)];
@@ -246,32 +247,32 @@ describe("ranglista részletei", () => {
 describe("futásaim", () => {
   test("a kimenet hibakóddal és sorral", async () => {
     respondRuns([
-        {
-          id: 1,
-          mapId: 2,
-          mapTitle: "Labirintus",
-          mapVersionId: 22,
-          version: 2,
-          gold: 1,
-          steps: 9,
-          outcomeKind: "runtimeError",
-          errorCode: "E_NO_GOLD",
-          errorLine: 4,
-          createdAt: 1,
-        },
-        {
-          id: 2,
-          mapId: 1,
-          mapTitle: "Folyosó",
-          mapVersionId: 11,
-          version: 1,
-          gold: 2,
-          steps: 8,
-          outcomeKind: "ok",
-          errorCode: null,
-          errorLine: null,
-          createdAt: 2,
-        },
+      {
+        id: 1,
+        mapId: 2,
+        mapTitle: "Labirintus",
+        mapVersionId: 22,
+        version: 2,
+        gold: 1,
+        steps: 9,
+        outcomeKind: "runtimeError",
+        errorCode: "E_NO_GOLD",
+        errorLine: 4,
+        createdAt: 1,
+      },
+      {
+        id: 2,
+        mapId: 1,
+        mapTitle: "Folyosó",
+        mapVersionId: 11,
+        version: 1,
+        gold: 2,
+        steps: 8,
+        outcomeKind: "ok",
+        errorCode: null,
+        errorLine: null,
+        createdAt: 2,
+      },
     ]);
     renderApp("/runs");
     expect(await screen.findByText("E_NO_GOLD, 4. sor")).toBeTruthy();
@@ -321,6 +322,52 @@ describe("futásaim", () => {
   });
 });
 
+describe("adminisztráció lapozva", () => {
+  test("kilencesével lapoz, és név szerint keres", async () => {
+    const accounts = Array.from({ length: 20 }, (_, index) => ({
+      id: index + 1,
+      username: index === 0 ? "admin" : `banyasz${String(index).padStart(2, "0")}`,
+      role: index === 0 ? "admin" : "user",
+      createdAt: index,
+    }));
+    respondUsers(accounts);
+    const { user, router } = renderApp("/admin", "admin");
+    const table = await screen.findByRole("table", { name: "Felhasználók" });
+    expect(within(table).getAllByRole("row")).toHaveLength(10);
+    expect(screen.getByText("1–9 / 20")).toBeTruthy();
+    expect(screen.getByText("20 fiók · 1 adminisztrátor")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "3. oldal" }));
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ page: 3 }));
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table", { name: "Felhasználók" })).getAllByRole("row"),
+      ).toHaveLength(3),
+    );
+    await user.type(
+      screen.getByRole("searchbox", { name: "Keresés a felhasználók között" }),
+      "sz1",
+    );
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "sz1", page: 1 }));
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table", { name: "Felhasználók" }))
+          .getAllByRole("rowheader")
+          .map((cell) => cell.textContent),
+      ).toEqual([
+        "banyasz10",
+        "banyasz11",
+        "banyasz12",
+        "banyasz13",
+        "banyasz14",
+        "banyasz15",
+        "banyasz16",
+        "banyasz17",
+        "banyasz18",
+      ]),
+    );
+  });
+});
+
 describe("adminisztráció", () => {
   const USERS = [
     { id: 1, username: "admin", role: "admin", createdAt: 1 },
@@ -328,7 +375,7 @@ describe("adminisztráció", () => {
   ];
 
   test("szerepkör váltása és fiók törlése megerősítéssel, saját sor érinthetetlen", async () => {
-    respond("GET", "/admin/users", { users: USERS });
+    respondUsers(USERS);
     respond("PATCH", "/admin/users/2", { user: { ...USERS[1], role: "admin" } });
     respond("DELETE", "/admin/users/2", { ok: true });
     const { user } = renderApp("/admin", "admin");
@@ -346,7 +393,7 @@ describe("adminisztráció", () => {
   });
 
   test("új felhasználó létrehozása szerepkörrel, foglalt névre hibaüzenet", async () => {
-    respond("GET", "/admin/users", { users: USERS });
+    respondUsers(USERS);
     onApi("POST", "/admin/users", () =>
       apiError(409, "USERNAME_TAKEN", "Ez a felhasználónév már foglalt."),
     );
@@ -381,7 +428,7 @@ describe("adminisztráció", () => {
   });
 
   test("hibás művelet hibaüzenetet ad, a nem admin visszakerül a térképekhez", async () => {
-    respond("GET", "/admin/users", { users: USERS });
+    respondUsers(USERS);
     onApi("PATCH", "/admin/users/2", () => apiError(409, "SELF_CHANGE", "Nem módosítható."));
     const { user } = renderApp("/admin", "admin");
     await user.click(await screen.findByRole("button", { name: "Adminná tétel: demo1" }));
