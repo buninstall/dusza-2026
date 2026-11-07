@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 
 test("új térkép: festés, ellenőrzés, mentés és exportálás", async ({ page }) => {
   const save = page.getByRole("button", { name: "Mentés" });
-  await expect(page.getByText("A térkép címe hiányzik.")).toBeVisible();
+  await expect(page.getByText("Nincs cím.", { exact: true })).toBeVisible();
   const posts: string[] = [];
   page.on("request", (request) => {
     if (request.method() === "POST" && new URL(request.url()).pathname === "/api/maps") {

@@ -3,6 +3,8 @@ import { expect, type Page, test } from "@playwright/test";
 import {
   ADMIN,
   expectReadings,
+  gotoEdit,
+  gotoLeaderboard,
   gotoPlay,
   loginAs,
   openFromLibrary,
@@ -44,8 +46,7 @@ const SCREENS: readonly Screen[] = [
   {
     name: "szerkeszto-15x15",
     open: async (page) => {
-      await page.goto("/maps");
-      await page.getByRole("link", { name: "Szerkesztés: 8. A nagy bánya" }).click();
+      await gotoEdit(page, "8. A nagy bánya");
       await heading(page, "Térkép szerkesztése");
       await expect(page.getByRole("gridcell")).toHaveCount(225);
     },
@@ -98,8 +99,7 @@ const SCREENS: readonly Screen[] = [
   {
     name: "ranglista",
     open: async (page) => {
-      await page.goto("/maps");
-      await page.getByRole("link", { name: "Ranglista: 1. Egyenes folyosó" }).click();
+      await gotoLeaderboard(page, "1. Egyenes folyosó");
       await heading(page, "Ranglista – 1. Egyenes folyosó");
       await expect(page.getByRole("table")).toBeVisible();
     },

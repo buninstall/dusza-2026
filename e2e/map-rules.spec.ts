@@ -148,7 +148,7 @@ test("minden mezőtípus festhető, pontosan egy robot van, mind a négy iránny
   expect(mapRow(exported.bytes.toString("utf8"), 3)).toBe("..........");
 
   await page.getByRole("textbox", { name: /Cím/ }).fill("");
-  await expect(page.getByText("A térkép címe hiányzik.")).toBeVisible();
+  await expect(page.getByText("Nincs cím.", { exact: true })).toBeVisible();
   await expectSaveRefused(page);
 });
 

@@ -1,11 +1,13 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
-  dismissToasts,
+  capitalArticle,
+  closeImportRejection,
   editor,
   expectFinished,
   exportProgram,
   gotoPlay,
   importProgramFile,
+  importRejection,
   login,
   openConsole,
   setSpeed,
@@ -21,10 +23,8 @@ function diagnostics(page: Page) {
 }
 
 async function expectRejected(page: Page, message: string | RegExp): Promise<void> {
-  await expect(
-    page.getByRole("region", { name: "Értesítések" }).getByText(message).first(),
-  ).toBeVisible();
-  await dismissToasts(page);
+  await expect(importRejection(page)).toContainText(message);
+  await closeImportRejection(page);
 }
 
 test.beforeEach(async ({ page }) => {
@@ -36,7 +36,11 @@ test("programfájl tallózással betölthető, szerkeszthető, és bájtra ponto
   page,
 }) => {
   await importProgramFile(page, recipePath(LOOP_RECIPE.program));
-  await expect(page.getByText(`A(z) ${LOOP_RECIPE.program} program betöltve.`)).toBeVisible();
+  await expect(
+    page.getByText(
+      `${capitalArticle(LOOP_RECIPE.program)} ${LOOP_RECIPE.program} program betöltve.`,
+    ),
+  ).toBeVisible();
   await expect(diagnostics(page)).toHaveAccessibleName(/Nincs szintaktikai hiba/);
   const original = recipeBytes(LOOP_RECIPE.program);
   const exported = await exportProgram(page);
@@ -58,22 +62,20 @@ test("programfájl tallózással betölthető, szerkeszthető, és bájtra ponto
   await expect(console).toContainText("7");
 });
 
-test("a szintaktikailag hibás program betöltődik, a hibák azonnal látszanak, az export változatlan", async ({
+test("a szintaktikailag hibás programfájl nem töltődik be, a hibás sorok listája látszik", async ({
   page,
 }) => {
+  const before = await exportProgram(page);
   await importProgramFile(page, recipePath(SYNTAX_RECIPE.file));
-  await expect(page.getByText("A(z) szintaktikai-hibak.ms program betöltve.")).toBeVisible();
-  await expect(diagnostics(page)).toHaveAccessibleName(/4 hiba/);
-  await diagnostics(page).getByRole("button", { name: "Hibalista" }).click();
+  const dialog = importRejection(page);
+  await expect(dialog).toContainText("A fájl nem felel meg a MineScript nyelvtanának");
+  await expect(dialog).toContainText("Fájl: szintaktikai-hibak.ms");
   for (const line of SYNTAX_RECIPE.lines) {
-    await expect(
-      diagnostics(page).getByRole("button", {
-        name: new RegExp(`^Ugrás az? ${line}\\. sorra, hiba`),
-      }),
-    ).toBeVisible();
+    await expect(dialog.getByText(`${line}. sor`, { exact: true })).toBeVisible();
   }
-  const exported = await exportProgram(page);
-  expect(exported.bytes.equals(recipeBytes(SYNTAX_RECIPE.file))).toBe(true);
+  await closeImportRejection(page);
+  const after = await exportProgram(page);
+  expect(after.bytes.equals(before.bytes)).toBe(true);
 });
 
 test("a Windows-sorvégű programfájl egységes sorvéggel töltődik be", async ({ page }) => {
@@ -82,7 +84,7 @@ test("a Windows-sorvégű programfájl egységes sorvéggel töltődik be", asyn
     mimeType: "text/plain",
     buffer: Buffer.from("﻿print 1\r\nprint 2\r\n", "utf8"),
   });
-  await expect(page.getByText("A(z) crlf.ms program betöltve.")).toBeVisible();
+  await expect(page.getByText("A crlf.ms program betöltve.")).toBeVisible();
   const exported = await exportProgram(page);
   expect(exported.bytes.toString("utf8")).toBe("print 1\nprint 2\n");
 });

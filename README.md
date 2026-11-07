@@ -25,7 +25,7 @@ A feladatleírás: [docs/feladat.md](docs/feladat.md).
 | `admin`                   | `dusza2026` | adminisztrátor |
 | `demo1`, `demo2`, `demo3` | `demo2026`  | játékos        |
 
-A program internet nélkül működik, az adatokat a MySQL-ben tárolja. Alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` címre kapcsolódik; más szerverhez a `DATABASE_URL` környezeti változót vagy a `--database-url` kapcsolót add meg (minta: `.env.example`). Első indításkor létrehozza a táblákat, és feltölti az adatbázist 8 oktató térképpel. Ha a MySQL nem érhető el, a program magyarul kiírja, mit kell tenni. Kapcsolók: `--port`, `--host`, `--database-url`, `--no-open`, `--reset-demo`.
+A program internet nélkül működik, az adatokat a MySQL-ben tárolja. Alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` címre kapcsolódik; más szerverhez a `DATABASE_URL` környezeti változót vagy a `--database-url` kapcsolót add meg (minta: `.env.example`). Első indításkor létrehozza a táblákat, és kész játékkörnyezetet tölt fel: a Történet mód 30 pályáját, a Homokozó bemutató pályáit, a demó-fiókokat receptekkel és mintafutásokkal, valamint egy népes homokozót (100 játékos, 300 pálya; a `--no-crowd` kapcsolóval kihagyható). Ha a MySQL nem érhető el, a program magyarul kiírja, mit kell tenni. Kapcsolók: `--port`, `--host`, `--database-url`, `--no-open`, `--no-crowd`, `--reset-demo`.
 
 ## Fejlesztői gyorsindítás
 

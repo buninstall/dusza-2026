@@ -3,6 +3,8 @@ import { expect, type Page, test } from "@playwright/test";
 import {
   ADMIN,
   editorGrid,
+  gotoEdit,
+  gotoLeaderboard,
   gotoPlay,
   importMapFile,
   login,
@@ -122,7 +124,7 @@ for (const theme of THEMES) {
       ).toBeVisible();
       await expectClean(page, "hibás import");
       await loginAs(page, ADMIN);
-      await page.getByRole("link", { name: "Szerkesztés: 4. Zsákutcák" }).click();
+      await gotoEdit(page, "4. Zsákutcák");
       await expect(
         page.getByRole("heading", { level: 1, name: "Térkép szerkesztése" }),
       ).toBeVisible();
@@ -150,7 +152,7 @@ for (const theme of THEMES) {
 
     test("ranglista, kézikönyv, futásnapló és felhasználókezelés", async ({ page }) => {
       await loginAs(page, ADMIN);
-      await page.getByRole("link", { name: "Ranglista: 1. Egyenes folyosó" }).click();
+      await gotoLeaderboard(page, "1. Egyenes folyosó");
       await expect(page.getByRole("heading", { level: 1, name: /Ranglista/ })).toBeVisible();
       await expectClean(page, "ranglista");
       await page.getByRole("link", { name: "Kézikönyv" }).click();

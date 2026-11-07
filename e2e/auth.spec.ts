@@ -61,7 +61,7 @@ test("minden funkció csak bejelentkezés után érhető el, a közvetlen cím a
   await page.goto("/runs");
   await expect(page).toHaveURL(/\/login\?redirect=/);
   await submitCredentials(page, "Belépés", DEMO.username, DEMO.password);
-  await expect(page).toHaveURL(/\/runs$/);
+  await expect(page).toHaveURL(/\/runs(\?page=1)?$/);
   await expect(page.getByRole("heading", { level: 1, name: "Futásaim" })).toBeVisible();
 });
 

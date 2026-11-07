@@ -825,7 +825,6 @@ export const hu = {
     back: "Kézikönyv",
     entry: "Receptek",
     entryLabel: "Receptek: kész programok minden pályához",
-    sectionMaps: "Pályák",
     sectionErrors: "Hibapróbák",
     sectionBadMaps: "Hibás térképek",
     errorsHint:
