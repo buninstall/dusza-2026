@@ -66,7 +66,7 @@ function LevelGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; user
             key={map.id}
             map={map}
             depth={depthOf.get(map.id) ?? 1}
-            box={64}
+            box={84}
             canEdit={map.ownerId === user.id || user.role === "admin"}
           />
         ))}

@@ -21,7 +21,7 @@ export function DailyCard() {
   return (
     <section className="daily" data-mine="daily" aria-labelledby="daily-heading">
       <div className="daily-window" data-mine-pit="">
-        <MapPreview content={map.content} box={64} />
+        <MapPreview content={map.content} box={84} isFitted />
       </div>
       <div className="daily-body">
         <h2 id="daily-heading" className="daily-head">
