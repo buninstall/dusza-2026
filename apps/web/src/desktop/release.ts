@@ -6,7 +6,6 @@ import { api, call } from "../lib/api.ts";
 import { currentPlatform, type DesktopPlatform } from "./platform.ts";
 
 const STALE_MS = 10 * 60_000;
-const BYTES_PER_MB = 1_000_000;
 
 async function fetchDesktopRelease() {
   const { release } = await call(api.desktop.$get());
@@ -19,7 +18,6 @@ export type DesktopFormat = DesktopAsset["format"];
 
 export type DesktopOffer = {
   platform: DesktopPlatform;
-  version: string;
   primary: DesktopAsset;
   others: DesktopAsset[];
 };
@@ -45,18 +43,11 @@ export function pickOffer(release: DesktopRelease, platform: DesktopPlatform): D
     return null;
   }
   const others = release.assets.filter((asset) => asset !== primary);
-  return { platform, version: release.version, primary, others };
+  return { platform, primary, others };
 }
 
 export function downloadHref(format: DesktopFormat): string {
   return `/api/desktop/download/${format}`;
-}
-
-export function formatSize(bytes: number): string {
-  const value = new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 1 }).format(
-    bytes / BYTES_PER_MB,
-  );
-  return hu.desktop.megabytes(value);
 }
 
 export function announceDownload(format: DesktopFormat): void {

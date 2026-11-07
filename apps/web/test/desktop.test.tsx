@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { detectPlatform, isDesktopShell } from "../src/desktop/platform.ts";
-import { type DesktopRelease, formatSize, pickOffer } from "../src/desktop/release.ts";
+import { type DesktopRelease, pickOffer } from "../src/desktop/release.ts";
 import { respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
 import { mapSummary } from "./support/fixtures.ts";
@@ -89,14 +89,9 @@ describe("letöltési ajánlat", () => {
     expect(pickOffer(onlyMsi, "windows")?.primary.format).toBe("msi");
     expect(pickOffer(onlyMsi, "macos")).toBeNull();
   });
-
-  test("a méretet magyar formában, megabájtban írja", () => {
-    expect(formatSize(6_864_864)).toBe("6,9 MB");
-    expect(formatSize(82_381_304)).toBe("82,4 MB");
-  });
 });
 
-function pretend(userAgent: string, platform: string): void {
+function pretend(userAgent: string, platform: typeof window.navigator.platform): void {
   vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue(userAgent);
   vi.spyOn(window.navigator, "platform", "get").mockReturnValue(platform);
 }
@@ -114,7 +109,7 @@ describe("letöltés a felületen", () => {
     const link = await screen.findByRole("link", { name: "Asztali alkalmazás macOS-re" });
     expect(link.getAttribute("href")).toBe("/api/desktop/download/dmg");
     expect(link.hasAttribute("download")).toBe(true);
-    expect(screen.getByText("v0.2.0 · 6,9 MB")).toBeTruthy();
+    expect(screen.queryByText(/0\.2\.0|MB/)).toBeNull();
   });
 
   test("a további formátumok menüből érhetők el", async () => {

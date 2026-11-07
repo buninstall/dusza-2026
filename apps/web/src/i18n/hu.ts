@@ -193,7 +193,6 @@ export const hu = {
     passwordShort: "A jelszó legalább 8 karakter legyen.",
   },
   desktop: {
-    platforms: { macos: "macOS", windows: "Windows", linux: "Linux" },
     primary: {
       macos: "Asztali alkalmazás macOS-re",
       windows: "Asztali alkalmazás Windowsra",
@@ -212,8 +211,6 @@ export const hu = {
       deb: "Linux csomag, Debian és Ubuntu (.deb)",
       rpm: "Linux csomag, Fedora és openSUSE (.rpm)",
     },
-    meta: (version: string, size: string) => `v${version} · ${size}`,
-    megabytes: (value: string) => `${value} MB`,
     more: "Más rendszerre",
     moreLabel: "Asztali alkalmazás más rendszerre vagy formátumban",
     started: "A letöltés elindult.",

@@ -2,13 +2,7 @@ import { Link as AriaLink } from "react-aria-components";
 import { ButtonContent, buttonLook } from "../components/ui/Button.tsx";
 import { Menu, MenuItem } from "../components/ui/Menu.tsx";
 import { hu } from "../i18n/hu.ts";
-import {
-  announceDownload,
-  type DesktopOffer,
-  downloadHref,
-  formatSize,
-  useDesktopOffer,
-} from "./release.ts";
+import { announceDownload, type DesktopOffer, downloadHref, useDesktopOffer } from "./release.ts";
 import "./DesktopPlate.css";
 
 export function DesktopPlate() {
@@ -20,7 +14,7 @@ export function DesktopPlate() {
 }
 
 function DesktopPlateBody({ offer }: { offer: DesktopOffer }) {
-  const { platform, primary, others, version } = offer;
+  const { platform, primary, others } = offer;
   return (
     <div className="desktop-plate">
       <AriaLink
@@ -32,9 +26,6 @@ function DesktopPlateBody({ offer }: { offer: DesktopOffer }) {
       >
         <ButtonContent icon="download">{hu.desktop.primary[platform]}</ButtonContent>
       </AriaLink>
-      <span className="desktop-plate-meta">
-        {hu.desktop.meta(version, formatSize(primary.size))}
-      </span>
       {others.length > 0 ? (
         <Menu label={hu.desktop.more} ariaLabel={hu.desktop.moreLabel} icon="chevronDown">
           {others.map((asset) => (
@@ -43,13 +34,9 @@ function DesktopPlateBody({ offer }: { offer: DesktopOffer }) {
               id={asset.format}
               href={downloadHref(asset.format)}
               download
-              textValue={hu.desktop.formats[asset.format]}
               onAction={() => announceDownload(asset.format)}
             >
-              <span className="desktop-menu-item">
-                <span>{hu.desktop.formats[asset.format]}</span>
-                <span className="desktop-menu-size">{formatSize(asset.size)}</span>
-              </span>
+              {hu.desktop.formats[asset.format]}
             </MenuItem>
           ))}
         </Menu>

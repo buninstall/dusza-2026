@@ -45,23 +45,6 @@
   right: var(--space-2);
 }
 
-.desktop-plate-meta {
-  font: var(--type-micro);
-  letter-spacing: var(--track-micro);
-  color: var(--c-text-muted);
-}
-
-.desktop-menu-item {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-4);
-  width: 100%;
-}
-
-.desktop-menu-size {
-  color: var(--c-text-muted);
-}
-
 @media (max-height: 56rem) {
   .auth:has(.desktop-slot) {
     padding-bottom: calc(var(--space-8) + var(--desktop-slot-h, 3.75rem));
