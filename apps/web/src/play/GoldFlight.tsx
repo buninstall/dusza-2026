@@ -18,10 +18,46 @@ type GoldFlightProps = {
   rootRef: RefObject<HTMLElement | null>;
 };
 
-function centerOf(rect: DOMRect): Point {
+type Box = { left: number; top: number; right: number; bottom: number };
+
+function clip(box: Box, by: Box): Box | null {
+  const next = {
+    left: Math.max(box.left, by.left),
+    top: Math.max(box.top, by.top),
+    right: Math.min(box.right, by.right),
+    bottom: Math.min(box.bottom, by.bottom),
+  };
+  return next.right - next.left > 1 && next.bottom - next.top > 1 ? next : null;
+}
+
+function isClipping(overflow: string): boolean {
+  return overflow !== "" && overflow !== "visible";
+}
+
+function visibleBox(element: Element): Box | null {
+  let box: Box | null = clip(element.getBoundingClientRect(), {
+    left: 0,
+    top: 0,
+    right: window.innerWidth,
+    bottom: window.innerHeight,
+  });
+  for (
+    let parent = element.parentElement;
+    parent && box && parent !== document.body;
+    parent = parent.parentElement
+  ) {
+    const style = getComputedStyle(parent);
+    if ([style.overflow, style.overflowX, style.overflowY].some(isClipping)) {
+      box = clip(box, parent.getBoundingClientRect());
+    }
+  }
+  return box;
+}
+
+function centerOf(rect: Box): Point {
   return {
-    x: Math.round(rect.left + rect.width / 2 - NUGGET_PX / 2),
-    y: Math.round(rect.top + rect.height / 2 - NUGGET_PX / 2),
+    x: Math.round((rect.left + rect.right) / 2 - NUGGET_PX / 2),
+    y: Math.round((rect.top + rect.bottom) / 2 - NUGGET_PX / 2),
   };
 }
 
@@ -68,9 +104,9 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
     }
     const cell = root.querySelector(`[data-row="${row}"][data-col="${col}"]`);
     const target = root.querySelector("[data-gold-target] .hud-cart-art");
-    const from = cell?.getBoundingClientRect();
-    const to = target?.getBoundingClientRect();
-    if (!from || !to || !target || to.width === 0 || from.width === 0) {
+    const from = cell ? visibleBox(cell) : null;
+    const to = target ? visibleBox(target) : null;
+    if (!from || !to || !target) {
       return;
     }
     const stopFlight = playOnce(nugget, flightFrames(centerOf(from), centerOf(to)), {

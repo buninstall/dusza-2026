@@ -62,6 +62,28 @@ describe("aranyrög röppályája", () => {
     unmount();
   });
 
+  test("ha a csille ki van görgetve vagy le van vágva, nem repül sehová", () => {
+    const animate = vi.fn(() => ({ finished: Promise.resolve(), cancel: vi.fn() }));
+    HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
+    const rootRef = scene(64);
+    const cart = rootRef.current?.querySelector(".hud-cart-art") as HTMLElement;
+    cart.getBoundingClientRect = () => rect(10, -200, 48);
+    render(<GoldFlight flight={{ key: "1:9", from: { row: 0, col: 1 } }} rootRef={rootRef} />);
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  test("a levágó görgetődoboz látható részéből indul", () => {
+    const animate = vi.fn(() => ({ finished: Promise.resolve(), cancel: vi.fn() }));
+    HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
+    const rootRef = scene(64);
+    const root = rootRef.current as HTMLElement;
+    root.style.overflow = "hidden";
+    root.getBoundingClientRect = () => rect(0, 0, 120);
+    render(<GoldFlight flight={{ key: "1:8", from: { row: 0, col: 1 } }} rootRef={rootRef} />);
+    const [frames] = (animate.mock.calls[0] ?? []) as unknown as [Keyframe[]];
+    expect(String(frames[0]?.transform)).toContain("translate(94px, 66px)");
+  });
+
   test("más állapot miatti újrarajzolás nem indítja újra ugyanazt a röppályát", () => {
     const animate = vi.fn(() => ({ finished: Promise.resolve(), cancel: vi.fn() }));
     HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
