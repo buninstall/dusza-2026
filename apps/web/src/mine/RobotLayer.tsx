@@ -91,9 +91,31 @@ export function RobotLayer({
   );
 }
 
+const DEBRIS: readonly { dx: number; dy: number; tone: "rock" | "ore" }[] = [
+  { dx: -0.55, dy: -0.5, tone: "rock" },
+  { dx: 0.5, dy: -0.6, tone: "ore" },
+  { dx: -0.7, dy: 0.05, tone: "ore" },
+  { dx: 0.7, dy: -0.15, tone: "rock" },
+  { dx: -0.25, dy: -0.8, tone: "ore" },
+  { dx: 0.3, dy: 0.2, tone: "rock" },
+  { dx: 0.05, dy: -0.95, tone: "rock" },
+];
+
+export function Chips({ tone }: { tone?: "spark" }) {
+  return DEBRIS.map((chip, index) => (
+    <span
+      key={`chip-${index.toString()}`}
+      className="board-chip"
+      data-tone={tone ?? chip.tone}
+      style={{ "--dx": chip.dx, "--dy": chip.dy } as CSSProperties}
+    />
+  ));
+}
+
 export function SparkleBurst({ pos }: { pos: Pos }) {
   return (
     <div className="board-sparkle" style={placement(pos)}>
+      <Chips />
       {TILE_SPRITES.burst.map((_, frame) => (
         <SpriteUse
           key={SPRITE_ID.burst(frame)}

@@ -1,3 +1,10 @@
+import {
+  CRACKED_FLOOR_ART,
+  CRACKED_WALL_ART,
+  CRYSTAL_FLOOR_ART,
+  GEM_TONES,
+  PEBBLE_FLOOR_ART,
+} from "./cave-art.ts";
 import { type PixelRows, rotateTimes, type Sprite, sprite, TRANSPARENT } from "./pixel-art.ts";
 
 export const TILE_SIZE = 16;
@@ -390,8 +397,13 @@ function fringeSprite(side: FringeSide): Sprite {
 const SPARK_TONES = { w: "glint", y: "ore-hi" } as const;
 
 export const TILE_SPRITES = {
-  floor: FLOOR_ART.map((rows) => sprite(rows, FLOOR_TONES)),
-  wall: [WALL_ART, swapHalves(WALL_ART)].map((rows) => sprite(rows, WALL_TONES)),
+  floor: [
+    ...FLOOR_ART.map((rows) => sprite(rows, FLOOR_TONES)),
+    sprite(PEBBLE_FLOOR_ART, FLOOR_TONES),
+    sprite(CRACKED_FLOOR_ART, FLOOR_TONES),
+    sprite(CRYSTAL_FLOOR_ART, { ...FLOOR_TONES, ...GEM_TONES }),
+  ],
+  wall: [WALL_ART, swapHalves(WALL_ART), CRACKED_WALL_ART].map((rows) => sprite(rows, WALL_TONES)),
   gold: sprite(GOLD_ART, ORE_TONES),
   dug: sprite(DUG_ART, { p: "dug", l: "floor-lo" }),
   robot: sprite(ROBOT_ART, ROBOT_TONES),

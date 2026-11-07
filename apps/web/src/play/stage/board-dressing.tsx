@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { hu } from "../../i18n/hu.ts";
 import type { RobotBeam, RobotLook } from "../../mine/MineBoard.tsx";
 import type { RobotMood } from "../../mine/RobotLayer.tsx";
-import { placement, SpriteUse } from "../../mine/RobotLayer.tsx";
+import { Chips, placement, SpriteUse } from "../../mine/RobotLayer.tsx";
 import { type FogMode, posKey } from "../../mine/tiles-model.ts";
 import { SPRITE_ID } from "../../pixel/tiles.ts";
 import type { Frame } from "../derive.ts";
@@ -121,6 +121,9 @@ function faultNodes(input: DressingInput): ReactNode[] {
       </Fx>,
       <Fx key={`impact-${runId}`} kind="impact" pos={robot.pos} style={AHEAD_STYLE[robot.dir]}>
         <SpriteUse id={SPRITE_ID.impact} className="board-fx-art" />
+      </Fx>,
+      <Fx key={`sparks-${runId}`} kind="sparks" pos={robot.pos} style={AHEAD_STYLE[robot.dir]}>
+        <Chips tone="spark" />
       </Fx>,
       badge,
     ];

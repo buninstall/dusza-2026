@@ -39,7 +39,7 @@ afterEach(() => {
 });
 
 describe("aranyrög röppályája", () => {
-  test("a bányászott mezőről a csille felé repül, lépcsőzetesen", () => {
+  test("a bányászott mezőről ívben, felpattanva a csille felé repül", () => {
     const cancel = vi.fn();
     const animate = vi.fn(() => ({ finished: Promise.resolve(), cancel }));
     HTMLElement.prototype.animate = animate as unknown as HTMLElement["animate"];
@@ -47,13 +47,16 @@ describe("aranyrög röppályája", () => {
     const { rerender, unmount } = render(
       <GoldFlight flight={{ key: "1:1", from: { row: 0, col: 1 } }} rootRef={rootRef} />,
     );
-    expect(animate).toHaveBeenCalledWith(
-      [
-        { transform: "translate(116px, 66px)", opacity: 1 },
-        { transform: "translate(18px, 18px)", opacity: 1 },
-      ],
-      { duration: 480, easing: "steps(8, end)" },
-    );
+    const [frames, options] = (animate.mock.calls[0] ?? []) as unknown as [
+      Keyframe[],
+      KeyframeAnimationOptions,
+    ];
+    expect(options).toEqual({ duration: 720 });
+    expect(frames).toHaveLength(5);
+    expect(String(frames[0]?.transform)).toContain("translate(116px, 66px)");
+    expect(String(frames[1]?.transform)).toContain("translate(116px, 44px)");
+    expect(String(frames[3]?.transform)).toContain("translate(18px, 18px)");
+    expect(frames[4]?.opacity).toBe(0);
     rerender(<GoldFlight flight={null} rootRef={rootRef} />);
     expect(cancel).toHaveBeenCalledOnce();
     unmount();

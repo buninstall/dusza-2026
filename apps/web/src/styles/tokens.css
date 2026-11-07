@@ -139,6 +139,9 @@
   --px-alert: #f2c21b;
   --px-alert-ink: #15120f;
   --px-spark: #ff9a5c;
+  --px-gem: #3fb5c9;
+  --px-gem-hi: #9ae8f2;
+  --px-gem-lo: #1f6f80;
 
   --hatch-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath d='M0 7h1v1H0zM1 6h1v1H1zM2 5h1v1H2zM3 4h1v1H3zM4 3h1v1H4zM5 2h1v1H5zM6 1h1v1H6zM7 0h1v1H7z' fill='%233b332b'/%3E%3C/svg%3E");
   --rail-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10' shape-rendering='crispEdges'%3E%3Crect x='3' width='2' height='10' fill='%234a3f35'/%3E%3C/svg%3E");
@@ -210,6 +213,9 @@
   --px-alert: #f2c21b;
   --px-alert-ink: #15120f;
   --px-spark: #e8682e;
+  --px-gem: #2a93a8;
+  --px-gem-hi: #7fd6e3;
+  --px-gem-lo: #155866;
 
   --hatch-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath d='M0 7h1v1H0zM1 6h1v1H1zM2 5h1v1H2zM3 4h1v1H3zM4 3h1v1H4zM5 2h1v1H5zM6 1h1v1H6zM7 0h1v1H7z' fill='%23c0ad8c'/%3E%3C/svg%3E");
   --rail-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10' shape-rendering='crispEdges'%3E%3Crect x='3' width='2' height='10' fill='%23c0ad8c'/%3E%3C/svg%3E");
