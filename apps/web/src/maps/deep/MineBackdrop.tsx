@@ -88,7 +88,7 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
     let lastBuild = 0;
     let signature = "";
     const shape = () =>
-      `${root.offsetWidth}x${root.offsetHeight}:${root.querySelectorAll(`[${MINE_ATTR}]`).length}`;
+      `${window.innerWidth}:${root.offsetWidth}x${root.offsetHeight}:${root.querySelectorAll(`[${MINE_ATTR}]`).length}`;
     const start = () => {
       window.clearTimeout(timer);
       stop();
@@ -125,9 +125,11 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
     observer?.observe(root);
     const mutations = new MutationObserver(onResize);
     mutations.observe(root, { childList: true, subtree: true });
+    window.addEventListener("resize", onResize);
     return () => {
       observer?.disconnect();
       mutations.disconnect();
+      window.removeEventListener("resize", onResize);
       window.clearTimeout(timer);
       stop();
     };

@@ -8,11 +8,8 @@ import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { Tab, TabList, TabPanel, Tabs } from "../components/ui/Tabs.tsx";
-import { MAX_NUGGETS } from "../game/NuggetRow.tsx";
 import { hu } from "../i18n/hu.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
-import { PixelSprite } from "../pixel/SpriteLayers.tsx";
-import { TILE_SPRITES } from "../pixel/tiles.ts";
 import { TourPrompt } from "../tour/TourPrompt.tsx";
 import { DailyCard } from "./DailyCard.tsx";
 import { MineBackdrop } from "./deep/MineBackdrop.tsx";
@@ -108,30 +105,6 @@ function MineLayer({
   );
 }
 
-function MapCount({ scope }: { scope: MapScope }) {
-  const { data } = useQuery(mapsQuery(scope));
-  if (!data) {
-    return null;
-  }
-  const rated = data.maps.filter((map) => map.stars !== null);
-  const earned = rated.reduce((sum, map) => sum + (map.stars ?? 0), 0);
-  const total = rated.length * MAX_NUGGETS;
-  return (
-    <>
-      {hu.maps.count(data.maps.length)}
-      {total > 0 ? (
-        <>
-          {" · "}
-          <span className="maps-stars" title={hu.game.nuggetsTotalLabel}>
-            <PixelSprite sprite={TILE_SPRITES.nugget} className="maps-nugget" />
-            {hu.game.nuggetsTotal(earned, total)}
-          </span>
-        </>
-      ) : null}
-    </>
-  );
-}
-
 export function MapsPage({ scope, sort, user, onScopeChange, onSortChange }: MapsPageProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   return (
@@ -143,7 +116,6 @@ export function MapsPage({ scope, sort, user, onScopeChange, onSortChange }: Map
         <div data-mine="plate">
           <LocationPlate
             name={hu.signs.maps}
-            meta={<MapCount scope={scope} />}
             className="maps-plate"
             actions={
               <>

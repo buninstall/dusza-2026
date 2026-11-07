@@ -10,6 +10,7 @@
 }
 
 .maps-panel {
+  container: mine-panel / inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--mine-gap);
@@ -107,13 +108,11 @@
 
 .lv-title {
   min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   margin: 0;
   font: var(--type-h3);
-  overflow-wrap: anywhere;
 }
 
 .lv-facts {
@@ -213,9 +212,9 @@
 .daily-actions {
   grid-area: actions;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: flex-end;
-  align-items: center;
   gap: var(--space-2);
 }
 
@@ -234,9 +233,18 @@
 .lv-actions {
   grid-area: actions;
   display: flex;
-  align-self: end;
-  align-items: flex-end;
+  justify-content: flex-end;
+  align-items: center;
   gap: var(--space-3);
+}
+
+.maps-page .lv-edit {
+  padding-inline: var(--space-3);
+}
+
+.maps-page .lv-edit::before,
+.maps-page .lv-edit::after {
+  display: none;
 }
 
 .lv-actions,
@@ -355,7 +363,7 @@
   clip-path: none;
 }
 
-@media (max-width: 64rem) {
+@container mine-panel (width < 53rem) {
   .lv-tile {
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
@@ -365,6 +373,7 @@
 
   .lv-actions {
     justify-self: start;
+    justify-content: flex-start;
   }
 }
 
@@ -435,6 +444,14 @@
   display: none;
 }
 
-.maps-plate .plate-detail {
-  color: var(--c-text);
+.maps-plate .plate-sign {
+  border-color: var(--deep-iron-hi);
+  background: transparent;
+  box-shadow: none;
+  color: var(--c-text-muted);
+  opacity: 0.72;
+}
+
+.maps-plate .plate-actions {
+  margin-left: auto;
 }

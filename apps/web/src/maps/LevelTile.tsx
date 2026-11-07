@@ -85,12 +85,13 @@ export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
           <Link
             to="/maps/$mapId/edit"
             params={{ mapId }}
-            variant="ghost"
+            variant="secondary"
             size="sm"
             icon="pickaxe"
+            className="lv-edit"
             aria-label={hu.maps.actionFor(hu.maps.edit, map.title)}
           >
-            {hu.maps.edit}
+            <span className="visually-hidden">{hu.maps.edit}</span>
           </Link>
         ) : null}
       </div>
