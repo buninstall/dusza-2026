@@ -395,7 +395,6 @@ const CRYSTAL_TONES: Record<CrystalKind, { body: string; hi: string; lo: string 
 export function crystalKindAt(k: number): CrystalKind | null {
   if (k === AMETHYST) return "amethyst";
   if (k === EMERALD) return "emerald";
-  if (k === LIMESTONE || k === IRON) return "gem";
   return null;
 }
 
@@ -534,14 +533,7 @@ export function cave(
   const depth = stratumAt(world, Math.round(cx), Math.round(cy));
   const molten = isMolten(depth);
   if (options.hasPool ?? rand() < (molten ? 0.8 : 0.55))
-    pool(
-      world,
-      x0,
-      x1,
-      Math.round(cy + ry * (0.25 + rand() * 0.3)),
-      floorOf,
-      poolKindAt(depth),
-    );
+    pool(world, x0, x1, Math.round(cy + ry * (0.25 + rand() * 0.3)), floorOf, poolKindAt(depth));
   for (let k = 0; k < 2 + Math.floor(rand() * 3); k += 1) {
     const x = Math.round(cx + (rand() - 0.5) * rx * 1.4);
     const r = roofOf(x);
@@ -556,8 +548,7 @@ export function cave(
     }
   }
   const kind = options.hasCrystals ? "gem" : crystalKindAt(depth);
-  const isCrystalCave = kind !== null && (depth !== LIMESTONE || options.hasCrystals === true);
-  if (kind && isCrystalCave) {
+  if (kind) {
     const count = kind === "amethyst" ? 4 + Math.floor(rand() * 3) : 2 + Math.floor(rand() * 2);
     for (let k = 0; k < count; k += 1) {
       const x = Math.round(cx + (rand() - 0.5) * rx * 1.6);

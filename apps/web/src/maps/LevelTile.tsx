@@ -10,6 +10,7 @@ type LevelTileProps = {
   depth: number;
   box: PreviewBox;
   canEdit: boolean;
+  headingLevel?: 2 | 3;
 };
 
 export function MapFacts({ map }: { map: MapSummary }) {
@@ -39,9 +40,10 @@ export function Progress({ map }: { map: MapSummary }) {
   );
 }
 
-export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
+export function LevelTile({ map, depth, box, canEdit, headingLevel = 2 }: LevelTileProps) {
   const mapId = String(map.id);
   const level = hu.signs.level(depth);
+  const Title = headingLevel === 3 ? "h3" : "h2";
   return (
     <li className="lv-tile" data-mine="level" data-map-id={mapId} data-stars={map.stars ?? -1}>
       <div className="lv-window" data-mine-pit="">
@@ -53,7 +55,7 @@ export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
             <PixelText text={level} scale={2} />
             <span className="visually-hidden">{level}</span>
           </p>
-          <h2 className="lv-title">{map.title}</h2>
+          <Title className="lv-title">{map.title}</Title>
         </div>
         <div className="lv-meta">
           <MapFacts map={map} />

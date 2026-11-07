@@ -1,0 +1,162 @@
+.ch-campaign {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mine-gap);
+}
+
+.ch-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mine-gap);
+}
+
+.ch-plate {
+  --ch-accent: var(--c-reward);
+
+  display: grid;
+  gap: var(--space-2);
+  max-width: 46rem;
+  padding: var(--space-4) var(--space-5);
+}
+
+.ch-plate[data-rock="limestone"] {
+  --ch-accent: var(--deep-fossil);
+}
+
+.ch-plate[data-rock="amethyst"] {
+  --ch-accent: var(--deep-amethyst-hi);
+}
+
+.ch-plate[data-rock="iron"] {
+  --ch-accent: var(--deep-rust-hi);
+}
+
+.ch-plate[data-rock="emerald"] {
+  --ch-accent: var(--deep-emerald-hi);
+}
+
+.ch-plate[data-rock="obsidian"],
+.ch-plate[data-rock="core"] {
+  --ch-accent: var(--deep-lava-top);
+}
+
+.ch-depth {
+  margin: 0;
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--ch-accent);
+}
+
+.ch-title {
+  margin: 0;
+  font: var(--type-h2);
+  color: var(--c-text);
+}
+
+.ch-intro {
+  margin: 0;
+  max-width: 62ch;
+  font: var(--type-body);
+  color: var(--c-text);
+}
+
+.ch-diary {
+  margin: 0;
+  padding-inline-start: var(--space-4);
+  border-inline-start: var(--border-thick) solid var(--ch-accent);
+}
+
+.ch-diary-text {
+  margin: 0;
+  font: var(--type-body);
+  font-style: italic;
+  color: var(--c-text);
+}
+
+.ch-diary-text p {
+  margin: 0;
+}
+
+.ch-diary-text p::before {
+  content: "»";
+}
+
+.ch-diary-text p::after {
+  content: "«";
+}
+
+.ch-diary-by {
+  margin-top: var(--space-1);
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
+.ch-diary[data-state="locked"],
+.ch-finding[data-state="locked"] {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-inline-start-style: dashed;
+  font: var(--type-help);
+  color: var(--c-text-muted);
+}
+
+.ch-finding {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+}
+
+.ch-finding[data-state="locked"] {
+  border-style: dashed;
+  background: transparent;
+}
+
+.ch-finding-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font: var(--type-label);
+  color: var(--ch-accent);
+}
+
+.ch-finding-fate,
+.ch-finding-lesson {
+  margin: 0;
+  font: var(--type-help);
+  color: var(--c-text);
+}
+
+.ch-finding-code {
+  margin: 0;
+  font: var(--type-mono-sm);
+  color: var(--c-danger-ink);
+}
+
+.ch-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
+.ch-progress[data-complete="true"] {
+  color: var(--c-success);
+}
+
+.ch-epilogue[data-state="open"] .ch-title {
+  color: var(--c-reward);
+}
+
+@container mine-panel (max-width: 34rem) {
+  .ch-plate {
+    padding: var(--space-3);
+  }
+}

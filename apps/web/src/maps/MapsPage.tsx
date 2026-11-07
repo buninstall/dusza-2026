@@ -9,13 +9,16 @@ import { Link } from "../components/ui/Link.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { Tab, TabList, TabPanel, Tabs } from "../components/ui/Tabs.tsx";
 import { hu } from "../i18n/hu.ts";
+import { story } from "../i18n/hu-story.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { TourPrompt } from "../tour/TourPrompt.tsx";
+import { ChapterPlate, EpiloguePlate, OthersPlate } from "./ChapterPlate.tsx";
+import { type Campaign, CORE_STRATUM, groupCampaign, STRATUM_INDEX } from "./campaign.ts";
 import { DailyCard } from "./DailyCard.tsx";
 import { MineBackdrop } from "./deep/MineBackdrop.tsx";
 import { LevelTile } from "./LevelTile.tsx";
 import "./MapsPage.css";
-import { dailyQuery, type MapScope, mapsQuery } from "./queries.ts";
+import { dailyQuery, type MapScope, type MapSummary, mapsQuery } from "./queries.ts";
 import { MAP_SORTS, type MapSort, sortMaps } from "./sort.ts";
 
 type MapsPageProps = {
@@ -33,6 +36,77 @@ function NewMapLink() {
     <Link to="/maps/new" variant="primary" icon="pickaxe">
       {hu.maps.newMap}
     </Link>
+  );
+}
+
+type ShaftProps = {
+  maps: readonly MapSummary[];
+  depthOf: ReadonlyMap<number, number>;
+  user: SessionUser;
+  label: string;
+  headingLevel?: 2 | 3;
+};
+
+function Shaft({ maps, depthOf, user, label, headingLevel }: ShaftProps) {
+  return (
+    <ol className="lv-shaft" aria-label={label}>
+      {maps.map((map) => (
+        <LevelTile
+          key={map.id}
+          map={map}
+          depth={depthOf.get(map.id) ?? 1}
+          box={84}
+          canEdit={map.ownerId === user.id || user.role === "admin"}
+          headingLevel={headingLevel ?? 2}
+        />
+      ))}
+    </ol>
+  );
+}
+
+function CampaignShaft({
+  campaign,
+  depthOf,
+  user,
+}: {
+  campaign: Campaign;
+  depthOf: ReadonlyMap<number, number>;
+  user: SessionUser;
+}) {
+  const last = campaign.groups.at(-1);
+  return (
+    <div className="ch-campaign">
+      {campaign.groups.map((group, index) => {
+        const headingId = `ch-title-${index + 1}`;
+        return (
+          <section key={group.chapter.numeral} className="ch-section" aria-labelledby={headingId}>
+            <ChapterPlate group={group} headingId={headingId} />
+            <Shaft
+              maps={group.maps}
+              depthOf={depthOf}
+              user={user}
+              label={story.chapterLevels(group.chapter.numeral)}
+              headingLevel={3}
+            />
+          </section>
+        );
+      })}
+      {last ? (
+        <EpiloguePlate isSilent={campaign.isSilent} stratum={STRATUM_INDEX[last.chapter.stratum]} />
+      ) : null}
+      {campaign.others.length > 0 ? (
+        <section className="ch-section" aria-labelledby="ch-title-others">
+          <OthersPlate headingId="ch-title-others" stratum={CORE_STRATUM} />
+          <Shaft
+            maps={campaign.others}
+            depthOf={depthOf}
+            user={user}
+            label={story.othersHeading}
+            headingLevel={3}
+          />
+        </section>
+      ) : null}
+    </div>
   );
 }
 
@@ -54,28 +128,34 @@ function LevelGrid({ scope, sort, user }: { scope: MapScope; sort: MapSort; user
       />
     );
   }
-  const depthOf = new Map(sortMaps(data.maps, "order").map((map, index) => [map.id, index + 1]));
+  const ordered = sortMaps(data.maps, "order");
+  const depthOf = new Map(ordered.map((map, index) => [map.id, index + 1]));
+  const campaign = scope === "all" && sort === "order" ? groupCampaign(ordered) : null;
   return (
     <>
-      <ol className="lv-shaft" aria-label={hu.maps.listLabel}>
-        {sortMaps(data.maps, sort).map((map) => (
-          <LevelTile
-            key={map.id}
-            map={map}
-            depth={depthOf.get(map.id) ?? 1}
-            box={84}
-            canEdit={map.ownerId === user.id || user.role === "admin"}
-          />
-        ))}
-      </ol>
-      <DrillFront />
+      {campaign && campaign.groups.length > 0 ? (
+        <CampaignShaft campaign={campaign} depthOf={depthOf} user={user} />
+      ) : (
+        <Shaft
+          maps={sortMaps(data.maps, sort)}
+          depthOf={depthOf}
+          user={user}
+          label={hu.maps.listLabel}
+        />
+      )}
+      <DrillFront isSilent={campaign?.isSilent ?? false} />
     </>
   );
 }
 
-function DrillFront() {
+function DrillFront({ isSilent }: { isSilent: boolean }) {
   return (
-    <section className="mine-front" data-mine="front" aria-labelledby="mine-front-heading">
+    <section
+      className="mine-front"
+      data-mine="front"
+      data-silent={isSilent}
+      aria-labelledby="mine-front-heading"
+    >
       <h2 id="mine-front-heading" className="mine-front-head">
         <PixelIcon name="pickaxe" />
         {hu.maps.frontHeading}

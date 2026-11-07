@@ -106,6 +106,7 @@ export function startDeepScene(host: DeepHost): (() => void) | null {
     isStatic: host.isStatic,
     isFresh: host.isFresh,
     roofY,
+    isSilent: front instanceof HTMLElement && front.dataset.silent === "true",
     target: host.target,
     onDigDone: (level) => {
       const element = elementOf(level);

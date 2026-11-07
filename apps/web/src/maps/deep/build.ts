@@ -120,7 +120,6 @@ export type Mine = {
   signLamp: Point;
 };
 
-
 function boundaryBetween(upper: Level | undefined, lower: Level | undefined): number | null {
   if (!upper || !lower) return null;
   return Math.round((upper.y1 + lower.box.y) / 2);
@@ -634,7 +633,9 @@ export function buildMine(input: LayoutInput): Mine {
     if (level.pit) carvePit(world, level.pit, i * 13 + 2);
     carveLevel(world, level, i * 31, xEnd, isNarrow);
   });
-  chapters.forEach((chapter, i) => carveNiche(world, chapter.box, i * 23 + 11));
+  chapters.forEach((chapter, i) => {
+    carveNiche(world, chapter.box, i * 23 + 11);
+  });
   carve(world, shaftX, bottomY - 4, shaftX + SHAFT_W, bottomY + 6);
   caves(world, { shaftX, bottomY, groundY }, all, chapters, seeded(isNarrow ? 41 : 43));
   moltenCracks(world, seeded(isNarrow ? 61 : 67));
