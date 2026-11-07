@@ -13,7 +13,7 @@ const MANIFEST_PATH: &str = "api/desktop/latest.json";
 const DISABLE_VAR: &str = "MINESCRIPT_NO_UPDATE";
 const FIRST_CHECK: Duration = Duration::from_secs(5);
 const RECHECK: Duration = Duration::from_hours(6);
-const TIMEOUT: Duration = Duration::from_secs(30);
+const TIMEOUT: Duration = Duration::from_mins(5);
 
 #[derive(Default)]
 pub struct Declined(Mutex<Option<String>>);
@@ -46,13 +46,17 @@ pub fn spawn(app: &AppHandle) {
 async fn check_once(app: &AppHandle) -> Result<(), String> {
     let remote = app.state::<Target>().remote.clone();
     let endpoint = manifest_url(&remote).ok_or("érvénytelen frissítési cím")?;
-    let updater = app
+    let mut builder = app
         .updater_builder()
         .endpoints(vec![endpoint])
         .map_err(|error| error.to_string())?
-        .timeout(TIMEOUT)
-        .build()
-        .map_err(|error| error.to_string())?;
+        .timeout(TIMEOUT);
+    if let Some(token) = crate::gateway::token() {
+        builder = builder
+            .header(crate::gateway::HEADER, token)
+            .map_err(|error| error.to_string())?;
+    }
+    let updater = builder.build().map_err(|error| error.to_string())?;
     let Some(update) = updater.check().await.map_err(|error| error.to_string())? else {
         return Ok(());
     };

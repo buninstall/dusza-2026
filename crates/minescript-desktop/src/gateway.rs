@@ -12,7 +12,7 @@ use url::Url;
 
 pub const SCHEME: &str = "minescript";
 const TOKEN_VAR: &str = "MINESCRIPT_GATEWAY_TOKEN";
-const HEADER: HeaderName = HeaderName::from_static("x-minescript-gateway-authorization");
+pub const HEADER: HeaderName = HeaderName::from_static("x-minescript-gateway-authorization");
 const SHELL_PREFIX: &str = "/__shell/";
 const SPLASH: &str = "/__shell/index.html";
 const COOKIE_FILE: &str = "gateway-cookies.json";
