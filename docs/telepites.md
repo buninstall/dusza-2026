@@ -1,6 +1,6 @@
 # Éles telepítés: verseny szerver
 
-Az alkalmazás a `https://csapat13.dusza.cloudsyso.com` címen fut, a szervezők által adott Ubuntu 22.04-es gépen (2 vCPU, 3,8 GiB RAM). A szerveren maga a forrás fordul (Rust → WASM → Vite → egyetlen Bun-bináris), így a frissítés egyetlen parancs: `just deploy`.
+Az éles cím: `https://minescript.hu` (Cloudflare mögött, jelszavas kapu nélkül). Az alkalmazás a szervezők által adott Ubuntu 22.04-es gépen fut (2 vCPU, 3,8 GiB RAM). A gép saját címe `csapat13.dusza.cloudsyso.com`: ezen megy az SSH, és ezen a címen véd a jelszavas kapu. A szerveren maga a forrás fordul (Rust → WASM → Vite → egyetlen Bun-bináris), így a frissítés egyetlen parancs: `just deploy`.
 
 ## Röviden
 
@@ -78,7 +78,7 @@ A visszaállás csak a binárist cseréli, az adatbázis-sémát nem. Ha egy mig
 
 ## A jelszavas kapu
 
-Amíg a kapu be van kapcsolva, a böngésző minden kérésnél (az oldalnál, az API-nál és a fájloknál is) felhasználónevet és jelszót kér. Ezt az Apache ellenőrzi (HTTP Basic Auth, bcrypt cost 12). Hibás belépés után az alkalmazásig semmi sem jut el, a 401-es válasz pedig nem árul el semmit a mögötte lévő rendszerről. Az `Authorization` fejlécet az Apache a hitelesítés után eltávolítja, így az alkalmazás nem kapja meg. Az alkalmazás saját belépése (cookie) ettől független, és változatlanul működik.
+A kapu csak a `csapat13.dusza.cloudsyso.com` címre vonatkozik, a `https://minescript.hu` nyilvános. Amíg a kapu be van kapcsolva, a böngésző azon a címen minden kérésnél (az oldalnál, az API-nál és a fájloknál is) felhasználónevet és jelszót kér. Ezt az Apache ellenőrzi (HTTP Basic Auth, bcrypt cost 12). Hibás belépés után az alkalmazásig semmi sem jut el, a 401-es válasz pedig nem árul el semmit a mögötte lévő rendszerről. Az `Authorization` fejlécet az Apache a hitelesítés után eltávolítja, így az alkalmazás nem kapja meg. Az alkalmazás saját belépése (cookie) ettől független, és változatlanul működik.
 
 - Felhasználó: `csapat13`. A jelszót a telepítéskor véletlenszerűen generáltuk, csak egyszer jelent meg, és nincs a repóban. Új jelszó: `minescriptctl gate passwd csapat13`.
 - Újabb felhasználó (például a zsűrinek): `minescriptctl gate passwd zsuri`. Törlés: `minescriptctl gate remove zsuri`.
