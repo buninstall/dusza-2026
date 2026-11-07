@@ -39,6 +39,7 @@ describe("térképlista", () => {
     const first = await screen.findByRole("list", { name: "I. fejezet pályái" });
     expect(within(first).getAllByRole("listitem")).toHaveLength(5);
     expect(within(first).getByText("Szint 01")).toBeTruthy();
+    expect(screen.queryByText(/^Készítette:/)).toBeNull();
     const second = screen.getByRole("list", { name: "II. fejezet pályái" });
     expect(within(second).getAllByText("Zárva")).toHaveLength(5);
     expect(within(second).queryByRole("link", { name: /^Játék:/ })).toBeNull();
