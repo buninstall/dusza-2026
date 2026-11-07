@@ -50,6 +50,39 @@ describe("adminisztráció", () => {
     expect((await admin.delete(`/api/admin/users/${playerUser.id}`)).status).toBe(200);
   });
 
+  test("admin új fiókot hoz létre, ami be is tud lépni", async () => {
+    await using context = await createTestContext();
+    const admin = context.client();
+    const { user } = await admin.register("fonok");
+    const player = context.client();
+    await player.register("jatekos");
+    const body = { username: "ujbanyasz", password: "titkos123", role: "admin" };
+    expect((await player.post("/api/admin/users", body)).status).toBe(403);
+
+    await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
+    const created = await admin.post("/api/admin/users", body);
+    expect(created.status).toBe(201);
+    const { user: account } = await json<{ user: Record<string, unknown> }>(created);
+    expect(account).toMatchObject({ username: "ujbanyasz", role: "admin" });
+    expect(account).not.toHaveProperty("passwordHash");
+
+    expect((await admin.post("/api/admin/users", body)).status).toBe(409);
+    const invalid = await admin.post("/api/admin/users", { username: "x", password: "rövid" });
+    expect(invalid.status).toBe(400);
+
+    const fresh = context.client();
+    const login = await fresh.post("/api/auth/login", {
+      username: "ujbanyasz",
+      password: "titkos123",
+    });
+    expect(login.status).toBe(200);
+    const plain = await admin.post("/api/admin/users", {
+      username: "sima",
+      password: "titkos123",
+    });
+    expect((await json<{ user: { role: string } }>(plain)).user.role).toBe("user");
+  });
+
   test("nem létező felhasználó módosítása és törlése 404", async () => {
     await using context = await createTestContext();
     const admin = context.client();

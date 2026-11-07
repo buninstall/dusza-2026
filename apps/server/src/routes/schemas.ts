@@ -138,6 +138,8 @@ export const runSchema = z.object({
   source,
 });
 
-export const roleSchema = z.object({
-  role: z.enum(["admin", "user"], { error: "A szerepkör „admin” vagy „user” lehet." }),
-});
+const role = z.enum(["admin", "user"], { error: "A szerepkör „admin” vagy „user” lehet." });
+
+export const roleSchema = z.object({ role });
+
+export const newAccountSchema = credentialsSchema.extend({ role: role.default("user") });

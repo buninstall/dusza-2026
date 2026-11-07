@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { requireUser } from "../auth/middleware.ts";
-import { hashPassword, verifyPassword } from "../auth/password.ts";
+import { verifyPassword } from "../auth/password.ts";
 import {
   clearSessionCookie,
   createSession,
@@ -10,46 +10,23 @@ import {
   readSessionToken,
   setSessionCookie,
 } from "../auth/session.ts";
-import { isDuplicateEntry } from "../db/errors.ts";
-import { firstRow } from "../db/rows.ts";
-import { type User, users } from "../db/schema.ts";
+import { users } from "../db/schema.ts";
 import type { AppEnv, Deps, SessionUser } from "../env.ts";
 import { apiError } from "../lib/errors.ts";
 import { clientAddress } from "../lib/request.ts";
 import { validationHook } from "../lib/validation.ts";
+import { createAccount } from "../services/accounts.ts";
 import { credentialsSchema } from "./schemas.ts";
 
 function publicUser(user: SessionUser) {
   return { id: user.id, username: user.username, role: user.role, createdAt: user.createdAt };
 }
 
-async function registerUser(deps: Deps, username: string, password: string): Promise<User | null> {
-  try {
-    const { id } = firstRow(
-      await deps.db
-        .insert(users)
-        .values({
-          username,
-          passwordHash: await hashPassword(password),
-          role: "user",
-          createdAt: deps.now(),
-        })
-        .$returningId(),
-    );
-    return firstRow(await deps.db.select().from(users).where(eq(users.id, id)));
-  } catch (error) {
-    if (isDuplicateEntry(error)) {
-      return null;
-    }
-    throw error;
-  }
-}
-
 export function authRoutes(deps: Deps) {
   return new Hono<AppEnv>()
     .post("/register", zValidator("json", credentialsSchema, validationHook), async (c) => {
       const { username, password } = c.req.valid("json");
-      const created = await registerUser(deps, username, password);
+      const created = await createAccount(deps, { username, password, role: "user" });
       if (!created) {
         return apiError(c, 409, "USERNAME_TAKEN", "Ez a felhasználónév már foglalt.");
       }

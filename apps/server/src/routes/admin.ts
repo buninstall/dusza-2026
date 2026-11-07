@@ -6,7 +6,8 @@ import { users } from "../db/schema.ts";
 import type { AppEnv, Deps } from "../env.ts";
 import { apiError, messages } from "../lib/errors.ts";
 import { validationHook } from "../lib/validation.ts";
-import { idParam, roleSchema } from "./schemas.ts";
+import { createAccount } from "../services/accounts.ts";
+import { idParam, newAccountSchema, roleSchema } from "./schemas.ts";
 
 export function adminRoutes(deps: Deps) {
   const userColumns = {
@@ -22,6 +23,14 @@ export function adminRoutes(deps: Deps) {
     .get("/users", async (c) => {
       const list = await deps.db.select(userColumns).from(users).orderBy(asc(users.id));
       return c.json({ users: list }, 200);
+    })
+    .post("/users", zValidator("json", newAccountSchema, validationHook), async (c) => {
+      const created = await createAccount(deps, c.req.valid("json"));
+      if (!created) {
+        return apiError(c, 409, "USERNAME_TAKEN", "Ez a felhasználónév már foglalt.");
+      }
+      const { id, username, role, createdAt } = created;
+      return c.json({ user: { id, username, role, createdAt } }, 201);
     })
     .patch(
       "/users/:id",
