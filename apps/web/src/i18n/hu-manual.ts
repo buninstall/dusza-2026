@@ -109,8 +109,6 @@ const sections: readonly ManualSection[] = [
       },
     ],
   },
-    ],
-  },
   {
     id: "elso-program",
     title: "Az első program",
@@ -194,6 +192,8 @@ const sections: readonly ManualSection[] = [
           "**Célérték.** A `Célérték (lépés)` mezőben adhatod meg, hány lépésből jár a harmadik rög. A `Gépi megoldás` kiszámolja, hány lépésből oldja meg a pályát a beépített útvonaltervező.",
         ],
       },
+    ],
+  },
   {
     id: "lampafeny",
     title: "Sötét bányák: Lámpafény és Vaksötét",
@@ -232,11 +232,7 @@ const sections: readonly ManualSection[] = [
         caption: "A mezők három állapota sötét pályán",
         head: ["Állapot", "Mitől lesz ilyen", "Megjelenés"],
         rows: [
-          [
-            "felfedezett",
-            "a robot járt rajta, vagy `isThere` vizsgálta",
-            "teljes részletesség",
-          ],
+          ["felfedezett", "a robot járt rajta, vagy `isThere` vizsgálta", "teljes részletesség"],
           ["megvilágított", "a lámpa fénykörébe esett", "halványabb, rácsmintás"],
           ["sötét", "egyik sem", "fekete; a képernyőolvasó csak annyit mond: ismeretlen"],
         ],
@@ -279,7 +275,8 @@ const sections: readonly ManualSection[] = [
       },
       {
         kind: "code",
-        caption: "Jobbkéz-szabály: térkép nélkül is bejárja az összefüggő járatot, és felszedi a két aranyat",
+        caption:
+          "Jobbkéz-szabály: térkép nélkül is bejárja az összefüggő járatot, és felszedi a két aranyat",
         map: "3 5\n>..#.\n#.@..\n#...@",
         code: "set talalt to 0\nset kell to 2\nset megy to true\nwhile megy\n    turn by 3\n    set fal to isThere 1\n    while fal\n        turn by 1\n        set fal to isThere 1\n    set arany to isThere 2\n    step forward 1\n    if arany\n        mine here\n        set talalt to talalt + 1\n    set megy to talalt < kell",
       },
@@ -325,14 +322,24 @@ const sections: readonly ManualSection[] = [
         caption: "Az elődök sorsa",
         head: ["Robot", "Mi történt vele", "Hiba", "Tanulság"],
         rows: [
-          ["R-01", "lépett, mielőtt megnézte, mi van előtte", "`E_BEDROCK_HIT`", "lépés előtt `isThere 1`"],
+          [
+            "R-01",
+            "lépett, mielőtt megnézte, mi van előtte",
+            "`E_BEDROCK_HIT`",
+            "lépés előtt `isThere 1`",
+          ],
           [
             "R-02",
             "körbe-körbe járt, mert a ciklusából nem vezetett kiút",
             "`INSTRUCTION_COUNT_LIMIT_EXCEEDED`",
             "minden `while`-nak kell egy feltétel, amely egyszer hamis lesz",
           ],
-          ["R-03", "üres kőbe vágott, újra és újra", "`E_NO_GOLD`", "előbb `isThere 2`, aztán lépés és `mine here`"],
+          [
+            "R-03",
+            "üres kőbe vágott, újra és újra",
+            "`E_NO_GOLD`",
+            "előbb `isThere 2`, aztán lépés és `mine here`",
+          ],
           [
             "R-04",
             "egy változója szám volt, aztán igaz-hamis akart lenni",
@@ -345,11 +352,14 @@ const sections: readonly ManualSection[] = [
             "`E_UNINITIALIZED`",
             "előbb `set`, aztán használat",
           ],
-          ["R-06", "olyat kérdezett a kőtől, amire nincs szó: `isThere 3`", "`E_BAD_ARG`", "az `isThere` csak a 0, 1 és 2 értéket ismeri"],
+          [
+            "R-06",
+            "olyat kérdezett a kőtől, amire nincs szó: `isThere 3`",
+            "`E_BAD_ARG`",
+            "az `isThere` csak a 0, 1 és 2 értéket ismeri",
+          ],
         ],
       },
-    ],
-  },
     ],
   },
   {
@@ -628,8 +638,6 @@ const sections: readonly ManualSection[] = [
       },
     ],
   },
-    ],
-  },
   {
     id: "rogok",
     title: "Rögök és napi kihívás",
@@ -662,6 +670,8 @@ const sections: readonly ManualSection[] = [
           "A ranglistán bármelyik futást megnézheted a `Megnézem` gombbal, a programjával együtt. A visszajátszás linkje megosztható.",
         ],
       },
+    ],
+  },
   {
     id: "strategia",
     title: "Stratégia: kevesebb lépés",
@@ -709,8 +719,6 @@ const sections: readonly ManualSection[] = [
           "**Programtár.** A demó-fiókok programtárában minden recept megvan `Recept – …` néven.",
         ],
       },
-    ],
-  },
     ],
   },
   {
