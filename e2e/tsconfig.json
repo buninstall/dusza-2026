@@ -1,8 +1,18 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2023", "DOM"],
-    "types": ["bun"]
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["bun"],
+    "jsx": "react-jsx",
+    "paths": {
+      "react": ["../apps/web/node_modules/@types/react"],
+      "react/*": ["../apps/web/node_modules/@types/react/*"],
+      "react-dom": ["../apps/web/node_modules/@types/react-dom"],
+      "react-dom/*": ["../apps/web/node_modules/@types/react-dom/*"],
+      "react-aria-components": ["../apps/web/node_modules/react-aria-components"],
+      "@tanstack/react-query": ["../apps/web/node_modules/@tanstack/react-query"],
+      "zustand": ["../apps/web/node_modules/zustand"]
+    }
   },
-  "include": ["*.ts"]
+  "include": ["*.ts", "console/**/*.ts", "console/**/*.tsx"]
 }
