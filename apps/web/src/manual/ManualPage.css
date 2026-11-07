@@ -180,10 +180,12 @@
 }
 
 .manual-article {
+  --prose-max: 90ch;
+
   display: flex;
   flex-direction: column;
   min-width: 0;
-  max-width: 50rem;
+  max-width: 72rem;
   scroll-margin-top: calc(var(--control-height) + var(--space-5));
 }
 
