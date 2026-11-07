@@ -1,6 +1,6 @@
 import { InlineText } from "../components/InlineText.tsx";
-import type { ManualBlock } from "../i18n/hu-manual.ts";
 import { hu } from "../i18n/hu.ts";
+import type { ManualBlock } from "../i18n/hu-manual.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { Bench } from "./Bench.tsx";
 import { CodeListing } from "./CodeListing.tsx";

@@ -475,11 +475,8 @@ const sections: readonly ManualSection[] = [
 
 const parts: readonly { readonly title: string; readonly ids: readonly string[] }[] = [
   { title: "Kezdés", ids: ["alapok", "elso-program", "terkep"] },
-  {
-    title: "A nyelv",
-    ids: ["felepites", "utasitasok", "isthere", "kifejezesek", "vezerles", "hibak"],
-  },
-  { title: "Eredmény", ids: ["lepesek", "ranglista", "rogok"] },
+  { title: "A nyelv", ids: ["felepites", "utasitasok", "isthere", "kifejezesek", "vezerles"] },
+  { title: "Futás és eredmény", ids: ["lepesek", "hibak", "ranglista", "rogok"] },
   { title: "Referencia", ids: ["billentyuk"] },
 ];
 

@@ -107,14 +107,14 @@
   color: var(--c-text);
 }
 
-.manual-toc-link[data-current] {
+.manual-toc-link[data-here] {
   border-left-color: var(--c-reward);
   background: var(--c-surface-raised);
   color: var(--c-text);
   font-weight: 700;
 }
 
-.manual-toc-link[data-current] .manual-toc-no {
+.manual-toc-link[data-here] .manual-toc-no {
   color: var(--c-reward);
 }
 

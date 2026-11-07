@@ -81,20 +81,38 @@ describe("recept betöltése a játékba", () => {
 describe("kézikönyv", () => {
   test("fejezetválasztó és rejtett bejárat a receptekhez", async () => {
     renderApp("/manual");
-    const chapters = await screen.findByRole("tablist", { name: "Tartalom" });
-    const first = within(chapters).getByRole("tab", { name: /A játék röviden/ });
-    expect(first.getAttribute("aria-selected")).toBe("true");
+    const chapters = await screen.findByRole("navigation", { name: "Tartalom" });
+    const first = within(chapters).getByRole("link", { name: /A játék röviden/ });
+    await waitFor(() => expect(first.getAttribute("aria-current")).toBe("page"));
     const entry = screen.getByRole("link", { name: "Receptek: kész programok minden pályához" });
     expect(entry.getAttribute("href")).toBe("/manual/receptek");
     expect(screen.getByRole("heading", { level: 1, name: "Kézikönyv" })).toBeTruthy();
   });
 
+  test("az előző és a következő fejezet egy kattintásra elérhető", async () => {
+    const { router } = renderApp("/manual#terkep");
+    const pager = await screen.findByRole("navigation", { name: "Lapozás a fejezetek között" });
+    expect(within(pager).getByRole("link", { name: "Előző: Az első program" })).toBeTruthy();
+    const user = userEvent.setup();
+    await user.click(within(pager).getByRole("link", { name: "Következő: A program szabályai" }));
+    await waitFor(() => expect(router.state.location.hash).toBe("felepites"));
+    const heading = await screen.findByRole("heading", { level: 2, name: /A program szabályai/ });
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+  });
+
+  test("az első fejezetnek nincs előzője", async () => {
+    renderApp("/manual");
+    const pager = await screen.findByRole("navigation", { name: "Lapozás a fejezetek között" });
+    expect(within(pager).getAllByRole("link")).toHaveLength(1);
+    expect(within(pager).getByRole("link", { name: "Következő: Az első program" })).toBeTruthy();
+  });
+
   test("a fejezet próbapadja lejátssza a példát a mini pályán", async () => {
     renderApp("/manual");
-    const chapters = await screen.findByRole("tablist", { name: "Tartalom" });
+    const chapters = await screen.findByRole("navigation", { name: "Tartalom" });
     const user = userEvent.setup();
-    await user.click(within(chapters).getByRole("tab", { name: /Érzékelés/ }));
-    expect(screen.getByRole("heading", { level: 2, name: /Érzékelés/ })).toBeTruthy();
+    await user.click(within(chapters).getByRole("link", { name: /Érzékelés/ }));
+    expect(await screen.findByRole("heading", { level: 2, name: /Érzékelés/ })).toBeTruthy();
     expect(screen.getByText("0 arany · 0 lépés")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Lejátszás" }));
     expect(await screen.findByText("0 arany · 4 lépés", undefined, { timeout: 4000 })).toBeTruthy();

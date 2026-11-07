@@ -54,6 +54,7 @@ describe("i18n teljesség", () => {
     const ids = hu.manual.sections.map((section) => section.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(hu.manual.sections.every((section) => section.blocks.length > 0)).toBe(true);
+    expect(hu.manual.parts.flatMap((part) => part.ids)).toEqual(ids);
   });
 
   test("formázók", () => {

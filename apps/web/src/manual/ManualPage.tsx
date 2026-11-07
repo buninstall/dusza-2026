@@ -1,13 +1,13 @@
-import { useLocation } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Link } from "../components/ui/Link.tsx";
-import type { ManualSection } from "../i18n/hu-manual.ts";
 import { hu } from "../i18n/hu.ts";
+import type { ManualSection } from "../i18n/hu-manual.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
-import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { PixelText } from "../pixel/PixelText.tsx";
+import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { TILE_SPRITES } from "../pixel/tiles.ts";
 import { useStartTour } from "../tour/TourPrompt.tsx";
 import { Block } from "./ManualBlocks.tsx";
@@ -23,7 +23,7 @@ function partOf(id: string): string {
 
 function indexOf(hash: string): number {
   const found = SECTIONS.findIndex((section) => section.id === hash);
-  return found < 0 ? 0 : found;
+  return Math.max(found, 0);
 }
 
 function numberOf(index: number): string {
@@ -80,8 +80,8 @@ function ChapterLink({ section, index, isCurrent, onPick }: ChapterLinkProps) {
       hashScrollIntoView={false}
       variant="plain"
       className="manual-toc-link"
-      aria-current={isCurrent ? "page" : false}
-      data-current={isCurrent || undefined}
+      activeOptions={{ includeHash: true }}
+      data-here={isCurrent || undefined}
       onPress={onPick}
     >
       <span aria-hidden="true" className="manual-toc-no">
@@ -118,10 +118,7 @@ function Contents({ current }: { current: number }) {
             <p className="manual-toc-part-title" id={`manual-part-${part.ids[0] ?? ""}`}>
               {part.title}
             </p>
-            <ul
-              className="manual-toc-list"
-              aria-labelledby={`manual-part-${part.ids[0] ?? ""}`}
-            >
+            <ul className="manual-toc-list" aria-labelledby={`manual-part-${part.ids[0] ?? ""}`}>
               {part.ids.map((id) => {
                 const index = SECTIONS.findIndex((section) => section.id === id);
                 const section = SECTIONS[index];
@@ -182,6 +179,7 @@ function PagerLink({ index, direction }: PagerLinkProps) {
       variant="plain"
       className="manual-pager-link"
       data-direction={direction}
+      activeOptions={{ includeHash: true }}
       aria-label={`${label}: ${section.title}`}
     >
       <span className="manual-pager-kind">
@@ -248,8 +246,21 @@ function Chapter({ section, index }: { section: ManualSection; index: number }) 
 }
 
 export function ManualPage() {
-  const current = indexOf(useLocation({ select: (location) => location.hash }));
+  const hash = useLocation({ select: (location) => location.hash });
+  const navigate = useNavigate();
+  const current = indexOf(hash);
   const section = SECTIONS[current];
+  useEffect(() => {
+    if (section && section.id !== hash) {
+      void navigate({
+        to: "/manual",
+        hash: section.id,
+        replace: true,
+        resetScroll: false,
+        hashScrollIntoView: false,
+      });
+    }
+  }, [hash, section, navigate]);
   return (
     <div className="manual-page">
       <LocationPlate name={hu.signs.manual} />

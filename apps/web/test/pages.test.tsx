@@ -291,9 +291,12 @@ describe("adminisztráció", () => {
 describe("keret, kézikönyv és hibaképernyők", () => {
   test("a kézikönyv fejezetei választhatók, a kód kiemelt", async () => {
     renderApp("/manual#lepesek");
-    const chapters = await screen.findByRole("tablist", { name: "Tartalom" });
-    expect(within(chapters).getAllByRole("tab").length).toBeGreaterThan(8);
+    const chapters = await screen.findByRole("navigation", { name: "Tartalom" });
+    expect(within(chapters).getAllByRole("link").length).toBeGreaterThan(8);
     expect(screen.getByRole("heading", { level: 2, name: /Lépésszámlálás/ })).toBeTruthy();
+    expect(within(chapters).getByRole("link", { current: "page" }).textContent).toMatch(
+      /Lépésszámlálás/,
+    );
     expect(document.querySelector('[data-token="keyword"]')?.textContent).toBe("set");
   });
 
