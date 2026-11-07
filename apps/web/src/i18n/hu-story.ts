@@ -135,13 +135,7 @@ export const CHAPTERS: readonly Chapter[] = [
       lesson: "Előbb set, aztán használat.",
       code: "E_UNINITIALIZED",
     },
-    levels: [
-      "21. Mohafény",
-      "22. Szigetek",
-      "23. Tükörtó",
-      "24. Smaragdkígyó",
-      "25. A tó szeme",
-    ],
+    levels: ["21. Mohafény", "22. Szigetek", "23. Tükörtó", "24. Smaragdkígyó", "25. A tó szeme"],
   },
   {
     numeral: "VI.",
