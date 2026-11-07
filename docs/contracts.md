@@ -135,12 +135,17 @@ Content-Type: application/json
 
 | Metódus és útvonal                                  | Kérés                                                      | Válasz                                                                               |
 | --------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `GET /api/maps?scope=all\|mine`                     | –                                                          | `200 { maps: MapSummary[] }` (a napi pályák nélkül)                                  |
+| `GET /api/maps?world&scope&q&sort&level&page&pageSize` | –                                                       | `200 { maps: MapSummary[], page, pageSize, total, pageCount }` (a napi pályák nélkül); `world=all\|sandbox\|story`, `scope=all\|mine\|favorites`, `sort=order\|recent\|size\|gold\|popular`, `level=all\|easy\|medium\|hard`, `pageSize` ≤ 60 (alapból 24), a túl nagy `page` az utolsó oldalra igazodik |
+| `GET /api/maps/story`                               | –                                                          | `200 { maps: MapSummary[] }`: a Történet pályái egyben                               |
+| `GET /api/maps/stats`                               | –                                                          | `200 { maps, authors }`: a látható homokozó-pályák és készítőik száma                 |
+| `POST /api/maps/match`                              | `{ contents: string[] }` (≤ 64)                            | `200 { ids: (number \| null)[] }`: kanonikus tartalom szerinti egyezés                |
+| `PUT /api/maps/:id/favorite`                        | –                                                          | `200 { isFavorite: true, favoriteCount }`, idempotens; `404`, `409 DAILY_FAVORITE`   |
+| `DELETE /api/maps/:id/favorite`                     | –                                                          | `200 { isFavorite: false, favoriteCount }`, idempotens                                |
 | `GET /api/maps/daily`                               | –                                                          | `200 { map: MapSummary, date }`; a mai napi pályát szükség esetén létrehozza         |
 | `POST /api/maps`                                    | `{ title, description?, visibility?, parSteps?, content }` | `201 { map, warnings }`; `422 MAP_INVALID` (`details`: diagnosztikák)                |
 | `POST /api/maps/generate`                           | `{ rows, cols, difficulty, seed? }`                        | `200 { content, parSteps, seed }`; `400` (méret 5–15, nehézség `easy\|medium\|hard`) |
 | `POST /api/maps/par`                                | `{ content }`                                              | `200 { parSteps \| null }`; `422 MAP_INVALID`                                        |
-| `GET /api/maps/:id`                                 | –                                                          | `200 { map, version, info, warnings, versions, runCount, canEdit, player }`; `404`   |
+| `GET /api/maps/:id`                                 | –                                                          | `200 { map, version, info, warnings, versions, runCount, canEdit, isFavorite, next, player }`; `next`: a következő pálya `{ id, title }` vagy `null`; `404` |
 | `PUT /api/maps/:id`                                 | bármely mező a fentiekből                                  | `200 { map, createdNewVersion }`; `403`, `422`                                       |
 | `DELETE /api/maps/:id`                              | –                                                          | `200 { ok: true }` (tulajdonos vagy admin; napi pálya nem törölhető)                 |
 | `GET /api/maps/:id/export`                          | –                                                          | `text/plain`, `Content-Disposition: attachment; filename="<cím>.txt"`                |
@@ -158,14 +163,14 @@ Rögök (`stars`): 1, ha a futás legalább egy aranyat kibányászott; 2, ha mi
 
 | Metódus és útvonal         | Kérés                      | Válasz                                                                              |
 | -------------------------- | -------------------------- | ----------------------------------------------------------------------------------- |
-| `GET /api/programs`        | –                          | `200 { programs: { id, title, updatedAt }[] }`                                      |
-| `POST /api/programs`       | `{ title, source }`        | `201 { program }`                                                                   |
+| `GET /api/programs?q&sort&page&pageSize` | –            | `200 { programs: { id, title, updatedAt, lines }[], page, pageSize, total, pageCount, quota: { used, limit } }`; a `q` a címben és a forrásban keres, `sort=recent\|title`, `pageSize` ≤ 100 |
+| `POST /api/programs`       | `{ title, source }`        | `201 { program }`; `409 PROGRAM_LIMIT` 500 program felett                           |
 | `GET /api/programs/:id`    | –                          | `200 { program }` (csak a saját)                                                    |
 | `PUT /api/programs/:id`    | `{ title?, source? }`      | `200 { program }`                                                                   |
 | `DELETE /api/programs/:id` | –                          | `200 { ok: true }`                                                                  |
 | `POST /api/runs`           | `{ mapVersionId, source }` | `201 { run, outcome, console, standing }`; `422 SYNTAX_ERROR` (nem mentődik); `404` |
 | `GET /api/runs/:id`        | –                          | `200 { run, map: { content } }`; `404` (privát térkép, és nem vagy érintett)        |
-| `GET /api/me/runs`         | –                          | `200 { runs }` (legutóbbi 100)                                                      |
+| `GET /api/me/runs?page&pageSize` | –                    | `200 { runs, page, pageSize, total, pageCount }`, a legfrissebb elöl, `pageSize` ≤ 100 (alapból 20) |
 
 A `POST /api/runs` a kliens által küldött egyéb mezőket (például `gold`) figyelmen kívül hagyja: az eredményt a szerver számolja. A `standing` a rögzítés utáni állás az adott térképverzió ranglistáján: `{ rank, players, isPersonalBest, stars }`, ahol `rank` a játékos helyezése a legjobb futásával, `players` a ranglistán szereplő játékosok száma, `isPersonalBest` pedig igaz, ha éppen ez a futás lett a játékos legjobbja. A `stars = { run, best, previous, parSteps } | null`: ennek a futásnak, a mostani legjobbnak és a futás előtti legjobbnak a rögszáma (arany nélküli pályán `null`).
 
@@ -194,6 +199,8 @@ A `GET /api/runs/:id` a visszajátszáshoz adja vissza egy futás adatait, a pro
 ```
 
 A `GET /api/me/runs` elemei ugyanezek a mezők a `source` nélkül.
+
+A `MapSummary` a pálya adatai mellett a `favoriteCount` és az `isFavorite` mezőt is tartalmazza; a `difficulty` a térképverzión tárolt érték.
 
 ### Adminisztráció (csak admin)
 

@@ -2,6 +2,8 @@
 
 Ebben a mappában minden oktató pályához van egy hibátlanul lefutó MineScript-program, és a hibakezelés kipróbálásához egy-egy hibát kiváltó program is. Így a játék programozás nélkül, vizuálisan végigpróbálható. Minden eredményt automata teszt ellenőriz (`apps/server/test/recipes.test.ts`); ha egy recept vagy egy pálya megváltozik, a teszt jelez.
 
+A sok játékos és sok pálya kezelésének (homokozó-lapozás, keresés, kedvencek, programtár, kvóta) kézi tesztreceptje: [SKALAZAS.md](SKALAZAS.md).
+
 ## Hogyan használd
 
 1. Indítsd el az alkalmazást (`just dev`, vagy a kész binárist), és lépj be: `demo1` / `demo2026`.
