@@ -339,6 +339,7 @@ docs/*
 !docs/beadando.md
 !docs/megfeleles.md
 !docs/telepites.md
+!docs/jatekelmeny.md
 !docs/receptek/
 
 !.env.example
