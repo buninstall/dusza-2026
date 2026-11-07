@@ -84,6 +84,9 @@ export function paint(draft: DraftMap, pos: Pos, tool: Tool, dir: Dir): DraftMap
     return { ...draft, cells: withCell(draft.cells, pos, "empty"), robot: { ...pos }, dir };
   }
   const coversRobot = draft.robot?.row === pos.row && draft.robot.col === pos.col;
+  if (coversRobot && tool !== "empty") {
+    return draft;
+  }
   return {
     ...draft,
     cells: withCell(draft.cells, pos, tool),
@@ -264,8 +267,12 @@ function isRobotCellAt(draft: DraftMap, row: number, col: number): boolean {
 }
 
 export function frameDraft(draft: DraftMap): DraftMap {
+  const robot = draft.robot;
+  const isBesideRobot = (row: number, col: number) =>
+    robot !== null && Math.abs(robot.row - row) + Math.abs(robot.col - col) <= 1;
   const isEdge = (row: number, col: number) =>
-    row === 0 || col === 0 || row === draft.rows - 1 || col === draft.cols - 1;
+    (row === 0 || col === 0 || row === draft.rows - 1 || col === draft.cols - 1) &&
+    !isBesideRobot(row, col);
   return {
     ...draft,
     cells: draft.cells.map((line, row) =>

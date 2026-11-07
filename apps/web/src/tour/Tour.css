@@ -1,6 +1,8 @@
 .tour {
   border: var(--border-thick) solid var(--c-reward);
   max-width: min(22rem, calc(100vw - var(--space-5)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .tour-progress {

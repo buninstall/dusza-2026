@@ -157,7 +157,12 @@ export function scrollToLine(view: EditorView, line: number): void {
   if (line < 1 || line > view.state.doc.lines) {
     return;
   }
-  view.dispatch({
-    effects: EditorView.scrollIntoView(view.state.doc.line(line).from, { y: "nearest" }),
-  });
+  const block = view.lineBlockAt(view.state.doc.line(line).from);
+  const scroller = view.scrollDOM;
+  const top = block.top + view.documentPadding.top;
+  const isAbove = top < scroller.scrollTop;
+  const isBelow = top + block.height > scroller.scrollTop + scroller.clientHeight;
+  if (isAbove || isBelow) {
+    scroller.scrollTop = top - (scroller.clientHeight - block.height) / 2;
+  }
 }

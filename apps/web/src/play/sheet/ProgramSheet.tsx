@@ -14,11 +14,12 @@ import { decodeProgramFile, PROGRAM_MAX_CHARS } from "../program-file.ts";
 import { BlockDrawers } from "./BlockDrawers.tsx";
 import type { Block } from "./blocks.ts";
 import { FaultBar } from "./FaultBar.tsx";
+import { ImportConfirm, type PendingImport } from "./ImportConfirm.tsx";
 import { reportFormat } from "./format-report.ts";
 import { ProgramLibraryDialog } from "./ProgramLibraryDialog.tsx";
 import { SheetToolbar } from "./SheetToolbar.tsx";
 import "./Sheet.css";
-import type { ProgramPersistence } from "./useProgramPersistence.ts";
+import { hasUnsavedWork, type ProgramPersistence } from "./useProgramPersistence.ts";
 
 type ProgramSheetProps = {
   draft: ProgramDraft;
@@ -53,6 +54,7 @@ export function ProgramSheet(props: ProgramSheetProps) {
   const helpId = useId();
   const lint = useSheetDiagnostics();
   const [announcement, setAnnouncement] = useState("");
+  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
   const ui = usePlayUi();
   const engine = useEngine();
   useEffect(() => {
@@ -76,9 +78,19 @@ export function ProgramSheet(props: ProgramSheetProps) {
       toast.error(decoded.message);
       return;
     }
-    onDraftChange({ source: decoded.text, linked: null });
-    toast.success(hu.play.imported(file.name));
-    reportImportErrors(decoded.text);
+    const next = { name: file.name, text: decoded.text };
+    if (hasUnsavedWork(draft) && draft.source !== decoded.text) {
+      setPendingImport(next);
+      return;
+    }
+    applyImport(next);
+  };
+
+  const applyImport = ({ name, text }: PendingImport) => {
+    setPendingImport(null);
+    onDraftChange({ source: text, linked: null });
+    toast.success(hu.play.imported(name));
+    reportImportErrors(text);
   };
 
   const insert = (block: Block) => {
@@ -145,6 +157,11 @@ export function ProgramSheet(props: ProgramSheetProps) {
         }}
       />
       <output className="visually-hidden">{announcement}</output>
+      <ImportConfirm
+        pending={pendingImport}
+        onCancel={() => setPendingImport(null)}
+        onConfirm={applyImport}
+      />
       <ProgramLibraryDialog
         draft={draft}
         defaultTitle={props.mapTitle}

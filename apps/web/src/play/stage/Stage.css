@@ -26,6 +26,20 @@
     "log";
 }
 
+.stage[data-layout="cab"] > .deck {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+}
+
+@media (max-height: 48rem) {
+  .stage[data-layout="cab"] {
+    --well-min: 8rem;
+
+    min-height: 0;
+  }
+}
+
 .stage[data-layout="panes"] {
   container: stage / inline-size;
   grid-template-areas:

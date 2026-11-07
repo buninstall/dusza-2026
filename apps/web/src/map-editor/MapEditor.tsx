@@ -80,6 +80,7 @@ export function MapEditor({
   const isLeaving = useRef(false);
   const [history, dispatch] = useReducer(historyReducer, initialDraft, initialHistory);
   const [details, setDetails] = useState(initialDetails);
+  const [parSource, setParSource] = useState(() => draftToText(initialDraft));
   const [baseline, setBaseline] = useState<Baseline>({
     text: draftToText(initialDraft),
     details: initialDetails,
@@ -147,13 +148,17 @@ export function MapEditor({
       toast.error(hu.mapEditor.exportBlocked);
       return;
     }
-    downloadText(`${safeFilename(details.title)}.txt`, engine.serializeMap(parsed.map));
+    const filename = `${safeFilename(details.title)}.txt`;
+    downloadText(filename, engine.serializeMap(parsed.map));
+    toast.success(hu.mapEditor.exported(filename));
   };
 
   const save = async () => {
     if (!isValid) {
       requestAnimationFrame(() => checkRef.current?.focus());
-      setAnnouncement(hu.mapEditor.saveBlocked(errors.length + (isTitleMissing ? 1 : 0)));
+      const blocked = hu.mapEditor.saveBlocked(errors.length + (isTitleMissing ? 1 : 0));
+      setAnnouncement(blocked);
+      toast.error(blocked);
       return;
     }
     setSaveState("saving");
@@ -214,6 +219,7 @@ export function MapEditor({
         return;
       }
       setDetails((current) => ({ ...current, parSteps }));
+      setParSource(text);
       toast.success(hu.par.computed(parSteps));
     } catch (error) {
       toast.error(errorMessage(error, hu.par.failed));
@@ -294,8 +300,10 @@ export function MapEditor({
         rows={draft.rows}
         cols={draft.cols}
         onGenerated={(map, parSteps) => {
-          commitShape(draftFromMap(map), hu.generator.done(parSteps));
+          const generated = draftFromMap(map);
+          commitShape(generated, hu.generator.done(parSteps));
           setDetails((current) => ({ ...current, parSteps }));
+          setParSource(draftToText(generated));
         }}
       />
       <EditorCanvas
@@ -337,7 +345,13 @@ export function MapEditor({
         />
         <DetailsBlock
           details={details}
-          onChange={setDetails}
+          onChange={(next) => {
+            if (next.parSteps !== details.parSteps) {
+              setParSource(text);
+            }
+            setDetails(next);
+          }}
+          isParStale={details.parSteps !== null && parSource !== text}
           canComputePar={parsed.map !== null}
           isComputingPar={isComputingPar}
           onComputePar={() => void computePar()}

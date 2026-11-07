@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { I18nProvider } from "react-aria-components";
+import { RouteFocus } from "../app/RouteFocus.tsx";
 import { Toasts } from "../components/ui/Toast.tsx";
 import { EngineProvider } from "../engine/EngineProvider.tsx";
 import { hu } from "../i18n/hu.ts";
@@ -19,6 +20,7 @@ function RootLayout() {
         <Outlet />
       </EngineProvider>
       <Toasts />
+      <RouteFocus />
     </I18nProvider>
   );
 }

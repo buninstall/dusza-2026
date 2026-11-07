@@ -85,6 +85,34 @@ export function TourCoach({ mapId, source, onSourceChange }: TourCoachProps) {
   useRunWatcher(step, advance);
 
   useEffect(() => {
+    if (!step) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      const active = document.activeElement;
+      if (active === null || active === document.body || !active.isConnected) {
+        document.querySelector<HTMLElement>(".tour button")?.focus();
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [step]);
+
+  useEffect(() => {
+    if (!step) {
+      return;
+    }
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const isOwn = target === null || target === document.body || target.closest(".tour") !== null;
+      if (event.key === "Escape" && isOwn && !event.defaultPrevented) {
+        finish();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [step, finish]);
+
+  useEffect(() => {
     if (step === "editor" && hasFirstLine(source)) {
       advance();
     }

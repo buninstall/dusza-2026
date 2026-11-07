@@ -213,6 +213,8 @@ export function MineScriptEditor({
     const pageKeys = Prec.highest(
       keymap.of([
         { key: "Mod-Enter", run: () => true },
+        { key: "Mod-o", run: () => true },
+        { key: "Ctrl-o", run: () => true },
         {
           key: "Mod-Shift-m",
           run: () => {

@@ -18,7 +18,7 @@ export function ThemeToggle() {
         setTheme(target);
       }}
     >
-      {isToLight ? hu.nav.toLight : hu.nav.toDark}
+      <span className="shell-tool-label">{isToLight ? hu.nav.toLight : hu.nav.toDark}</span>
     </Button>
   );
 }

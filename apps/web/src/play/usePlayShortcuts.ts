@@ -104,12 +104,20 @@ export function usePlayShortcuts(
       return;
     }
     const handle = (event: KeyboardEvent) => {
-      const isEditorRun =
+      const target = event.target instanceof Element ? event.target : null;
+      const isInScope =
+        target === null ||
+        target === document.body ||
+        root.contains(target) ||
+        target.closest(".tour") !== null;
+      if (!isInScope) {
+        return;
+      }
+      const isEditorChord =
         (event.ctrlKey || event.metaKey) &&
-        event.key === "Enter" &&
-        event.target instanceof Element &&
-        event.target.closest(".cm-editor") !== null;
-      if (event.defaultPrevented && !isEditorRun) {
+        (event.key === "Enter" || event.key.toLowerCase() === "o") &&
+        target?.closest(".cm-editor") !== null;
+      if (event.defaultPrevented && !isEditorChord) {
         return;
       }
       const action = chord(event, latest.current) ?? stageKey(event, stageRef.current);
@@ -118,7 +126,7 @@ export function usePlayShortcuts(
         action();
       }
     };
-    root.addEventListener("keydown", handle);
-    return () => root.removeEventListener("keydown", handle);
+    document.addEventListener("keydown", handle);
+    return () => document.removeEventListener("keydown", handle);
   }, [rootRef, stageRef]);
 }

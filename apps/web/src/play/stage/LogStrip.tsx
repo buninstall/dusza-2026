@@ -1,5 +1,5 @@
 import type { Value } from "@minescript/engine";
-import { type ReactNode, useEffect, useId, useRef } from "react";
+import { type KeyboardEvent, type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { InlineText } from "../../components/InlineText.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { hu } from "../../i18n/hu.ts";
@@ -34,11 +34,39 @@ type ConsoleTapeProps = {
   onSeek: (index: number) => void;
 };
 
+const LINE_KEYS: Record<string, (current: number, last: number) => number> = {
+  ArrowDown: (current, last) => Math.min(current + 1, last),
+  ArrowUp: (current) => Math.max(current - 1, 0),
+  Home: () => 0,
+  End: (_, last) => last,
+};
+
+function useRovingLine(count: number) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const last = count - 1;
+  const active = picked === null || picked > last ? last : picked;
+  const onKeyDown = (event: KeyboardEvent<HTMLOListElement>) => {
+    const move = LINE_KEYS[event.key];
+    if (!move || count === 0) {
+      return;
+    }
+    event.preventDefault();
+    const next = move(active, last);
+    setPicked(next === last ? null : next);
+    event.currentTarget.querySelectorAll<HTMLButtonElement>(".log-line-button")[next]?.focus();
+  };
+  return { active, onKeyDown, pick: (position: number) => setPicked(position === last ? null : position) };
+}
+
 export function ConsoleTape({ entries, canSeek, onSeek }: ConsoleTapeProps) {
   const endRef = useRef<HTMLLIElement>(null);
+  const roving = useRovingLine(entries.length);
   useEffect(() => {
     if (entries.length > 0) {
-      endRef.current?.scrollIntoView?.({ block: "nearest" });
+      const tape = endRef.current?.closest<HTMLElement>(".log-scroll, .log-tape");
+      if (tape) {
+        tape.scrollTop = tape.scrollHeight;
+      }
     }
   }, [entries.length]);
 
@@ -49,7 +77,7 @@ export function ConsoleTape({ entries, canSeek, onSeek }: ConsoleTapeProps) {
           {entries.length === 0 ? (
             <p className="log-empty">{hu.play.consoleEmpty}</p>
           ) : (
-            <ol className="log-lines">
+            <ol className="log-lines" onKeyDown={roving.onKeyDown}>
               {entries.map((entry, position) => (
                 <li
                   key={`${entry.index.toString()}-${position.toString()}`}
@@ -60,6 +88,8 @@ export function ConsoleTape({ entries, canSeek, onSeek }: ConsoleTapeProps) {
                     type="button"
                     className="log-line-button"
                     disabled={!canSeek}
+                    tabIndex={position === roving.active ? 0 : -1}
+                    onFocus={() => roving.pick(position)}
                     aria-label={hu.play.consoleJump(entry.step, entry.text)}
                     onClick={() => onSeek(entry.index)}
                   >

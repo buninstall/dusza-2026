@@ -16,6 +16,8 @@ function baseSprite(view: TileView): string {
 function DarkTile({ view }: { view: TileView }) {
   return (
     <>
+      <use href={spriteHref(baseSprite(view))} />
+      {view.kind === "gold" ? <use href={spriteHref(SPRITE_ID.gold)} /> : null}
       <rect width={TILE_SIZE} height={TILE_SIZE} className="board-void" />
       {view.fringe.map((side) => (
         <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} />
@@ -30,7 +32,9 @@ function LitTile({ view }: { view: TileView }) {
       <use href={spriteHref(baseSprite(view))} />
       {view.kind === "gold" ? <use href={spriteHref(SPRITE_ID.gold)} /> : null}
       {view.kind === "mined" ? <use href={spriteHref(SPRITE_ID.dug)} /> : null}
-      {view.lighting === "shrouded" ? <use href={spriteHref(SPRITE_ID.shroud)} /> : null}
+      {view.lighting === "shrouded" ? (
+        <use href={spriteHref(SPRITE_ID.shroud)} className="board-shroud" />
+      ) : null}
     </>
   );
 }

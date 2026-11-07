@@ -11,7 +11,11 @@ import {
 } from "../programs.ts";
 
 export function hasUnsavedWork(draft: ProgramDraft): boolean {
-  return draft.linked === null ? draft.source.trim().length > 0 : isModified(draft);
+  if (draft.linked !== null) {
+    return isModified(draft);
+  }
+  const source = draft.source.trim();
+  return source.length > 0 && source !== hu.play.starterProgram.trim();
 }
 
 export type LibraryPanel = "closed" | "library" | "saveAs";

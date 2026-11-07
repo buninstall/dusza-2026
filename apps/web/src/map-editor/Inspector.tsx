@@ -192,6 +192,7 @@ export function CheckList(props: CheckListProps) {
 type DetailsBlockProps = {
   details: MapDetails;
   onChange: (details: MapDetails) => void;
+  isParStale: boolean;
   canComputePar: boolean;
   isComputingPar: boolean;
   onComputePar: () => void;
@@ -200,6 +201,7 @@ type DetailsBlockProps = {
 export function DetailsBlock({
   details,
   onChange,
+  isParStale,
   canComputePar,
   isComputingPar,
   onComputePar,
@@ -230,6 +232,7 @@ export function DetailsBlock({
           {isComputingPar ? hu.par.computing : hu.par.compute}
         </Button>
       </div>
+      {isParStale ? <Notice tone="warning" title={hu.par.stale} live="status" /> : null}
       <TextField
         label={hu.mapEditor.descriptionField}
         value={details.description}

@@ -137,7 +137,35 @@
   }
 }
 
-@media (min-width: 64rem) and (min-height: 40rem) {
+@media (min-width: 64rem) {
+  .shell-bar,
+  .shell-nav-list {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 64rem) and (max-width: 90rem) {
+  .shell-bar {
+    column-gap: var(--space-3);
+  }
+
+  .shell-nav-link {
+    padding-inline: var(--space-2);
+    letter-spacing: normal;
+  }
+
+  .shell-tool-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 64rem) and (min-height: 30rem) {
   .shell[data-layout="cab"],
   .shell[data-layout="workbench"] {
     height: 100dvh;

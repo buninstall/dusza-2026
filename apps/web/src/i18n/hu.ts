@@ -117,6 +117,7 @@ export const hu = {
   app: {
     name: "MineScript",
     skipToContent: "Ugrás a tartalomra",
+    pageChanged: (title: string) => `Új oldal: ${title}`,
     engineLoading: "A MineScript-motor indul…",
     engineFailed:
       "A MineScript-motor nem tölthető be. Frissítsd az oldalt, vagy próbáld másik böngészővel.",
@@ -293,6 +294,7 @@ export const hu = {
     saveBlocked: (count: number) =>
       `Még nem menthető: ${count} hiba. Az Ellenőrzés lista mutatja, mit kell javítani.`,
     exportBlocked: "Csak érvényes térkép exportálható.",
+    exported: (filename: string) => `A térkép letöltve: ${filename}`,
     tryOut: "Kipróbálás",
     fileMenuLabel: "Fájl: térkép importálása, exportálása",
     importMap: "Importálás",
@@ -637,6 +639,9 @@ export const hu = {
     replaceTitle: "Felülírod a szerkesztő tartalmát?",
     replaceBody: "A szerkesztőben nem mentett módosítások vannak. Megnyitás után elvesznek.",
     replaceConfirm: "Megnyitás",
+    importReplaceBody:
+      "A szerkesztőben nem mentett munka van. Ha betöltöd a fájlt, ez a munka elvész.",
+    importConfirm: "Betöltés",
     empty: "Még nincs mentett programod.",
     updated: (time: string) => `Módosítva: ${time}`,
     loadFailed: "A programok nem tölthetők be.",
@@ -883,6 +888,8 @@ export const hu = {
     computed: (steps: number) => `A gép megoldása ${steps} lépés.`,
     noSolution: "Ezen a térképen nincs kibányászható arany, ezért célérték sem adható.",
     failed: "A célértéket nem sikerült kiszámolni.",
+    stale:
+      "A térkép változott, mióta ezt a célértéket megadtad. Számold újra a Gépi megoldással, vagy írd át.",
   },
   share: {
     copy: "Link másolása",
