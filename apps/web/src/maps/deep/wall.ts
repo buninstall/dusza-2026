@@ -12,7 +12,7 @@ const LANTERN = [1, 0.68, 0.36] as const;
 const LANTERN_GAP = 150;
 const CAVE_GAP = 110;
 const FIREFLY_AREA = 14000;
-const WALL_AMBIENT = [0.6, 0.5, 1, 0.55, 0.5, 0.62, 0.6];
+const WALL_AMBIENT = [0.2, 0.12, 1, 0.24, 0.18, 0.22, 0.24];
 
 const WEB_ART = [
   "w.....w.....",
@@ -110,8 +110,8 @@ function staticLights(world: World, lamps: readonly WallLamp[]): Light[] {
       (l): Light => ({
         x: l.x + 2,
         y: l.y + 3,
-        radius: 46,
-        intensity: 0.7,
+        radius: 40,
+        intensity: 0.55,
         color: LANTERN,
         falloff: 1.8,
       }),
