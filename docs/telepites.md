@@ -36,22 +36,22 @@ flowchart LR
 
 ## Fájlok a szerveren
 
-| Útvonal                                                     | Tartalom                                                                                      |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `/srv/minescript/repo`                                      | a GitHub-repó klónja; itt fordul a kód (a `target/`, `node_modules/` cache megmarad)          |
-| `/srv/minescript/releases/<idő>-<commit>/`                  | kiadások: `minescript` bináris és `REVISION` (commit, ág, idő); az utolsó 5 marad meg         |
-| `/srv/minescript/current`                                   | szimbolikus link az élő kiadásra (atomi csere)                                                |
-| `/srv/minescript/backups/`                                  | tömörített `mysqldump`-ok (minden telepítés előtt; az utolsó 20 marad meg; 700-as jog)        |
-| `/srv/minescript/www/karbantartas.html`                     | ezt mutatja az Apache, amíg az alkalmazás újraindul (502/503/504)                             |
-| `/usr/local/bin/minescriptctl`                              | a vezérlő (a `scripts/deploy/minescriptctl` másolata; frissítés: `minescriptctl self-update`) |
-| `/etc/minescript/minescript.env`                            | `DATABASE_URL`, `HOST`, `PORT`, `TRUST_PROXY`; `root:minescript`, 640-es jog                  |
-| `/etc/systemd/system/minescript.service`                    | az alkalmazás szolgáltatása                                                                   |
-| `/etc/systemd/system/minescript-autodeploy.{service,timer}` | automatikus telepítés (alapból ki van kapcsolva)                                              |
-| `/etc/apache2/sites-available/minescript.conf`              | a virtuális hoszt                                                                             |
-| `/etc/apache2/conf-available/zz-minescript-hardening.conf`  | globális Apache-szigorítás                                                                    |
-| `/etc/apache2/minescript/gate.conf`, `htpasswd`             | a kapu; ha a `gate.conf` hiányzik, az oldal nyilvános                                         |
-| `/etc/mysql/mysql.conf.d/zz-minescript.cnf`                 | a MySQL csak a localhoston figyel                                                             |
-| `~csapat13/.ssh/minescript_deploy`                          | csak olvasó GitHub deploy key (a `futozs/dusza-2026` repó „Deploy keys” listájában)           |
+| Útvonal                                                     | Tartalom                                                                                               |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `/srv/minescript/repo`                                      | a GitHub-repó klónja; itt fordul a kód (a `target/`, `node_modules/` cache megmarad)                   |
+| `/srv/minescript/releases/<idő>-<commit>/`                  | kiadások: `minescript` bináris és `REVISION` (commit, ág, idő); az utolsó 5 marad meg                  |
+| `/srv/minescript/current`                                   | szimbolikus link az élő kiadásra (atomi csere)                                                         |
+| `/srv/minescript/backups/`                                  | tömörített `mysqldump`-ok (minden telepítés előtt; az utolsó 20 marad meg; 700-as jog)                 |
+| `/srv/minescript/www/karbantartas.html`                     | ezt mutatja az Apache, amíg az alkalmazás újraindul (502/503/504)                                      |
+| `/usr/local/bin/minescriptctl`                              | a vezérlő (a `scripts/deploy/minescriptctl` másolata; frissítés: `minescriptctl self-update`)          |
+| `/etc/minescript/minescript.env`                            | `DATABASE_URL`, `HOST`, `PORT`, `TRUST_PROXY`, `DESKTOP_RELEASES_TOKEN`; `root:minescript`, 640-es jog |
+| `/etc/systemd/system/minescript.service`                    | az alkalmazás szolgáltatása                                                                            |
+| `/etc/systemd/system/minescript-autodeploy.{service,timer}` | automatikus telepítés (alapból ki van kapcsolva)                                                       |
+| `/etc/apache2/sites-available/minescript.conf`              | a virtuális hoszt                                                                                      |
+| `/etc/apache2/conf-available/zz-minescript-hardening.conf`  | globális Apache-szigorítás                                                                             |
+| `/etc/apache2/minescript/gate.conf`, `htpasswd`             | a kapu; ha a `gate.conf` hiányzik, az oldal nyilvános                                                  |
+| `/etc/mysql/mysql.conf.d/zz-minescript.cnf`                 | a MySQL csak a localhoston figyel                                                                      |
+| `~csapat13/.ssh/minescript_deploy`                          | csak olvasó GitHub deploy key (a `futozs/dusza-2026` repó „Deploy keys” listájában)                    |
 
 A forrásban mindez a `scripts/deploy/` alatt van: `minescriptctl` (vezérlő), `provision.sh` (egyszeri telepítés) és `templates/` (systemd, Apache, MySQL, karbantartási oldal).
 
@@ -86,6 +86,14 @@ Amíg a kapu be van kapcsolva, a böngésző minden kérésnél (az oldalnál, a
 - Kivétel csak a `/_minescript/karbantartas.html`: ezt a hibaoldal miatt kapu nélkül is ki kell tudni szolgálni, és nem tartalmaz semmi érzékeny adatot.
 
 A demó-fiókok (`admin / dusza2026`, `demo1–3 / demo2026`) jelszava a forrásban és a felületen is szerepel. Amíg a kapu be van kapcsolva, ez nem gond. Nyilvános üzemben viszont bárki adminként léphet be.
+
+## Asztali alkalmazás letöltése és frissítése
+
+A MineScript Desktop kiadásai a privát repó `desktop-v*` kiadásaiban vannak (a `release.yml` minden `main`-re kerülő desktop-változásnál épít, aláír és `latest.json`-t tesz mellé). A weboldal fejlécében az „Asztali app” menü és az alkalmazás beépített frissítője is a szerveren át éri el őket (`/api/desktop/*`, lásd `docs/contracts.md`).
+
+- Token: GitHub fine-grained personal access token, csak a `buninstall/dusza-2026` repóra, `Contents: Read-only` joggal. A `/etc/minescript/minescript.env`-be kerül: `DESKTOP_RELEASES_TOKEN=github_pat_…` (más repó esetén `DESKTOP_RELEASES_REPO=owner/repo`), utána `sudo systemctl restart minescript`. Token nélkül a letöltés menü nem jelenik meg.
+- A frissítő a csomagok aláírását a beépített nyilvános kulccsal ellenőrzi. A titkos kulcs a GitHub `TAURI_SIGNING_PRIVATE_KEY` titkában van; ha elveszik, a telepített kliensek nem frissíthetők, csak újratelepítéssel.
+- Amíg a jelszavas kapu be van kapcsolva, a böngésző a kapun át tölt le; az asztali kliens frissítője a kapu fejlécét (`MINESCRIPT_GATEWAY_TOKEN`) küldi, ugyanúgy, mint az alkalmazás többi kérése.
 
 ## Biztonsági beállítások
 

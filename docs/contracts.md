@@ -204,6 +204,17 @@ A `GET /api/me/runs` elemei ugyanezek a mezők a `source` nélkül.
 | `PATCH /api/admin/users/:id`  | `{ role }`                      | `200 { user }`; `409 SELF_CHANGE` a saját fiókra              |
 | `DELETE /api/admin/users/:id` | –                               | `200 { ok: true }`; `409 SELF_CHANGE`                         |
 
+### Asztali alkalmazás (nyilvános)
+
+A kiadások a privát GitHub-repóban vannak. A szerver a `DESKTOP_RELEASES_TOKEN` (csak olvasási jogú, egy repóra szűkített token) birtokában olvassa őket, a token soha nem jut ki. A legfrissebb nem vázlat `desktop-v*` kiadás számít, amelyben van `latest.json`; a szerver 5 percig gyorsítótárazza. Token nélkül minden végpont `404 DESKTOP_NOT_CONFIGURED`, GitHub-hiba esetén `503 DESKTOP_UNAVAILABLE`.
+
+| Metódus és útvonal                     | Válasz                                                                                                                  |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/desktop/latest.json`         | `200` Tauri-frissítő manifest, a letöltési címek a `/api/desktop/download/file/<név>`-re mutatnak; kiadás nélkül `204`  |
+| `GET /api/desktop/info`                | `200 { version, publishedAt, files }`, a `files` platformonként a fájlnév vagy `null`                                   |
+| `GET /api/desktop/download/:platform`  | `302` a GitHub rövid életű, aláírt címére; platform: `mac`, `windows`, `windows-msi`, `linux`, `linux-deb`, `linux-rpm` |
+| `GET /api/desktop/download/file/:name` | `200` a kiadás fájlja a szerveren át (a frissítő ezt tölti le, így a kapu fejléce nem jut a GitHubhoz)                  |
+
 ## Fixture-formátumok
 
 A conformance-esetek formátuma: [`conformance/README.md`](../conformance/README.md).
