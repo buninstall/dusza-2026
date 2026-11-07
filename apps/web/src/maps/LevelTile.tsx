@@ -43,8 +43,7 @@ export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
   const mapId = String(map.id);
   const level = hu.signs.level(depth);
   return (
-    <li className="lv-tile">
-      <span aria-hidden="true" className="lv-rail" />
+    <li className="lv-tile" data-mine="level" data-map-id={mapId} data-stars={map.stars ?? -1}>
       <p className="lv-depth">
         <PixelText text={level} scale={2} />
         <span className="visually-hidden">{level}</span>

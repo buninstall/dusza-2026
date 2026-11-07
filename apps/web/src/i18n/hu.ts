@@ -228,6 +228,9 @@ export const hu = {
     leaderboard: "Ranglista",
     actionFor: (action: string, title: string) => `${action}: ${title}`,
     loadFailed: "A pályák nem tölthetők be.",
+    frontHeading: "Fúrófront",
+    frontText: "Itt ér véget a bánya. Minden új pálya egy újabb szintet vájt ide.",
+    frontLabel: "Fúrófront: új pálya készítése",
   },
   mapEditor: {
     newTitle: "Új térkép",

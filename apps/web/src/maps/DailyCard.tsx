@@ -19,7 +19,7 @@ export function DailyCard() {
   const { map } = data;
   const mapId = String(map.id);
   return (
-    <section className="daily" aria-labelledby="daily-heading">
+    <section className="daily" data-mine="daily" aria-labelledby="daily-heading">
       <div className="daily-window">
         <MapPreview content={map.content} box={120} />
       </div>
