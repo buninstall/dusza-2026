@@ -169,6 +169,8 @@ test("a játék oldal minden tabulátor-megállóján látható a fókusz", asyn
   await page.getByRole("link", { name: "Játék: 1. Egyenes folyosó" }).focus();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/play\/\d+/);
+  await expect(page.getByRole("grid", { name: /térképe$/ })).toBeVisible();
+  await expect(page.locator("#main")).toBeFocused();
   const STOPS = 40;
   for (let press = 0; press < STOPS; press += 1) {
     await leaveEditor(page);

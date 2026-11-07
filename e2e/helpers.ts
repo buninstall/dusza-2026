@@ -501,6 +501,7 @@ export async function focusedName(page: Page): Promise<string> {
     if (!element) {
       return "";
     }
-    return (element.getAttribute("aria-label") ?? element.textContent ?? "").trim();
+    const label = element instanceof HTMLInputElement ? element.labels?.[0]?.textContent : null;
+    return (element.getAttribute("aria-label") ?? label ?? element.textContent ?? "").trim();
   });
 }

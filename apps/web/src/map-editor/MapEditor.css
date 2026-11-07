@@ -80,12 +80,13 @@
 
 .ed-par {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--space-2);
 }
 
 .ed-par .field {
-  flex: 1 1 0;
+  flex: 1 1 8rem;
 }
 
 .ed-par .field-label {
