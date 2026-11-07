@@ -1,5 +1,15 @@
 export type RecipeNote = { hint: string; insight: string };
 
+export const recipePage = {
+  sectionStory: "Történet",
+  sectionSandbox: "Homokozó bemutatók",
+  storyLead:
+    "Minden kampánypályához a lehető legrövidebb program: ezzel jár a harmadik rög. A „vakon” receptek a térkép ismerete nélkül, falkövetéssel jutnak célba.",
+  sandboxLead:
+    "Minden bemutató a MineScript egy-egy részét mutatja be. Ezek a programok a nyelvet tanítják, nem a legrövidebb utat: a célérték mindegyiknél rövidebb.",
+  insight: "A trükk",
+};
+
 export const RECIPE_NOTES: Readonly<Record<string, RecipeNote>> = {
   "01-egyenes-folyoso": {
     hint: "többmezős lépés, bányászás",
@@ -170,5 +180,40 @@ export const RECIPE_NOTES: Readonly<Record<string, RecipeNote>> = {
     hint: "gyűrűk és rések",
     insight:
       "Gyűrűk gyűrűkben, a közepén a Vakond. A gyűrűk közti rések rövidítések: a recept 55 sorból ér a Szívig úgy, hogy közben mind a 13 rögöt felveszi.",
+  },
+  "homokozo/01-lepes-es-csakany": {
+    hint: "step forward, mine here",
+    insight:
+      "A legegyszerűbb program: két lépés, két bányászás. A step forward paramétere azt mondja meg, hány mezőt lépjen a robot egyetlen sorban.",
+  },
+  "homokozo/02-negy-irany": {
+    hint: "turn by 1, 2 és 3",
+    insight:
+      "A turn by n n negyedfordulat balra: 1 balra, 2 hátraarc, 3 jobbra, és mindegyik egyetlen sor. A recept mindhármat bemutatja; a célérték ennél rövidebb, keresd meg!",
+  },
+  "homokozo/03-tapogatozas": {
+    hint: "isThere 0/1/2, if/else, print",
+    insight:
+      "Az isThere csak a robot előtti mezőt vizsgálja: 0 üres, 1 fal, 2 arany. Az eredmény logikai érték, amit set ment el, if dönt róla, print pedig kiír a konzolra.",
+  },
+  "homokozo/04-menj-a-falig": {
+    hint: "while, not, számláló",
+    insight:
+      "A feladatkiírás példaprogramja. A while addig ismétel, amíg a feltétele igaz; a not megfordítja a logikai értéket. A végén a print kiírja, hány rögöt talált: 3.",
+  },
+  "homokozo/05-szamlalas": {
+    hint: "+ - *, < <= > >=",
+    insight:
+      "Egész számok és összehasonlítások. A step forward paramétere változó is lehet (hossz). A konzolon sorban: 100, 0, true, false, true.",
+  },
+  "homokozo/06-logikai-kapuk": {
+    hint: "and, or, not, = és <>, true/false",
+    insight:
+      "Összetett feltétel két lépésben: a MineScriptben nincs zárójel, ezért minden részeredményt külön set ment el. A ciklus akkor áll meg, ha elég aranyat talált, vagy fal jön.",
+  },
+  "homokozo/07-jobb-kez-a-falon": {
+    hint: "egymásba ágyazott while, jobbkéz-szabály",
+    insight:
+      "A külső ciklus lépésenként halad, a belső addig fordul balra, amíg fal van előtte. A robot a térkép ismerete nélkül is mind a három rögöt megtalálja: 444 sor, belefér az 1000-be.",
   },
 };

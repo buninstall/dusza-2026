@@ -9,6 +9,7 @@ export type ChapterFinding = {
 
 export type Chapter = {
   numeral: string;
+  from: string;
   title: string;
   depth: string;
   rock: string;
@@ -23,6 +24,7 @@ export type Chapter = {
 export const CHAPTERS: readonly Chapter[] = [
   {
     numeral: "I.",
+    from: "az I. fejezetből",
     title: "Az elhagyott tárna",
     depth: "−12 … −60 m",
     rock: "agyag",
@@ -47,6 +49,7 @@ export const CHAPTERS: readonly Chapter[] = [
   },
   {
     numeral: "II.",
+    from: "a II. fejezetből",
     title: "A visszhangok csarnoka",
     depth: "−72 … −120 m",
     rock: "mészkő",
@@ -71,6 +74,7 @@ export const CHAPTERS: readonly Chapter[] = [
   },
   {
     numeral: "III.",
+    from: "a III. fejezetből",
     title: "Az ametisztüregek",
     depth: "−132 … −180 m",
     rock: "ametiszt",
@@ -95,6 +99,7 @@ export const CHAPTERS: readonly Chapter[] = [
   },
   {
     numeral: "IV.",
+    from: "a IV. fejezetből",
     title: "A vörös ér",
     depth: "−192 … −240 m",
     rock: "vasérc",
@@ -120,6 +125,7 @@ export const CHAPTERS: readonly Chapter[] = [
   },
   {
     numeral: "V.",
+    from: "az V. fejezetből",
     title: "A smaragdtó",
     depth: "−252 … −300 m",
     rock: "malachit",
@@ -139,6 +145,7 @@ export const CHAPTERS: readonly Chapter[] = [
   },
   {
     numeral: "VI.",
+    from: "a VI. fejezetből",
     title: "A hegy szíve",
     depth: "−312 … −360 m",
     rock: "obszidián",
@@ -164,23 +171,61 @@ export const CHAPTERS: readonly Chapter[] = [
   },
 ];
 
+export const tourModes = {
+  title: "Két játékmód vár",
+  sandboxTitle: "Homokozó",
+  sandbox:
+    "Szabad bánya: a saját és a közösség pályái, a napi kihívás, és bemutató pályák a MineScript minden utasításához. Itt építhetsz is.",
+  storyTitle: "Történet",
+  story:
+    "Harminc pálya hat fejezetben, Kelemen főaknász naplójával. A fejezetek ötösével nyílnak: a következő akkor, ha az előző minden pályáján kibányásztad az aranyat.",
+  question: "Melyikkel kezdjük a bemelegítést?",
+  pickSandbox: "Homokozó",
+  pickStory: "Történet",
+  back: "Vissza",
+};
+
 export const story = {
-  campaignLabel: "A kampány fejezetei",
+  modeLabel: "Játékmód",
+  modes: { sandbox: "Homokozó", story: "Történet" },
   chapterHeading: (numeral: string, title: string) => `${numeral} fejezet · ${title}`,
   chapterLevels: (numeral: string) => `${numeral} fejezet pályái`,
   depthRock: (depth: string, rock: string) => `${depth} · ${rock}`,
+  progress: (cleared: number, total: number) => `${cleared} / ${total} pálya kész`,
+  journal: "Napló",
   diaryBy: (date: string) => `Kelemen Bálint főaknász naplója, ${date}`,
   diaryLocked: "A napló következő lapja a fejezet első aranyánál kerül elő.",
   findingHeading: (robot: string) => `Lelet: ${robot}`,
   findingLesson: "Tanulság",
   findingCode: (code: string) => `Hibakód: ${code}`,
-  findingLocked: (cleared: number, total: number) =>
-    `${cleared} / ${total} pálya kifosztva. Ami a fejezet végén vár, az még sötétben van.`,
-  progressLabel: (cleared: number, total: number) => `${cleared} / ${total} pálya kifosztva`,
-  othersHeading: "Felfedezők tárnái",
-  othersText: "A játékosok által vájt szintek, a kampány alatt.",
+  findingLocked: "A fejezet végén vár egy lelet. Ha minden pálya kész, előkerül.",
+  lockedCount: (remaining: number) => `Még ${remaining} pálya`,
+  lockedFrom: (from: string) => `${from} a feloldáshoz`,
+  lockedRule: "Egy pálya akkor kész, ha minden elérhető aranyát kibányásztad.",
+  lockedChained: "Előbb az előző fejezetnek kell kinyílnia.",
+  lockedTile: "Zárva",
+  lockedTileLabel: (title: string) => `Zárva: ${title}`,
   epilogueHeading: "Epilógus · Csend",
   epilogue:
-    "Az utolsó rög a csillédben van. A Szív elcsendesedett: a Vakond ciklusa véget ért, mert nincs több arany, amit kereshetne. Száz év után először csend van a Dusza-tárnában. A bánya mostantól a tiéd: a fúrófronton új szinteket vájhatsz.",
-  epilogueLocked: "A mélyből még szól a kopogás.",
+    "Az utolsó rög a csillédben van. A Szív elcsendesedett: a Vakond ciklusa véget ért, mert nincs több arany, amit kereshetne. Száz év után először csend van a Dusza-tárnában.",
+  leaderboard: "Történet ranglistája",
+  leaderboardTitle: "Történet · Ranglista",
+  leaderboardLead:
+    "Az összes kampánypálya legjobb futásai összesítve. Előrébb áll, akinek több rögje van; egyenlőségnél akinek több aranya, majd akinek kevesebb lépés kellett.",
+  leaderboardEmpty: "Még senki nem bányászott a Történetben. Légy te az első!",
+  leaderboardCaption: "Történet ranglistája",
+  columns: {
+    rank: "Hely",
+    player: "Játékos",
+    nuggets: "Rögök",
+    chapters: "Fejezet",
+    gold: "Arany",
+    steps: "Lépés",
+  },
+  nuggets: (earned: number, max: number) => `${earned} / ${max}`,
+  chapterReached: (numeral: string) => `${numeral}`,
+  backToStory: "Vissza a Történethez",
+  frontStory:
+    "Innen szól a kopogás. Ha egy fejezet minden pályája kész, a fúrófront egy réteggel mélyebbre jut.",
+  frontSilent: "A kopogás elhallgatott. A Történet véget ért, a Homokozóban új szinteket vájhatsz.",
 };

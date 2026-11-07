@@ -9,13 +9,14 @@ type MineBackdropProps = {
   rootRef: RefObject<HTMLElement | null>;
   mapIds: readonly number[];
   layoutKey: string;
+  seenKey?: string;
 };
 
 const SEEN_KEY = "minescript.mine.seen";
 const REBUILD_GAP_MS = 220;
 
-function readSeen(): Set<number> | null {
-  const raw = readStorage(SEEN_KEY);
+function readSeen(key: string): Set<number> | null {
+  const raw = readStorage(key);
   if (raw === null) return null;
   try {
     const parsed: unknown = JSON.parse(raw);
@@ -27,10 +28,10 @@ function readSeen(): Set<number> | null {
   }
 }
 
-function pickDig(mapIds: readonly number[]): number | null {
+function pickDig(mapIds: readonly number[], key: string): number | null {
   if (mapIds.length === 0) return null;
-  const seen = readSeen();
-  writeStorage(SEEN_KEY, JSON.stringify([...new Set([...(seen ?? []), ...mapIds])]));
+  const seen = readSeen(key);
+  writeStorage(key, JSON.stringify([...new Set([...(seen ?? []), ...mapIds])]));
   if (!seen) return null;
   const fresh = mapIds.filter((id) => !seen.has(id));
   return fresh.length > 0 ? Math.max(...fresh) : null;
@@ -44,7 +45,12 @@ function levelIndex(root: HTMLElement, target: EventTarget | null): number | nul
   return index < 0 ? null : index;
 }
 
-export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) {
+export function MineBackdrop({
+  rootRef,
+  mapIds,
+  layoutKey,
+  seenKey = SEEN_KEY,
+}: MineBackdropProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const midRef = useRef<HTMLCanvasElement>(null);
@@ -56,8 +62,8 @@ export function MineBackdrop({ rootRef, mapIds, layoutKey }: MineBackdropProps) 
   const isStatic = usePrefersReducedMotion();
 
   useLayoutEffect(() => {
-    digRef.current = pickDig(idsKey.length > 0 ? idsKey.split(",").map(Number) : []);
-  }, [idsKey]);
+    digRef.current = pickDig(idsKey.length > 0 ? idsKey.split(",").map(Number) : [], seenKey);
+  }, [idsKey, seenKey]);
 
   useEffect(() => {
     const root = rootRef.current;

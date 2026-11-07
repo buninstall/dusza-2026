@@ -22,6 +22,7 @@ export function mapSummary(id: number, title: string, content: string, ownerId =
     visibility: "public" as const,
     ownerId,
     ownerName: ownerId === 1 ? "admin" : "demo1",
+    isStory: false,
     parSteps: null as number | null,
     lampMode: "open" as "open" | "lamp" | "dark",
     createdAt: CREATED,

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { create } from "zustand";
 import { readStorage, writeStorage } from "../lib/storage.ts";
+import { PLAY_MODES, type PlayMode } from "../maps/mode.ts";
 
 export const TOUR_KEY = "minescript.tour";
 
@@ -12,11 +13,16 @@ type Answer = "declined" | "done";
 type TourData =
   | { status: "unasked" }
   | { status: Answer }
-  | { status: "active"; mapId: number; step: number };
+  | { status: "active"; mapId: number; step: number; mode?: PlayMode | undefined };
 
 const stored = z.union([
   z.object({ status: z.enum(["declined", "done"]) }),
-  z.object({ status: z.literal("active"), mapId: z.number().int(), step: z.number().int() }),
+  z.object({
+    status: z.literal("active"),
+    mapId: z.number().int(),
+    step: z.number().int(),
+    mode: z.enum(PLAY_MODES).optional(),
+  }),
 ]);
 
 function load(): TourData {
@@ -41,7 +47,7 @@ function save(data: TourData): TourData {
 
 type TourState = {
   data: TourData;
-  start: (mapId: number) => void;
+  start: (mapId: number, mode?: PlayMode) => void;
   decline: () => void;
   advance: () => void;
   finish: () => void;
@@ -49,7 +55,8 @@ type TourState = {
 
 export const useTour = create<TourState>()((set, get) => ({
   data: load(),
-  start: (mapId) => set({ data: save({ status: "active", mapId, step: 0 }) }),
+  start: (mapId, mode) =>
+    set({ data: save({ status: "active", mapId, step: 0, ...(mode ? { mode } : {}) }) }),
   decline: () => set({ data: save({ status: "declined" }) }),
   advance: () => {
     const { data } = get();

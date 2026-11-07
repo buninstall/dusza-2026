@@ -5,8 +5,9 @@ import { LocationPlate } from "../components/LocationPlate.tsx";
 import { NumberedHeading } from "../components/NumberedHeading.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
+import { recipePage } from "../i18n/hu-recipes.ts";
 import { mapsQuery } from "../maps/queries.ts";
-import { CORRIDOR_FILE, normaliseMap, recipeText } from "./catalog.ts";
+import { CORRIDOR_FILE, MAP_RECIPES, normaliseMap, recipeText } from "./catalog.ts";
 import { BadMapTable, ErrorRecipeTable, type MapLookup, MapRecipeList } from "./RecipeRows.tsx";
 import "./RecipesPage.css";
 
@@ -15,6 +16,9 @@ function useMapLookup(): MapLookup {
   const byContent = new Map((data?.maps ?? []).map((map) => [normaliseMap(map.content), map.id]));
   return (mapFile) => byContent.get(normaliseMap(recipeText(mapFile)));
 }
+
+const STORY_RECIPES = MAP_RECIPES.filter((recipe) => recipe.world === "story");
+const SANDBOX_RECIPES = MAP_RECIPES.filter((recipe) => recipe.world === "sandbox");
 
 function RecipeSection({
   id,
@@ -47,14 +51,19 @@ export function RecipesPage() {
           </Link>
         }
       />
-      <RecipeSection id="rc-maps" number={1} title={hu.recipes.sectionMaps}>
-        <MapRecipeList lookup={lookup} />
+      <RecipeSection id="rc-maps" number={1} title={recipePage.sectionStory}>
+        <p className="rc-lead">{recipePage.storyLead}</p>
+        <MapRecipeList lookup={lookup} recipes={STORY_RECIPES} />
       </RecipeSection>
-      <RecipeSection id="rc-errors" number={2} title={hu.recipes.sectionErrors}>
+      <RecipeSection id="rc-sandbox" number={2} title={recipePage.sectionSandbox}>
+        <p className="rc-lead">{recipePage.sandboxLead}</p>
+        <MapRecipeList lookup={lookup} recipes={SANDBOX_RECIPES} />
+      </RecipeSection>
+      <RecipeSection id="rc-errors" number={3} title={hu.recipes.sectionErrors}>
         <p className="rc-lead">{hu.recipes.errorsHint}</p>
         <ErrorRecipeTable mapId={lookup(CORRIDOR_FILE)} />
       </RecipeSection>
-      <RecipeSection id="rc-bad-maps" number={3} title={hu.recipes.sectionBadMaps}>
+      <RecipeSection id="rc-bad-maps" number={4} title={hu.recipes.sectionBadMaps}>
         <p className="rc-lead">
           {hu.recipes.badMapsHint}{" "}
           <Link to="/maps/new" variant="text">

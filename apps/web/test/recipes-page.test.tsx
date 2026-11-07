@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
-import { recipeText } from "../src/recipes/catalog.ts";
+import { MAP_RECIPES, normaliseMap, recipeText } from "../src/recipes/catalog.ts";
 import { respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
 import { mapDetail, mapSummary } from "./support/fixtures.ts";
@@ -30,7 +30,11 @@ describe("receptek oldal", () => {
     const { user } = renderApp("/manual/receptek");
     const open = await screen.findByRole("link", { name: "Megnyitás: 01-egyenes-folyoso.ms" });
     expect(open.getAttribute("href")).toBe("/play/1?recept=01-egyenes-folyoso");
-    expect(screen.getAllByText("Ez a pálya nincs az adatbázisban.").length).toBe(7);
+    const missing = MAP_RECIPES.filter(
+      (recipe) => normaliseMap(recipeText(recipe.mapFile)) !== normaliseMap(CORRIDOR),
+    );
+    expect(screen.getAllByText("Ez a pálya nincs az adatbázisban.").length).toBe(missing.length);
+    expect(screen.getByRole("heading", { level: 2, name: "Homokozó bemutatók" })).toBeTruthy();
     expect(screen.getByRole("heading", { level: 2, name: "Hibapróbák" })).toBeTruthy();
     const errors = screen.getByRole("table", { name: "Hibapróbák" });
     expect(within(errors).getByText("E_INT_OVERFLOW")).toBeTruthy();

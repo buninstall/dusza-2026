@@ -10,34 +10,59 @@
   gap: var(--mine-gap);
 }
 
-.ch-plate {
-  --ch-accent: var(--c-reward);
+.ch-sign {
+  --ch-accent: var(--deep-rust-hi);
 
   display: grid;
+  justify-items: start;
   gap: var(--space-2);
-  max-width: 46rem;
-  padding: var(--space-4) var(--space-5);
 }
 
-.ch-plate[data-rock="limestone"] {
-  --ch-accent: var(--deep-fossil);
-}
-
-.ch-plate[data-rock="amethyst"] {
+.ch-sign[data-rock="amethyst"] {
   --ch-accent: var(--deep-amethyst-hi);
 }
 
-.ch-plate[data-rock="iron"] {
-  --ch-accent: var(--deep-rust-hi);
-}
-
-.ch-plate[data-rock="emerald"] {
+.ch-sign[data-rock="emerald"] {
   --ch-accent: var(--deep-emerald-hi);
 }
 
-.ch-plate[data-rock="obsidian"],
-.ch-plate[data-rock="core"] {
+.ch-sign[data-rock="obsidian"] {
   --ch-accent: var(--deep-lava-top);
+}
+
+.ch-sign-plate {
+  position: relative;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-6);
+  border: var(--border-thin) solid var(--deep-rust-lo);
+  background-color: var(--deep-rust);
+  background-image: var(--rust-pattern);
+  background-size: 24px 24px;
+  box-shadow:
+    inset var(--border-thin) var(--border-thin) 0 var(--deep-rust-hi),
+    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--deep-rust-lo),
+    var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
+  color: var(--c-text);
+}
+
+.ch-sign-plate::before,
+.ch-sign-plate::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: var(--rivet);
+  height: var(--rivet);
+  background: var(--deep-iron-dk);
+  box-shadow: 1px 1px 0 var(--deep-rust-hi);
+}
+
+.ch-sign-plate::before {
+  left: var(--space-2);
+}
+
+.ch-sign-plate::after {
+  right: var(--space-2);
 }
 
 .ch-depth {
@@ -50,32 +75,110 @@
 
 .ch-title {
   margin: 0;
-  font: var(--type-h2);
+  font: var(--type-h3);
+  color: var(--c-text);
+  text-shadow: 1px 1px 0 var(--deep-iron-dk);
+}
+
+.ch-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font: var(--type-mono-sm);
   color: var(--c-text);
 }
 
-.ch-intro {
+.ch-progress[data-complete="true"] {
+  color: var(--c-success);
+}
+
+.ch-sign-locked {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.ch-locked-count {
   margin: 0;
-  max-width: 62ch;
-  font: var(--type-body);
+  font: var(--type-h2);
+  color: var(--c-reward);
+  text-shadow: 1px 1px 0 var(--deep-iron-dk);
+}
+
+.ch-locked-from {
+  margin: 0;
+  font: var(--type-label);
+}
+
+.ch-muted {
+  margin: 0;
+  font: var(--type-help);
+  color: var(--c-text-muted);
+}
+
+.ch-sign-locked .ch-muted {
   color: var(--c-text);
+}
+
+.ch-journal {
+  max-width: 44rem;
+}
+
+.ch-journal-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+  font: var(--type-label);
+  color: var(--ch-accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+.ch-journal-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.ch-journal-toggle:hover {
+  border-color: var(--ch-accent);
+}
+
+.ch-journal-toggle:focus-visible {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: var(--focus-offset);
+}
+
+.ch-journal[open] .ch-journal-toggle {
+  border-bottom-style: dashed;
+}
+
+.ch-journal-body {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-thin) solid var(--c-line-strong);
+  border-top: 0;
+  background: var(--c-screen);
+  font: var(--type-help);
+  color: var(--c-text);
+}
+
+.ch-journal-body p {
+  margin: 0;
 }
 
 .ch-diary {
   margin: 0;
-  padding-inline-start: var(--space-4);
+  padding-inline-start: var(--space-3);
   border-inline-start: var(--border-thick) solid var(--ch-accent);
 }
 
 .ch-diary-text {
   margin: 0;
-  font: var(--type-body);
   font-style: italic;
-  color: var(--c-text);
-}
-
-.ch-diary-text p {
-  margin: 0;
 }
 
 .ch-diary-text p::before {
@@ -92,71 +195,34 @@
   color: var(--c-text-muted);
 }
 
-.ch-diary[data-state="locked"],
-.ch-finding[data-state="locked"] {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  border-inline-start-style: dashed;
-  font: var(--type-help);
-  color: var(--c-text-muted);
-}
-
 .ch-finding {
   display: grid;
   gap: var(--space-1);
-  margin: 0;
   padding: var(--space-2) var(--space-3);
   border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-screen);
-}
-
-.ch-finding[data-state="locked"] {
-  border-style: dashed;
-  background: transparent;
 }
 
 .ch-finding-head {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin: 0;
   font: var(--type-label);
   color: var(--ch-accent);
 }
 
-.ch-finding-fate,
-.ch-finding-lesson {
-  margin: 0;
-  font: var(--type-help);
-  color: var(--c-text);
-}
-
 .ch-finding-code {
-  margin: 0;
   font: var(--type-mono-sm);
   color: var(--c-danger-ink);
 }
 
-.ch-progress {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+.ch-epilogue {
   margin: 0;
-  font: var(--type-mono-sm);
-  color: var(--c-text-muted);
+  max-width: 56ch;
+  font: var(--type-body);
 }
 
-.ch-progress[data-complete="true"] {
-  color: var(--c-success);
-}
-
-.ch-epilogue[data-state="open"] .ch-title {
-  color: var(--c-reward);
-}
-
-@container mine-panel (max-width: 34rem) {
-  .ch-plate {
-    padding: var(--space-3);
+@media (prefers-reduced-motion: no-preference) {
+  .ch-journal-toggle {
+    transition: border-color var(--motion-tick) var(--ease-px3);
   }
 }

@@ -17,11 +17,14 @@ const fetchLeaderboard = (mapId: number, versionId: number | undefined) =>
 
 const fetchDaily = () => call(api.maps.daily.$get());
 
+const fetchStoryBoard = () => call(api.story.leaderboard.$get());
+
 export type MapList = Awaited<ReturnType<typeof fetchMaps>>;
 export type DailyChallenge = Awaited<ReturnType<typeof fetchDaily>>;
 export type MapSummary = MapList["maps"][number];
 export type MapDetail = Awaited<ReturnType<typeof fetchMap>>;
 export type Leaderboard = Awaited<ReturnType<typeof fetchLeaderboard>>;
+export type StoryBoard = Awaited<ReturnType<typeof fetchStoryBoard>>;
 
 export const mapsQuery = (scope: MapScope) =>
   queryOptions({ queryKey: ["maps", scope], queryFn: () => fetchMaps(scope) });
@@ -37,3 +40,6 @@ export const leaderboardQuery = (mapId: number, versionId?: number) =>
 
 export const dailyQuery = () =>
   queryOptions({ queryKey: ["maps", "daily"], queryFn: fetchDaily, staleTime: 60_000 });
+
+export const storyBoardQuery = () =>
+  queryOptions({ queryKey: ["story", "leaderboard"], queryFn: fetchStoryBoard });

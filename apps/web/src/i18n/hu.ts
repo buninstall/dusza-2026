@@ -837,7 +837,7 @@ export const hu = {
   tour: {
     askTitle: "Kérsz egy rövid bevezetőt?",
     askBody:
-      "Két perc alatt végigvezetünk az első pályán: megírod az első programodat, és kibányászod az első aranyat.",
+      "Két perc alatt bemutatjuk a két játékmódot, aztán egy bemelegítő pályán megírod az első programodat, és kibányászod az első aranyat.",
     accept: "Igen, mutasd",
     decline: "Nem, köszönöm",
     restart: "Bevezető újrakezdése",

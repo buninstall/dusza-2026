@@ -17,62 +17,84 @@ export type ChapterGroup = {
   chapter: Chapter;
   maps: MapSummary[];
   cleared: number;
+  isComplete: boolean;
   hasDiary: boolean;
-  hasFinding: boolean;
+  lock: { previous: Chapter; remaining: number; isChained: boolean } | null;
 };
 
 export type Campaign = {
   groups: ChapterGroup[];
-  others: MapSummary[];
   isSilent: boolean;
+  lockedIds: ReadonlySet<number>;
 };
+
+export function isCampaignMap(map: MapSummary): boolean {
+  return map.isStory;
+}
 
 export function isCleared(map: MapSummary): boolean {
   return map.stars === null || map.stars >= CLEARED_STARS;
 }
 
-function chapterOf(): Map<string, number> {
+function chapterIndex(): Map<string, number> {
   const index = new Map<string, number>();
-  CHAPTERS.forEach((chapter, chapterIndex) => {
-    for (const title of chapter.levels) index.set(title, chapterIndex);
+  CHAPTERS.forEach((chapter, at) => {
+    for (const title of chapter.levels) index.set(title, at);
   });
   return index;
 }
 
-export function groupCampaign(ordered: readonly MapSummary[]): Campaign {
-  const index = chapterOf();
+function bucketize(ordered: readonly MapSummary[]): MapSummary[][] {
+  const index = chapterIndex();
   const buckets = CHAPTERS.map((): MapSummary[] => []);
   const taken = new Set<string>();
-  const others: MapSummary[] = [];
   for (const map of ordered) {
-    const chapterIndex = index.get(map.title);
-    const bucket = chapterIndex === undefined ? undefined : buckets[chapterIndex];
+    const at = map.isStory ? index.get(map.title) : undefined;
+    const bucket = at === undefined ? undefined : buckets[at];
     if (bucket && !taken.has(map.title)) {
       taken.add(map.title);
       bucket.push(map);
-    } else {
-      others.push(map);
     }
   }
-  const groups = CHAPTERS.flatMap((chapter, chapterIndex): ChapterGroup[] => {
-    const maps = buckets[chapterIndex] ?? [];
+  return buckets;
+}
+
+export function groupCampaign(ordered: readonly MapSummary[]): Campaign {
+  const buckets = bucketize(ordered);
+  const groups: ChapterGroup[] = [];
+  for (const [at, chapter] of CHAPTERS.entries()) {
+    const maps = buckets[at] ?? [];
     if (maps.length === 0) {
-      return [];
+      continue;
     }
+    const previous = groups.at(-1);
     const cleared = maps.filter(isCleared).length;
-    return [
-      {
-        chapter,
-        maps,
-        cleared,
-        hasDiary: maps.some((map) => (map.stars ?? 0) >= 1),
-        hasFinding: maps.length === chapter.levels.length && cleared === maps.length,
-      },
-    ];
-  });
-  const last = CHAPTERS.at(-1);
-  const heart = last ? groups.find((group) => group.chapter === last) : undefined;
-  const finalTitle = last?.levels.at(-1);
-  const finalMap = heart?.maps.find((map) => map.title === finalTitle);
-  return { groups, others, isSilent: finalMap ? isCleared(finalMap) : false };
+    const isOpen = !previous || (previous.lock === null && previous.isComplete);
+    groups.push({
+      chapter,
+      maps,
+      cleared,
+      isComplete: maps.length === chapter.levels.length && cleared === maps.length,
+      hasDiary: maps.some((map) => (map.stars ?? 0) >= 1),
+      lock:
+        isOpen || !previous
+          ? null
+          : {
+              previous: previous.chapter,
+              remaining: Math.max(0, previous.chapter.levels.length - previous.cleared),
+              isChained: previous.lock !== null,
+            },
+    });
+  }
+  const last = groups.at(-1);
+  const finalTitle = CHAPTERS.at(-1)?.levels.at(-1);
+  const finalMap =
+    last && last.lock === null && last.chapter === CHAPTERS.at(-1)
+      ? last.maps.find((map) => map.title === finalTitle)
+      : undefined;
+  return {
+    groups,
+    isSilent: finalMap ? isCleared(finalMap) : false,
+    lockedIds: new Set(groups.flatMap((group) => (group.lock ? group.maps.map((m) => m.id) : []))),
+  };
 }

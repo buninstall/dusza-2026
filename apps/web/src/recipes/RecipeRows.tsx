@@ -2,6 +2,7 @@ import { InlineText } from "../components/InlineText.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
+import { recipePage } from "../i18n/hu-recipes.ts";
 import { downloadText } from "../lib/files.ts";
 import { MapPreview } from "../mine/MapPreview.tsx";
 import {
@@ -74,6 +75,11 @@ function MapRecipeRow({ recipe, mapId }: { recipe: MapRecipe; mapId: number | un
         <p className="rc-hint">
           <InlineText text={recipe.hint} />
         </p>
+        {recipe.insight ? (
+          <p className="rc-insight">
+            <strong>{recipePage.insight}:</strong> <InlineText text={recipe.insight} />
+          </p>
+        ) : null}
       </div>
       <dl className="rc-expect">
         <div>
@@ -94,10 +100,16 @@ function MapRecipeRow({ recipe, mapId }: { recipe: MapRecipe; mapId: number | un
   );
 }
 
-export function MapRecipeList({ lookup }: { lookup: MapLookup }) {
+export function MapRecipeList({
+  lookup,
+  recipes = MAP_RECIPES,
+}: {
+  lookup: MapLookup;
+  recipes?: readonly MapRecipe[];
+}) {
   return (
     <ul className="rc-list">
-      {MAP_RECIPES.map((recipe) => (
+      {recipes.map((recipe) => (
         <MapRecipeRow key={recipe.slug} recipe={recipe} mapId={lookup(recipe.mapFile)} />
       ))}
     </ul>
