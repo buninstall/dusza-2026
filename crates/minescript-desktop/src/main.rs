@@ -12,7 +12,7 @@ mod window;
 #[cfg(target_os = "macos")]
 mod zoom;
 
-use tauri::{Manager, RunEvent};
+use tauri::Manager;
 use tauri_plugin_window_state::StateFlags;
 
 use crate::gateway::Gateway;
@@ -78,9 +78,12 @@ fn main() {
     };
 
     app.run(|handle, event| {
-        if let RunEvent::Reopen { .. } = event {
+        #[cfg(target_os = "macos")]
+        if let tauri::RunEvent::Reopen { .. } = event {
             window::reveal(handle);
         }
+        #[cfg(not(target_os = "macos"))]
+        let _ = (handle, event);
     });
 }
 

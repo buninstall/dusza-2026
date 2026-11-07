@@ -1,7 +1,5 @@
 use url::Url;
 
-use crate::navigation::{rebase, same_origin};
-
 const BASE_URL: &str = env!("MINESCRIPT_DESKTOP_BASE_URL");
 const OVERRIDE_VAR: &str = "MINESCRIPT_URL";
 const SPLASH_PATH: &str = "__shell/index.html";
@@ -22,9 +20,12 @@ impl Target {
             .and_then(|local| local.join(SPLASH_PATH).ok())
     }
 
+    #[cfg(any(target_os = "macos", test))]
     pub fn to_remote(&self, url: &Url) -> Url {
         match &self.local {
-            Some(local) if same_origin(url, local) => rebase(url, &self.remote),
+            Some(local) if crate::navigation::same_origin(url, local) => {
+                crate::navigation::rebase(url, &self.remote)
+            }
             _ => url.clone(),
         }
     }
