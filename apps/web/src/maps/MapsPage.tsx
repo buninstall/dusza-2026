@@ -197,16 +197,16 @@ function SandboxGrid({ scope, sort, difficulty, user }: SandboxGridProps) {
         const silent = groupCampaign(sortMaps(all, "order")).isSilent;
         if (sandbox.length === 0) {
           return (
-            <EmptyState
-              text={scope === "mine" ? hu.maps.emptyMine : hu.maps.empty}
-              action={<NewMapLink />}
-            />
+            <>
+              <EmptyState text={scope === "mine" ? hu.maps.emptyMine : hu.maps.empty} />
+              <DrillFront isSilent={silent} />
+            </>
           );
         }
         return (
           <>
             {maps.length === 0 ? (
-              <EmptyState text={story.noMatch} action={<NewMapLink />} />
+              <EmptyState text={story.noMatch} />
             ) : (
               <SandboxShaft
                 key={`${scope}|${sort}|${difficulty}`}
@@ -251,7 +251,12 @@ function StoryGrid({ user }: { user: SessionUser }) {
       {(maps) => {
         const campaign = groupCampaign(sortMaps(maps, "order"));
         if (campaign.groups.length === 0) {
-          return <EmptyState text={hu.maps.empty} action={null} />;
+          return (
+            <>
+              <EmptyState text={hu.maps.empty} />
+              <DrillFront isSilent={false} isStory />
+            </>
+          );
         }
         return (
           <>

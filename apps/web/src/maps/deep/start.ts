@@ -72,7 +72,7 @@ function readChapters(root: HTMLElement, scale: number): ChapterInput[] {
 
 export function startDeepScene(host: DeepHost): (() => void) | null {
   const plate = host.root.querySelector(`[${MINE_ATTR}="plate"]`);
-  const front = host.root.querySelector(`[${MINE_ATTR}="front"]`);
+  const front = host.root.querySelector(`[${MINE_ATTR}="front"]`) ?? plate;
   const viewWidth = viewportWidth();
   if (!plate || !front || viewWidth < MIN_WIDTH) return null;
   const isNarrow = viewWidth < NARROW_WIDTH;
