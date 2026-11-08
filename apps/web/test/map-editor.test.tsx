@@ -118,7 +118,7 @@ describe("új térkép", () => {
     await user.keyboard("{Enter}{Escape}");
     expect(screen.getByText("Téglalap megszakítva.")).toBeTruthy();
 
-    await user.keyboard("k1{ArrowRight}{ArrowRight}{Enter}");
+    await user.keyboard("1k{ArrowRight}{ArrowRight}{Enter}");
     expect(screen.getByText(/Kitöltés: \d+ mező, Üres kamra/)).toBeTruthy();
     await user.keyboard("e");
     expect((screen.getByRole("radio", { name: /Ecset/ }) as HTMLInputElement).checked).toBe(true);
@@ -190,6 +190,8 @@ describe("új térkép", () => {
 
     await user.click(screen.getByRole("radio", { name: /Kitöltés/ }));
     await user.click(screen.getByRole("radio", { name: /Arany/ }));
+    expect((screen.getByRole("radio", { name: /Ecset/ }) as HTMLInputElement).checked).toBe(true);
+    await user.click(screen.getByRole("radio", { name: /Kitöltés/ }));
     fireEvent.pointerDown(cell("7. sor, 10. oszlop: üres kamra"), { button: 0 });
     fireEvent.pointerUp(window);
     expect(cell("1. sor, 2. oszlop: arany")).toBeTruthy();
