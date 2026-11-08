@@ -78,14 +78,14 @@ A visszaállás csak a binárist cseréli, az adatbázis-sémát nem. Ha egy mig
 
 ## A jelszavas kapu
 
-A kapu csak a `csapat13.dusza.cloudsyso.com` címre vonatkozik, a `https://minescript.hu` nyilvános. Amíg a kapu be van kapcsolva, a böngésző azon a címen minden kérésnél (az oldalnál, az API-nál és a fájloknál is) felhasználónevet és jelszót kér. Ezt az Apache ellenőrzi (HTTP Basic Auth, bcrypt cost 12). Hibás belépés után az alkalmazásig semmi sem jut el, a 401-es válasz pedig nem árul el semmit a mögötte lévő rendszerről. Az `Authorization` fejlécet az Apache a hitelesítés után eltávolítja, így az alkalmazás nem kapja meg. Az alkalmazás saját belépése (cookie) ettől független, és változatlanul működik.
+A kapu az Apache virtuális hosztra vonatkozik, nem egy címre: ha be van kapcsolva, az a hoszt minden címén kér jelszót, így a `https://minescript.hu` is, ha a forgalma erre a hosztra jut. Élesítés előtt ezt a címen ellenőrizni kell. Amíg a kapu be van kapcsolva, a böngésző azon a címen minden kérésnél (az oldalnál, az API-nál és a fájloknál is) felhasználónevet és jelszót kér. Ezt az Apache ellenőrzi (HTTP Basic Auth, bcrypt cost 12). Hibás belépés után az alkalmazásig semmi sem jut el, a 401-es válasz pedig nem árul el semmit a mögötte lévő rendszerről. Az `Authorization` fejlécet az Apache a hitelesítés után eltávolítja, így az alkalmazás nem kapja meg. Az alkalmazás saját belépése (cookie) ettől független, és változatlanul működik.
 
 - Felhasználó: `csapat13`. A jelszót a telepítéskor véletlenszerűen generáltuk, csak egyszer jelent meg, és nincs a repóban. Új jelszó: `minescriptctl gate passwd csapat13`.
 - Újabb felhasználó (például a zsűrinek): `minescriptctl gate passwd zsuri`. Törlés: `minescriptctl gate remove zsuri`.
 - Nyilvánossá tétel: `minescriptctl gate off`. Visszakapcsolás: `minescriptctl gate on`. Mindkettő `apachectl configtest` után, kiesés nélküli `reload`-dal történik.
 - Kivétel csak a `/_minescript/karbantartas.html`: ezt a hibaoldal miatt kapu nélkül is ki kell tudni szolgálni, és nem tartalmaz semmi érzékeny adatot.
 
-A demó-fiókok (`admin / dusza2026`, `demo1–3 / demo2026`) jelszava a forrásban és a felületen is szerepel. Amíg a kapu be van kapcsolva, ez nem gond. Nyilvános üzemben viszont bárki adminként léphet be.
+A demó-fiókok (`admin / dusza2026`, `demo1–3 / demo2026`) jelszava a forrásban és a felületen is szerepel. Amíg a kapu be van kapcsolva, ez nem gond. Nyilvános üzemben viszont bárki adminként léphet be. A jelszócserének nincs felülete: a demó-fiókok jelszavát adatbázisban kell átállítani, vagy a kapu bekapcsolásával kell zárni az oldalt. A szerver indításkor kiírja a demó-jelszavakat a naplóba, ezért a nyilvános naplót is ennek megfelelően kell kezelni.
 
 ## Asztali alkalmazás letöltése és frissítése
 
@@ -190,3 +190,7 @@ A szervezői Ansible-beállításokhoz (SSH, `dusza-remoteip.conf`, node exporte
 | 2 GiB `/swapfile`                                | `sudo swapoff /swapfile`, a sor törlése az `/etc/fstab`-ból                         |
 
 Mindegyik után: `sudo apachectl configtest && sudo systemctl restart apache2`.
+
+A népes homokozó (`--no-crowd` nélkül) az indításkor feltöltődik; ha a szolgáltatás nem használ `--no-crowd` kapcsolót, a verseny szerveren ez alapból bekapcsolt állapot.
+
+A csapat AI-használatának leírása: [ai.md](ai.md).

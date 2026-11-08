@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "../../components/ui/Toast.tsx";
 import { hu } from "../../i18n/hu.ts";
 import { ApiError, errorMessage } from "../../lib/api.ts";
@@ -29,6 +29,10 @@ export function useProgramPersistence({ draft, onDraftChange }: PersistenceInput
   const [pending, setPending] = useState<ProgramListItem | null>(null);
   const save = useSaveProgram();
   const remove = useDeleteProgram();
+  const latestSource = useRef(draft.source);
+  useEffect(() => {
+    latestSource.current = draft.source;
+  }, [draft.source]);
 
   const saveOrRecreate = async (id: number | null, title: string) => {
     try {
@@ -45,7 +49,7 @@ export function useProgramPersistence({ draft, onDraftChange }: PersistenceInput
     try {
       const { program } = await saveOrRecreate(id, title);
       onDraftChange({
-        source: draft.source,
+        source: latestSource.current,
         linked: { id: program.id, title: program.title, savedSource: program.source },
       });
       toast.success(hu.programs.saved(program.title));
@@ -83,7 +87,7 @@ export function useProgramPersistence({ draft, onDraftChange }: PersistenceInput
     try {
       await remove.mutateAsync(id);
       if (draft.linked?.id === id) {
-        onDraftChange({ source: draft.source, linked: null });
+        onDraftChange({ source: latestSource.current, linked: null });
       }
       toast.success(hu.programs.removed);
     } catch (error) {

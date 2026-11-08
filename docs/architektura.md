@@ -63,6 +63,8 @@ A `minescript-core` tiszta: nincs IO, nincs véletlen, nincs wasm-bindgen, és s
 | `crates/minescript-core`      | a nyelv: forrás-normalizálás, span, diagnosztikák, szintaxis, formázó, linter, IDE, térkép, futtató | rust                          |
 | `crates/minescript-wasm`      | wasm-bindgen exportok, JSON-kompatibilis szerializálás                                              | rust                          |
 | `crates/minescript-cli`       | `minescript` parancssori eszköz                                                                     | rust                          |
+| `crates/minescript-bench`     | teljesítménymérés (a workspace tagja)                                                               | rust                          |
+| `crates/minescript-desktop`   | MineScript Desktop, a workspace-en kívül                                                            | rust                          |
 | `packages/engine`             | `@minescript/engine`: típusos TS-burok a WASM köré, generált típusok                                | rust (kötés), web (használat) |
 | `apps/server`                 | `@minescript/server`: Hono API, Drizzle ORM + mysql2 (MySQL), auth, seed, statikus kiszolgálás      | web                           |
 | `apps/web`                    | `@minescript/web`: Vite + React SPA                                                                 | web                           |
@@ -164,3 +166,5 @@ Eltérések a kiinduló tervtől:
 - **Fejlesztői API-cél**: a Vite proxy célja a `MINESCRIPT_API_URL` környezeti változóval felülírható (alapból `http://127.0.0.1:8080`).
 - **Betűtípusok**: a Pixelify Sans kikerült (hibás ő/ű, nem táblázatos számjegyek). Két Fontsource-család maradt: Atkinson Hyperlegible Next (folyószöveg, nevek) és Atkinson Hyperlegible Mono (vezérlők, címkék, számok, kód). A táblák, a szakaszszámok és a műszerek pixeles felirata saját, 5×7-es „Aknajel” betűkészlet (`apps/web/src/pixel/aknajel.ts`), amely importáláskor SVG-útvonallá fordul, így nincs harmadik betűtípusfájl.
 - **Web-felépítés**: minden oldalnak egyetlen fejléce van, a helyjelző tábla (`LocationPlate`), benne az oldal `h1`-e és műveletei. A játék és a visszajátszás közös színpadot használ (`apps/web/src/play/stage`, `apps/web/src/play/sheet`), a receptoldal a `docs/receptek` fájljait a Vite `import.meta.glob` segítségével csomagolja be (`apps/web/src/recipes/catalog.ts`).
+
+A csapat AI-használatának leírása: [ai.md](ai.md).

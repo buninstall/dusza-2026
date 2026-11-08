@@ -5,7 +5,9 @@ export const PROGRAM_MAX_CHARS = 100_000;
 
 const NUL = "\u0000";
 
-export type ProgramFileResult = { ok: true; text: string } | { ok: false; message: string };
+export type ProgramFileResult =
+  | { ok: true; text: string; raw: string }
+  | { ok: false; message: string };
 
 export function decodeProgramFile(bytes: ArrayBuffer): ProgramFileResult {
   const decoded = decodeUtf8(bytes);
@@ -18,5 +20,5 @@ export function decodeProgramFile(bytes: ArrayBuffer): ProgramFileResult {
   if (decoded.text.length > PROGRAM_MAX_CHARS) {
     return { ok: false, message: hu.play.importTooLong(formatCount(PROGRAM_MAX_CHARS)) };
   }
-  return { ok: true, text: normalizeNewlines(decoded.text) };
+  return { ok: true, text: normalizeNewlines(decoded.text), raw: decoded.text };
 }

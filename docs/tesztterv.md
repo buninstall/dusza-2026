@@ -5,7 +5,7 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 ## Jelölések és állapotok
 
 - `rNNN` = `conformance/runtime/NNN-*`, `sNNN` = `conformance/syntax/NNN-*`, `mNNN` = `conformance/maps/NNN-*`.
-- `ref:…` = a referencia-interpreter unit-tesztje (`tools/reference-interpreter/test`), `gen:…` = a generátor tesztje, `diff` = a differenciális teszt (minden conformance-eset és 2000-2000 generált helyes program, hibás program és térkép; a `DIFF_SEEDS` környezeti változóval növelhető, egyszeri próbán 30 000 seeden is eltérés nélkül).
+- `ref:…` = a referencia-interpreter unit-tesztje (`tools/reference-interpreter/test`), `gen:…` = a generátor tesztje, `diff` = a differenciális teszt (minden conformance-eset és 2000 generált helyes program, hibás program és térkép; a `DIFF_SEEDS` környezeti változóval növelhető, egyszeri próbán 30 000 seeden is eltérés nélkül).
 - `core:…` Rust unit-teszt, `server:…` bun-teszt, `web:…` Vitest, `e2e:…` Playwright.
 - `mut` = a mutációs ellenőrzés (`tools/reference-interpreter/test/mutation.test.ts`), `prop` = az invariáns- és metamorf tesztek (`properties.test.ts`, a `PROPERTY_SEEDS` változóval növelhető), `rob` = a robusztussági tesztek (`robustness.test.ts`).
 
@@ -14,7 +14,7 @@ A spec minden mondatához és szabályához, valamint minden D-döntéshez legal
 - **zöld (Rust, WASM, referencia)**: a kézzel levezetett elvárást a Rust-motor (`crates/minescript-core/tests/conformance.rs`), a WASM-build (`packages/engine/test/conformance.test.ts`) és a független referencia-interpreter is teljesíti, és a két interpreter eseménysora mezőről mezőre egyezik.
 - **zöld**: nem conformance-teszt, és átmegy.
 
-Összesen 301 conformance-eset: 116 runtime, 131 syntax, 54 maps. Minden `SYN_*` kód (a `SYN_NOT_IMPLEMENTED` kivételével), minden `MAP_*` kód és minden `RuntimeErrorCode` legalább egy esetben szerepel. A referencia-interpreter `src/` sorlefedettsége 100%.
+Összesen 309 conformance-eset: 120 runtime, 131 syntax, 58 maps. Minden `SYN_*` kód (a `SYN_NOT_IMPLEMENTED` kivételével), minden `MAP_*` kód és minden `RuntimeErrorCode` legalább egy esetben szerepel. A referencia-interpreter `src/` sorlefedettsége 100%.
 
 ## 1. A térkép és a program formátuma (spec 1)
 
@@ -247,13 +247,13 @@ Minden szám ebben a munkamenetben, Windows 11-en, ténylegesen lefuttatott para
 
 ### Eredmények
 
-| Parancs                                                 | Terület                                                        | Eredmény                             |
-| ------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------ |
-| `just conformance`                                      | 301 eset Rustban, WASM-on és a referencián                     | zöld (WASM-csomag: 610 teszt)        |
-| `bun test --coverage --cwd tools/reference-interpreter` | referencia, differenciális, mutációs, invariáns, robusztussági | 148/148 zöld                         |
-| `just test`                                             | Rust, engine, referencia, szerver, web                         | egy piros: BUG-1 (Rust CLI, Windows) |
-| `just e2e`                                              | Playwright, chromium                                           | 83/83 zöld                           |
-| `just lint`                                             | rustfmt, clippy, Biome, typecheck                              | zöld                                 |
+| Parancs                                                 | Terület                                                        | Eredmény                              |
+| ------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------- |
+| `just conformance`                                      | 309 eset Rustban, WASM-on és a referencián                     | zöld                                  |
+| `bun test --coverage --cwd tools/reference-interpreter` | referencia, differenciális, mutációs, invariáns, robusztussági | 148/148 zöld                          |
+| `just test`                                             | Rust, engine, referencia, szerver, web                         | zöld macOS-en; BUG-1 Windowson nyitva |
+| `just e2e`                                              | Playwright, chromium                                           | 83/83 zöld                            |
+| `just lint`                                             | rustfmt, clippy, Biome, typecheck                              | zöld                                  |
 
 ### Lefedettség
 
@@ -347,3 +347,5 @@ Teszt:         just test (apps/server)
 - B5 versenyhelyzetek: dupla kattintás a futtatáson, két böngészőlap, térképváltás futás közben.
 - B5 függőség-audit és titokkeresés.
 - A futásidejű hiba a felületen `status` szerepű elemben jelenik meg, nem `alert`-ben. Ez nem hiba, de érdemes megbeszélni a webes szereppel.
+
+A csapat AI-használatának leírása: [ai.md](ai.md).

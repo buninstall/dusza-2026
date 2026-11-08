@@ -112,3 +112,5 @@ Az alábbi, tervezett plusz szolgáltatások maradtak ki:
 | Áttekinthető, esztétikus megjelenés | Egységes, pixel art bánya-vizuális rendszer tokenekkel, egyetlen sötét bányatémával; a felület 1366×768-tól a nagy kijelzőkig és mobilon is használható.                                                        |
 | Akadálymentes használhatóság        | WCAG 2.2 AA ellenőrzőlista ([`docs/a11y.md`](a11y.md)), axe-teszt minden fő oldalon és állapotban, billentyűzetes e2e-teszt.                                                                                    |
 | Jól olvasható, rendezett forráskód  | Monorepo szerepkörönként, beszédes nevek, szigorú TypeScript és Clippy, Biome, generált szerződés-típusok ([`docs/architektura.md`](architektura.md)).                                                          |
+
+A csapat AI-használatának leírása: [ai.md](ai.md).

@@ -79,7 +79,7 @@ export function ProgramSheet(props: ProgramSheetProps) {
       });
       return;
     }
-    const errors = syntaxErrorsOf(decoded.text);
+    const errors = syntaxErrorsOf(decoded.raw);
     if (errors.length > 0) {
       setRejectedImport({
         name: file.name,

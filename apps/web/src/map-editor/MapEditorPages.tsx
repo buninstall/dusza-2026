@@ -86,15 +86,17 @@ function EditMapForm({ mapId, detail }: { mapId: number; detail: MapDetail }) {
     }
   };
 
-  const remove = async () => {
+  const remove = async (): Promise<boolean> => {
     try {
       await call(api.maps[":id"].$delete({ param: { id } }));
       queryClient.removeQueries({ queryKey: ["map", mapId] });
       await queryClient.invalidateQueries({ queryKey: ["maps"] });
       toast.success(hu.mapEditor.deleted);
       await navigate({ to: "/maps" });
+      return true;
     } catch (error) {
       toast.error(errorMessage(error, hu.app.unexpected));
+      return false;
     }
   };
 
@@ -115,7 +117,7 @@ function EditMapForm({ mapId, detail }: { mapId: number; detail: MapDetail }) {
         runCount: detail.runCount,
       }}
       onSave={update}
-      onDelete={() => void remove()}
+      onDelete={remove}
     />
   );
 }

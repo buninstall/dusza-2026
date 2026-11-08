@@ -25,7 +25,7 @@ A feladatleírás: [docs/feladat.md](docs/feladat.md).
 | `admin`                   | `dusza2026` | adminisztrátor |
 | `demo1`, `demo2`, `demo3` | `demo2026`  | játékos        |
 
-A program internet nélkül működik, az adatokat a MySQL-ben tárolja. Alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` címre kapcsolódik; más szerverhez a `DATABASE_URL` környezeti változót vagy a `--database-url` kapcsolót add meg (minta: `.env.example`). Első indításkor létrehozza a táblákat, és kész játékkörnyezetet tölt fel: a Történet mód 30 pályáját, a Homokozó bemutató pályáit, a demó-fiókokat receptekkel és mintafutásokkal, valamint egy népes homokozót (100 játékos, 300 pálya; a `--no-crowd` kapcsolóval kihagyható). Ha a MySQL nem érhető el, a program magyarul kiírja, mit kell tenni. Kapcsolók: `--port`, `--host`, `--database-url`, `--no-open`, `--no-crowd`, `--reset-demo`.
+A program internet nélkül működik, az adatokat a MySQL-ben tárolja. Alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` címre kapcsolódik; más szerverhez a `DATABASE_URL` környezeti változót vagy a `--database-url` kapcsolót add meg (minta: `.env.example`). Első indításkor létrehozza a táblákat, és kész játékkörnyezetet tölt fel: a Történet mód 30 pályáját, a Homokozó bemutató pályáit, a demó-fiókokat receptekkel és mintafutásokkal, valamint egy népes homokozót (100 játékos, 300 pálya; a `--no-crowd` kapcsolóval kihagyható). Ha a MySQL nem érhető el, a program magyarul kiírja, mit kell tenni. Kapcsolók: `--port`, `--host`, `--database-url`, `--no-open`, `--no-crowd`, `--reset-demo`, `--trust-proxy` (fordított proxy mögött).
 
 ## Fejlesztői gyorsindítás
 
@@ -117,18 +117,22 @@ A kötelező funkciók után a többi versenymegoldás nyilvános felületét is
 
 ## Dokumentáció
 
-| Dokumentum                                     | Tartalom                                   |
-| ---------------------------------------------- | ------------------------------------------ |
-| [docs/architektura.md](docs/architektura.md)   | rendszerábra, adatfolyamok, build, verziók |
-| [docs/dontesek.md](docs/dontesek.md)           | értelmezési döntések (D1–D18)              |
-| [docs/contracts.md](docs/contracts.md)         | WASM- és REST API, fixture-formátumok      |
-| [docs/roadmap.md](docs/roadmap.md)             | hátralévő munka szerepenként               |
-| [docs/tesztterv.md](docs/tesztterv.md)         | spec-mátrix és tesztlefedettség            |
-| [docs/a11y.md](docs/a11y.md)                   | WCAG 2.2 AA ellenőrzőlista                 |
-| [docs/beadando.md](docs/beadando.md)           | a beadandó leírás                          |
-| [docs/jatekelmeny.md](docs/jatekelmeny.md)     | a Lámpafény-mód terve                      |
-| [conformance/README.md](conformance/README.md) | a conformance-esetek formátuma             |
+| Dokumentum                                     | Tartalom                                            |
+| ---------------------------------------------- | --------------------------------------------------- |
+| [docs/architektura.md](docs/architektura.md)   | rendszerábra, adatfolyamok, build, verziók          |
+| [docs/dontesek.md](docs/dontesek.md)           | értelmezési döntések (D1–D27)                       |
+| [docs/contracts.md](docs/contracts.md)         | WASM- és REST API, fixture-formátumok               |
+| [docs/roadmap.md](docs/roadmap.md)             | hátralévő munka szerepenként                        |
+| [docs/tesztterv.md](docs/tesztterv.md)         | spec-mátrix és tesztlefedettség                     |
+| [docs/megfeleles.md](docs/megfeleles.md)       | a kiírás mondatonkénti megfelelősége                |
+| [docs/a11y.md](docs/a11y.md)                   | WCAG 2.2 AA ellenőrzőlista                          |
+| [docs/beadando.md](docs/beadando.md)           | a beadandó leírás                                   |
+| [docs/jatekelmeny.md](docs/jatekelmeny.md)     | a Lámpafény-mód terve                               |
+| [docs/telepites.md](docs/telepites.md)         | éles telepítés a verseny szerveren                  |
+| [docs/receptek/](docs/receptek/)               | kész programok minden pályához                      |
+| [docs/ai.md](docs/ai.md)                       | az AI-használat leírása (a szerveren is: `~/ai.md`) |
+| [conformance/README.md](conformance/README.md) | a conformance-esetek formátuma                      |
 
 ## Csapat
 
-A szerepkiosztás és a munkaszabályok: [CLAUDE.md](CLAUDE.md) és [.claude/roles/](.claude/roles/).
+A szerepkiosztás és a munkaszabályok: [CLAUDE.md](CLAUDE.md) és [.claude/roles/](.claude/roles/). A fejlesztés AI-használatának leírása: [docs/ai.md](docs/ai.md).

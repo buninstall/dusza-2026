@@ -132,3 +132,5 @@ A korábbi lista minden pályát egyben küldött, és kérésenként minden pá
 - **Kliens**: az előző oldal a betöltés alatt is látszik (nincs villogás), a következő oldalt és az egérrel kijelölt oldalszámot előre betölti, a kereső késleltetve küld.
 
 Automata tesztek: `apps/server/test/scale.test.ts` (szerver, 14 eset) és `apps/web/test/sandbox.test.tsx` (felület, 5 eset).
+
+A csapat AI-használatának leírása: [ai.md](../ai.md).

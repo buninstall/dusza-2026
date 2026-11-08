@@ -168,6 +168,7 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
   const nuggetRef = useRef<HTMLDivElement>(null);
   const plusRef = useRef<HTMLDivElement>(null);
   const live = useRef(new Set<() => void>());
+  const timers = useRef(new Set<number>());
   const isReduced = usePrefersReducedMotion();
   const key = flight?.key ?? null;
   const row = flight?.from.row ?? null;
@@ -175,9 +176,13 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
 
   useEffect(() => {
     const running = live.current;
+    const pending = timers.current;
     return () => {
       for (const stop of [...running]) {
         stop();
+      }
+      for (const id of pending) {
+        window.clearTimeout(id);
       }
     };
   }, []);
@@ -202,7 +207,8 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
       { duration: FLIGHT_MS },
       live.current,
     );
-    window.setTimeout(() => {
+    const id = window.setTimeout(() => {
+      timers.current.delete(id);
       if (hud) {
         playOnce(hud, PULSE, { duration: PULSE_MS, easing: "ease-out" });
       }
@@ -213,6 +219,7 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
         live.current,
       );
     }, FLIGHT_MS * DROP_AT);
+    timers.current.add(id);
   }, [key, row, col, isReduced, rootRef]);
 
   return (

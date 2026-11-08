@@ -1045,3 +1045,5 @@ while megy
 ```
 
 A külső ciklus lépésenként halad, a belső addig fordul balra, amíg fal van előtte. A robot a térkép ismerete nélkül is mind a három rögöt megtalálja: 444 sor, belefér az 1000-be.
+
+A csapat AI-használatának leírása: [ai.md](../ai.md).

@@ -123,7 +123,7 @@ export const usePlayback = create<PlaybackState>()((set, get) => {
     replay: () => {
       const { result, status } = get();
       if (result && isScrubbable(status)) {
-        set({ index: 0, status: "playing" });
+        set({ index: 0, status: "playing", hasEnded: false });
       }
     },
     tick: () => {

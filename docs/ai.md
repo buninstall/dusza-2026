@@ -6,13 +6,13 @@ A verseny kérése szerint ez a fájl a szerver home könyvtárában is megtalá
 
 ## Eszközök és modellek
 
-| Eszköz | Verzió | Mire |
-| --- | --- | --- |
-| Claude Code (Anthropic), parancssor és asztali alkalmazás (Code fül) | 2.1.319 | minden fejlesztési munka mindhárom gépen |
-| Claude Opus 5.5 (`claude-opus-5-5`) | – | fő modell: tervezés, kód, tesztek, dokumentáció, hibakeresés |
-| Claude Haiku 5.5 (`claude-haiku-5-5`) | – | gyors alügynökök: kódkeresés, feltérképezés |
+| Eszköz                                                                                    | Verzió              | Mire                                                                    |
+| ----------------------------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------- |
+| Claude Code (Anthropic), parancssor és asztali alkalmazás (Code fül)                      | 2.1.319             | minden fejlesztési munka mindhárom gépen                                |
+| Claude Opus 5.5 (`claude-opus-5-5`)                                                       | –                   | fő modell: tervezés, kód, tesztek, dokumentáció, hibakeresés            |
+| Claude Haiku 5.5 (`claude-haiku-5-5`)                                                     | –                   | gyors alügynökök: kódkeresés, feltérképezés                             |
 | Claude Code alügynökök (code-reviewer, security-reviewer, e2e-runner, párhuzamos átnézők) | a fenti modellekkel | független átnézés: kódminőség, biztonság, tesztek, dokumentáció-egyezés |
-| Claude beépített böngészője és Playwright | – | a futó felület kipróbálása, képernyőképek több szélességben |
+| Claude beépített böngészője és Playwright                                                 | –                   | a futó felület kipróbálása, képernyőképek több szélességben             |
 
 Más AI-eszközt (Copilot, ChatGPT stb.) nem használtunk. A csapat minden gépe ugyanazt a beállítást kapta: közös `CLAUDE.md` szabályfájl, szerepenkénti fájltulajdonlás (`.claude/roles/`), saját git-ág minden tagnak, automatikus commit és push.
 

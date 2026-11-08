@@ -343,3 +343,5 @@ Spec: 1, 2.1/5, 3.3. A D26 kiegészítése.
 - A nem UTF-8, a NUL karaktert tartalmazó és a 100 000 karakternél hosszabb fájl nem nyitható meg javításra.
 
 Indoklás: a 2.1 szerint, mivel a program fájlból is importálható, nem feltételezhető, hogy szintaktikailag helyes, ezért futtatás előtt kell ellenőrizni; a bevezető az importálást, az átszerkesztést, a szintaktikai ellenőrzést és a futtatást egymás után sorolja fel. Az 1. fejezet szerint viszont a hibás tartalmat nem szabad betölteni. Így mindkét olvasat teljesül: kérés nélkül semmi hibás nem töltődik be, a hibás fájlt mégsem kell újragépelni a javításhoz.
+
+A csapat AI-használatának leírása: [ai.md](ai.md).

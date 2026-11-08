@@ -124,6 +124,7 @@ describe("programfájl importja (D23)", () => {
     expect(decodeProgramFile(encode("step  forward 1\r\n"))).toEqual({
       ok: true,
       text: "step  forward 1\n",
+      raw: "step  forward 1\r\n",
     });
   });
 

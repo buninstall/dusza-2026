@@ -62,4 +62,6 @@ A `line` a fájl 1-alapú sorszáma, és opcionális: ha hiányzik, csak a kódo
 - Az elvárt értékeket kizárólag a specből (`docs/feladat.md`) és a D-döntésekből (`docs/dontesek.md`) vezetjük le, kézzel. Soha nem a Rust-implementáció kimenetéből.
 - Minden új nyelvi szabályhoz és minden új D-döntéshez legalább egy eset tartozik.
 - Az ismeretlen mezőket a Rust-teszt figyelmen kívül hagyja, az opcionális mezőket a WASM- és a referenciateszt ellenőrzi.
-- A `docs/tesztterv.md` spec-mátrixa minden esetre hivatkozik.
+- A `docs/tesztterv.md` spec-mátrixa a legtöbb esetre hivatkozik; a hivatkozás nélküli esetek (r111, r112, r117–r120, s130, m055–m058) pótlandók.
+
+A csapat AI-használatának leírása: [ai.md](../docs/ai.md).

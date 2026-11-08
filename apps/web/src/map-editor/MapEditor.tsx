@@ -71,7 +71,7 @@ type MapEditorProps = {
   initialDetails: MapDetails;
   version: VersionInfo | null;
   onSave: (values: MapFormValues) => Promise<boolean>;
-  onDelete?: (() => void) | undefined;
+  onDelete?: (() => Promise<boolean>) | undefined;
 };
 
 type Baseline = { text: string; details: MapDetails };
@@ -233,9 +233,12 @@ export function MapEditor({
     shrouded: showReach ? shroudedCells(draft) : [],
     flash,
   });
-  const leave = () => {
+  const leave = async () => {
     isLeaving.current = true;
-    onDelete?.();
+    const deleted = await onDelete?.();
+    if (deleted === false) {
+      isLeaving.current = false;
+    }
   };
 
   const commitShape = (next: DraftMap, message: string) => {

@@ -104,3 +104,5 @@ A **Térképszerkesztő** **Importálás** gombjával (vagy a fájl rácsra húz
 | [hibas-terkepek/ures.txt](hibas-terkepek/ures.txt)                     | `MAP_EMPTY`           |
 
 A `palyak/` mappa térképei ugyanígy importálhatók, és érvényesek.
+
+A csapat AI-használatának leírása: [ai.md](../ai.md).
