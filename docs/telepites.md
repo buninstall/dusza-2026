@@ -193,4 +193,12 @@ Mindegyik után: `sudo apachectl configtest && sudo systemctl restart apache2`.
 
 A népes homokozó (`--no-crowd` nélkül) az indításkor feltöltődik; ha a szolgáltatás nem használ `--no-crowd` kapcsolót, a verseny szerveren ez alapból bekapcsolt állapot.
 
+## AI-használat fájl feltöltése
+
+A verseny kérése szerint az `ai.md` a home könyvtárban van: `/home/csapat13/ai.md`. Frissítése a saját gépről:
+
+```bash
+scp -P 2200 docs/ai.md csapat13@csapat13.dusza.cloudsyso.com:/home/csapat13/ai.md
+```
+
 A csapat AI-használatának leírása: [ai.md](ai.md).
