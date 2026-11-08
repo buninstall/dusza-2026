@@ -71,7 +71,7 @@ Spec: 2.1/1.
 - Visszahúzni csak egy nyitott szintre lehet (`SYN_DEDENT_MISMATCH`).
 - Az `else` az `if`-fel azonos szinten áll, közvetlenül az `if` blokkja után; különben `SYN_ELSE_WITHOUT_IF`.
 
-Indoklás: ez a Python-szerű behúzás szokásos, egyértelmű olvasata. A blokkonként eltérő mélység megengedett (a spec szerint), de blokkon belül nem.
+Indoklás: ez a Python-szerű behúzás szokásos, egyértelmű olvasata. A blokkonként eltérő mélység megengedett (a spec szerint), de blokkon belül nem. A 2.1/1 „Az else az if törzsével azonos behúzáson van” mondatát a kiírás 2. fejezetének példaprogramja dönti el: az eredeti PDF-ben a kétszóközös behúzású programban az `else` az `if`-fel egy oszlopban áll (conformance: r128).
 
 ## D5 – Számliterálok
 

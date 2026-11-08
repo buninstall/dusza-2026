@@ -47,19 +47,17 @@ set count to 0
 set fal to isThere 1
 set megy to not fal
 while megy
-    set arany to isThere 2
-    if arany
-        step forward 1
-        mine here
-        set count to count + 1
-    else
-        step forward 1
-    set fal to isThere 1
-    set megy to not fal
+  set arany to isThere 2
+  if arany
+    step forward 1
+    mine here
+    set count to count + 1
+  else
+    step forward 1
+  set fal to isThere 1
+  set megy to not fal
 print count
 ```
-
-Megjegyzés: a PDF-ből kinyert szövegben a behúzás elveszett, a fenti behúzás a leírás („addig vezeti előre, amíg falba nem ütközik”) alapján lett visszaállítva.
 
 Az EBNF (Extended Backus-Naur Form) egy formális jelölésrendszer, amellyel egy nyelv nyelvtana – vagyis az érvényes szerkezetek felépítése – tömören leírható: megadja, hogy az egyes elemek (tokenek, azaz a nyelv legkisebb önálló egységei, pl. kulcsszavak, azonosítók, számok) milyen sorrendben és milyen ismétlődéssel állhatnak össze. Egy MineScript nyelven írt program a következő EBNF-jelöléssel definiálható:
 
