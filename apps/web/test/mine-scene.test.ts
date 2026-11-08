@@ -4,7 +4,6 @@ import { rustFraction, rustLevel } from "../src/lib/rust-wear.ts";
 import {
   anchorCenter,
   fitScale,
-  followCenter,
   placeView,
   windowSize,
   zoomScale,
@@ -59,22 +58,6 @@ describe("bányajelenet kamerája", () => {
   test("a kurzor alatti pont a nagyítás után is a kurzor alatt marad", () => {
     const center = anchorCenter({ x: 100, y: 100 }, { x: 120, y: 80 }, 2, 4);
     expect(center).toEqual({ x: 110, y: 90 });
-  });
-
-  test("a követett mező a kilógás mértékével húzza a nézetet", () => {
-    const view = {
-      scale: 2,
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 100,
-      fx: 0,
-      fy: 0,
-      spanW: 100,
-      spanH: 100,
-    };
-    const next = followCenter({ x: 50, y: 50 }, view, { x0: 110, y0: 10, x1: 126, y1: 26 }, 4);
-    expect(next).toEqual({ x: 80, y: 50 });
   });
 });
 

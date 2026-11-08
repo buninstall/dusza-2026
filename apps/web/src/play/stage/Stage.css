@@ -1,5 +1,6 @@
 .stage {
   --log-h: clamp(8rem, 20vh, 13rem);
+  --scene-reserve: 20%;
   --well-min: 10rem;
 
   container: stage / inline-size;
@@ -324,4 +325,25 @@
   .stage[data-layout="panes"] .stage-status {
     overflow: visible;
   }
+}
+
+.stage[data-layout="cab"] .stage-well {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.stage[data-layout="cab"] .stage-well > * {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.stage[data-layout="cab"] .stage-status {
+  align-self: end;
+  max-height: var(--scene-reserve);
+  margin-inline: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.stage[data-layout="cab"]:has(> .log) .stage-status {
+  max-height: min(var(--log-h), var(--scene-reserve));
+  margin-left: calc(55% + var(--space-2));
 }

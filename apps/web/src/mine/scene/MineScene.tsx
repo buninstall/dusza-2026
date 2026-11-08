@@ -1,11 +1,9 @@
-import type { Pos } from "@minescript/engine";
-import { type ComponentProps, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { type ComponentProps, useLayoutEffect, useRef, useState } from "react";
 import { MineBoard } from "../MineBoard.tsx";
 import { posKey } from "../tiles-model.ts";
 import {
   anchorCenter,
   fitScale,
-  followCenter,
   frameCenter,
   placeView,
   type View,
@@ -14,7 +12,7 @@ import {
   zoomScale,
 } from "./camera.ts";
 import { createSceneEngine, type SceneEngine } from "./engine.ts";
-import { type Point, T } from "./layout.ts";
+import { type Box, type Point, type SceneLayout, SILL_H, T } from "./layout.ts";
 import type { SceneLighting } from "./presets.ts";
 import { type PanButton, useSceneInput } from "./useSceneInput.ts";
 import "./MineScene.css";
@@ -25,13 +23,14 @@ export type MineSceneProps = Omit<ComponentProps<typeof MineBoard>, "fit" | "siz
   lighting: SceneLighting;
   zoom: number;
   onZoomChange: (zoom: number) => void;
-  follow?: Pos | null;
-  followKey?: number | string;
   panButton?: PanButton;
   isWheelZoom?: boolean;
+  reserve?: number;
 };
 
-const FOLLOW_MARGIN = 2 * T;
+function fitBox(layout: SceneLayout): Box {
+  return { ...layout.frame, y0: layout.beamY - 2, y1: layout.sillY + SILL_H };
+}
 
 function deviceRatio(): number {
   const ratio = window.devicePixelRatio || 1;
@@ -53,10 +52,9 @@ export function MineScene({
   lighting,
   zoom,
   onZoomChange,
-  follow = null,
-  followKey = 0,
   panButton = "primary",
   isWheelZoom = true,
+  reserve = 0,
   ...board
 }: MineSceneProps) {
   const { map, robot, exploration, shade = null, rulerMarks } = board;
@@ -79,7 +77,11 @@ export function MineScene({
     if (!layout || !canvas || !holder || viewport.width === 0) {
       return;
     }
-    const center = centerRef.current ?? frameCenter(layout.frame);
+    const resting = frameCenter(fitBox(layout));
+    const center = centerRef.current ?? {
+      x: resting.x,
+      y: resting.y + (viewport.height * reserve) / scale / 2,
+    };
     const view = placeView(center, viewport, scale, { width: layout.W, height: layout.H });
     centerRef.current = viewCenter(view);
     viewRef.current = view;
@@ -99,7 +101,8 @@ export function MineScene({
   const scaleNow = () => {
     const layout = layoutOf();
     const quantum = pixelQuantum();
-    return layout ? zoomScale(fitScale(layout.frame, viewport, quantum), zoom, quantum) : 1;
+    const room = { width: viewport.width, height: viewport.height * (1 - reserve) };
+    return layout ? zoomScale(fitScale(fitBox(layout), room, quantum), zoom, quantum) : 1;
   };
 
   useLayoutEffect(() => {
@@ -154,8 +157,8 @@ export function MineScene({
     const layout = layoutOf();
     if (zoom <= 1 && layout) {
       const fits =
-        (layout.frame.x1 - layout.frame.x0) * scale <= viewport.width &&
-        (layout.frame.y1 - layout.frame.y0) * scale <= viewport.height;
+        (fitBox(layout).x1 - fitBox(layout).x0) * scale <= viewport.width &&
+        (fitBox(layout).y1 - fitBox(layout).y0) * scale <= viewport.height * (1 - reserve);
       if (fits) {
         centerRef.current = null;
       }
@@ -165,34 +168,6 @@ export function MineScene({
 
   const pendingZoom = useRef<number | null>(null);
   pendingZoom.current = null;
-  const isFreeRef = useRef(false);
-  const followKeyRef = useRef(followKey);
-  if (followKeyRef.current !== followKey) {
-    followKeyRef.current = followKey;
-    isFreeRef.current = false;
-  }
-  if (zoom <= 1) {
-    isFreeRef.current = false;
-  }
-  const followRow = follow?.row ?? -1;
-  const followCol = follow?.col ?? -1;
-  const followStep = useRef<(row: number, col: number) => void>(() => undefined);
-  followStep.current = (row, col) => {
-    const view = viewRef.current;
-    const center = centerRef.current;
-    const layout = layoutOf();
-    if (row < 0 || !view || !center || !layout || zoom <= 1 || isFreeRef.current) {
-      return;
-    }
-    const x0 = layout.bx + col * T;
-    const y0 = layout.by + row * T;
-    const next = followCenter(center, view, { x0, y0, x1: x0 + T, y1: y0 + T }, FOLLOW_MARGIN);
-    if (next.x !== center.x || next.y !== center.y) {
-      centerRef.current = next;
-      apply(view.scale);
-    }
-  };
-  useEffect(() => followStep.current(followRow, followCol), [followRow, followCol]);
 
   useSceneInput(rootRef, panButton, {
     isWheelZoom: () => isWheelZoom,
@@ -214,7 +189,6 @@ export function MineScene({
       if (!view || !center) {
         return;
       }
-      isFreeRef.current = true;
       centerRef.current = { x: center.x - dx / view.scale, y: center.y - dy / view.scale };
       apply(view.scale);
     },

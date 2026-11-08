@@ -184,3 +184,15 @@
     animation: none;
   }
 }
+
+.stage[data-layout="cab"] > .log {
+  z-index: 8;
+  grid-area: well;
+  align-self: end;
+  height: min(var(--log-h), var(--scene-reserve));
+  margin: 0 var(--space-2) var(--space-2);
+}
+
+.stage[data-layout="cab"]:has(.stage-status:not(:empty)) > .log {
+  margin-right: calc(45% + var(--space-2));
+}

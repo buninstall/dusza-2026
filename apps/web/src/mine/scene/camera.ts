@@ -91,22 +91,3 @@ export function anchorCenter(
     y: anchor.y + (center.y - anchor.y) * ratio,
   };
 }
-
-export function followCenter(center: Point, view: View, target: Box, margin: number): Point {
-  let { x, y } = center;
-  const left = view.x + margin;
-  const right = view.x + view.width - margin;
-  const top = view.y + margin;
-  const bottom = view.y + view.height - margin;
-  if (target.x0 < left) {
-    x -= left - target.x0;
-  } else if (target.x1 > right) {
-    x += target.x1 - right;
-  }
-  if (target.y0 < top) {
-    y -= top - target.y0;
-  } else if (target.y1 > bottom) {
-    y += target.y1 - bottom;
-  }
-  return { x, y };
-}

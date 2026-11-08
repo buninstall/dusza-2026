@@ -51,6 +51,8 @@ import { lineTextOf, type PlayView } from "./usePlayView.ts";
 
 export const SHEET_ID = "program";
 
+const SCENE_RESERVE = 0.2;
+
 export type LampSetup = { mode: LampMode; sketch: Sketch; canSeeAll: boolean };
 
 export type MapFacts = {
@@ -313,8 +315,7 @@ export function PlayScreen(props: PlayScreenProps) {
             lighting={props.lamp?.mode ?? "open"}
             zoom={ui.zoom}
             onZoomChange={ui.setZoom}
-            follow={motion.robot.pos}
-            followKey={runId}
+            reserve={layout === "cab" ? SCENE_RESERVE : 0}
             isWheelZoom={layout === "cab"}
             map={map}
             robot={motion.robot}
