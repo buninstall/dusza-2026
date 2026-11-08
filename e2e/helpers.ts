@@ -192,7 +192,7 @@ function readingPatterns(readings: Readings): RegExp[] {
   const patterns: RegExp[] = [];
   if (readings.gold !== undefined) {
     const total = readings.goldTotal === undefined ? "\\d+" : String(readings.goldTotal);
-    patterns.push(new RegExp(`Arany\\s*${readings.gold}\\s*/\\s*${total}(?!\\d)`));
+    patterns.push(new RegExp(`Arany\\s*${readings.gold}\\s*/\\s*${total}`));
   }
   if (readings.steps !== undefined) {
     patterns.push(new RegExp(`Lépés\\s*${readings.steps}\\s*/\\s*1000`));
