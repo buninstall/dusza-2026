@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
+import { fadeOut, RESIZE_SETTLE_MS, type Shot, snapshot, stretch } from "../maps/deep/crossfade.ts";
 import { startWall } from "../maps/deep/wall.ts";
 import { pageHeight } from "../maps/deep/world.ts";
 import { holdReady, releaseAfterPaint } from "./readiness.ts";
@@ -33,9 +34,14 @@ export function PageBackdrop({ routeKey, isCalm }: PageBackdropProps) {
     let stop: () => void = () => undefined;
     let shape = "";
     let hasBuilt = false;
+    let shots: Shot[] = [];
+    let settle = 0;
+    let lastWidth = window.innerWidth;
     const measure = () => `${window.innerWidth}:${pageHeight()}`;
     const start = () => {
+      window.clearTimeout(settle);
       stop();
+      lastWidth = window.innerWidth;
       shape = measure();
       const release = hasBuilt ? () => undefined : holdReady();
       hasBuilt = true;
@@ -51,9 +57,23 @@ export function PageBackdrop({ routeKey, isCalm }: PageBackdropProps) {
           isStatic: isStatic || isCalm,
         }) ?? (() => undefined);
       releaseAfterPaint(release);
+      fadeOut(shots, isStatic);
+      shots = [];
     };
     const onChange = () => {
-      if (measure() !== shape) start();
+      if (window.innerWidth !== lastWidth && hasBuilt) {
+        if (shots.length === 0) {
+          const shot = snapshot(wrap, [canvas, mid]);
+          shots = shot ? [shot] : [];
+          stop();
+          stop = () => undefined;
+        }
+        stretch(shots);
+        window.clearTimeout(settle);
+        settle = window.setTimeout(start, RESIZE_SETTLE_MS);
+        return;
+      }
+      if (shots.length === 0 && measure() !== shape) start();
     };
     start();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onChange);
@@ -62,7 +82,9 @@ export function PageBackdrop({ routeKey, isCalm }: PageBackdropProps) {
     return () => {
       observer?.disconnect();
       window.removeEventListener("resize", onChange);
+      window.clearTimeout(settle);
       stop();
+      fadeOut(shots, true);
     };
   }, [isStatic, routeKey, isCalm]);
 

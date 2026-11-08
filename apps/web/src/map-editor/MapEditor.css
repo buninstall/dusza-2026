@@ -45,7 +45,57 @@
   grid-area: bar;
   min-height: 0;
   gap: var(--space-2) var(--space-3);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-5);
+  border: 0;
+  background-color: var(--px-iron);
+  background-image:
+    var(--k-tex-rivet), var(--k-tex-rivet), var(--k-tex-rivet), var(--k-tex-rivet),
+    var(--k-tex-iron);
+  background-position:
+    left 6px top 6px,
+    right 6px top 6px,
+    left 6px bottom 6px,
+    right 6px bottom 6px,
+    0 0;
+  background-size:
+    18px 18px,
+    18px 18px,
+    18px 18px,
+    18px 18px,
+    72px 72px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  box-shadow:
+    inset 3px 3px 0 0 var(--px-iron-md),
+    inset -3px -3px 0 0 var(--px-iron-edge),
+    var(--k-outline);
+}
+
+.ed .plate.ed-bar::before,
+.ed .plate.ed-bar::after,
+.ed .ed-bar .plate-rivets::before,
+.ed .ed-bar .plate-rivets::after {
+  display: none;
+}
+
+.ed .ed-bar .plate-rivets {
+  z-index: -1;
+  background-image:
+    var(--k-rust-a), var(--k-rust-b), var(--k-rust-c), var(--k-rust-d), var(--k-rust-edge);
+  background-position:
+    left 3px bottom 3px,
+    right 3px bottom 3px,
+    left 3px top 3px,
+    right 3px top 3px,
+    left 0 bottom 3px;
+  background-size:
+    36px 36px,
+    36px 36px,
+    21px 21px,
+    21px 21px,
+    192px 24px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat-x;
+  opacity: var(--rust, var(--rust-min));
+  image-rendering: pixelated;
 }
 
 .ed .ed-bar .plate-actions {

@@ -25,3 +25,7 @@
 .deep-page {
   z-index: -1;
 }
+
+.deep-shot {
+  pointer-events: none;
+}

@@ -2,6 +2,7 @@ import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import { holdReady, releaseAfterPaint } from "../../app/readiness.ts";
 import { usePrefersReducedMotion } from "../../lib/motion.ts";
 import { readStorage, writeStorage } from "../../lib/storage.ts";
+import { fadeOut, RESIZE_SETTLE_MS, type Shot, snapshot, stretch } from "./crossfade.ts";
 import { MINE_ATTR, startDeepScene } from "./start.ts";
 import "./MineBackdrop.css";
 
@@ -54,6 +55,8 @@ export function MineBackdrop({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const midRef = useRef<HTMLCanvasElement>(null);
   const frontRef = useRef<HTMLCanvasElement>(null);
+  const frontWrapRef = useRef<HTMLDivElement>(null);
+  const shotsRef = useRef<Shot[]>([]);
   const targetRef = useRef<number | null>(null);
   const digRef = useRef<number | null>(null);
   const hasStartedRef = useRef(false);
@@ -82,12 +85,30 @@ export function MineBackdrop({
     root.addEventListener("pointerleave", leave);
     root.addEventListener("focusout", leave);
     let signature = "";
+    let settle = 0;
+    let isFrozen = false;
+    let lastWidth = window.innerWidth;
     const shape = () =>
       `${window.innerWidth}:${root.offsetWidth}x${root.offsetHeight}:${root.querySelectorAll(`[${MINE_ATTR}]`).length}`;
+    const capture = () => {
+      const front = frontRef.current;
+      const shots = [
+        snapshot(wrap, [canvas, mid]),
+        front ? snapshot(frontWrapRef.current, [front]) : null,
+      ].filter((shot): shot is Shot => shot !== null);
+      shotsRef.current = [...shotsRef.current, ...shots];
+      return shots;
+    };
     const start = () => {
+      window.clearTimeout(settle);
+      if (!isFrozen && sceneRef.current) {
+        capture();
+      }
+      isFrozen = false;
       sceneRef.current?.();
       sceneRef.current = null;
       signature = shape();
+      lastWidth = window.innerWidth;
       const digId = digRef.current;
       const release = hasStartedRef.current ? () => undefined : holdReady();
       const next = startDeepScene({
@@ -105,20 +126,38 @@ export function MineBackdrop({
       });
       sceneRef.current = next;
       releaseAfterPaint(release);
+      fadeOut(shotsRef.current, isStatic);
+      shotsRef.current = [];
       if (next) {
         digRef.current = null;
         hasStartedRef.current = true;
       }
     };
+    const freeze = () => {
+      if (!isFrozen) {
+        isFrozen = true;
+        capture();
+        sceneRef.current?.();
+        sceneRef.current = null;
+      }
+      stretch(shotsRef.current);
+      window.clearTimeout(settle);
+      settle = window.setTimeout(start, RESIZE_SETTLE_MS);
+    };
     const onResize = () => {
-      if (shape() !== signature) start();
+      if (shape() === signature && !isFrozen) return;
+      if (window.innerWidth !== lastWidth && hasStartedRef.current) {
+        freeze();
+        return;
+      }
+      if (!isFrozen) start();
     };
     let frame = 0;
     const onContent = () => {
-      if (frame || shape() === signature) return;
+      if (frame || isFrozen || shape() === signature) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
-        if (shape() !== signature) start();
+        if (!isFrozen && shape() !== signature) start();
       });
     };
     start();
@@ -135,6 +174,7 @@ export function MineBackdrop({
       observer?.disconnect();
       mutations.disconnect();
       cancelAnimationFrame(frame);
+      window.clearTimeout(settle);
       window.removeEventListener("resize", onResize);
     };
   }, [rootRef, layoutKey, isStatic]);
@@ -153,7 +193,7 @@ export function MineBackdrop({
         <canvas ref={canvasRef} className="deep-canvas" />
         <canvas ref={midRef} className="deep-canvas" />
       </div>
-      <div className="deep deep-front" aria-hidden="true">
+      <div ref={frontWrapRef} className="deep deep-front" aria-hidden="true">
         <canvas ref={frontRef} className="deep-canvas" />
       </div>
     </>
