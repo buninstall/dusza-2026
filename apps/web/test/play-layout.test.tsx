@@ -117,7 +117,7 @@ describe("széles elrendezés", () => {
     expect(screen.getByRole("button", { name: "Kicsinyítés" }).hasAttribute("disabled")).toBe(true);
     await user.click(screen.getByRole("button", { name: "Nagyítás" }));
     expect(zoom.textContent).toContain("125%");
-    expect(document.querySelector(".well-view")?.getAttribute("data-zoomed")).toBe("true");
+    expect(document.querySelector(".mine-scene")?.getAttribute("data-zoomed")).toBe("true");
   });
 
   test("a futás végén a sor-kijelző a forrássort mutatja, és a programba ugrik", async () => {

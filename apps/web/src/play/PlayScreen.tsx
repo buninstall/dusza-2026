@@ -5,7 +5,7 @@ import { RegionBoundary } from "../components/RegionBoundary.tsx";
 import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { useStableCallback } from "../lib/stable-callback.ts";
-import { MineBoard } from "../mine/MineBoard.tsx";
+import { MineScene } from "../mine/scene/MineScene.tsx";
 import type { Exploration, FogMode } from "../mine/tiles-model.ts";
 import { usePlaybackSounds } from "../sound/usePlaybackSounds.ts";
 import { deriveFault, isOffMapHit } from "./fault.ts";
@@ -26,7 +26,6 @@ import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
 import { SplitHandle } from "./SplitHandle.tsx";
 import { useBreakpointNotice } from "./useBreakpointNotice.ts";
-import { useWellZoom } from "./useWellZoom.ts";
 import "./PlayScreen.css";
 import { boardDressing } from "./stage/board-dressing.tsx";
 import { ControlDeck } from "./stage/ControlDeck.tsx";
@@ -215,7 +214,6 @@ export function PlayScreen(props: PlayScreenProps) {
   const leverRef = useRef<HTMLButtonElement>(null);
   const centerRef = useRef<HTMLButtonElement>(null);
   const reportRef = useRef<HTMLDivElement>(null);
-  const wellRef = useRef<HTMLDivElement>(null);
   const status = usePlayback((state) => state.status);
   const result = usePlayback((state) => state.result);
   const runId = usePlayback((state) => state.runId);
@@ -224,7 +222,6 @@ export function PlayScreen(props: PlayScreenProps) {
   const lampSight = motion.sight.lamp;
   usePlaybackTimer();
   usePlaybackSounds();
-  useWellZoom(wellRef, motion.robot.pos, layout === "cab");
   useBreakpointNotice();
 
   useEffect(() => () => usePlayback.getState().clear(), []);
@@ -309,28 +306,24 @@ export function PlayScreen(props: PlayScreenProps) {
               {facts.description}
             </p>
           ) : null}
-          <div
-            ref={wellRef}
-            className="well-view"
-            data-zoomed={ui.zoom > 1}
-            style={{ "--zoom": ui.zoom } as CSSProperties}
-          >
-            <MineBoard
-              map={map}
-              robot={motion.robot}
-              label={hu.play.mapLabel(facts.title)}
-              describedBy={facts.description ? facts.descriptionId : undefined}
-              exploration={motion.sight.exploration}
-              shade={lampSight ? { radius: lampSight.radius, isBroken: lampSight.isBroken } : null}
-              sparkle={motion.sparkle}
-              stepMs={motion.stepMs}
-              fit="both"
-              look={motion.dressing.look}
-              overlay={motion.dressing.overlay}
-              cellMarks={motion.dressing.cellMarks}
-              cellNotes={motion.dressing.cellNotes}
-            />
-          </div>
+          <MineScene
+            lighting={props.lamp?.mode ?? "open"}
+            zoom={ui.zoom}
+            onZoomChange={ui.setZoom}
+            follow={motion.robot.pos}
+            map={map}
+            robot={motion.robot}
+            label={hu.play.mapLabel(facts.title)}
+            describedBy={facts.description ? facts.descriptionId : undefined}
+            exploration={motion.sight.exploration}
+            shade={lampSight ? { radius: lampSight.radius, isBroken: lampSight.isBroken } : null}
+            sparkle={motion.sparkle}
+            stepMs={motion.stepMs}
+            look={motion.dressing.look}
+            overlay={motion.dressing.overlay}
+            cellMarks={motion.dressing.cellMarks}
+            cellNotes={motion.dressing.cellNotes}
+          />
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
           <div className="stage-status">
             <LongRunNotice />

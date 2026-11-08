@@ -9,6 +9,7 @@ import { hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
 import { downloadText, safeFilename } from "../lib/files.ts";
 import { hasVisibleText } from "../lib/text.ts";
+import { clampSceneZoom } from "../mine/scene/zoom.ts";
 import { canvasOverlay } from "./canvas-overlay.tsx";
 import { EditorBar, type SaveState } from "./EditorBar.tsx";
 import { EditorCanvas } from "./EditorCanvas.tsx";
@@ -82,6 +83,7 @@ export function MapEditor({
   const isLeaving = useRef(false);
   const [history, dispatch] = useReducer(historyReducer, initialDraft, initialHistory);
   const [details, setDetails] = useState(initialDetails);
+  const [zoom, setZoom] = useState(1);
   const [parSource, setParSource] = useState(() => draftToText(initialDraft));
   const [baseline, setBaseline] = useState<Baseline>({
     text: draftToText(initialDraft),
@@ -334,6 +336,8 @@ export function MapEditor({
         cellNotes={marks.notes}
         rulerMarks={marks.rulers}
         isDropping={isDropping}
+        zoom={zoom}
+        onZoomChange={(next) => setZoom(clampSceneZoom(next))}
         onDropChange={setDropping}
         onDropFile={(file) => void importFile(file)}
         onRows={(rows) => dispatch({ type: "commit", next: resizeDraft(draft, rows, draft.cols) })}

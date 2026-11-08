@@ -5,7 +5,8 @@ import { Button } from "../components/ui/Button.tsx";
 import { NumberField } from "../components/ui/NumberField.tsx";
 import { hu } from "../i18n/hu.ts";
 import type { BoardInteraction } from "../mine/board-input.ts";
-import { MineBoard, type RulerMarks } from "../mine/MineBoard.tsx";
+import type { RulerMarks } from "../mine/MineBoard.tsx";
+import { MineScene } from "../mine/scene/MineScene.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { MAX_SIZE, MIN_SIZE } from "./editor-state.ts";
 
@@ -97,6 +98,8 @@ type EditorCanvasProps = SizeProps &
     cellNotes: ReadonlyMap<string, string>;
     rulerMarks: RulerMarks;
     isDropping: boolean;
+    zoom: number;
+    onZoomChange: (zoom: number) => void;
     onDropFile: (file: File) => void;
     onDropChange: (isDropping: boolean) => void;
   };
@@ -136,13 +139,15 @@ export function EditorCanvas(props: EditorCanvasProps) {
         }}
       >
         <div className="ed-scroll">
-          <MineBoard
+          <MineScene
+            lighting="work"
+            zoom={props.zoom}
+            onZoomChange={props.onZoomChange}
+            panButton="secondary"
             map={map}
             robot={props.robot}
             label={hu.mapEditor.gridLabel}
             describedBy={props.helpId}
-            size="editor"
-            fit="both"
             interaction={props.interaction}
             overlay={props.overlay}
             cellNotes={props.cellNotes}
