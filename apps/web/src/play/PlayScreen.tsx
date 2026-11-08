@@ -103,6 +103,16 @@ function finalAnnouncement(view: PlayView, map: MineMap): string | undefined {
     : hu.play.finishedBody(result.gold, result.steps);
 }
 
+function useConsoleOnFirstPrint(runId: number, printed: number) {
+  const openedFor = useRef<number | null>(null);
+  useEffect(() => {
+    if (printed > 0 && openedFor.current !== runId) {
+      openedFor.current = runId;
+      usePlayUi.getState().openLog();
+    }
+  }, [runId, printed]);
+}
+
 export function isFullViewLocked(lamp: LampSetup | undefined): boolean {
   return lamp !== undefined && isDarkMine(lamp.mode) && !lamp.canSeeAll;
 }
@@ -278,6 +288,7 @@ export function PlayScreen(props: PlayScreenProps) {
       />
     );
   const consoleCount = frame?.console.length ?? 0;
+  useConsoleOnFirstPrint(runId, consoleCount);
 
   const stage = (
     <RegionBoundary key="stage" message={hu.play.stageFailed}>

@@ -149,7 +149,7 @@ test.describe("töréspont és nagyítás", () => {
     await expectFinished(page, 0, 3);
   });
 
-  test("a térkép nagyítható, és a konzol csak kérésre jelenik meg", async ({ page }) => {
+  test("a térkép nagyítható, és a konzol az első kiírásra magától kinyílik", async ({ page }) => {
     await register(page, "zoom");
     await gotoPlay(page, "8. A nagy bánya");
     const zoom = page.getByRole("toolbar", { name: "Térkép nagyítása" });
@@ -165,8 +165,9 @@ test.describe("töréspont és nagyítás", () => {
     await expectFinished(page, 0, 2);
     const toggle = page.getByRole("button", { name: /^Konzol/ });
     await expect(toggle).toContainText("2");
-    await toggle.click();
     await expect(page.getByRole("log", { name: "Konzol" })).toContainText("2");
+    await toggle.click();
+    await expect(page.getByRole("log", { name: "Konzol" })).toBeHidden();
   });
 
   test("F9 a kurzor sorára tesz töréspontot", async ({ page }) => {

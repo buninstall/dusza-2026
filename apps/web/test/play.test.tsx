@@ -102,10 +102,10 @@ describe("futtatás", () => {
       mapVersionId: VERSION_ID,
       source: PROGRAM,
     });
-    expect(screen.queryByRole("log", { name: "Konzol" })).toBeNull();
-    await user.click(screen.getByRole("button", { name: /^Konzol/ }));
     expect(screen.getByRole("log", { name: "Konzol" }).textContent).toContain("1");
     expect(screen.getByRole("table", { name: "Változók" }).textContent).toContain("elol");
+    await user.click(screen.getByRole("button", { name: /^Konzol/ }));
+    expect(screen.queryByRole("log", { name: "Konzol" })).toBeNull();
     expect(screen.getByText("Kész")).toBeTruthy();
     expect(document.querySelector(".cm-content")?.getAttribute("aria-readonly")).toBe("false");
   });

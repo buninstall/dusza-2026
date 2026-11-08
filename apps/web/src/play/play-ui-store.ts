@@ -78,6 +78,7 @@ type PlayUiState = Persisted & {
   zoom: number;
   setFogMode: (mode: FogMode) => void;
   toggleLog: () => void;
+  openLog: () => void;
   setZoom: (zoom: number) => void;
   shiftZoom: (direction: 1 | -1) => void;
   setSheetShare: (share: number | null) => void;
@@ -104,6 +105,11 @@ export const usePlayUi = create<PlayUiState>()((set, get) => {
     zoom: 1,
     setFogMode: (fogMode) => persist({ fogMode }),
     toggleLog: () => persist({ isLogOpen: !get().isLogOpen }),
+    openLog: () => {
+      if (!get().isLogOpen) {
+        persist({ isLogOpen: true });
+      }
+    },
     setZoom: (zoom) => set({ zoom: clampZoom(zoom) }),
     shiftZoom: (direction) => set({ zoom: nextZoomLevel(get().zoom, direction) }),
     setSheetShare: (share) =>
