@@ -219,16 +219,41 @@ export function createWorld(
 
 export type Box = { x: number; y: number; w: number; h: number };
 
+function layoutRect(element: Element): {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+} {
+  if (!(element instanceof HTMLElement)) {
+    const r = element.getBoundingClientRect();
+    return {
+      left: r.left + window.scrollX,
+      top: r.top + window.scrollY,
+      width: r.width,
+      height: r.height,
+    };
+  }
+  let left = 0;
+  let top = 0;
+  let node: HTMLElement | null = element;
+  while (node) {
+    left += node.offsetLeft;
+    top += node.offsetTop;
+    node = node.offsetParent instanceof HTMLElement ? node.offsetParent : null;
+  }
+  return { left, top, width: element.offsetWidth, height: element.offsetHeight };
+}
+
 export function measureBox(element: Element, scale: number): Box {
-  const r = element.getBoundingClientRect();
-  const top = r.top + window.scrollY;
+  const r = layoutRect(element);
   const x = Math.floor(r.left / scale);
-  const y = Math.floor(top / scale);
+  const y = Math.floor(r.top / scale);
   return {
     x,
     y,
     w: Math.ceil((r.left + r.width) / scale) - x,
-    h: Math.ceil((top + r.height) / scale) - y,
+    h: Math.ceil((r.top + r.height) / scale) - y,
   };
 }
 

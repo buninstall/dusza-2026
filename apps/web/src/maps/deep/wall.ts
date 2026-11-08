@@ -205,7 +205,7 @@ export function startWall(host: WallHost): (() => void) | null {
   }
   const drips = createDrips(world, seeded(32));
   const flies = fireflies(W, H - roof, seeded(33)).map((f) => ({ ...f, y: f.y + roof }));
-  let time = 0;
+  let time = performance.now() / 1000;
 
   const sim = (dt: number) => {
     time += dt;
@@ -218,7 +218,7 @@ export function startWall(host: WallHost): (() => void) | null {
     for (const l of lamps) {
       if (view.isVisible(l.y, 8)) view.ctx.drawImage(sprites.lantern.on, l.x, l.y - view.camY);
     }
-    drawSpiders(view, sprites, spiders, time, spiderArt);
+    if (!host.isCalm) drawSpiders(view, sprites, spiders, time, spiderArt);
     drips.draw(view);
     if (view.front && !host.isCalm) drawFireflies(view, sprites, flies, time);
   };
@@ -253,6 +253,7 @@ export function startWall(host: WallHost): (() => void) | null {
     render();
     handle = requestAnimationFrame(loop);
   };
+  render();
   handle = requestAnimationFrame(loop);
   return () => cancelAnimationFrame(handle);
 }

@@ -528,6 +528,7 @@ export function runScene(options: SceneOptions): () => void {
     render();
     handle = requestAnimationFrame(loop);
   };
+  render();
   handle = requestAnimationFrame(loop);
   return () => {
     window.removeEventListener("pointermove", onPointer);

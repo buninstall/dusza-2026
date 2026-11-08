@@ -34,13 +34,15 @@ export function PageBackdrop({ routeKey, isCalm }: { routeKey: string; isCalm: b
     let timer = 0;
     let lastBuild = 0;
     let shape = "";
+    let hasBuilt = false;
     const measure = () => `${window.innerWidth}:${pageHeight()}`;
     const start = () => {
       window.clearTimeout(timer);
       stop();
       shape = measure();
       lastBuild = performance.now();
-      const release = holdReady();
+      const release = hasBuilt ? () => undefined : holdReady();
+      hasBuilt = true;
       stop =
         startWall({
           canvas,

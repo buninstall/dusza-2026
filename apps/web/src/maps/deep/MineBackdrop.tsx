@@ -14,7 +14,6 @@ type MineBackdropProps = {
 
 const SEEN_KEY = "minescript.mine.seen";
 const REBUILD_GAP_MS = 220;
-const LAYOUT_SETTLE_MS = 900;
 
 function readSeen(key: string): Set<number> | null {
   const raw = readStorage(key);
@@ -67,9 +66,12 @@ export function MineBackdrop({
     digRef.current = pickDig(idsKey.length > 0 ? idsKey.split(",").map(Number) : [], seenKey);
   }, [idsKey, seenKey]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = rootRef.current;
-    if (!root) return;
+    const canvas = canvasRef.current;
+    const mid = midRef.current;
+    const wrap = wrapRef.current;
+    if (!root || !canvas || !mid || !wrap || layoutKey.length === 0) return;
     const enter = (event: Event) => {
       targetRef.current = levelIndex(root, event.target);
     };
@@ -80,20 +82,6 @@ export function MineBackdrop({
     root.addEventListener("focusin", enter);
     root.addEventListener("pointerleave", leave);
     root.addEventListener("focusout", leave);
-    return () => {
-      root.removeEventListener("pointerover", enter);
-      root.removeEventListener("focusin", enter);
-      root.removeEventListener("pointerleave", leave);
-      root.removeEventListener("focusout", leave);
-    };
-  }, [rootRef]);
-
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    const canvas = canvasRef.current;
-    const mid = midRef.current;
-    const wrap = wrapRef.current;
-    if (!root || !canvas || !mid || !wrap || layoutKey.length === 0) return;
     let timer = 0;
     let lastBuild = 0;
     let signature = "";
@@ -152,18 +140,17 @@ export function MineBackdrop({
         onContent();
       }
     };
-    if (hasStartedRef.current && sceneRef.current) {
-      signature = shape();
-      timer = window.setTimeout(start, LAYOUT_SETTLE_MS);
-    } else {
-      start();
-    }
+    start();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onLayout);
     observer?.observe(root);
     const mutations = new MutationObserver(onContent);
     mutations.observe(root, { childList: true, subtree: true });
     window.addEventListener("resize", onResize);
     return () => {
+      root.removeEventListener("pointerover", enter);
+      root.removeEventListener("focusin", enter);
+      root.removeEventListener("pointerleave", leave);
+      root.removeEventListener("focusout", leave);
       observer?.disconnect();
       mutations.disconnect();
       cancelAnimationFrame(frame);

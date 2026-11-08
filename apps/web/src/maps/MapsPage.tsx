@@ -486,27 +486,28 @@ export function MapsPage({
   const sandboxKey = JSON.stringify(params);
 
   useEffect(() => {
-    if (!isStory) {
-      return;
-    }
+    const current = JSON.parse(sandboxKey) as SandboxParams;
     const prefetch = () => {
-      prefetchSandboxPage(queryClient, JSON.parse(sandboxKey) as SandboxParams);
-      void queryClient.prefetchQuery(sandboxStatsQuery());
-      void queryClient.prefetchQuery(dailyQuery());
+      if (isStory) {
+        prefetchSandboxPage(queryClient, current);
+        void queryClient.prefetchQuery(sandboxStatsQuery());
+        void queryClient.prefetchQuery(dailyQuery());
+        return;
+      }
+      void queryClient.prefetchQuery(storyMapsQuery());
+      for (const other of SCOPES) {
+        if (other !== current.scope) {
+          prefetchSandboxPage(queryClient, { ...current, scope: other, page: 1 });
+        }
+      }
     };
     const timer = window.setTimeout(prefetch, IDLE_PREFETCH_MS);
     return () => window.clearTimeout(timer);
   }, [isStory, sandboxKey, queryClient]);
 
-  if (isStory) {
-    return (
-      <>
-        <StoryPage user={user} onModeChange={onModeChange} rootRef={rootRef} />
-        <MineLayer mode={mode} params={params} rootRef={rootRef} />
-      </>
-    );
-  }
-  return (
+  const content = isStory ? (
+    <StoryPage user={user} onModeChange={onModeChange} rootRef={rootRef} />
+  ) : (
     <Tabs
       selectedKey={scope}
       onSelectionChange={(key) => onScopeChange(SCOPES.find((id) => id === key) ?? "all")}
@@ -556,7 +557,12 @@ export function MapsPage({
           </TabPanel>
         ))}
       </div>
-      <MineLayer mode={mode} params={params} rootRef={rootRef} />
     </Tabs>
+  );
+  return (
+    <>
+      {content}
+      <MineLayer mode={mode} params={params} rootRef={rootRef} />
+    </>
   );
 }
