@@ -26,4 +26,4 @@ runs:
       shell: bash
       run: cargo install wasm-bindgen-cli --locked --version "${{ steps.bindgen.outputs.version }}"
     - shell: bash
-      run: bun install --frozen-lockfile
+      run: bun i --frozen-lockfile

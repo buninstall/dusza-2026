@@ -54,7 +54,7 @@ MineScript: webes játék, amelyben egy saját nyelven (MineScript) írt program
 
 | Parancs            | Mit csinál                                                                                                                    |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `just setup`       | eszközök (wasm32 target, a lockfájl szerinti wasm-bindgen-cli), `bun install`, wasm, típusok; `--with-e2e`, `--with-wasm-opt` |
+| `just setup`       | eszközök (wasm32 target, a lockfájl szerinti wasm-bindgen-cli), `bun i`, wasm, típusok; `--with-e2e`, `--with-wasm-opt` |
 | `just db-up`       | MySQL Dockerben (`docker compose`); `just db-down` leállítja                                                                  |
 | `just db-setup`    | fejlesztői adatbázis és fiók egy helyi MySQL-szerveren (`--admin-url`, `--check`)                                             |
 | `just dev`         | szerver (8080, MySQL: `DATABASE_URL`) + Vite (5173), a `crates/` változására wasm- és típus-újraépítés                        |
