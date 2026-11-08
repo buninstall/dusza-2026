@@ -222,10 +222,23 @@ type SnappedRobot = {
   stepMs: number;
 };
 
+type Drive = { from: Point; to: Point; duration: number; animation: Animation };
+
+function retime(animation: Animation, next: Animation): void {
+  const elapsed = animation.currentTime;
+  animation.cancel();
+  if (typeof elapsed === "number") {
+    next.currentTime = elapsed;
+  }
+}
+
 export function useSnappedRobot({ isOn, robotRef, pos, kind, stepMs }: SnappedRobot) {
   const isReduced = usePrefersReducedMotion();
   const placed = useRef<Pos | null>(null);
-  const moving = useRef<Animation | null>(null);
+  const drive = useRef<Drive | null>(null);
+  const pose = useRef<{ element: HTMLDivElement; duration: number; animation: Animation } | null>(
+    null,
+  );
   const { row, col } = pos;
   const isActive = isOn && !isReduced;
 
@@ -240,16 +253,68 @@ export function useSnappedRobot({ isOn, robotRef, pos, kind, stepMs }: SnappedRo
       return;
     }
     const tile = tileOf(element);
-    const running = moving.current?.playState === "running";
-    const from = running ? shownOffset(element) : { x: before.col * tile, y: before.row * tile };
-    moving.current?.cancel();
+    const current = drive.current;
+    const isRunning = current?.animation.playState === "running" && tile > 0;
+    const shown = isRunning ? shownOffset(element) : null;
+    const from = shown
+      ? { x: shown.x / tile, y: shown.y / tile }
+      : { x: before.col, y: before.row };
+    const to = { x: col, y: row };
+    current?.animation.cancel();
     const animation = element.animate(
-      moveFrames(from, { x: col * tile, y: row * tile }, deviceRatio(), stepMs),
+      moveFrames(
+        { x: from.x * tile, y: from.y * tile },
+        { x: to.x * tile, y: to.y * tile },
+        deviceRatio(),
+        stepMs,
+      ),
       { duration: stepMs },
     );
     animation.finished.catch(() => undefined);
-    moving.current = animation;
+    drive.current = { from, to, duration: stepMs, animation };
   }, [isActive, row, col, stepMs, robotRef]);
+
+  useLayoutEffect(() => {
+    const element = robotRef.current;
+    if (!isActive || !element || typeof ResizeObserver === "undefined") {
+      return;
+    }
+    let lastTile = tileOf(element);
+    const observer = new ResizeObserver(() => {
+      const tile = tileOf(element);
+      if (tile <= 0 || tile === lastTile) {
+        return;
+      }
+      lastTile = tile;
+      const current = drive.current;
+      if (current && current.animation.playState === "running") {
+        const next = element.animate(
+          moveFrames(
+            { x: current.from.x * tile, y: current.from.y * tile },
+            { x: current.to.x * tile, y: current.to.y * tile },
+            deviceRatio(),
+            current.duration,
+          ),
+          { duration: current.duration },
+        );
+        next.finished.catch(() => undefined);
+        retime(current.animation, next);
+        drive.current = { ...current, animation: next };
+      }
+      const shownPose = pose.current;
+      if (shownPose && shownPose.animation.playState === "running") {
+        const next = shownPose.element.animate(
+          motionFrames(kind, tile, deviceRatio(), shownPose.duration),
+          { duration: shownPose.duration },
+        );
+        next.finished.catch(() => undefined);
+        retime(shownPose.animation, next);
+        pose.current = { ...shownPose, animation: next };
+      }
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [isActive, kind, robotRef]);
 
   return useCallback(
     (element: HTMLDivElement | null) => {
@@ -262,7 +327,11 @@ export function useSnappedRobot({ isOn, robotRef, pos, kind, stepMs }: SnappedRo
         { duration },
       );
       animation.finished.catch(() => undefined);
-      return () => animation.cancel();
+      pose.current = { element, duration, animation };
+      return () => {
+        pose.current?.animation.cancel();
+        pose.current = null;
+      };
     },
     [isActive, kind, stepMs],
   );
