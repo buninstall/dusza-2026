@@ -1,4 +1,4 @@
-import { CompletionContext } from "@codemirror/autocomplete";
+import { CompletionContext, insertCompletionText } from "@codemirror/autocomplete";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import type { Diagnostic } from "@minescript/engine";
@@ -67,6 +67,20 @@ describe("szerkesztőbővítmények", () => {
     expect(completionSource(realEngine)(new CompletionContext(glued, 11, false))).toBeNull();
     vi.spyOn(realEngine, "complete").mockReturnValueOnce([]);
     expect(completionSource(realEngine)(new CompletionContext(state, 2, true))).toBeNull();
+  });
+
+  test("a mező nélküli javaslat elfogadása után a kurzor a beszúrt szó végén áll", () => {
+    const editor = view("step forw");
+    const result = completionSource(realEngine)(
+      new CompletionContext(editor.state, editor.state.doc.length, false),
+    );
+    const forward = result?.options.find((option) => option.label === "forward");
+    expect(forward?.apply).toBe("forward");
+    editor.dispatch(
+      insertCompletionText(editor.state, "forward", result?.from ?? 0, editor.state.doc.length),
+    );
+    expect(editor.state.doc.toString()).toBe("step forward");
+    expect(editor.state.selection.main.head).toBe("step forward".length);
   });
 
   test("szóköz után magától ajánl: kulcsszót, lépésszámot és fordulatot magyarázattal", () => {

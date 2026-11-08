@@ -20,6 +20,8 @@ const completionType: Record<CompletionKind, string> = {
   value: "constant",
 };
 
+const FIELD_MARK = "${";
+
 function isAtSlot(context: CompletionContext): boolean {
   const line = context.state.doc.lineAt(context.pos);
   const before = line.text.slice(0, context.pos - line.from);
@@ -37,14 +39,17 @@ export function completionSource(engine: Engine) {
     if (items.length === 0 || (isTypedOut && !context.explicit)) {
       return null;
     }
-    const options: Completion[] = items.map((item) =>
-      snippetCompletion(item.insertText, {
+    const options: Completion[] = items.map((item) => {
+      const look = {
         label: item.label,
         detail: item.detail,
         info: item.documentation,
         type: completionType[item.kind],
-      }),
-    );
+      };
+      return item.insertText.includes(FIELD_MARK)
+        ? snippetCompletion(item.insertText, look)
+        : { ...look, apply: item.insertText };
+    });
     return { from: word.from, options, validFor: /^[A-Za-z0-9]*$/ };
   };
 }
