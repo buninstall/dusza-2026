@@ -243,10 +243,12 @@ export function useSnappedRobot({ isOn, robotRef, pos, kind, stepMs }: SnappedRo
     const running = moving.current?.playState === "running";
     const from = running ? shownOffset(element) : { x: before.col * tile, y: before.row * tile };
     moving.current?.cancel();
-    moving.current = element.animate(
+    const animation = element.animate(
       moveFrames(from, { x: col * tile, y: row * tile }, deviceRatio(), stepMs),
       { duration: stepMs },
     );
+    animation.finished.catch(() => undefined);
+    moving.current = animation;
   }, [isActive, row, col, stepMs, robotRef]);
 
   return useCallback(
@@ -259,6 +261,7 @@ export function useSnappedRobot({ isOn, robotRef, pos, kind, stepMs }: SnappedRo
         motionFrames(kind, tileOf(element), deviceRatio(), duration),
         { duration },
       );
+      animation.finished.catch(() => undefined);
       return () => animation.cancel();
     },
     [isActive, kind, stepMs],
