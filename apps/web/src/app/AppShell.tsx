@@ -1,14 +1,14 @@
 import { useMatches, useRouterState } from "@tanstack/react-router";
-import { createContext, type ReactNode, useContext } from "react";
+import { createContext, type ReactNode, useContext, useRef } from "react";
 import type { SessionUser } from "../auth/session.ts";
 import { Link } from "../components/ui/Link.tsx";
 import { hu } from "../i18n/hu.ts";
+import { useRustWear } from "../lib/rust-wear.ts";
 import { HazardStripe } from "../pixel/HazardStripe.tsx";
 import type { IconName } from "../pixel/icons.ts";
 import { Logo } from "../pixel/Logo.tsx";
 import "./AppShell.css";
 import { SoundToggle, useAudioUnlock } from "../sound/SoundToggle.tsx";
-import { HeaderSky } from "./HeaderSky.tsx";
 import { PageBackdrop } from "./PageBackdrop.tsx";
 import { UserMenu } from "./UserMenu.tsx";
 
@@ -58,11 +58,12 @@ function useShellLayout(): ShellLayout {
 export function AppShell({ user, children }: { user: SessionUser; children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const layout = useShellLayout();
+  const headerRef = useRef<HTMLElement>(null);
+  useRustWear(headerRef);
   useAudioUnlock();
   return (
     <div className="shell" data-layout={layout}>
-      <header className="shell-header" data-theme="tarna">
-        <HeaderSky />
+      <header ref={headerRef} className="shell-header" data-theme="tarna">
         <div className="shell-bar">
           <Link to="/maps" variant="plain" className="shell-brand" aria-label={hu.app.name}>
             <span className="shell-lockup">
@@ -78,7 +79,8 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
                 <li key={item.to}>
                   <Link
                     to={item.to}
-                    variant="plain"
+                    variant={item.section.test(pathname) ? "primary" : "secondary"}
+                    size="sm"
                     icon={item.icon}
                     className="shell-nav-link"
                     data-current={item.section.test(pathname)}
