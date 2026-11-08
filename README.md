@@ -7,7 +7,7 @@
 
 Webes játék a Dusza Árpád Országos Programozói Emlékverseny 2026/27 I. fordulójára. Egy elhagyott bányában a kincskereső robotot egy saját programnyelven, MineScriptben írt program vezérli: a játékos megírja a programot, a robot végrehajtja, a felület lassítva mutatja a mozgását, a felfedezett területet és a kibányászott aranyat, a ranglista pedig térképenként rangsorolja a játékosokat. Saját térképek is készíthetők.
 
-Élőben: <https://minescript.hu>
+Zsűrizett példány a versenyszerveren: <https://csapat13.dusza.cloudsyso.com>. A csapat saját szerverén is fut: <https://minescript.hu>.
 
 A feladatleírás: [docs/feladat.md](docs/feladat.md).
 
