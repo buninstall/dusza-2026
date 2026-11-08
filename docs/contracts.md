@@ -211,6 +211,17 @@ A `MapSummary` a pálya adatai mellett a `favoriteCount` és az `isFavorite` mez
 | `PATCH /api/admin/users/:id`           | `{ role }`                      | `200 { user }`; `409 SELF_CHANGE` a saját fiókra                                                                          |
 | `DELETE /api/admin/users/:id`          | –                               | `200 { ok: true }`; `409 SELF_CHANGE`                                                                                     |
 
+### Asztali alkalmazás (nyilvános)
+
+A kiadások a privát GitHub-repóban vannak. A szerver a `MINESCRIPT_GITHUB_TOKEN` (csak olvasási jogú, egy repóra szűkített token) birtokában olvassa őket, a token soha nem jut ki; a repó a `MINESCRIPT_DESKTOP_REPO` (alapból `buninstall/dusza-2026`, `off` kikapcsolja). A legfrissebb közzétett `desktop-v*` kiadás számít; a szerver 10 percig gyorsítótárazza, GitHub-hiba esetén a korábbi adatot adja.
+
+| Metódus és útvonal                     | Válasz                                                                                                                               |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/desktop`                     | `200 { release: { version, publishedAt, assets: [{ format, platform, size }] } \| null }`                                            |
+| `GET /api/desktop/download/:format`    | `302` a GitHub rövid életű, aláírt címére; `format`: `dmg`, `exe`, `msi`, `appimage`, `deb`, `rpm`; `404`, `503`                     |
+| `GET /api/desktop/latest.json`         | `200` Tauri-frissítő manifest, a letöltési címek a `/api/desktop/download/file/<név>`-re mutatnak; kiadás vagy manifest nélkül `204` |
+| `GET /api/desktop/download/file/:name` | `200` a kiadás fájlja a szerveren át (a frissítő ezt tölti le, így a kapu fejléce nem jut a GitHubhoz); `404`, `503`                 |
+
 ## Fixture-formátumok
 
 A conformance-esetek formátuma: [`conformance/README.md`](../conformance/README.md).
