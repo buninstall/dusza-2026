@@ -462,12 +462,18 @@
 .ed-section.k-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
 }
 
 .ed-section .seg-segment {
+  flex: 1 1 0;
   padding: 0 var(--space-2);
+}
+
+.ed-section .seg[data-orientation="vertical"] .seg-segment {
+  justify-content: flex-start;
+  padding: 0 var(--space-3);
 }
 
 .ed-section-title {
@@ -540,15 +546,31 @@
   gap: var(--space-1);
 }
 
-.ed-par {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
+.ed-section .ed-issues {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-2);
 }
 
-.ed-par .field {
-  flex: 1 1 7rem;
+.ed-section .ed-issue {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  min-height: var(--akna-h);
+}
+
+.ed-section .ed-issue .btn {
+  justify-content: flex-start;
+}
+
+.ed-section .ed-issue-jumps {
+  grid-column: 1 / -1;
+}
+
+.ed-par {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .ed-par .field-label {
@@ -557,11 +579,10 @@
 
 .ed-par .field-stepper {
   width: 100%;
-  max-width: 8.5rem;
 }
 
 .ed-par-compute {
-  flex: none;
+  width: 100%;
 }
 
 .ed-section .field-textarea {
@@ -729,6 +750,7 @@
   .ed-inspect {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     align-self: start;
   }
 

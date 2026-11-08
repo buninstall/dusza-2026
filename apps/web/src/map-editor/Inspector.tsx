@@ -244,7 +244,6 @@ export function DetailsBlock({
           }
         />
         <Button
-          size="sm"
           icon="robot"
           isDisabled={!canComputePar || isComputingPar}
           onPress={onComputePar}
@@ -280,6 +279,7 @@ export function DetailsBlock({
       />
       <Segmented
         label={hu.mapEditor.lampMode}
+        orientation="vertical"
         value={details.lampMode}
         onChange={(lampMode) => onChange({ ...details, lampMode })}
         options={[
