@@ -28,7 +28,7 @@ concurrency:
 jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     services:
       mysql:
         image: mysql:9.7
@@ -57,7 +57,7 @@ jobs:
 
   desktop-check:
     if: "!startsWith(github.ref, 'refs/tags/')"
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y $LINUX_DESKTOP_DEPS
@@ -76,7 +76,7 @@ jobs:
   desktop-prepare:
     needs: desktop-check
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
       version: ${{ steps.tag.outputs.version }}
@@ -104,13 +104,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: blacksmith-6vcpu-macos-15
+          - os: macos-latest
             args: --target universal-apple-darwin
             rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
-          - os: blacksmith-4vcpu-windows-2025
+          - os: windows-latest
             args: ""
             rust-targets: ""
-          - os: blacksmith-4vcpu-ubuntu-2204
+          - os: ubuntu-22.04
             args: ""
             rust-targets: ""
     runs-on: ${{ matrix.os }}
@@ -169,7 +169,7 @@ jobs:
 
   desktop-publish:
     needs: [desktop-prepare, desktop-build]
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       TAG: ${{ needs.desktop-prepare.outputs.tag }}
