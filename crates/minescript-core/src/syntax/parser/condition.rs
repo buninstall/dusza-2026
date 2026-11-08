@@ -42,9 +42,10 @@ fn operation(context: &LineContext<'_>) -> Option<Operation> {
     let [_, lhs, op, rhs] = line.words.as_slice() else {
         return None;
     };
-    let yields_bool = op.lexeme.binary_operator().is_some_and(|op| {
-        !matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul)
-    });
+    let yields_bool = op
+        .lexeme
+        .binary_operator()
+        .is_some_and(|op| !matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul));
     let simple = lhs.lexeme.is_simple_value() && rhs.lexeme.is_simple_value();
     (yields_bool && simple).then(|| Operation {
         text: format!("{} {} {}", lhs.text, op.text, rhs.text),
@@ -113,8 +114,11 @@ fn fresh_name(command: Command, text: &str) -> String {
                 .split(|ch: char| !ch.is_ascii_alphanumeric())
                 .any(|word| word == candidate && is_identifier(word))
     };
+    let bound = u32::try_from(text.len())
+        .unwrap_or(u32::MAX)
+        .saturating_add(2);
     std::iter::once(base.to_owned())
-        .chain((2u32..).map(|suffix| format!("{base}{suffix}")))
+        .chain((2..=bound).map(|suffix| format!("{base}{suffix}")))
         .find(|candidate| !taken(candidate))
         .unwrap_or_else(|| base.to_owned())
 }

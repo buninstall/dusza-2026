@@ -648,8 +648,18 @@ fn comparison_in_if_header_is_rewritten_with_set() {
     let diagnostic = parse(src).diagnostics.into_iter().next().unwrap();
     assert_eq!(diagnostic.code, DiagCode::SynExtraToken);
     assert_eq!((diagnostic.span.line, diagnostic.span.col_start), (3, 6));
-    assert!(diagnostic.message.contains("csak egyetlen érték"), "{}", diagnostic.message);
-    assert!(diagnostic.help.as_deref().unwrap().contains("set feltetel to a < b"));
+    assert!(
+        diagnostic.message.contains("csak egyetlen érték"),
+        "{}",
+        diagnostic.message
+    );
+    assert!(
+        diagnostic
+            .help
+            .as_deref()
+            .unwrap()
+            .contains("set feltetel to a < b")
+    );
     assert_eq!(diagnostic.fixes.len(), 1);
     assert_eq!(
         fixed(src),
@@ -700,8 +710,15 @@ fn header_operation_never_offers_the_meaning_changing_deletion() {
             .find(|diagnostic| diagnostic.span.line == 2)
             .unwrap();
         assert_eq!(diagnostic.code, DiagCode::SynExtraToken, "{src:?}");
-        assert!(diagnostic.fixes.is_empty(), "{src:?}: {:?}", diagnostic.fixes);
-        assert!(diagnostic.message.contains("csak egyetlen érték"), "{src:?}");
+        assert!(
+            diagnostic.fixes.is_empty(),
+            "{src:?}: {:?}",
+            diagnostic.fixes
+        );
+        assert!(
+            diagnostic.message.contains("csak egyetlen érték"),
+            "{src:?}"
+        );
     }
 }
 
@@ -709,8 +726,14 @@ fn header_operation_never_offers_the_meaning_changing_deletion() {
 fn header_operation_picks_a_name_that_is_not_taken() {
     let src = "set tovabb to 1\nset tovabb2 to 2\nset Tovabb3 to 3\nwhile tovabb < tovabb2\n    print tovabb\n";
     let rewritten = fixed(src);
-    assert!(rewritten.contains("set tovabb3 to tovabb < tovabb2\nwhile tovabb3\n"), "{rewritten}");
-    assert!(rewritten.ends_with("    print tovabb\n    set tovabb3 to tovabb < tovabb2\n"), "{rewritten}");
+    assert!(
+        rewritten.contains("set tovabb3 to tovabb < tovabb2\nwhile tovabb3\n"),
+        "{rewritten}"
+    );
+    assert!(
+        rewritten.ends_with("    print tovabb\n    set tovabb3 to tovabb < tovabb2\n"),
+        "{rewritten}"
+    );
 }
 
 #[test]
