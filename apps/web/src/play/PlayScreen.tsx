@@ -117,6 +117,7 @@ function useMineSight(
   lamp: LampSetup | undefined,
 ): MineSight {
   const result = usePlayback((state) => state.result);
+  const hasEnded = usePlayback((state) => state.hasEnded);
   const mode = lamp?.mode ?? "open";
   const track = useMemo(
     () => (result && isDarkMine(mode) ? lampTrack(map, start, result, mode) : null),
@@ -137,7 +138,7 @@ function useMineSight(
     sketch: lamp.sketch,
     frame,
     track: frame ? track : null,
-    isBroken: result !== null && isLampBroken(result),
+    isBroken: result !== null && hasEnded && isLampBroken(result),
   });
   return {
     exploration: {
