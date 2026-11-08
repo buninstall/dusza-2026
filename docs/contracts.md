@@ -107,15 +107,17 @@ Minden végpontra érvényes:
 
 ### Rendszer és hitelesítés
 
-| Metódus és útvonal        | Kérés                    | Válasz                                                                 |
-| ------------------------- | ------------------------ | ---------------------------------------------------------------------- |
-| `GET /api/health`         | –                        | `200 { ok: true, engineVersion }`                                      |
-| `POST /api/auth/register` | `{ username, password }` | `201 { user }`; `400 VALIDATION`, `409 USERNAME_TAKEN`                 |
-| `POST /api/auth/login`    | `{ username, password }` | `200 { user }` + cookie; `401 INVALID_CREDENTIALS`, `429 RATE_LIMITED` |
-| `POST /api/auth/logout`   | –                        | `200 { ok: true }`, a cookie törlődik                                  |
-| `GET /api/auth/me`        | –                        | `200 { user }`; `401`                                                  |
+| Metódus és útvonal        | Kérés                    | Válasz                                                                     |
+| ------------------------- | ------------------------ | -------------------------------------------------------------------------- |
+| `GET /api/health`         | –                        | `200 { ok: true, engineVersion }`                                          |
+| `POST /api/auth/register` | `{ username, password }` | `201 { user }`; `400 VALIDATION`, `409 USERNAME_TAKEN`, `429 RATE_LIMITED` |
+| `POST /api/auth/login`    | `{ username, password }` | `200 { user }` + cookie; `401 INVALID_CREDENTIALS`, `429 RATE_LIMITED`     |
+| `POST /api/auth/logout`   | –                        | `200 { ok: true }`, a cookie törlődik                                      |
+| `GET /api/auth/me`        | –                        | `200 { user }`; `401`                                                      |
 
 A felhasználónév 3–24 karakter `[A-Za-z0-9_]`, kis- és nagybetűtől függetlenül egyedi; a jelszó legalább 8 karakter. `user = { id, username, role: "admin" | "user", createdAt }`.
+
+Terhelési korlátok (memóriában, csúszó ablakkal; fordított proxy mögött a `--trust-proxy` miatt a valódi kliens-IP számít, teszt módban kikapcsolva): belépés felhasználónevenként és címenként 5/perc, címenként összesen 30/perc; regisztráció címenként 5/10 perc; futásbeküldés felhasználónként 60/perc; minden módosító API-kérés címenként 300/perc. Túllépéskor `429 RATE_LIMITED` magyar üzenettel.
 
 Példa:
 
@@ -169,7 +171,7 @@ Rögök (`stars`): 1, ha a futás legalább egy aranyat kibányászott; 2, ha mi
 | `GET /api/programs/:id`                  | –                          | `200 { program }` (csak a saját)                                                                                                                                                             |
 | `PUT /api/programs/:id`                  | `{ title?, source? }`      | `200 { program }`                                                                                                                                                                            |
 | `DELETE /api/programs/:id`               | –                          | `200 { ok: true }`                                                                                                                                                                           |
-| `POST /api/runs`                         | `{ mapVersionId, source }` | `201 { run, outcome, console, standing }`; `422 SYNTAX_ERROR` (nem mentődik); `404`                                                                                                          |
+| `POST /api/runs`                         | `{ mapVersionId, source }` | `201 { run, outcome, console, standing }`; `422 SYNTAX_ERROR` (nem mentődik); `404`; `429 RATE_LIMITED`                                                                                      |
 | `GET /api/runs/:id`                      | –                          | `200 { run, map: { content, lampMode } }`; `404` (privát térkép, és nem vagy érintett)                                                                                                       |
 | `GET /api/me/runs?page&pageSize`         | –                          | `200 { runs, page, pageSize, total, pageCount }`, a legfrissebb elöl, `pageSize` ≤ 100 (alapból 20)                                                                                          |
 

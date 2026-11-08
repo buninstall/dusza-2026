@@ -1,5 +1,5 @@
 import type { Engine } from "@minescript/engine";
-import type { LoginLimiter } from "./auth/rate-limit.ts";
+import type { LoginLimiter, RateLimits } from "./auth/rate-limit.ts";
 import type { Db } from "./db/client.ts";
 import type { Role } from "./db/schema.ts";
 import type { DesktopReleases } from "./services/desktop.ts";
@@ -15,6 +15,7 @@ export type Deps = {
   db: Db;
   engine: Engine;
   limiter: LoginLimiter;
+  rates?: RateLimits | undefined;
   now: () => number;
   desktop?: DesktopReleases | undefined;
 };

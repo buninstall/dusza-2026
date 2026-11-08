@@ -1,9 +1,11 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { HTTPException } from "hono/http-exception";
+import { isOverLimit } from "./auth/rate-limit.ts";
 import { isTransientDbError } from "./db/errors.ts";
 import type { AppEnv, Deps } from "./env.ts";
 import { apiError, messages } from "./lib/errors.ts";
+import { clientAddress } from "./lib/request.ts";
 import { adminRoutes } from "./routes/admin.ts";
 import { authRoutes } from "./routes/auth.ts";
 import { desktopRoutes } from "./routes/desktop.ts";
@@ -41,6 +43,8 @@ const requestBodyLimit = bodyLimit({
   },
 });
 
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
 export type AppOptions = {
   staticHandler?: MiddlewareHandler<AppEnv>;
   logError?: (error: unknown) => void;
@@ -51,6 +55,18 @@ export function createApp(deps: Deps, options: AppOptions = {}) {
   app.use("*", securityHeaders);
   app.use("/api/*", originCheck);
   app.use("/api/*", requestBodyLimit);
+  app.use("/api/*", async (c, next) => {
+    const isWrite = !SAFE_METHODS.has(c.req.method);
+    if (isWrite && isOverLimit(deps.rates?.writes, clientAddress(c))) {
+      return apiError(
+        c,
+        429,
+        "RATE_LIMITED",
+        "Túl sok kérés rövid idő alatt. Várj egy kicsit, és próbáld újra.",
+      );
+    }
+    await next();
+  });
   app.route("/api", buildApi(deps));
   if (options.staticHandler) {
     app.get("*", options.staticHandler);

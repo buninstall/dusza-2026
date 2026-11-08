@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { requireUser } from "../auth/middleware.ts";
 import { hashPassword, verifyPassword } from "../auth/password.ts";
+import { isOverLimit } from "../auth/rate-limit.ts";
 import {
   clearSessionCookie,
   createSession,
@@ -41,6 +42,14 @@ export function authRoutes(deps: Deps) {
   return new Hono<AppEnv>()
     .post("/register", zValidator("json", credentialsSchema, validationHook), async (c) => {
       const { username, password } = c.req.valid("json");
+      if (isOverLimit(deps.rates?.register, clientAddress(c))) {
+        return apiError(
+          c,
+          429,
+          "RATE_LIMITED",
+          "Túl sok regisztráció erről a címről. Várj néhány percet, és próbáld újra.",
+        );
+      }
       const created = await createAccount(deps, { username, password, role: "user" });
       if (!created) {
         return apiError(c, 409, "USERNAME_TAKEN", "Ez a felhasználónév már foglalt.");
@@ -51,7 +60,10 @@ export function authRoutes(deps: Deps) {
     .post("/login", zValidator("json", credentialsSchema, validationHook), async (c) => {
       const { username, password } = c.req.valid("json");
       const limiterKey = `${clientAddress(c)}|${username.toLowerCase()}`;
-      if (deps.limiter.isLimited(limiterKey)) {
+      if (
+        deps.limiter.isLimited(limiterKey) ||
+        isOverLimit(deps.rates?.loginAddress, clientAddress(c))
+      ) {
         return apiError(
           c,
           429,

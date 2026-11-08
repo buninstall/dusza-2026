@@ -1,5 +1,5 @@
 import { createApp } from "./app.ts";
-import { createLoginLimiter, LOGIN_LIMIT } from "./auth/rate-limit.ts";
+import { createLoginLimiter, createRateLimits, LOGIN_LIMIT } from "./auth/rate-limit.ts";
 import { DEFAULT_PORT, PORT_ATTEMPTS, parseConfig, type ServerConfig } from "./config.ts";
 import { dropDatabase } from "./db/admin.ts";
 import { type Database, openDatabase } from "./db/client.ts";
@@ -102,6 +102,7 @@ async function start(config: ServerConfig, database: Database) {
     db: database.db,
     engine: await loadEngine(),
     limiter: createLoginLimiter({ ...LOGIN_LIMIT, now: Date.now }),
+    rates: config.testMode ? undefined : createRateLimits(Date.now),
     now: Date.now,
     desktop: config.desktop ? createDesktopReleases(config.desktop) : undefined,
   };

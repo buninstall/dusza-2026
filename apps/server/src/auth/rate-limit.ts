@@ -51,3 +51,32 @@ export function createLoginLimiter(options: LimiterOptions): LoginLimiter {
     },
   };
 }
+
+export const RATE_LIMITS = {
+  loginAddress: { limit: 30, windowMs: 60_000 },
+  register: { limit: 5, windowMs: 600_000 },
+  runs: { limit: 60, windowMs: 60_000 },
+  writes: { limit: 300, windowMs: 60_000 },
+} as const;
+
+export type RateLimits = Record<keyof typeof RATE_LIMITS, LoginLimiter>;
+
+export function createRateLimits(now: () => number): RateLimits {
+  return {
+    loginAddress: createLoginLimiter({ ...RATE_LIMITS.loginAddress, now }),
+    register: createLoginLimiter({ ...RATE_LIMITS.register, now }),
+    runs: createLoginLimiter({ ...RATE_LIMITS.runs, now }),
+    writes: createLoginLimiter({ ...RATE_LIMITS.writes, now }),
+  };
+}
+
+export function isOverLimit(limiter: LoginLimiter | undefined, key: string): boolean {
+  if (!limiter) {
+    return false;
+  }
+  if (limiter.isLimited(key)) {
+    return true;
+  }
+  limiter.record(key);
+  return false;
+}

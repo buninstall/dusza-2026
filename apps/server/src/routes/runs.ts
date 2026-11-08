@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { requireUser } from "../auth/middleware.ts";
+import { isOverLimit } from "../auth/rate-limit.ts";
 import type { AppEnv, Deps } from "../env.ts";
 import { apiError, messages } from "../lib/errors.ts";
 import { validationHook } from "../lib/validation.ts";
@@ -22,6 +23,14 @@ export function runRoutes(deps: Deps) {
     })
     .post("/", zValidator("json", runSchema, validationHook), async (c) => {
       const { mapVersionId, source } = c.req.valid("json");
+      if (isOverLimit(deps.rates?.runs, `user:${c.var.user.id}`)) {
+        return apiError(
+          c,
+          429,
+          "RATE_LIMITED",
+          "Túl sok futás rövid idő alatt. Várj egy kicsit, és futtasd újra.",
+        );
+      }
       const version = await findVersion(deps.db, mapVersionId);
       const map = version ? await findMap(deps.db, version.mapId) : undefined;
       if (!version || !map || !canView(c.var.user, map)) {
