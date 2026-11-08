@@ -1,0 +1,97 @@
+name: CLI release
+
+on:
+  push:
+    tags: ["cli-v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Kiadás címkéje (például cli-v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cli-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: blacksmith-4vcpu-ubuntu-2404
+            target: x86_64-unknown-linux-gnu
+            asset: minescript-cli-linux-x64
+            binary: minescript
+          - os: blacksmith-4vcpu-windows-2025
+            target: x86_64-pc-windows-msvc
+            asset: minescript-cli-windows-x64.exe
+            binary: minescript.exe
+          - os: blacksmith-6vcpu-macos-15
+            target: aarch64-apple-darwin
+            asset: minescript-cli-macos-arm64
+            binary: minescript
+          - os: blacksmith-6vcpu-macos-15
+            target: x86_64-apple-darwin
+            asset: minescript-cli-macos-x64
+            binary: minescript
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: cli-${{ matrix.target }}
+      - shell: bash
+        run: cargo test --locked -p minescript-core -p minescript-cli
+      - shell: bash
+        run: cargo build --release --locked -p minescript-cli --target ${{ matrix.target }}
+      - shell: bash
+        run: |
+          mkdir -p dist
+          cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" "dist/${{ matrix.asset }}"
+      - if: matrix.target != 'x86_64-apple-darwin'
+        shell: bash
+        run: |
+          printf 'step forward 3\nmine here\nprint 1\n' > smoke.ms
+          printf '1 4\n>..@\n' > smoke.txt
+          "dist/${{ matrix.asset }}" --version
+          "dist/${{ matrix.asset }}" check smoke.ms
+          "dist/${{ matrix.asset }}" run --map smoke.txt smoke.ms
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+          retention-days: 7
+
+  publish:
+    needs: build
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - shell: bash
+        run: |
+          chmod +x dist/minescript-cli-linux-x64 dist/minescript-cli-macos-arm64 dist/minescript-cli-macos-x64
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+          ls -la dist
+      - shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "MineScript-interpreter ${TAG#cli-v}" --notes-file .github/cli-release-notes.md --latest=false
+          fi
