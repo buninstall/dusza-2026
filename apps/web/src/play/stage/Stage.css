@@ -59,6 +59,7 @@
 .bezel-id {
   display: flex;
   flex: 1 1 18rem;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
   min-width: 0;
@@ -91,16 +92,16 @@
   z-index: 1;
   display: block;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .bezel-facts {
   display: flex;
   flex: 0 1 auto;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-2);
   min-width: 0;
 }
 
@@ -113,12 +114,9 @@
 }
 
 .bezel-meta {
-  min-width: 0;
-  overflow: hidden;
   font: var(--type-mono-sm);
   line-height: 1.4;
   color: var(--c-text-muted);
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
