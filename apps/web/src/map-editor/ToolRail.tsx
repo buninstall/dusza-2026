@@ -105,6 +105,7 @@ export function ToolRail({
         onChange={(value) => onModeChange(MODES.find((item) => item === value) ?? "brush")}
         orientation="horizontal"
         className="ed-rack-group"
+        isDisabled={tool === "robot"}
         data-inactive={tool === "robot"}
       >
         <Label className="ed-label ed-group-label">{hu.mapEditor.modeLabel}</Label>

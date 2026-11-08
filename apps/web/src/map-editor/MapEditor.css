@@ -217,6 +217,19 @@
   color: var(--px-brass-dk);
 }
 
+.ed-slot.k-rack-slot[data-disabled] {
+  cursor: not-allowed;
+}
+
+.ed-slot.k-rack-slot[data-disabled]:not([data-selected]) {
+  box-shadow: none;
+}
+
+.ed-slot.k-rack-slot[data-disabled]:not([data-selected]) .ed-slot-art {
+  filter: none;
+  transform: none;
+}
+
 .ed-missing {
   position: absolute;
   top: var(--ed-px);

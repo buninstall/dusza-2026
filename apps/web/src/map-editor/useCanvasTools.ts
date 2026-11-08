@@ -192,6 +192,10 @@ export function useCanvasTools({
       return true;
     }
     if (nextMode) {
+      if (tool === "robot") {
+        announce(hu.mapEditor.robotSingle);
+        return true;
+      }
       setMode(nextMode);
       return true;
     }
