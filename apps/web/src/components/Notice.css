@@ -51,3 +51,53 @@
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+
+[data-skin="akna"] .notice {
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border: 0;
+  background-color: var(--px-iron-dk);
+  background-image: var(--k-tex-iron-dk);
+  background-size: var(--akna-tex) var(--akna-tex);
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset var(--akna-px-3) 0 0 0 var(--notice-ink),
+    inset calc(var(--akna-px) * -1) calc(var(--akna-px) * -1) 0 0 var(--px-iron-md);
+  image-rendering: pixelated;
+}
+
+[data-skin="akna"] .notice[data-tone="error"] {
+  --notice-ink: var(--px-led-red);
+}
+
+[data-skin="akna"] .notice[data-tone="success"] {
+  --notice-ink: var(--px-led-green);
+}
+
+[data-skin="akna"] .notice[data-tone="warning"] {
+  --notice-ink: var(--c-gold);
+}
+
+[data-skin="akna"] .notice[data-tone="info"] {
+  --notice-ink: var(--px-phosphor);
+}
+
+[data-skin="akna"] .notice-icon {
+  padding-top: 0;
+}
+
+[data-skin="akna"] .notice-content {
+  gap: var(--space-1);
+}
+
+[data-skin="akna"] .notice-title {
+  font: var(--type-help-strong);
+}
+
+[data-skin="akna"] .notice-body {
+  font: var(--akna-help);
+}
+
+[data-skin="akna"] .notice-actions {
+  padding-top: var(--space-1);
+}

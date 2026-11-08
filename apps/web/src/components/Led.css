@@ -76,3 +76,43 @@
     animation: none;
   }
 }
+
+[data-skin="akna"] .led {
+  --led-color: var(--px-glass-off);
+  --led-shine: var(--k-hl-off);
+}
+
+[data-skin="akna"] .led:not([data-state="off"]) {
+  --led-shine: var(--k-hl-lit);
+}
+
+[data-skin="akna"] .led[data-state="ok"] {
+  --led-color: var(--px-led-green);
+}
+
+[data-skin="akna"] .led[data-state="busy"] {
+  --led-color: var(--px-phosphor);
+}
+
+[data-skin="akna"] .led[data-state="warn"] {
+  --led-color: var(--px-led-amber);
+}
+
+[data-skin="akna"] .led[data-state="error"] {
+  --led-color: var(--px-led-red);
+}
+
+[data-skin="akna"] .led-lamp {
+  width: 8px;
+  height: 8px;
+  margin: var(--akna-px);
+  border: 0;
+  background:
+    var(--led-shine) 0 0 / var(--akna-px) var(--akna-px) no-repeat,
+    var(--led-color);
+  box-shadow: var(--akna-ring);
+}
+
+[data-skin="akna"] .led-lamp::after {
+  background: var(--px-glass-off);
+}

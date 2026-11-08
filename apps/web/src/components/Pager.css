@@ -88,3 +88,24 @@
     white-space: nowrap;
   }
 }
+
+[data-skin="akna"] .pager {
+  --pager-slot: var(--akna-h-sm);
+}
+
+[data-skin="akna"] .pager-current {
+  min-height: var(--akna-h-sm);
+  border: 0;
+  background: var(--c-gold);
+  color: var(--c-on-gold);
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-ore-edge),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-ore-lo),
+    inset calc(var(--akna-px-2) * -1) calc(var(--akna-px-2) * -1) 0 0 var(--px-flame-hi);
+  font: var(--akna-label);
+  font-weight: 800;
+}
+
+[data-skin="akna"] .pager-gap {
+  color: var(--c-text-faint);
+}

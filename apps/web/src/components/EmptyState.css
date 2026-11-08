@@ -16,3 +16,12 @@
   max-width: 36ch;
   color: var(--c-text-muted);
 }
+
+[data-skin="akna"] .empty {
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+}
+
+[data-skin="akna"] .empty-text {
+  font: var(--type-help);
+}

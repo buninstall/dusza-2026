@@ -75,3 +75,81 @@
   letter-spacing: var(--track-micro);
   text-transform: uppercase;
 }
+
+[data-skin="akna"] .data-table {
+  padding: var(--akna-px-2);
+  border: 0;
+  background-color: var(--px-iron-dk);
+  background-image: var(--k-tex-iron-dk);
+  background-size: var(--akna-tex) var(--akna-tex);
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-iron-edge),
+    inset calc(var(--akna-px-2) * -1) calc(var(--akna-px-2) * -1) 0 0 var(--px-iron-md);
+  image-rendering: pixelated;
+}
+
+[data-skin="akna"] .data-table-grid {
+  font: var(--akna-cell);
+}
+
+[data-skin="akna"] .data-table-grid th,
+[data-skin="akna"] .data-table-grid td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--akna-px) solid var(--px-iron-md);
+}
+
+[data-skin="akna"] .data-table-grid thead th {
+  padding-block: var(--space-2);
+  border-bottom: var(--akna-px) solid var(--px-iron-edge);
+  background-color: var(--px-iron-md);
+  background-image: var(--k-tex-iron-md);
+  background-size: var(--akna-tex) var(--akna-tex);
+  color: var(--px-brass-hi);
+  font: var(--akna-label);
+  letter-spacing: var(--akna-track);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+[data-skin="akna"] .data-table-grid tbody th {
+  font-weight: 700;
+}
+
+[data-skin="akna"] .data-table-grid tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+[data-skin="akna"] .data-table-grid tbody tr:hover {
+  background: var(--px-iron);
+}
+
+[data-skin="akna"] .data-table-grid .data-table-number {
+  color: var(--px-phosphor);
+  font: var(--akna-field);
+  font-weight: 700;
+}
+
+[data-skin="akna"] .data-table-grid thead th.data-table-number {
+  color: var(--px-brass-hi);
+  font: var(--akna-label);
+}
+
+[data-skin="akna"] .data-table-actions {
+  gap: var(--space-2);
+}
+
+[data-skin="akna"] .data-table-tag {
+  margin-left: var(--space-2);
+  padding: 3px var(--space-2) 2px;
+  border: 0;
+  background: var(--px-brass-hi);
+  color: var(--px-hazard-ink);
+  box-shadow:
+    inset 0 var(--akna-px) 0 0 var(--px-brass-lt),
+    inset 0 calc(var(--akna-px) * -1) 0 0 var(--px-brass),
+    var(--akna-ring-brass);
+  font: var(--akna-label);
+  letter-spacing: var(--akna-track);
+  vertical-align: 1px;
+}
