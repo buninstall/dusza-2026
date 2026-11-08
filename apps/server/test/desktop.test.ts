@@ -246,6 +246,8 @@ describe("asztali letöltés API", () => {
     return {
       latest: () => Promise.resolve(latest),
       resolve: () => Promise.resolve(resolved),
+      manifest: () => Promise.resolve(null),
+      file: () => Promise.resolve({ status: "missing" }),
     };
   }
 
@@ -282,5 +284,93 @@ describe("asztali letöltés API", () => {
     const app = createApp({ ...ctx.deps, desktop: fakeSource(null) });
     const response = await app.request("/api/desktop/download/exe");
     expect(response.status).toBe(503);
+  });
+});
+
+describe("asztali frissítő", () => {
+  const TOKEN = "github_pat_test";
+  const SIGNED = "https://release-assets.githubusercontent.com/signed";
+  const MANIFEST = {
+    version: "0.2.0",
+    pub_date: "2026-11-08T10:00:00Z",
+    platforms: {
+      "darwin-aarch64-app": {
+        url: "MineScript-Desktop_0.2.0_universal.app.tar.gz",
+        signature: "sig-mac",
+      },
+      "windows-x86_64-nsis": {
+        url: "MineScript.Desktop_0.2.0_x64-setup.exe",
+        signature: "sig-win",
+      },
+    },
+  };
+  const UPDATER_RELEASES = [
+    release("desktop-v0.2.0", "2026-11-08T10:00:00Z", [
+      ...DESKTOP_FILES,
+      "MineScript-Desktop_0.2.0_universal.app.tar.gz",
+    ]),
+  ];
+  const idOf = (name: string) =>
+    UPDATER_RELEASES[0]?.assets.find((item) => item.name === name)?.id ?? -1;
+
+  function github(manifestBody: unknown = MANIFEST) {
+    return fakeGithub((url) => {
+      if (url.includes("/releases?")) return Response.json(UPDATER_RELEASES);
+      const asset = /\/releases\/assets\/(\d+)$/.exec(url);
+      if (asset) {
+        return new Response(null, { status: 302, headers: { location: `${SIGNED}/${asset[1]}` } });
+      }
+      if (url === `${SIGNED}/${idOf("latest.json")}`) return Response.json(manifestBody);
+      if (url.startsWith(`${SIGNED}/`)) {
+        return new Response(`bytes-${url.slice(SIGNED.length + 1)}`, {
+          headers: { "content-length": "7" },
+        });
+      }
+      return new Response("nope", { status: 404 });
+    });
+  }
+
+  function source(fake: ReturnType<typeof github>) {
+    return createDesktopReleases({ repo: REPO, token: TOKEN, fetch: fake.fetch, log: () => {} });
+  }
+
+  test("a manifest letöltési címei a szerveren át mennek, a token nem kerül ki", async () => {
+    await using ctx = await createTestContext();
+    const fake = github();
+    const app = createApp({ ...ctx.deps, desktop: source(fake) });
+    const response = await app.request("http://127.0.0.1:8080/api/desktop/latest.json", {
+      headers: { host: "csapat13.example.hu", "x-forwarded-proto": "https" },
+    });
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as typeof MANIFEST;
+    expect(body.version).toBe("0.2.0");
+    expect(body.platforms["darwin-aarch64-app"]).toEqual({
+      url: "https://csapat13.example.hu/api/desktop/download/file/MineScript-Desktop_0.2.0_universal.app.tar.gz",
+      signature: "sig-mac",
+    });
+    expect(JSON.stringify(body)).not.toContain(TOKEN);
+    for (const call of fake.calls.filter((item) => item.url.startsWith(SIGNED))) {
+      expect(new Headers(call.init?.headers).get("authorization")).toBeNull();
+    }
+  });
+
+  test("a frissítő fájlja a szerveren át jön, átirányítás nélkül", async () => {
+    await using ctx = await createTestContext();
+    const app = createApp({ ...ctx.deps, desktop: source(github()) });
+    const name = "MineScript-Desktop_0.2.0_universal.app.tar.gz";
+    const response = await app.request(`/api/desktop/download/file/${name}`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("content-type")).toBe("application/octet-stream");
+    expect(await response.text()).toBe(`bytes-${idOf(name)}`);
+    expect((await app.request("/api/desktop/download/file/latest.json")).status).toBe(404);
+    expect((await app.request("/api/desktop/download/file/x.exe")).status).toBe(404);
+  });
+
+  test("hibás vagy hiányzó manifest esetén a frissítő 204-et kap", async () => {
+    await using ctx = await createTestContext();
+    const broken = createApp({ ...ctx.deps, desktop: source(github({ version: 1 })) });
+    expect((await broken.request("/api/desktop/latest.json")).status).toBe(204);
+    expect((await ctx.app.request("/api/desktop/latest.json")).status).toBe(204);
   });
 });
