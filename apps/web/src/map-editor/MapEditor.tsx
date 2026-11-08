@@ -127,12 +127,16 @@ export function MapEditor({
   const [isGenerating, setGenerating] = useState(false);
   const [isComputingPar, setComputingPar] = useState(false);
   const draft = history.present;
+  const selectTool = (next: Tool) => {
+    if (next !== tool) setMode("brush");
+    setTool(next);
+  };
   const tools = useCanvasTools({
     draft,
     dispatch,
     tool,
     mode,
-    setTool,
+    setTool: selectTool,
     setMode,
     announce: setAnnouncement,
   });
@@ -311,7 +315,7 @@ export function MapEditor({
           mode={mode}
           dir={draft.dir}
           hasRobot={draft.robot !== null}
-          onToolChange={setTool}
+          onToolChange={selectTool}
           onModeChange={setMode}
           onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
           actions={
@@ -395,8 +399,8 @@ export function MapEditor({
           unreachable={unreachable}
           headingRef={checkRef}
           onFixTitle={() => titleRef.current?.focus()}
-          onPickRobot={() => setTool("robot")}
-          onPickGold={() => setTool("gold")}
+          onPickRobot={() => selectTool("robot")}
+          onPickGold={() => selectTool("gold")}
           onGoTo={goTo}
         />
         <DetailsBlock
