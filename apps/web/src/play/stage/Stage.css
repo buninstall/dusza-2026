@@ -344,8 +344,29 @@
 }
 
 .stage[data-layout="cab"]:has(> .log) .stage-status {
-  max-height: min(var(--log-h), var(--scene-reserve));
-  margin-left: calc(55% + var(--space-2));
+  max-height: none;
+  margin-left: calc(40% + var(--space-2));
+  overflow: visible;
+}
+
+.stage[data-layout="cab"] .stage-status .report {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  padding-block: var(--space-2);
+}
+
+.stage[data-layout="cab"] .stage-status .report-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stage[data-layout="cab"] .stage-status .report-hint {
+  font: var(--type-mono-sm);
+  font-family: var(--font-text);
+}
+
+.stage[data-layout="cab"] .stage-status .report > .btn {
+  flex: none;
 }
 
 .ghost-chip {

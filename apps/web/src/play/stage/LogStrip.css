@@ -194,5 +194,5 @@
 }
 
 .stage[data-layout="cab"]:has(.stage-status:not(:empty)) > .log {
-  margin-right: calc(45% + var(--space-2));
+  margin-right: calc(60% + var(--space-2));
 }

@@ -121,3 +121,41 @@
     display: none;
   }
 }
+
+.stage[data-layout="cab"] .stage-status .medal {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: start;
+  gap: var(--space-1) var(--space-3);
+}
+
+.stage[data-layout="cab"] .stage-status .medal-stars {
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+.stage[data-layout="cab"] .stage-status .medal-text {
+  grid-row: 1 / 3;
+  grid-column: 2;
+}
+
+.stage[data-layout="cab"] .stage-status .medal-rank {
+  font: var(--type-help-strong);
+}
+
+.stage[data-layout="cab"] .stage-status .medal-hint {
+  font: var(--type-help);
+}
+
+.stage[data-layout="cab"] .stage-status .medal > a {
+  grid-column: 3;
+  justify-self: stretch;
+}
+
+.stage[data-layout="cab"] .stage-status .medal > .btn-icon-only,
+.stage[data-layout="cab"] .stage-status .medal > button:last-child {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+}
