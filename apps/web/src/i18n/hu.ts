@@ -480,6 +480,11 @@ export const hu = {
       "A fájl nem felel meg a MineScript nyelvtanának, ezért nem töltöttük be. A szerkesztő tartalma nem változott.",
     importFile: (name: string) => `Fájl: ${name}`,
     importMoreErrors: (count: number) => `…és még ${count} hiba.`,
+    importFixHint:
+      "A „Megnyitás javításra” gombbal a szerkesztőbe töltheted: a hibás sorok jelölve lesznek, futtatni a javítás után lehet.",
+    importOpenForFix: "Megnyitás javításra",
+    importedForFix: (name: string, lines: number) =>
+      `${capitalArticle(name)} ${name} program betöltve javításra: ${lines} hibás sor. Futtatás előtt javítsd ki.`,
     importEncoding: "A fájl nem érvényes UTF-8 szöveg, ezért nem töltöttük be.",
     importNul: "A fájl NUL karaktert tartalmaz, ezért nem programfájl.",
     importTooLong: (limit: string) =>

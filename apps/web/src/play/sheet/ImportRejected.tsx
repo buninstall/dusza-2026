@@ -7,18 +7,30 @@ export type RejectedImport = {
   name: string;
   message: string;
   diagnostics: readonly Diagnostic[];
+  text: string | null;
 };
+
+export type FaultyImport = { name: string; text: string; diagnostics: readonly Diagnostic[] };
 
 const LISTED_ERRORS = 8;
 
 type ImportRejectedProps = {
   rejected: RejectedImport | null;
   onClose: () => void;
+  onOpenForFix: (faulty: FaultyImport) => void;
 };
 
-export function ImportRejected({ rejected, onClose }: ImportRejectedProps) {
+function faultyOf(rejected: RejectedImport | null): FaultyImport | null {
+  if (rejected?.text == null || rejected.diagnostics.length === 0) {
+    return null;
+  }
+  return { name: rejected.name, text: rejected.text, diagnostics: rejected.diagnostics };
+}
+
+export function ImportRejected({ rejected, onClose, onOpenForFix }: ImportRejectedProps) {
   const listed = rejected?.diagnostics.slice(0, LISTED_ERRORS) ?? [];
   const hidden = (rejected?.diagnostics.length ?? 0) - listed.length;
+  const faulty = faultyOf(rejected);
   return (
     <ModalShell
       title={hu.play.importRejectedTitle}
@@ -49,7 +61,13 @@ export function ImportRejected({ rejected, onClose }: ImportRejectedProps) {
             </ul>
           ) : null}
           {hidden > 0 ? <p className="overlay-body">{hu.play.importMoreErrors(hidden)}</p> : null}
+          {faulty ? <p className="overlay-body">{hu.play.importFixHint}</p> : null}
           <div className="overlay-actions">
+            {faulty ? (
+              <Button icon="folder" onPress={() => onOpenForFix(faulty)}>
+                {hu.play.importOpenForFix}
+              </Button>
+            ) : null}
             <Button variant="primary" onPress={close} autoFocus>
               {hu.common.close}
             </Button>

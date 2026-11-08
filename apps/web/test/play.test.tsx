@@ -286,6 +286,32 @@ describe("program kezelése", () => {
     await waitFor(() => expect(editorText()).toBe("print 1\n"));
   });
 
+  test("importálás: a szintaktikailag hibás fájl kérésre megnyílik javításra, a hibás sorok jelölve", async () => {
+    const { user } = await openPlay();
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const choose = (file: File) => {
+      const list = { 0: file, length: 1, item: () => file };
+      Object.defineProperty(input, "files", { value: list, configurable: true });
+      fireEvent.change(input);
+    };
+    choose(new File(["print 1\u0000"], "bin.ms"));
+    const binary = await screen.findByRole("alertdialog", { name: "A program nem tölthető be" });
+    expect(within(binary).queryByRole("button", { name: "Megnyitás javításra" })).toBeNull();
+    await user.click(within(binary).getByRole("button", { name: "Bezárás" }));
+    choose(new File(["print 1\r\nstep  forward 1\r\nfoo\r\n"], "javit.ms"));
+    const rejected = await screen.findByRole("alertdialog", { name: "A program nem tölthető be" });
+    expect(rejected.textContent).toContain("Megnyitás javításra");
+    await user.click(within(rejected).getByRole("button", { name: "Megnyitás javításra" }));
+    expect(
+      await screen.findByText(
+        "A javit.ms program betöltve javításra: 2 hibás sor. Futtatás előtt javítsd ki.",
+      ),
+    ).toBeTruthy();
+    await waitFor(() => expect(editorText()).toBe("print 1\nstep  forward 1\nfoo\n"));
+    expect(screen.queryByRole("alertdialog", { name: "A program nem tölthető be" })).toBeNull();
+    expect(await screen.findByRole("region", { name: /^Hibalista/ })).toBeTruthy();
+  });
+
   test("exportálás és formázás", async () => {
     seedProgram("print  1\n");
     const click = vi

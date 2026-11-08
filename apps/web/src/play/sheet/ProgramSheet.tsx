@@ -17,7 +17,7 @@ import type { Block } from "./blocks.ts";
 import { FaultBar } from "./FaultBar.tsx";
 import { reportFormat } from "./format-report.ts";
 import { ImportConfirm, type PendingImport } from "./ImportConfirm.tsx";
-import { ImportRejected, type RejectedImport } from "./ImportRejected.tsx";
+import { type FaultyImport, ImportRejected, type RejectedImport } from "./ImportRejected.tsx";
 import { ProgramLibraryDialog } from "./ProgramLibraryDialog.tsx";
 import { SheetToolbar } from "./SheetToolbar.tsx";
 import "./Sheet.css";
@@ -71,7 +71,12 @@ export function ProgramSheet(props: ProgramSheetProps) {
   const importFile = async (file: File) => {
     const decoded = decodeProgramFile(await file.arrayBuffer());
     if (!decoded.ok) {
-      setRejectedImport({ name: file.name, message: decoded.message, diagnostics: [] });
+      setRejectedImport({
+        name: file.name,
+        message: decoded.message,
+        diagnostics: [],
+        text: null,
+      });
       return;
     }
     const errors = syntaxErrorsOf(decoded.text);
@@ -80,21 +85,37 @@ export function ProgramSheet(props: ProgramSheetProps) {
         name: file.name,
         message: hu.play.importRejectedSyntax,
         diagnostics: errors,
+        text: decoded.text,
       });
       return;
     }
-    const next = { name: file.name, text: decoded.text };
-    if (hasUnsavedWork(draft) && draft.source !== decoded.text) {
+    requestImport({ name: file.name, text: decoded.text, faultyLines: 0 });
+  };
+
+  const requestImport = (next: PendingImport) => {
+    if (hasUnsavedWork(draft) && draft.source !== next.text) {
       setPendingImport(next);
       return;
     }
     applyImport(next);
   };
 
-  const applyImport = ({ name, text }: PendingImport) => {
+  const openForFix = (faulty: FaultyImport) => {
+    setRejectedImport(null);
+    const faultyLines = new Set(faulty.diagnostics.map((diagnostic) => diagnostic.span.line)).size;
+    requestImport({ name: faulty.name, text: faulty.text, faultyLines });
+  };
+
+  const applyImport = ({ name, text, faultyLines }: PendingImport) => {
     setPendingImport(null);
     onDraftChange({ source: text, linked: null });
-    toast.success(hu.play.imported(name));
+    if (faultyLines === 0) {
+      toast.success(hu.play.imported(name));
+      return;
+    }
+    toast.info(hu.play.importedForFix(name, faultyLines));
+    ui.setFaultBarOpen(true);
+    returnFocusAfterMenu(() => editorRef.current?.focus());
   };
 
   const insert = (block: Block) => {
@@ -171,7 +192,11 @@ export function ProgramSheet(props: ProgramSheetProps) {
         }}
       />
       <output className="visually-hidden">{announcement}</output>
-      <ImportRejected rejected={rejectedImport} onClose={() => setRejectedImport(null)} />
+      <ImportRejected
+        rejected={rejectedImport}
+        onClose={() => setRejectedImport(null)}
+        onOpenForFix={openForFix}
+      />
       <ImportConfirm
         pending={pendingImport}
         onCancel={() => setPendingImport(null)}

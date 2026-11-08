@@ -2,7 +2,7 @@ import { Button } from "../../components/ui/Button.tsx";
 import { ModalShell } from "../../components/ui/Dialog.tsx";
 import { hu } from "../../i18n/hu.ts";
 
-export type PendingImport = { name: string; text: string };
+export type PendingImport = { name: string; text: string; faultyLines: number };
 
 type ImportConfirmProps = {
   pending: PendingImport | null;

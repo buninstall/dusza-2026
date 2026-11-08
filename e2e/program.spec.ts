@@ -11,6 +11,7 @@ import {
   login,
   openConsole,
   setSpeed,
+  syntaxReport,
 } from "./helpers.ts";
 import { LOOP_RECIPE, recipeBytes, recipePath, SYNTAX_RECIPE } from "./recipes.ts";
 
@@ -76,6 +77,28 @@ test("a szintaktikailag hibás programfájl nem töltődik be, a hibás sorok li
   await closeImportRejection(page);
   const after = await exportProgram(page);
   expect(after.bytes.equals(before.bytes)).toBe(true);
+});
+
+test("a hibás programfájl kérésre megnyílik javításra, futtatáskor a hibás sorai jelölve", async ({
+  page,
+}) => {
+  await importProgramFile(page, recipePath(SYNTAX_RECIPE.file));
+  const dialog = importRejection(page);
+  await dialog.getByRole("button", { name: "Megnyitás javításra" }).click();
+  await expect(dialog).toBeHidden();
+  const name = "szintaktikai-hibak.ms";
+  await expect(
+    page.getByText(
+      `${capitalArticle(name)} ${name} program betöltve javításra: ${SYNTAX_RECIPE.lines.length} hibás sor. Futtatás előtt javítsd ki.`,
+    ),
+  ).toBeVisible();
+  await expect(diagnostics(page)).toHaveAccessibleName(
+    new RegExp(`${SYNTAX_RECIPE.lines.length} hiba`),
+  );
+  const loaded = await exportProgram(page);
+  expect(loaded.bytes.equals(recipeBytes(SYNTAX_RECIPE.file))).toBe(true);
+  await page.getByRole("button", { name: "Futtatás" }).click();
+  await expect(syntaxReport(page)).toContainText(`Hibás sorok: ${SYNTAX_RECIPE.lines.join(", ")}.`);
 });
 
 test("a Windows-sorvégű programfájl egységes sorvéggel töltődik be", async ({ page }) => {

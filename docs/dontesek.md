@@ -2,26 +2,35 @@
 
 A specifikáció (`docs/feladat.md`) néhány ponton nyitva hagyja a pontos viselkedést. Az alábbi döntések kötelezőek: ezek szerint működik a motor, ezek alapján írjuk a conformance-eseteket, és ezekre hivatkozik a beadandó. Új döntés csak a csapat egyetértésével kerülhet be, következő sorszámmal.
 
-| Azonosító                                          | Téma                   | Spec         |
-| -------------------------------------------------- | ---------------------- | ------------ |
-| [D1](#d1--az-üres-blokk-szabályos)                 | Üres blokk             | 2 (EBNF)     |
-| [D2](#d2--fájl-normalizálás)                       | Fájl-normalizálás      | 1, 2.1       |
-| [D3](#d3--szóközök)                                | Szóközök               | 2.1/2        |
-| [D4](#d4--behúzás)                                 | Behúzás                | 2.1/1        |
-| [D5](#d5--számliterálok)                           | Számliterálok          | 2            |
-| [D6](#d6--futásidejű-egész)                        | Futásidejű egész       | 2.2.1, 2.2.2 |
-| [D7](#d7--lépésszámlálás)                          | Lépésszámlálás         | 3.4          |
-| [D8](#d8--step-forward-n)                          | step forward n         | 2.2.3, 2.2.4 |
-| [D9](#d9--turn-by-n)                               | turn by n              | 2.2.3        |
-| [D10](#d10--hibaelsőbbség)                         | Hibaelsőbbség          | 2.2.1, 2.2.4 |
-| [D11](#d11--felfedezés)                            | Felfedezés             | 2.2.3, 3.4   |
-| [D12](#d12--print)                                 | print                  | 2.2.3        |
-| [D13](#d13--ranglista)                             | Ranglista              | 3.4, 3.5     |
-| [D14](#d14--térképverziók)                         | Térképverziók          | 3.2, 3.5     |
-| [D15](#d15--térképformátum)                        | Térképformátum         | 1, 3.2       |
-| [D16](#d16--szintaktikailag-hibás-program-nem-fut) | Hibás program          | 2.1/5, 3.4   |
-| [D17](#d17--minden-sor-ellenőrzése)                | Minden sor ellenőrzése | 2.1/5        |
-| [D18](#d18--koordináták)                           | Koordináták            | –            |
+| Azonosító                                                  | Téma                   | Spec          |
+| ---------------------------------------------------------- | ---------------------- | ------------- |
+| [D1](#d1--az-üres-blokk-szabályos)                         | Üres blokk             | 2 (EBNF)      |
+| [D2](#d2--fájl-normalizálás)                               | Fájl-normalizálás      | 1, 2.1        |
+| [D3](#d3--szóközök)                                        | Szóközök               | 2.1/2         |
+| [D4](#d4--behúzás)                                         | Behúzás                | 2.1/1         |
+| [D5](#d5--számliterálok)                                   | Számliterálok          | 2             |
+| [D6](#d6--futásidejű-egész)                                | Futásidejű egész       | 2.2.1, 2.2.2  |
+| [D7](#d7--lépésszámlálás)                                  | Lépésszámlálás         | 3.4           |
+| [D8](#d8--step-forward-n)                                  | step forward n         | 2.2.3, 2.2.4  |
+| [D9](#d9--turn-by-n)                                       | turn by n              | 2.2.3         |
+| [D10](#d10--hibaelsőbbség)                                 | Hibaelsőbbség          | 2.2.1, 2.2.4  |
+| [D11](#d11--felfedezés)                                    | Felfedezés             | 2.2.3, 3.4    |
+| [D12](#d12--print)                                         | print                  | 2.2.3         |
+| [D13](#d13--ranglista)                                     | Ranglista              | 3.4, 3.5      |
+| [D14](#d14--térképverziók)                                 | Térképverziók          | 3.2, 3.5      |
+| [D15](#d15--térképformátum)                                | Térképformátum         | 1, 3.2        |
+| [D16](#d16--szintaktikailag-hibás-program-nem-fut)         | Hibás program          | 2.1/5, 3.4    |
+| [D17](#d17--minden-sor-ellenőrzése)                        | Minden sor ellenőrzése | 2.1/5         |
+| [D18](#d18--koordináták)                                   | Koordináták            | –             |
+| [D19](#d19--szintaktikai-hibák-pontos-leképezése)          | Szintaktikai hibák     | 2, 2.1        |
+| [D20](#d20--a-futás-eseménysora-trace)                     | Eseménysor             | 3.4           |
+| [D21](#d21--kiértékelés-lépésről-lépésre)                  | Kiértékelés            | 2.2.1–2.2.4   |
+| [D22](#d22--formázó)                                       | Formázó                | –             |
+| [D23](#d23--programfájl-importja)                          | Programimport (régi)   | 1, 3.3        |
+| [D24](#d24--pontosítások-a-referencia-interpreter-alapján) | Pontosítások           | 1, 2          |
+| [D25](#d25--formázó-linter-és-javítások)                   | Formázó, linter        | –             |
+| [D26](#d26--programfájl-importja-szigorúan)                | Programimport          | 1, 3.3        |
+| [D27](#d27--hibás-programfájl-megnyitása-javításra)        | Megnyitás javításra    | 1, 2.1/5, 3.3 |
 
 ## D1 – Az üres blokk szabályos
 
@@ -324,3 +333,13 @@ Spec: 1, 3.3. A D23 helyett.
 - A szerkesztés továbbra is engedékeny: a szerkesztőben a program lehet hibás, csak futtatás előtt kell helyessé válnia (3.3, D16).
 
 Indoklás: az 1. fejezet szerint a hibás formátumú importált fájlt érthető hibaüzenettel kell jelezni, és nem szabad betölteni; a 3.3 „a 2. fejezetben leírt formátumú programfájl” importját írja. A szerkesztés közbeni hibás állapotot a 3.3 a szerkesztésre engedi meg, nem az importra.
+
+## D27 – Hibás programfájl megnyitása javításra
+
+Spec: 1, 2.1/5, 3.3. A D26 kiegészítése.
+
+- A szintaktikailag hibás programfájl magától továbbra sem kerül a szerkesztőbe (D26). A hibaablak „Megnyitás javításra” gombjával a felhasználó kifejezett kérésére betölthető; ha a szerkesztőben nem mentett munka van, előbb megerősítést kér.
+- Betöltés után a Hibalista nyitva van, a hibás sorok a szerkesztőben jelölve, és egy értesítés mondja meg, hány sor hibás. Futtatni csak a javítás után lehet (D16).
+- A nem UTF-8, a NUL karaktert tartalmazó és a 100 000 karakternél hosszabb fájl nem nyitható meg javításra.
+
+Indoklás: a 2.1 szerint, mivel a program fájlból is importálható, nem feltételezhető, hogy szintaktikailag helyes, ezért futtatás előtt kell ellenőrizni; a bevezető az importálást, az átszerkesztést, a szintaktikai ellenőrzést és a futtatást egymás után sorolja fel. Az 1. fejezet szerint viszont a hibás tartalmat nem szabad betölteni. Így mindkét olvasat teljesül: kérés nélkül semmi hibás nem töltődik be, a hibás fájlt mégsem kell újragépelni a javításhoz.
