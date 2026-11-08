@@ -60,6 +60,23 @@ function visibleBox(element: Element): Box | null {
   return box;
 }
 
+function clampTo(rect: Box, frame: Box): Box {
+  const half = NUGGET_PX / 2;
+  const x = Math.min(Math.max((rect.left + rect.right) / 2, frame.left + half), frame.right - half);
+  const y = Math.min(Math.max((rect.top + rect.bottom) / 2, frame.top + half), frame.bottom - half);
+  return { left: x, right: x, top: y, bottom: y };
+}
+
+function cartBox(cart: Element): Box | null {
+  const shown = visibleBox(cart);
+  if (shown) {
+    return shown;
+  }
+  const scene = cart.closest(".mine-scene");
+  const frame = scene ? visibleBox(scene) : null;
+  return frame ? clampTo(cart.getBoundingClientRect(), frame) : null;
+}
+
 function centerOf(rect: Box): Point {
   return {
     x: Math.round((rect.left + rect.right) / 2 - NUGGET_PX / 2),
@@ -171,13 +188,11 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
       return;
     }
     const cell = root.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-    const hud = root.querySelector("[data-gold-target] .hud-cart-art");
     const scene = root.querySelector("[data-scene-cart]");
-    const sceneBox = scene ? visibleBox(scene) : null;
-    const target = sceneBox ? scene : hud;
+    const hud = scene ? null : root.querySelector("[data-gold-target] .hud-cart-art");
     const from = cell ? visibleBox(cell) : null;
-    const to = sceneBox ?? (hud ? visibleBox(hud) : null);
-    if (!from || !to || !target) {
+    const to = scene ? cartBox(scene) : hud ? visibleBox(hud) : null;
+    if (!from || !to) {
       return;
     }
     const cart = centerOf(to);

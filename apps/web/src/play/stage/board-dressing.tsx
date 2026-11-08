@@ -256,7 +256,7 @@ export function boardDressing(input: DressingInput, mood: RobotMood): Dressing {
   const dressed = { ...input, fault };
   const { marks, notes } = faultMarks(fault);
   const flash =
-    showFault && (input.phase === "error" || input.phase === "limit") ? (
+    fault?.kind === "wall" ? (
       <span key={`flash-${input.runId}`} aria-hidden="true" className="board-flash" />
     ) : null;
   return {

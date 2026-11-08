@@ -276,6 +276,7 @@ export function MineBoard({
               walkTiles={look.walkTiles ?? 1}
               stepMs={stepMs}
               isIdle={look.isIdle ?? false}
+              isSnapped={size === "scene"}
               {...(look.beam ? { beam: look.beam } : {})}
             />
           ) : null}

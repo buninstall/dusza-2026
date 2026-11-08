@@ -1,14 +1,15 @@
 import type { Pos, RobotState } from "@minescript/engine";
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties, useRef, useState } from "react";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { SPRITE_ID, TILE_SIZE, TILE_SPRITES } from "../pixel/tiles.ts";
 import "./MineBoard.css";
 import { useQuarterTurns } from "./quarter-turns.ts";
+import { type MotionKind, useSnappedRobot } from "./robot-motion.ts";
 
 export type RobotMood = "run" | "ok" | "error" | "limit" | "stopped";
 
 export type RobotMotion = {
-  kind: "walk" | "mine" | "settle" | "shake" | "bump" | "still";
+  kind: MotionKind;
   key: number;
 };
 
@@ -64,6 +65,7 @@ type RobotLayerProps = {
   walkTiles?: number;
   stepMs?: number;
   isIdle?: boolean;
+  isSnapped?: boolean;
   beam?: { isScan: boolean; key: string };
 };
 
@@ -74,10 +76,19 @@ export function RobotLayer({
   walkTiles = 1,
   stepMs = 0,
   isIdle = false,
+  isSnapped = false,
   beam,
 }: RobotLayerProps) {
   const turns = useQuarterTurns(robot.dir);
   const drift = useTurnDrift(turns);
+  const robotRef = useRef<HTMLDivElement>(null);
+  const motionRef = useSnappedRobot({
+    isOn: isSnapped,
+    robotRef,
+    pos: robot.pos,
+    kind: motion?.kind ?? "still",
+    stepMs,
+  });
   const style = {
     ...placement(robot.pos),
     "--walk-tiles": walkTiles,
@@ -86,11 +97,13 @@ export function RobotLayer({
   } as CSSProperties;
   return (
     <div
+      ref={robotRef}
       className="board-robot"
       style={style}
       data-testid="robot"
       data-mood={mood}
       data-idle={isIdle}
+      data-snap={isSnapped}
     >
       <div className="board-robot-heading" style={{ "--turns": turns } as CSSProperties}>
         {beam ? (
@@ -100,6 +113,7 @@ export function RobotLayer({
         ) : null}
         <div
           key={motion?.key ?? 0}
+          ref={motionRef}
           className="board-robot-motion"
           data-motion={motion?.kind ?? "still"}
         >
