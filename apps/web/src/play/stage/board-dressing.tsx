@@ -251,7 +251,8 @@ function withBeam(look: RobotLook, beam: RobotBeam | null): RobotLook {
 }
 
 export function boardDressing(input: DressingInput, mood: RobotMood): Dressing {
-  const showFault = input.frame?.atEnd ?? false;
+  const showFault =
+    (input.frame?.atEnd ?? false) && (input.phase === "error" || input.phase === "limit");
   const fault = showFault ? input.fault : null;
   const dressed = { ...input, fault };
   const { marks, notes } = faultMarks(fault);

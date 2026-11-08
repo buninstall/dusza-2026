@@ -131,14 +131,14 @@ export const usePlayback = create<PlaybackState>()((set, get) => {
       if (!result || status !== "playing") {
         return;
       }
-      const next = clampIndex(result, index + 1);
-      const atEnd = next >= result.events.length;
-      if (atEnd) {
-        set({ index: next, status: "finished", hasEnded: true });
+      if (index >= result.events.length) {
+        set({ status: "finished", hasEnded: true });
         return;
       }
+      const next = clampIndex(result, index + 1);
+      const isLast = next >= result.events.length;
       const line = result.events[next - 1]?.line;
-      if (line !== undefined && breakpoints.has(line)) {
+      if (!isLast && line !== undefined && breakpoints.has(line)) {
         set({ index: next, status: "paused", breakHit: { line, index: next } });
         return;
       }
