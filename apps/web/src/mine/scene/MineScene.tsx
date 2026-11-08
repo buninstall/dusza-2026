@@ -3,6 +3,7 @@ import { MineBoard } from "../MineBoard.tsx";
 import { posKey } from "../tiles-model.ts";
 import {
   anchorCenter,
+  fitRatio,
   fitScale,
   frameCenter,
   placeView,
@@ -139,7 +140,8 @@ export function MineScene({
       return 1;
     }
     const fit = fitScale(fitBox(layout), room, quantum);
-    const resting = restingScale(fit, Math.max(map.cols, map.rows), quantum);
+    const ratio = fitRatio(fitBox(layout), room);
+    const resting = restingScale(fit, Math.max(map.cols, map.rows), quantum, ratio);
     const floor = board.interaction === undefined ? 1 : targetScale(T, quantum);
     return zoomScale(Math.max(resting, floor), zoom, quantum);
   };
@@ -187,7 +189,9 @@ export function MineScene({
     const size = `${map.cols}x${map.rows}`;
     if (dims.current !== size) {
       dims.current = size;
-      centerRef.current = null;
+      if (zoom <= 1) {
+        centerRef.current = null;
+      }
     }
     const scale = scaleNow();
     const anchor = anchorRef.current;

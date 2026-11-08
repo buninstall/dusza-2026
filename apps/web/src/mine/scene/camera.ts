@@ -3,6 +3,7 @@ import type { Box, Point } from "./layout.ts";
 export const MAX_SCALE = 16;
 export const SMALL_MAP = 8;
 export const SMALL_MAP_SHRINK = 0.7;
+export const SHRINK_FADE_CELLS = 5;
 
 export type Viewport = { width: number; height: number };
 
@@ -18,22 +19,32 @@ export type View = {
   spanH: number;
 };
 
-export function fitScale(frame: Box, viewport: Viewport, quantum = 1): number {
+export function fitRatio(frame: Box, viewport: Viewport): number {
   const width = frame.x1 - frame.x0;
   const height = frame.y1 - frame.y0;
   if (width <= 0 || height <= 0 || viewport.width <= 0 || viewport.height <= 0) {
     return 1;
   }
-  const ratio = Math.min(viewport.width / width, viewport.height / height);
+  return Math.min(viewport.width / width, viewport.height / height);
+}
+
+export function fitScale(frame: Box, viewport: Viewport, quantum = 1): number {
+  const ratio = fitRatio(frame, viewport);
   const scale = Math.floor(ratio / quantum) * quantum;
   return Math.min(Math.max(scale, 1), MAX_SCALE);
 }
 
-export function restingScale(fit: number, longest: number, quantum = 1): number {
-  if (longest > SMALL_MAP) {
+export function shrinkFactor(longest: number): number {
+  const beyond = Math.max(0, longest - SMALL_MAP);
+  return Math.min(1, SMALL_MAP_SHRINK + ((1 - SMALL_MAP_SHRINK) * beyond) / SHRINK_FADE_CELLS);
+}
+
+export function restingScale(fit: number, longest: number, quantum = 1, ratio = fit): number {
+  const factor = shrinkFactor(longest);
+  if (factor >= 1) {
     return fit;
   }
-  const shrunk = Math.floor((fit * SMALL_MAP_SHRINK) / quantum) * quantum;
+  const shrunk = Math.floor((ratio * factor) / quantum) * quantum;
   return Math.min(Math.max(shrunk, 1), fit);
 }
 

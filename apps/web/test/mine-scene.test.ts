@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { rustFraction, rustLevel } from "../src/lib/rust-wear.ts";
 import {
   anchorCenter,
+  fitRatio,
   fitScale,
   placeView,
   restingScale,
@@ -39,11 +40,25 @@ describe("bányajelenet kamerája", () => {
     expect(fitScale(frame, { width: 50, height: 20 })).toBe(1);
   });
 
-  test("a kis pályák alapnagyítása 30%-kal kisebb, a nagyoké nem változik", () => {
+  test("a kis pályák alapnagyítása 30%-kal kisebb, a határ fölött fokozatosan éri el a teljeset", () => {
     expect(restingScale(5, 8)).toBe(3);
     expect(restingScale(5, 8, 0.5)).toBe(3.5);
-    expect(restingScale(5, 9)).toBe(5);
+    expect(restingScale(10, 9)).toBe(7);
+    expect(restingScale(10, 13)).toBe(10);
+    expect(restingScale(5, 15)).toBe(5);
     expect(restingScale(1, 3)).toBe(1);
+  });
+
+  test("egy mezővel nagyobb pálya mezője sosem lesz nagyobb a szerkesztőben", () => {
+    const tileAt = (cells: number) => {
+      const frame = { x0: 0, y0: 0, x1: cells * 16 + 40, y1: cells * 16 + 40 };
+      const room = { width: 1100, height: 760 };
+      const fit = fitScale(frame, room, 0.5);
+      return restingScale(fit, cells, 0.5, fitRatio(frame, room)) * 16;
+    };
+    for (let cells = 2; cells < 15; cells += 1) {
+      expect(tileAt(cells + 1)).toBeLessThanOrEqual(tileAt(cells));
+    }
   });
 
   test("a nagyítás a szorzót kerekíti, és sosem megy egy alá", () => {
