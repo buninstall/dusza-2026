@@ -19,6 +19,7 @@ export const browse = {
   favoriteAdded: (title: string) => `${title} a kedvencek közé került.`,
   favoriteRemoved: (title: string) => `${title} lekerült a kedvencek közül.`,
   favoriteFailed: "A kedvencet nem sikerült menteni. Próbáld újra.",
+  dailyAuthor: "Generálta: a rendszer",
 };
 
 export const library = {

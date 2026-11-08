@@ -233,6 +233,11 @@
   color: var(--c-reward);
 }
 
+.daily-day {
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
 .daily-actions {
   grid-area: actions;
   display: flex;

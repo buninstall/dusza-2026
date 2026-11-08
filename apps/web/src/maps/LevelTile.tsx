@@ -21,10 +21,12 @@ type LevelTileProps = {
   style?: CSSProperties | undefined;
 };
 
-export function MapFacts({ map }: { map: MapSummary }) {
+export function MapFacts({ map, author }: { map: MapSummary; author?: string | undefined }) {
   return (
     <p className="lv-facts">
-      {map.isStory ? null : <span className="lv-author">{hu.maps.by(map.ownerName)}</span>}
+      {map.isStory ? null : (
+        <span className="lv-author">{author ?? hu.maps.by(map.ownerName)}</span>
+      )}
       {map.difficulty ? (
         <span className="lv-difficulty" data-level={map.difficulty}>
           {hu.maps.difficulty[map.difficulty]}

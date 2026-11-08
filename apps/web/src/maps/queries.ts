@@ -8,6 +8,7 @@ import {
 import { toast } from "../components/ui/Toast.tsx";
 import { browse } from "../i18n/hu-browse.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
+import { msUntilNextDay } from "./daily-clock.ts";
 import type { DifficultyFilter } from "./mode.ts";
 import type { MapSort } from "./sort.ts";
 
@@ -101,7 +102,12 @@ export const leaderboardQuery = (mapId: number, versionId?: number) =>
   });
 
 export const dailyQuery = () =>
-  queryOptions({ queryKey: ["maps", "daily"], queryFn: fetchDaily, staleTime: 60_000 });
+  queryOptions({
+    queryKey: ["maps", "daily"],
+    queryFn: fetchDaily,
+    staleTime: 60_000,
+    refetchInterval: () => msUntilNextDay(Date.now()),
+  });
 
 export const storyBoardQuery = () =>
   queryOptions({ queryKey: ["story", "leaderboard"], queryFn: fetchStoryBoard });

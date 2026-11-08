@@ -141,6 +141,9 @@ describe("napi kihívás a pályák oldalán", () => {
       within(card).getByRole("link", { name: "Játék a napi pályán" }).getAttribute("href"),
     ).toBe("/play/50");
     expect(within(card).getByRole("img", { name: "2 / 3 rög" })).toBeTruthy();
+    expect(within(card).getByRole("heading", { name: "Napi kihívás november 6." })).toBeTruthy();
+    expect(within(card).getByText("Generálta: a rendszer")).toBeTruthy();
+    expect(within(card).queryByText(/Készítette/)).toBeNull();
     expect(await screen.findByRole("img", { name: "3 / 3 rög" })).toBeTruthy();
     expect(screen.getByText("2 arany · 4 lépés")).toBeTruthy();
     await waitFor(() => expect(callsTo("GET", "/maps/daily")).toHaveLength(1));
