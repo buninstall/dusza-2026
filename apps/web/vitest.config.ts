@@ -8,6 +8,7 @@ export default defineConfig({
     include: ["test/**/*.test.{ts,tsx}"],
     setupFiles: ["test/setup.ts"],
     testTimeout: 15_000,
+    maxWorkers: "50%",
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
