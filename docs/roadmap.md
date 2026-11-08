@@ -10,7 +10,7 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 
 - [x] Szkenner és parser a D19 és a D24 szerint, minden `SYN_*` kóddal és biztonságos javításokkal.
 - [x] VM a D6–D12, D20 és D21 szerint, minden futásidejű hibával és a lépéskorláttal.
-- [x] A conformance-tesztek bekapcsolva (309 eset), a WASM-teszt és a differenciális teszt kapu nélkül fut.
+- [x] A conformance-tesztek bekapcsolva (318 eset), a WASM-teszt és a differenciális teszt kapu nélkül fut.
 
 ### P2
 
@@ -58,7 +58,7 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 
 ### P1
 
-- [x] Conformance-készlet: 309 kézzel levezetett eset (120 runtime, 131 syntax, 58 maps), minden spec-szabályra és D-döntésre (`docs/tesztterv.md`).
+- [x] Conformance-készlet: 318 kézzel levezetett eset (128 runtime, 131 syntax, 59 maps), minden spec-szabályra és D-döntésre (`docs/tesztterv.md`).
 - [x] Független referencia-interpreter a specből, 100% sorlefedettséggel.
 - [x] Seedelt generátor és differenciális teszt (2000 seed minden futáskor, egyszeri próbán 30 000 eltérés nélkül).
 - [ ] `docs/beadando.md` kitöltése a végleges funkciókkal és képernyőképekkel.
