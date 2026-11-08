@@ -8,11 +8,6 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
-  transition: opacity var(--motion-enter) var(--ease-out);
-}
-
-.lb-layout[data-turning="true"] {
-  opacity: 0.5;
 }
 
 .lb-side {
