@@ -5,8 +5,6 @@ import { pageHeight } from "../maps/deep/world.ts";
 import { holdReady, releaseAfterPaint } from "./readiness.ts";
 import "../maps/deep/MineBackdrop.css";
 
-const REBUILD_GAP_MS = 220;
-
 function contentBox(main: HTMLElement): { x0: number; x1: number } {
   const r = main.getBoundingClientRect();
   const style = getComputedStyle(main);
@@ -33,16 +31,12 @@ export function PageBackdrop({ routeKey, isCalm }: PageBackdropProps) {
     const header = document.querySelector(".shell-header");
     if (!wrap || !canvas || !mid || !main || !header || routeKey.length === 0) return;
     let stop: () => void = () => undefined;
-    let timer = 0;
-    let lastBuild = 0;
     let shape = "";
     let hasBuilt = false;
     const measure = () => `${window.innerWidth}:${pageHeight()}`;
     const start = () => {
-      window.clearTimeout(timer);
       stop();
       shape = measure();
-      lastBuild = performance.now();
       const release = hasBuilt ? () => undefined : holdReady();
       hasBuilt = true;
       stop =
@@ -59,10 +53,7 @@ export function PageBackdrop({ routeKey, isCalm }: PageBackdropProps) {
       releaseAfterPaint(release);
     };
     const onChange = () => {
-      if (measure() === shape) return;
-      const wait = REBUILD_GAP_MS - (performance.now() - lastBuild);
-      window.clearTimeout(timer);
-      timer = window.setTimeout(start, Math.max(0, wait));
+      if (measure() !== shape) start();
     };
     start();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onChange);
@@ -71,7 +62,6 @@ export function PageBackdrop({ routeKey, isCalm }: PageBackdropProps) {
     return () => {
       observer?.disconnect();
       window.removeEventListener("resize", onChange);
-      window.clearTimeout(timer);
       stop();
     };
   }, [isStatic, routeKey, isCalm]);

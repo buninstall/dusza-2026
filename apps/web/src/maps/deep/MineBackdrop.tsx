@@ -13,7 +13,6 @@ type MineBackdropProps = {
 };
 
 const SEEN_KEY = "minescript.mine.seen";
-const REBUILD_GAP_MS = 220;
 
 function readSeen(key: string): Set<number> | null {
   const raw = readStorage(key);
@@ -82,17 +81,13 @@ export function MineBackdrop({
     root.addEventListener("focusin", enter);
     root.addEventListener("pointerleave", leave);
     root.addEventListener("focusout", leave);
-    let timer = 0;
-    let lastBuild = 0;
     let signature = "";
     const shape = () =>
       `${window.innerWidth}:${root.offsetWidth}x${root.offsetHeight}:${root.querySelectorAll(`[${MINE_ATTR}]`).length}`;
     const start = () => {
-      window.clearTimeout(timer);
       sceneRef.current?.();
       sceneRef.current = null;
       signature = shape();
-      lastBuild = performance.now();
       const digId = digRef.current;
       const release = hasStartedRef.current ? () => undefined : holdReady();
       const next = startDeepScene({
@@ -116,11 +111,7 @@ export function MineBackdrop({
       }
     };
     const onResize = () => {
-      if (shape() === signature) return;
-      const wait = REBUILD_GAP_MS - (performance.now() - lastBuild);
-      window.clearTimeout(timer);
-      if (wait <= 0) start();
-      else timer = window.setTimeout(start, wait);
+      if (shape() !== signature) start();
     };
     let frame = 0;
     const onContent = () => {
@@ -130,18 +121,8 @@ export function MineBackdrop({
         if (shape() !== signature) start();
       });
     };
-    const isResize = () => window.innerWidth !== lastWidth;
-    let lastWidth = window.innerWidth;
-    const onLayout = () => {
-      if (isResize()) {
-        lastWidth = window.innerWidth;
-        onResize();
-      } else {
-        onContent();
-      }
-    };
     start();
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onLayout);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(onResize);
     observer?.observe(root);
     const mutations = new MutationObserver(onContent);
     mutations.observe(root, { childList: true, subtree: true });
@@ -155,7 +136,6 @@ export function MineBackdrop({
       mutations.disconnect();
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", onResize);
-      window.clearTimeout(timer);
     };
   }, [rootRef, layoutKey, isStatic]);
 

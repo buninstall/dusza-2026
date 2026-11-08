@@ -437,7 +437,7 @@ function decorateLevel(world: World, level: Level, rand: () => number, lanterns:
     [b.x - 9, "left"],
     [b.x + b.w + 4, "right"],
   ] as const) {
-    if (side === "left" && lx < level.x0 + 2) continue;
+    if (level.isFront || (side === "left" && lx < level.x0 + 2)) continue;
     world.rect(lx + 2, b.y + 2, 1, 4, "steel-edge");
     lanterns.push({
       x: lx,
@@ -457,10 +457,6 @@ function decorateLevel(world: World, level: Level, rand: () => number, lanterns:
     isSmall: false,
   });
   if (level.isFront) {
-    for (let x = b.x - 4; x < b.x + b.w + 4; x += 1) {
-      for (let y = b.y - 10; y < b.y - 7; y += 1)
-        world.put(x, y, (x + y) % 8 < 4 ? "alert" : "alert-ink");
-    }
     for (let k = 0; k < 6; k += 1) {
       const rx = level.x0 + 4 + Math.floor(rand() * Math.max(1, b.x - level.x0 - 6));
       world.rect(rx, level.rail - 2, 3, 2, "rubble");
@@ -629,7 +625,7 @@ export function buildMine(input: LayoutInput): Mine {
     ? { data: world.data.slice(), mask: world.mask.slice() }
     : null;
   all.forEach((level, i) => {
-    carveNiche(world, level.box, i * 17 + 5);
+    if (!level.isFront) carveNiche(world, level.box, i * 17 + 5);
     if (level.pit) carvePit(world, level.pit, i * 13 + 2);
     carveLevel(world, level, i * 31, xEnd, isNarrow);
   });
@@ -645,7 +641,8 @@ export function buildMine(input: LayoutInput): Mine {
   const lanterns: Lantern[] = [];
   for (const level of all) decorateLevel(world, level, rand, lanterns);
   for (const chapter of chapters) decorateChapter(world, chapter, rand, lanterns, front);
-  for (const level of all) world.setMask(level.box.x, level.box.y, level.box.w, level.box.h, NICHE);
+  for (const level of levels)
+    world.setMask(level.box.x, level.box.y, level.box.w, level.box.h, NICHE);
   for (const { box } of chapters) world.setMask(box.x, box.y, box.w, box.h, NICHE);
   const signLamp = billboard(world, input.plate, groundY);
   const dig = rock ? setupDig(world, levels, shaftX, rock) : null;
