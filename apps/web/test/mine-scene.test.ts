@@ -18,6 +18,7 @@ import {
   sightOf,
 } from "../src/mine/scene/paint-board.ts";
 import { cartLevel } from "../src/mine/scene/paint-fixtures.ts";
+import { rustShare } from "../src/mine/scene/rust.ts";
 
 const MAP: MineMap = {
   rows: 2,
@@ -123,5 +124,14 @@ describe("rozsdásodás", () => {
     expect(rustLevel(0)).toBe(0);
     expect(rustLevel(0.5)).toBe(2);
     expect(rustLevel(1)).toBe(4);
+  });
+});
+
+describe("rozsda a bánya vasán", () => {
+  test("tisztán indul kevés rozsdával, a legmagasabb szinten sem lepi be a vasat", () => {
+    expect(rustShare(0)).toBeCloseTo(0.04, 3);
+    expect(rustShare(4)).toBeCloseTo(0.32, 3);
+    expect(rustShare(99)).toBe(rustShare(4));
+    expect(rustShare(-3)).toBe(rustShare(0));
   });
 });

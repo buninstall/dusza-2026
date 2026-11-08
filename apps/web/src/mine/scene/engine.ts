@@ -17,6 +17,7 @@ import {
   type RobotLight,
   readRobot,
 } from "./robot-light.ts";
+import { readRustLevel, rustify } from "./rust.ts";
 import { type Colors, readColors } from "./scene-art.ts";
 import { shadeView } from "./shade.ts";
 
@@ -37,6 +38,7 @@ export type SceneEngine = {
 };
 
 const IDLE_FRAME_MS = 45;
+const RUST_CHECK_MS = 2000;
 const BURST_S = 0.6;
 const GLINT_S = 0.5;
 const GLINT_RATE = 0.6;
@@ -86,6 +88,8 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
   let walls = "";
   let mined = new Set<number>();
   let painted = "";
+  let rustLevel = 0;
+  let rustCheck = 0;
 
   const isSolid = (layout: SceneLayout, kinds: readonly TileKind[]) => (x: number, y: number) => {
     const c = Math.floor((x - layout.bx) / T);
@@ -147,6 +151,8 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     const goldCount = minedCount + w.kinds.filter((kind) => kind === "gold").length;
     paintFixtures(staticCtx, w.layout, colors, preset, cartLevel(minedCount, goldCount));
     w.albedo = staticCtx.getImageData(0, 0, w.layout.W, w.layout.H).data;
+    rustLevel = readRustLevel(host);
+    rustify(w.albedo, w.layout, colors, rustLevel);
   };
 
   const noteMined = (w: World) => {
@@ -272,6 +278,13 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     const v = view;
     if (!w || !v || document.hidden) {
       return;
+    }
+    if (input && now - rustCheck > RUST_CHECK_MS) {
+      rustCheck = now;
+      if (readRustLevel(host) !== rustLevel) {
+        repaint(w, input);
+        isDirty = true;
+      }
     }
     const nextRobot = readRobot(host, canvas, v);
     const hasMoved =
