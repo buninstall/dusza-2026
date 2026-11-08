@@ -18,7 +18,7 @@ pub fn open(app: &AppHandle) -> tauri::Result<WebviewWindow> {
         || WebviewUrl::App("index.html".into()),
         WebviewUrl::External,
     );
-    let bootstrap = bootstrap(&target);
+    let bootstrap = bootstrap(app, &target);
 
     let navigation_app = app.clone();
     let popup_app = app.clone();
@@ -118,12 +118,12 @@ fn open_external(app: &AppHandle, url: &Url) {
     let _ = app.opener().open_url(url.as_str(), None::<&str>);
 }
 
-pub fn bootstrap(target: &Target) -> String {
+pub fn bootstrap(app: &AppHandle, target: &Target) -> String {
     let shell = serde_json::json!({
         "url": target.remote.as_str(),
         "gateway": target.local.is_some(),
         "tauri": tauri::VERSION,
-        "version": env!("CARGO_PKG_VERSION"),
+        "version": app.package_info().version.to_string(),
         "platform": std::env::consts::OS,
     });
     include_str!("bootstrap.js").replace("__SHELL__", &shell.to_string())

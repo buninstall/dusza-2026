@@ -27,7 +27,7 @@ pub fn show(app: &AppHandle) -> tauri::Result<()> {
         .background_color(BACKGROUND)
         .title_bar_style(tauri::TitleBarStyle::Transparent)
         .hidden_title(true)
-        .initialization_script(bootstrap(&app.state::<Target>()))
+        .initialization_script(bootstrap(app, &app.state::<Target>()))
         .on_navigation(move |url| {
             if url.scheme() == "tauri" {
                 return true;
