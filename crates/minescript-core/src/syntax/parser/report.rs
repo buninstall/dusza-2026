@@ -1,3 +1,4 @@
+use super::condition;
 use super::context::LineContext;
 use super::faults::TokenFault;
 use super::layout::IndentFault;
@@ -124,6 +125,9 @@ fn grammar_fault(fault: GrammarFault<'_>, context: &LineContext<'_>) -> Diagnost
     match fault {
         GrammarFault::UnknownCommand(word) => unknown_command(word, context),
         GrammarFault::Missing { expected, command } => missing_token(expected, command, context),
+        GrammarFault::Extra { word, command } if condition::is_header_operation(command, word) => {
+            condition::header_operation(command, word, context)
+        }
         GrammarFault::Extra { word, command } => {
             Diagnostic::new(DiagCode::SynExtraToken, context.word_span(&word))
                 .with_message(messages::extra_token(word.text))

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { DatabaseError, mysqlErrorCode, toDatabaseError } from "../src/db/errors.ts";
 import {
   assertDatabaseName,
@@ -10,6 +10,9 @@ import {
   temporaryDatabaseName,
   withDatabase,
 } from "../src/db/url.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 describe("adatbázis-URL", () => {
   test("a teljes URL minden részét kiolvassa", () => {

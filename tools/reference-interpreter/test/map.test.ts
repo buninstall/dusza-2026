@@ -31,6 +31,16 @@ describe("parseMapText", () => {
     expect(codes("1 3\n><v")).toEqual(["2:error:MAP_MULTIPLE_ROBOTS"]);
   });
 
+  test("a jelek oszlopa és tartománya UTF-16 egységben értendő", () => {
+    const spans = (text: string) =>
+      parseMapText(text).diagnostics.map((d) => [d.code, d.span.colStart, d.span.from, d.span.to]);
+    expect(spans("1 2\n>😀")).toEqual([["MAP_BAD_SYMBOL", 2, 5, 7]]);
+    expect(spans("1 5\n@😀>^.")).toEqual([
+      ["MAP_BAD_SYMBOL", 2, 5, 7],
+      ["MAP_MULTIPLE_ROBOTS", 5, 8, 9],
+    ]);
+  });
+
   test("figyelmeztetések érvényes térképen", () => {
     expect(codes("1 1\n^")).toEqual(["1:warning:MAP_NO_GOLD"]);
     expect(codes("2 2\nv#\n#@")).toEqual(["3:warning:MAP_UNREACHABLE_GOLD"]);

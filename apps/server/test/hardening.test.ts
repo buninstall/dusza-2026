@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { asc, eq } from "drizzle-orm";
 import { MAX_BODY_BYTES } from "../src/app.ts";
 import { createLoginLimiter, MAX_TRACKED_KEYS } from "../src/auth/rate-limit.ts";
@@ -7,6 +7,9 @@ import { mapVersions, runs } from "../src/db/schema.ts";
 import { DatabaseUrlError, parseDatabaseUrl } from "../src/db/url.ts";
 import { attachmentDisposition } from "../src/lib/request.ts";
 import { createTestContext, type ErrorBody, json, ORIGIN, SPEC_MAP } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 type MapResponse = {
   map: { id: number; title: string; description: string; currentVersionId: number };

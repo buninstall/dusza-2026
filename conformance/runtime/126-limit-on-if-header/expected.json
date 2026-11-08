@@ -1,0 +1,17 @@
+{
+  "description": "3 előkészítő sor + 332 ciklusmenet × 2 törzssor + 333 while-kiértékelés = 1000 lépés; a következő sor egy if fejléce, ott áll le a futás.",
+  "specRefs": [
+    "3.4"
+  ],
+  "decisions": [
+    "D7"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "INSTRUCTION_COUNT_LIMIT_EXCEEDED",
+    "line": 7
+  },
+  "gold": 0,
+  "steps": 1000,
+  "console": []
+}

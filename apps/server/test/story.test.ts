@@ -1,7 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { seedDemo } from "../src/seed/index.ts";
 import { chapterReached } from "../src/services/story.ts";
 import { createTestContext, json } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 type Board = {
   maxStars: number;

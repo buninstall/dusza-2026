@@ -1,5 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { createTestContext, type ErrorBody, json } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 describe("hitelesítés", () => {
   test("regisztráció, me, kijelentkezés", async () => {

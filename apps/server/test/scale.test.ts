@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { eq, isNull } from "drizzle-orm";
 import { maps, mapVersions, programs, users } from "../src/db/schema.ts";
 import { CROWD_MAPS_PER_PLAYER, crowdPlayers, crowdTitle, ensureCrowd } from "../src/seed/crowd.ts";
@@ -7,6 +7,9 @@ import { TUTORIAL_MAPS } from "../src/seed/maps.ts";
 import { backfillDifficulty } from "../src/services/maps.ts";
 import { PROGRAM_LIMIT } from "../src/services/programs.ts";
 import { createTestContext, type ErrorBody, json, type TestClient } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 type Summary = {
   id: number;

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { asc, count, eq, gt } from "drizzle-orm";
 import { maps, programs, users } from "../src/db/schema.ts";
 import { DEMO_ACCOUNTS, seedDemo } from "../src/seed/index.ts";
@@ -8,6 +8,9 @@ import { SANDBOX_MAPS } from "../src/seed/sandbox.ts";
 const ALL_MAPS = TUTORIAL_MAPS.length + SANDBOX_MAPS.length;
 
 import { createTestContext, json } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 describe("demó-seed", () => {
   test("minden oktató térkép érvényes", async () => {

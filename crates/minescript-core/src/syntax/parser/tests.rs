@@ -641,3 +641,83 @@ fn line_splitting_follows_d2_exactly() {
     );
     assert_eq!(positions("\0"), vec![(DiagCode::SynInvalidToken, 1, 1)]);
 }
+
+#[test]
+fn comparison_in_if_header_is_rewritten_with_set() {
+    let src = "set a to 1\nset b to 2\nif a < b\n    print a\nelse\n    print b\n";
+    let diagnostic = parse(src).diagnostics.into_iter().next().unwrap();
+    assert_eq!(diagnostic.code, DiagCode::SynExtraToken);
+    assert_eq!((diagnostic.span.line, diagnostic.span.col_start), (3, 6));
+    assert!(diagnostic.message.contains("csak egyetlen érték"), "{}", diagnostic.message);
+    assert!(diagnostic.help.as_deref().unwrap().contains("set feltetel to a < b"));
+    assert_eq!(diagnostic.fixes.len(), 1);
+    assert_eq!(
+        fixed(src),
+        "set a to 1\nset b to 2\nset feltetel to a < b\nif feltetel\n    print a\nelse\n    print b\n"
+    );
+}
+
+#[test]
+fn comparison_in_while_header_is_recomputed_at_the_end_of_the_body() {
+    let src = "set n to 0\nwhile n < 3\n    set n to n + 1\n    if n = 2\n      print n\nprint 9\n";
+    let diagnostics = parse(src).diagnostics;
+    let first = diagnostics.first().unwrap();
+    assert!(first.help.as_deref().unwrap().contains("while tovabb"));
+    let rewritten = apply(src, first.fixes.first().unwrap());
+    assert_eq!(
+        rewritten,
+        "set n to 0\nset tovabb to n < 3\nwhile tovabb\n    set n to n + 1\n    if n = 2\n      print n\n    set tovabb to n < 3\nprint 9\n"
+    );
+}
+
+#[test]
+fn rewritten_while_header_runs_like_the_intended_loop() {
+    let nested = "set n to 0\nif true\n  while n < 3\n    set n to n + 1\n    print n\nprint 9\n";
+    assert_eq!(
+        fixed(nested),
+        "set n to 0\nif true\n  set tovabb to n < 3\n  while tovabb\n    set n to n + 1\n    print n\n    set tovabb to n < 3\nprint 9\n"
+    );
+    let repaired = fixed(nested);
+    let map = crate::map::parse_map("1 1\n>\n").map.unwrap();
+    let result = crate::runtime::run(&repaired, &map);
+    assert!(result.is_ok(), "{:?}", result.outcome);
+    assert_eq!(result.console, ["1", "2", "3", "9"]);
+}
+
+#[test]
+fn header_operation_never_offers_the_meaning_changing_deletion() {
+    for src in [
+        "set n to 1\nwhile n + 1\n    print n\n",
+        "set n to 1\nif n < 3 4\n    print n\n",
+        "set n to 1\nwhile n < 3\n",
+        "set n to 1\nwhile n < 3\n\tprint n\n",
+        "set n to 1\nwhile n < 3\n    print n\n  print n\n",
+        "set n to 1\nif n < isThere\n    print n\n",
+    ] {
+        let diagnostic = parse(src)
+            .diagnostics
+            .into_iter()
+            .find(|diagnostic| diagnostic.span.line == 2)
+            .unwrap();
+        assert_eq!(diagnostic.code, DiagCode::SynExtraToken, "{src:?}");
+        assert!(diagnostic.fixes.is_empty(), "{src:?}: {:?}", diagnostic.fixes);
+        assert!(diagnostic.message.contains("csak egyetlen érték"), "{src:?}");
+    }
+}
+
+#[test]
+fn header_operation_picks_a_name_that_is_not_taken() {
+    let src = "set tovabb to 1\nset tovabb2 to 2\nset Tovabb3 to 3\nwhile tovabb < tovabb2\n    print tovabb\n";
+    let rewritten = fixed(src);
+    assert!(rewritten.contains("set tovabb3 to tovabb < tovabb2\nwhile tovabb3\n"), "{rewritten}");
+    assert!(rewritten.ends_with("    print tovabb\n    set tovabb3 to tovabb < tovabb2\n"), "{rewritten}");
+}
+
+#[test]
+fn other_extra_tokens_still_offer_deletion() {
+    let diagnostic = only("print 1 2\n");
+    assert_eq!(diagnostic.fixes.len(), 1);
+    let diagnostic = only("if true false\n");
+    assert_eq!(diagnostic.code, DiagCode::SynExtraToken);
+    assert_eq!(diagnostic.fixes.len(), 1);
+}

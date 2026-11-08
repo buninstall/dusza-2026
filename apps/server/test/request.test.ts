@@ -1,5 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { behindProxy, forwardedClient } from "../src/lib/request.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 function requestWith(headers: Record<string, string>): Request {
   return new Request("http://localhost/api/auth/login", { headers });

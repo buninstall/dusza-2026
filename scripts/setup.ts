@@ -58,8 +58,8 @@ if (await capture(["wasm-opt", "--version"])) {
   warn("A wasm-opt nincs telepítve; a .wasm optimalizálatlan lesz (just setup --with-wasm-opt).");
 }
 
-info("bun install");
-await runOrFail(["bun", "install"]);
+info("bun i");
+await runOrFail(["bun", "i"]);
 
 await runOrFail(["bun", join(root, "scripts", "build-wasm.ts")]);
 await runOrFail(["bun", join(root, "scripts", "gen-types.ts")]);

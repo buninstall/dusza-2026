@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { createApp } from "../src/app.ts";
 import { parseConfig } from "../src/config.ts";
 import {
@@ -11,6 +11,9 @@ import {
   RETRY_MS,
 } from "../src/services/desktop.ts";
 import { createTestContext } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 const REPO = "csapat/minescript";
 

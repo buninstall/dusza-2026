@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,6 +6,9 @@ import { brotliDecompressSync } from "node:zlib";
 import { createApp } from "../src/app.ts";
 import { createStaticHandler, mimeTypeOf, pickEncoding } from "../src/static.ts";
 import { createTestContext } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 const dir = mkdtempSync(join(tmpdir(), "minescript-static-"));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));

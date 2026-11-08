@@ -1,0 +1,34 @@
+{
+  "description": "A robot kezdőmezője üres kamra: visszanézve rá az isThere 0 igaz, az isThere 2 hamis.",
+  "specRefs": [
+    "1",
+    "2.2.3"
+  ],
+  "decisions": [
+    "D11"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 6,
+  "console": [
+    "true",
+    "false"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 1,
+    "dir": "west"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ]
+}

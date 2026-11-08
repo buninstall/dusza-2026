@@ -1,0 +1,35 @@
+{
+  "description": "1×1-es térképen mind a négy irányban a térképen kívüli mezőt falnak látja az isThere (kelet, észak, nyugat, dél); az isThere 2 és 0 hamis, és semmi nem lesz felfedezve.",
+  "specRefs": [
+    "2.2.3",
+    "3.4"
+  ],
+  "decisions": [
+    "D9",
+    "D11"
+  ],
+  "outcome": {
+    "kind": "ok"
+  },
+  "gold": 0,
+  "steps": 15,
+  "console": [
+    "true",
+    "true",
+    "true",
+    "true",
+    "false",
+    "false"
+  ],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "south"
+  },
+  "discovered": [
+    {
+      "row": 0,
+      "col": 0
+    }
+  ]
+}

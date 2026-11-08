@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { maps } from "../src/db/schema.ts";
 import { loadEngine } from "../src/engine.ts";
 import { seedDemo } from "../src/seed/index.ts";
@@ -7,6 +7,9 @@ import { computeParSteps, generateLayout, generateMap } from "../src/services/ge
 import { solveRoute } from "../src/services/route-solver.ts";
 import { starsFor } from "../src/services/stars.ts";
 import { createTestContext, json } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 type Summary = {
   id: number;

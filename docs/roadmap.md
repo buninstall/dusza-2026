@@ -31,8 +31,8 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 - [x] Térképszerkesztő: méret (1–15), festés, robot és kezdőirány, import/export, élő ellenőrzés, csak érvényes térkép menthető, törlés.
 - [x] Ranglista-oldal: térképenként és verziónként, több arany előrébb, egyenlőségnél a kevesebb lépés; verzióváltó és a saját sor kiemelése.
 - [x] Program mentése a szerverre (`/api/programs`) és betöltése a játék oldalon (Programtár).
-- [x] Felfedezett mezők: „Lámpafény” (csak a bejárt és az `isThere`-rel vizsgált mezők) és „Teljes térkép” nézet.
-- [x] Programfájl importja: a szintaktikai hibás fájl betöltésekor hibaüzenet jelzi a hibák számát és az első hibás sort.
+- [x] Felfedezett mezők: a bejárt és az `isThere`-rel vizsgált mezők kiemelve, a többi elsötétítve; sötét pályán „Lámpafény” és „Teljes térkép” nézet.
+- [x] Programfájl importja: a szintaktikailag hibás fájl nem töltődik be, a hibaablak a fájl nevét és a hibás sorokat mutatja, kérésre javításra megnyitható (D26, D27).
 
 ### P2
 
@@ -62,11 +62,11 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 - [x] Független referencia-interpreter a specből, 100% sorlefedettséggel.
 - [x] Seedelt generátor és differenciális teszt (2000 seed minden futáskor, egyszeri próbán 30 000 eltérés nélkül).
 - [ ] `docs/beadando.md` kitöltése a végleges funkciókkal és képernyőképekkel.
-- [ ] Demó-tartalom ellenőrzése a kész motorral (`--reset-demo`).
+- [x] Demó-tartalom ellenőrzése a kész motorral (`--reset-demo`): minden seedelt térkép érvényes, minden seedelt futás eredménye egyezik a motoréval, a célértékek a pontos optimumok.
 
 ### P2
 
-- [ ] e2e: a kiírás minden funkciója a felületen keresztül, 320 / 768 / 1024 / 1440 px-en, mindkét témában.
+- [ ] e2e: a kiírás minden funkciója a felületen keresztül, 320 / 768 / 1024 / 1440 px-en.
 
 ### P3
 

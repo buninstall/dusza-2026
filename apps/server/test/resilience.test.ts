@@ -1,10 +1,13 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { createApp } from "../src/app.ts";
 import { createLoginLimiter, LOGIN_LIMIT } from "../src/auth/rate-limit.ts";
 import type { Db } from "../src/db/client.ts";
 import { isTransientDbError } from "../src/db/errors.ts";
 import { loadEngine } from "../src/engine.ts";
 import type { Deps } from "../src/env.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 function failingDb(error: Error): Db {
   return new Proxy(

@@ -1,0 +1,33 @@
+{
+  "description": "Észak felé a felső szélen túl: egy lépés után a következő lelépne, E_BEDROCK_HIT, a robot a felső sorban marad.",
+  "specRefs": [
+    "2.2.3",
+    "2.2.4"
+  ],
+  "decisions": [
+    "D8"
+  ],
+  "outcome": {
+    "kind": "runtimeError",
+    "code": "E_BEDROCK_HIT",
+    "line": 1
+  },
+  "gold": 0,
+  "steps": 1,
+  "console": [],
+  "robot": {
+    "row": 0,
+    "col": 0,
+    "dir": "north"
+  },
+  "discovered": [
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ]
+}

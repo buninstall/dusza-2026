@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { eq } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/mysql-core";
 import type { RowDataPacket } from "mysql2/promise";
@@ -27,6 +27,9 @@ import {
   testServer,
   testTarget,
 } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 async function query<T extends RowDataPacket>(
   target: DatabaseTarget,

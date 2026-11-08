@@ -5,7 +5,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use minescript_core::diagnostics::has_errors;
-use minescript_core::{Diagnostic, Outcome, RunResult, Severity, map_info, parse, parse_map};
+use minescript_core::{
+    Diagnostic, Event, Outcome, Pos, RunResult, Severity, map_info, parse, parse_map,
+};
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 
@@ -13,6 +15,7 @@ use serde::de::DeserializeOwned;
 struct ExpectedDiagnostic {
     code: String,
     line: Option<u32>,
+    col: Option<u32>,
 }
 
 #[derive(Deserialize)]
@@ -37,6 +40,8 @@ struct RuntimeCase {
     steps: u32,
     console: Vec<String>,
     robot: Option<ExpectedRobot>,
+    discovered: Option<Vec<Pos>>,
+    events: Option<Vec<Event>>,
 }
 
 #[derive(Deserialize)]
@@ -124,19 +129,27 @@ fn compare_errors(report: &mut Mismatches, expected: &[ExpectedDiagnostic], actu
         .iter()
         .filter(|diagnostic| diagnostic.severity == Severity::Error)
         .collect();
-    errors.sort_by_key(|diagnostic| diagnostic.span.line);
-    let actual_codes: Vec<(String, u32)> = errors
+    errors.sort_by_key(|diagnostic| (diagnostic.span.line, diagnostic.span.col_start));
+    let actual_codes: Vec<(String, u32, u32)> = errors
         .iter()
-        .map(|diagnostic| (code_name(&diagnostic.code), diagnostic.span.line))
+        .map(|diagnostic| {
+            (
+                code_name(&diagnostic.code),
+                diagnostic.span.line,
+                diagnostic.span.col_start,
+            )
+        })
         .collect();
-    let expected_codes: Vec<(String, Option<u32>)> = expected
+    let expected_codes: Vec<(String, Option<u32>, Option<u32>)> = expected
         .iter()
-        .map(|diagnostic| (diagnostic.code.clone(), diagnostic.line))
+        .map(|diagnostic| (diagnostic.code.clone(), diagnostic.line, diagnostic.col))
         .collect();
     let matches = expected_codes.len() == actual_codes.len()
         && expected_codes.iter().zip(&actual_codes).all(
-            |((code, line), (actual_code, actual_line))| {
-                code == actual_code && line.is_none_or(|line| line == *actual_line)
+            |((code, line, col), (actual_code, actual_line, actual_col))| {
+                code == actual_code
+                    && line.is_none_or(|line| line == *actual_line)
+                    && col.is_none_or(|col| col == *actual_col)
             },
         );
     if !matches {
@@ -179,6 +192,12 @@ fn check_runtime(case: &Path) -> Mismatches {
         if let Some(dir) = &robot.dir {
             report.compare("robot.dir", dir, &code_name(&result.final_robot.dir));
         }
+    }
+    if let Some(discovered) = &expected.discovered {
+        report.compare("discovered", discovered, &result.discovered);
+    }
+    if let Some(events) = &expected.events {
+        report.compare("events", events, &result.events);
     }
     report
 }

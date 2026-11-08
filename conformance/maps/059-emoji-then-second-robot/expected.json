@@ -1,0 +1,24 @@
+{
+  "description": "Az emoji két UTF-16 egység: az ismeretlen jel a 2., a második robot a 4. oszlopon áll.",
+  "specRefs": [
+    "1"
+  ],
+  "decisions": [
+    "D18",
+    "D24",
+    "D25"
+  ],
+  "valid": false,
+  "diagnostics": [
+    {
+      "code": "MAP_BAD_SYMBOL",
+      "line": 2,
+      "col": 2
+    },
+    {
+      "code": "MAP_MULTIPLE_ROBOTS",
+      "line": 2,
+      "col": 4
+    }
+  ]
+}

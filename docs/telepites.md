@@ -61,7 +61,7 @@ A forrásban mindez a `scripts/deploy/` alatt van: `minescriptctl` (vezérlő), 
 2. **Frissítés**: `git fetch origin`, majd a helyi `main` ág az `origin/main`-re áll (`checkout -B`), és a `git clean` eltávolítja a nem követett fájlokat. A build-cache-ek (`target/`, `node_modules/`, `packages/engine/pkg/`) ignoráltak, ezért megmaradnak. Ez a `git pull` megbízható megfelelője: helyi módosítás nem akaszthatja meg.
 3. **Kihagyás**: ha ez a commit már élesben van, nincs teendő (`--force` újraépít). Ha ugyanez a commit egyszer már elbukott, nem próbálja újra kétpercenként (`--force` igen).
 4. **Eszközök igazítása**: a Rust a `rust-toolchain.toml` szerint települ, a Bun a `package.json` `packageManager` mezője szerint, a wasm-bindgen-cli a `Cargo.lock` verziója szerint (előre fordított bináris).
-5. **Build**, `nice` alatt, hogy az élő oldal ne lassuljon: `bun install --frozen-lockfile`, `just build` (WASM + wasm-opt, Vite, statikus manifeszt, migrációk), végül `bun scripts/release.ts bun-linux-x64`.
+5. **Build**, `nice` alatt, hogy az élő oldal ne lassuljon: `bun i --frozen-lockfile`, `just build` (WASM + wasm-opt, Vite, statikus manifeszt, migrációk), végül `bun scripts/release.ts bun-linux-x64`.
 6. **Új kiadás**: a bináris a `releases/<idő>-<commit>/` alá kerül, mellé a `REVISION` fájl.
 7. **Mentés**: `mysqldump` a `backups/` mappába, mert az új bináris induláskor migrálhat.
 8. **Atomi csere**: a `current` link átáll az új kiadásra, jön a `systemctl restart`, majd legfeljebb 30 másodpercig a health check (`/api/health`).

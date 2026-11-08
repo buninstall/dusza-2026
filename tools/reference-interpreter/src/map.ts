@@ -61,19 +61,24 @@ function checkRow(
   diagnostics: Diagnostic[],
 ): Cell[] {
   const cells: Cell[] = [];
-  let badSymbol = -1;
+  let badSymbol: { at: number; length: number } | null = null;
+  let utf16 = 0;
   Array.from(line.text).forEach((symbol, col) => {
     const dir = ROBOTS.get(symbol);
     if (dir) {
       robots.push({ pos: { row, col }, dir });
       if (robots.length === 2)
-        diagnostics.push(mapDiagnostic("MAP_MULTIPLE_ROBOTS", line, col + 1, 1));
+        diagnostics.push(mapDiagnostic("MAP_MULTIPLE_ROBOTS", line, utf16 + 1, 1));
     }
     const cell = CELLS.get(symbol);
-    if (!cell && badSymbol < 0) badSymbol = col;
+    if (!cell && !badSymbol) badSymbol = { at: utf16, length: symbol.length };
     cells.push(cell ?? "empty");
+    utf16 += symbol.length;
   });
-  if (badSymbol >= 0) diagnostics.push(mapDiagnostic("MAP_BAD_SYMBOL", line, badSymbol + 1, 1));
+  if (badSymbol) {
+    const { at, length } = badSymbol;
+    diagnostics.push(mapDiagnostic("MAP_BAD_SYMBOL", line, at + 1, length));
+  }
   else if (cells.length !== cols) diagnostics.push(mapDiagnostic("MAP_ROW_LENGTH", line));
   return cells;
 }

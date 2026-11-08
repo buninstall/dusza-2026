@@ -190,6 +190,38 @@ pub fn extra_token(found: &str) -> String {
     format!("Az utasítás már teljes, ez fölösleges: „{found}”.")
 }
 
+pub fn header_operation(command: Command, operator: &str) -> String {
+    format!(
+        "{} után csak egyetlen érték állhat, a(z) „{operator}” művelet nem szerepelhet a feltételben.",
+        header_article(command)
+    )
+}
+
+pub fn header_operation_help(command: Command, name: &str, operation: &str) -> String {
+    match command {
+        Command::While => format!(
+            "Számold ki előbb set utasítással, a feltételbe a változót írd, és a ciklustörzs végén is számold ki újra, például: set {name} to {operation}, majd while {name}, a törzs utolsó soraként pedig újra set {name} to {operation}."
+        ),
+        _ => format!(
+            "Számold ki előbb set utasítással, és a feltételbe a változót írd, például: set {name} to {operation}, majd if {name}."
+        ),
+    }
+}
+
+pub fn fix_header_operation(command: Command) -> &'static str {
+    match command {
+        Command::While => "Feltétel kiszámítása set-tel a ciklus előtt és a törzs végén",
+        _ => "Feltétel kiszámítása set-tel az if előtt",
+    }
+}
+
+fn header_article(command: Command) -> &'static str {
+    match command {
+        Command::While => "A while",
+        _ => "Az if",
+    }
+}
+
 pub fn command_form(command: Command) -> String {
     let form = match command {
         Command::Step => "step forward n",

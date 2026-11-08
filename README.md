@@ -43,7 +43,7 @@ just dev
 
 A `just db-up` Dockerben indítja a MySQL-t; helyi MySQL-szerver esetén helyette a `just db-setup` kell (alapból a jelszó nélküli helyi `root` fiókkal, más adminisztrátori fiókhoz: `just db-setup --admin-url mysql://root:jelszó@127.0.0.1:3306`). A web a `http://localhost:5173` címen fut, az API a `8080`-as porton. A `crates/` változásakor a WASM-motor és a típusok automatikusan újraépülnek.
 
-A szerver tesztjei, az e2e és a smoke-teszt saját, ideiglenes adatbázisokat hoznak létre és törölnek a `TEST_DATABASE_URL` szerverén. Ennek alapértéke a jelszó nélküli helyi root (`mysql://root@127.0.0.1:3306`); a Docker-féle MySQL-hez a `.env.example` beállításai valók, a Bun a futtatás könyvtárából a `.env`-et magától betölti.
+A szerver tesztjei, az e2e és a smoke-teszt saját, ideiglenes adatbázisokat hoznak létre és törölnek a `TEST_DATABASE_URL` szerverén. Ennek alapértéke a jelszó nélküli helyi root (`mysql://root@127.0.0.1:3306`); a Docker-féle MySQL-hez a `.env.example` beállításai valók. A Bun csak a futtatás könyvtárában lévő `.env`-et tölti be, a `just test` viszont a szerver tesztjeit az `apps/server` mappából indítja, ezért ott a `TEST_DATABASE_URL`-t környezeti változóként kell megadni.
 
 ## Előfeltételek
 
@@ -86,7 +86,7 @@ A bánya a kiírás szerint sötét, és a robot „tapogatózva halad előre”
 - **Fal = sötétség:** ha a robot falnak megy, összetörik a lámpa, a vázlat elvész, és a játékos újra vaksötétben áll. Aki lépés előtt `isThere 1`-gyel tapogat, az soha nem veszíti el.
 - **Kiérdemelt térkép:** három rög után feloldódik a Teljes térkép, és jöhet a lépésszám csiszolása a ranglistáért.
 
-A kampány 1–4. pályája nyitott, ott a játékos az utasításokat tanulja; az 5–6. pálya Lámpafény, a 7–8. Vaksötét (a lámpa üres akkuval indul). Saját pályán a térképszerkesztőben választható a fokozat. A mód a nyelv viselkedését, a lépésszámlálást és a ranglista rendezését nem változtatja, a motorhoz nem nyúl. Az ötlet a felkészítő tanárunktól származik; a szabályok, a kiírással való összevetés és a megvalósítás állapota: [docs/jatekelmeny.md](docs/jatekelmeny.md).
+A Történet mód 30 pályájából 14 nyitott (1–4., 9., 11., 12., 14., 16., 18., 21., 22., 26., 27.), ott a játékos az utasításokat tanulja; 9 Lámpafény (5., 6., 10., 13., 17., 20., 23., 25., 28.), 7 Vaksötét (7., 8., 15., 19., 24., 29., 30.; a lámpa üres akkuval indul). Saját pályán a térképszerkesztőben választható a fokozat. A mód a nyelv viselkedését, a lépésszámlálást és a ranglista rendezését nem változtatja, a motorhoz nem nyúl. Az ötlet a felkészítő tanárunktól származik; a szabályok, a kiírással való összevetés és a megvalósítás állapota: [docs/jatekelmeny.md](docs/jatekelmeny.md).
 
 ## Fejlesztési ötletek és megvalósításuk
 
@@ -108,11 +108,11 @@ A kötelező funkciók után a többi versenymegoldás nyilvános felületét is
 | Pályagenerátor              | megvalósult | „Továbbiak” → „Generálás…”: méret és nehézség, mindig megoldható pálya, a célértéket a gép saját megoldása adja.                                                                                                  |
 | Megosztható visszajátszás   | megvalósult | A ranglista minden sorából megnézhető a futás a programmal együtt; a visszajátszás linkje másolható (privát pályán csak az érintettek látják).                                                                    |
 | Napi kihívás                | megvalósult | Minden nap egy dátumból generált, mindenkinek azonos pálya saját ranglistával, a Pályák oldal tetején.                                                                                                            |
-| Tetszik és népszerűség      | kivettük    | Kipróbáltuk, de csak zsúfolta a felületet, a játékhoz nem adott hozzá.                                                                                                                                            |
+| Kedvencek és népszerűség    | megvalósult | A pályakártyán szív gomb és a kedvencek száma; a Pályák oldalon „Kedvencek” fül és „Népszerű” rendezés. A külön tetszik-gombot kivettük, mert csak zsúfolta a felületet. |
 | A robot nyomvonala          | kivettük    | A felfedezett mezők jelölése mellett fölösleges vizuális zaj volt.                                                                                                                                                |
 | Két futás összevetése       | elvetettük  | A ranglista, a saját futások és a visszajátszás együtt már megmutatja a különbséget.                                                                                                                              |
 | Fokozatos tipp-gomb         | elvetettük  | A receptek és a Kézikönyv próbapadjai ezt lefedik; egy félmegoldást adó gomb a verseny jellegét rontaná.                                                                                                          |
-| Lámpafény-mód               | megvalósult | Sötét bánya az 5–8. pályán, arannyal növő fénykör, falnál elvesző vázlat, három rög után Teljes térkép; a szerkesztőben választható. Lásd fent és a [docs/jatekelmeny.md](docs/jatekelmeny.md).                   |
+| Lámpafény-mód               | megvalósult | Sötét bánya a Történet mód 16 pályáján (az 5. pályától), arannyal növő fénykör, falnál elvesző vázlat, három rög után Teljes térkép; a szerkesztőben választható. Lásd fent és a [docs/jatekelmeny.md](docs/jatekelmeny.md).                   |
 | Golf-mód, VS Code-bővítmény | később      | Lásd a beadandó továbbfejlesztési javaslatait ([docs/beadando.md](docs/beadando.md)).                                                                                                                             |
 
 ## Dokumentáció

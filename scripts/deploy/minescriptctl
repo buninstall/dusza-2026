@@ -170,8 +170,8 @@ build() {
   sync_rust
   sync_bun
   sync_wasm_bindgen
-  log "bun install --frozen-lockfile"
-  nice -n 10 bun install --frozen-lockfile --silent
+  log "bun i --frozen-lockfile"
+  nice -n 10 bun i --frozen-lockfile --silent
   log "just build (wasm, web, manifest, migrációk)"
   nice -n 10 just build
   log "Linux bináris ($BINARY_TARGET)"

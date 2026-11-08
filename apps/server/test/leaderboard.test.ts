@@ -1,6 +1,9 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { runs } from "../src/db/schema.ts";
 import { createTestContext, json } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 type Entry = { rank: number; username: string; gold: number; steps: number };
 

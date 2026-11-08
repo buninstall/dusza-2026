@@ -25,7 +25,7 @@ flowchart LR
   subgraph Web["apps/web (böngésző)"]
     editor["CodeMirror 6<br/>analyze · complete · hover"]
     player["Lejátszó<br/>derive.ts + Zustand"]
-    grid["MapGrid"]
+    grid["MineBoard"]
   end
   subgraph Server["apps/server (Bun)"]
     hono["Hono API"]
@@ -99,7 +99,7 @@ A szerver közvetlenül egy MySQL-szerverhez kapcsolódik (MySQL 8.0 vagy újabb
 
 ## Éles üzem
 
-Az éles cím `https://minescript.hu` (Cloudflare mögött). A verseny szerverén (`csapat13.dusza.cloudsyso.com`) a `just release` szerinti Linux-bináris fut systemd alatt, a helyi MySQL-lel. A szerver saját címén egy Apache fordított proxy áll, jelszavas kapuval, a TLS-t a szervezői proxy zárja le. A frissítés `just deploy`: a szerver lefordítja a main-t, atomi cserével élesít, health checket futtat, és hiba esetén visszaáll az előző kiadásra. Részletek: `docs/telepites.md`, eszközök: `scripts/deploy/`.
+A zsűrizett példány a verseny szerverén fut (`csapat13.dusza.cloudsyso.com`); a csapat saját, külön szervere a `https://minescript.hu` (Cloudflare mögött). A verseny szerverén a `just release` szerinti Linux-bináris fut systemd alatt, a helyi MySQL-lel. A szerver saját címén egy Apache fordított proxy áll, jelszavas kapuval, a TLS-t a szervezői proxy zárja le. A frissítés `just deploy`: a szerver lefordítja a main-t, atomi cserével élesít, health checket futtat, és hiba esetén visszaáll az előző kiadásra. Részletek: `docs/telepites.md`, eszközök: `scripts/deploy/`.
 
 ## Generált fájlok és a .gitignore
 
@@ -120,7 +120,7 @@ Az éles cím `https://minescript.hu` (Cloudflare mögött). A verseny szerveré
 - Jelszó: `Bun.password` argon2id.
 - CSRF: minden nem-GET kérésnél az `Origin` fejlécnek egyeznie kell a kérés hostjával.
 - Bejelentkezési korlát: 5 kísérlet / perc / (IP + felhasználónév), memóriában.
-- CSP: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'`. A `'unsafe-inline'` a stílusokhoz kell, mert a CodeMirror futásidőben injektál stílust.
+- CSP: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'`. A `'unsafe-inline'` a stílusokhoz kell, mert a CodeMirror futásidőben injektál stílust.
 - Privát térkép és a ranglistája csak a tulajdonosnak és az adminnak látszik (máshoz 404).
 - Adatbázis: minden lekérdezés paraméterezett (Drizzle, `?` helyőrzők). Az egyetlen beillesztett azonosító az adatbázisnév, amelyet a `^[A-Za-z0-9_]{1,64}$` minta validál, és backtick közé kerül. A pool nem enged több utasítást egy lekérdezésben, csak a migrátor saját kapcsolata.
 - A kapcsolati adatok környezeti változóból vagy kapcsolóból jönnek; a konzolra és a hibaüzenetekbe a jelszó nem kerül ki (`felhasználó@gép:port/adatbázis`).
@@ -162,7 +162,7 @@ Eltérések a kiinduló tervtől:
 - **`.returning()`**: MySQL-ben nincs `RETURNING`, ezért a beszúrás `$returningId()`-t használ, és utána olvas; a módosítások után újraolvasás következik.
 - **Bejelentkezés**: a `username` oszlop kollációja miatt a belépésnél is kis- és nagybetűtől független a név, összhangban az egyediséggel.
 - **Web-stílus**: Tailwind és CSS-modulok helyett komponensenkénti sima CSS-fájl, előtagos kebab-case osztálynevekkel (`play-gauge`, `board-cell`). A CSS-modulok osztálytípusa a `noUncheckedIndexedAccess` miatt `string | undefined`, ami a React Aria `className` propjával az `exactOptionalPropertyTypes` mellett nem fér össze. A design tokenek egy helyen vannak: `apps/web/src/styles/tokens.css`.
-- **Pixel art**: a csempék, a robot, az ikonok és a logó ASCII-rácsként szerepelnek a forrásban (`apps/web/src/pixel`), és futásidőben `shape-rendering="crispEdges"` SVG-útvonalakká fordulnak; a térkép `<use>` hivatkozásokkal egyetlen közös sprite-lapot használ. Canvas nincs.
+- **Pixel art**: a csempék, a robot, az ikonok és a logó ASCII-rácsként szerepelnek a forrásban (`apps/web/src/pixel`), és futásidőben `shape-rendering="crispEdges"` SVG-útvonalakká fordulnak; a térképrács `<use>` hivatkozásokkal egyetlen közös sprite-lapot használ. A játéktér animált jelenete (`apps/web/src/mine/scene`), a lámpa árnyéka (`LampShade.tsx`) és a háttérjelenetek (`apps/web/src/maps/deep`, `apps/web/src/auth/lamp`) canvasra rajzolnak; a cellák szöveges címkéje és a billentyűs rács ettől függetlenül a DOM-ban van.
 - **Fejlesztői API-cél**: a Vite proxy célja a `MINESCRIPT_API_URL` környezeti változóval felülírható (alapból `http://127.0.0.1:8080`).
 - **Betűtípusok**: a Pixelify Sans kikerült (hibás ő/ű, nem táblázatos számjegyek). Két Fontsource-család maradt: Atkinson Hyperlegible Next (folyószöveg, nevek) és Atkinson Hyperlegible Mono (vezérlők, címkék, számok, kód). A táblák, a szakaszszámok és a műszerek pixeles felirata saját, 5×7-es „Aknajel” betűkészlet (`apps/web/src/pixel/aknajel.ts`), amely importáláskor SVG-útvonallá fordul, így nincs harmadik betűtípusfájl.
 - **Web-felépítés**: minden oldalnak egyetlen fejléce van, a helyjelző tábla (`LocationPlate`), benne az oldal `h1`-e és műveletei. A játék és a visszajátszás közös színpadot használ (`apps/web/src/play/stage`, `apps/web/src/play/sheet`), a receptoldal a `docs/receptek` fájljait a Vite `import.meta.glob` segítségével csomagolja be (`apps/web/src/recipes/catalog.ts`).

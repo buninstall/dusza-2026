@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import type { DiagCode, Engine, RunResult } from "@minescript/engine";
@@ -8,6 +8,9 @@ import { TUTORIAL_MAPS } from "../src/seed/maps.ts";
 import { RECIPES, type Recipe, type RecipeOutcome } from "../src/seed/recipes.ts";
 import { SANDBOX_MAPS } from "../src/seed/sandbox.ts";
 import { createTestContext, json } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 const recipesDir = join(import.meta.dir, "..", "..", "..", "docs", "receptek");
 

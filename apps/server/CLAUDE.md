@@ -32,7 +32,7 @@ A saját migrátor (`src/db/migrate.ts`) dedikált, több utasítást engedő ka
 - Idempotens (`src/seed/index.ts`): csak üres adatbázist tölt fel, `--reset-demo` esetén előbb mindent töröl.
 - Demó-fiókok: `admin / dusza2026`, `demo1`–`demo3 / demo2026`.
 - A Történet mód 30 pályája és a Homokozó bemutató pályái (`src/seed/maps.ts`, `src/seed/campaign.ts`), mindegyik kézzel írt és a teszt validálja; mintaprogramok és receptek (`src/seed/programs.ts`, `src/seed/recipes.ts`); népes homokozó 100 játékossal (`src/seed/crowd.ts`, kikapcsolás: `--no-crowd`).
-- A mintaprogramok futásait a seed a motorral számolja; amíg a motor stub, ezeket kihagyja. A kész VM után `--reset-demo` újragenerálja őket.
+- A mintaprogramok és a népes homokozó futásait a seed a motorral számolja (`executeAndRecord`), ugyanúgy, mint a `POST /api/runs`; a `--reset-demo` mindent töröl és újragenerál.
 
 ## Futtatás
 

@@ -1,7 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { eq } from "drizzle-orm";
 import { users } from "../src/db/schema.ts";
 import { createTestContext, json } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 describe("programok", () => {
   test("létrehozás, módosítás, törlés csak a sajátra", async () => {

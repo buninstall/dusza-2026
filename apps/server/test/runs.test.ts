@@ -1,7 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { count, eq } from "drizzle-orm";
 import { runs, users } from "../src/db/schema.ts";
 import { createTestContext, type ErrorBody, json, SPEC_MAP } from "./helpers.ts";
+import { TEST_TIMEOUT_MS } from "./timeout.ts";
+
+setDefaultTimeout(TEST_TIMEOUT_MS);
 
 describe("futások", () => {
   test("a szintaktikailag hibás program 422, és nem kerül mentésre", async () => {

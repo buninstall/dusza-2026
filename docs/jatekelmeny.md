@@ -81,11 +81,11 @@ Ha a játékos egy lámpafényes pályán megszerezte a három rögöt, a Teljes
 
 A pálya szerzője a térképszerkesztőben választ fokozatot:
 
-| Fokozat   | Köd  | Vázlat           | Falnak ütközés                                                                            | Kampánypályák                   |
-| --------- | ---- | ---------------- | ----------------------------------------------------------------------------------------- | ------------------------------- |
-| Nyitott   | nem  | nincs szükség rá | csak hibaüzenet, ahogy ma                                                                 | 1–4.                            |
-| Lámpafény | igen | megmarad         | a vázlat törlődik                                                                         | 5. Kígyó, 6. Elérhetetlen kincs |
-| Vaksötét  | igen | megmarad         | a vázlat törlődik, és az akkumulátor induló töltése 0: csak a felfedezett mezők látszanak | 7. Aranymező, 8. A nagy bánya   |
+| Fokozat   | Köd  | Vázlat           | Falnak ütközés                                                                            | Kampánypályák                                         |
+| --------- | ---- | ---------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Nyitott   | nem  | nincs szükség rá | csak hibaüzenet, ahogy ma                                                                 | 1–4., 9., 11., 12., 14., 16., 18., 21., 22., 26., 27. |
+| Lámpafény | igen | megmarad         | a vázlat törlődik                                                                         | 5., 6., 10., 13., 17., 20., 23., 25., 28.             |
+| Vaksötét  | igen | megmarad         | a vázlat törlődik, és az akkumulátor induló töltése 0: csak a felfedezett mezők látszanak | 7., 8., 15., 19., 24., 29., 30.                       |
 
 Az egyes pályák fokozata a nehézségükhöz igazodik: a könnyű pályákon a játékos az utasításokat és az irányítást tanulja, a nehezebbeken jön a felfedezés.
 
@@ -117,22 +117,22 @@ Az egyes pályák fokozata a nehézségükhöz igazodik: a könnyű pályákon a
 
 A motor nem változott: a futás eseménysora (D20) már tartalmazza minden lépés felfedezett mezőit, a robot helyzetét és a bányászásokat, ebből a fénykör és a vázlat a felületen kiszámolható. A munka így teljesen az `apps/web` és az `apps/server` területén maradt.
 
-| Rész                       | Állapot   | Hol van                                                                                                                                                                           |
-| -------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fénykör és vázlat logikája | elkészült | `apps/web/src/play/lamp-mode.ts`: `lampLight` (falon meg nem álló elárasztás), `lampTrack` (képkockánkénti fény), `sketchAfterRun`, `lampView`; tesztek: `test/lamp-mode.test.ts` |
-| Pályabeállítás             | elkészült | `maps.lamp_mode` (`open`, `lamp`, `dark`), migráció: `apps/server/drizzle/0002_lamp_mode.sql`; a kampány 5–6. pályája Lámpafény, 7–8. Vaksötét (seed és migráció)                 |
-| Választó a szerkesztőben   | elkészült | a térképszerkesztő jobb oldali paneljén, a láthatóság alatt, magyarázó szöveggel                                                                                                  |
-| Sötét bánya a játékoldalon | elkészült | `PlayScreen.tsx`: a sötét mező tartalma nem is kerül a rajzba; a megvilágított mező rácsmintás; „Lámpafény”/„Vaksötét” címke a fejlécben                                          |
-| Akku-jelző                 | elkészült | a műszersáv állapotjelzője mellett 4 cella, szöveges értékkel a képernyőolvasónak; összetört lámpánál veszélyjelző minta                                                          |
-| Vázlat                     | elkészült | `useLampSketch.ts`: böngészőben, felhasználónként és pályaverziónként; csak a természetes véggel lezárt futás frissíti, falnak ütközés törli                                      |
-| Összetört lámpa            | elkészült | a futás végén csak a robot mezője látszik, és figyelmeztetés magyarázza, mi történt és hogyan kerülhető el                                                                        |
-| Teljes térkép feloldása    | elkészült | a Nézet kapcsoló három rög után (és a szerzőnek, adminisztrátornak) választható, addig zárolt                                                                                     |
-| Spoilervédelem             | elkészült | export csak a szerzőnek és az adminisztrátornak; mások visszajátszása zárolt Lámpafény nézetben                                                                                   |
-| Tesztek                    | elkészült | web: a lámpa-mód unit-tesztjei (köztük a sötét indulás, a vázlat, a falnál törlés, a feloldás és a szerkesztő); szerver: beállítás, export-tiltás, seed                           |
-| Szerveroldali vázlat       | még nincs | a vázlat most böngészőhöz kötött; több eszközhöz `map_sketches` tábla kellene                                                                                                     |
-| Hangok, lámpa-animáció     | még nincs | a falnál a meglévő hiba-hang és ütközés-animáció szól; külön lámpa-csörömpölés nincs                                                                                              |
-| E2E és axe                 | részben   | a nézetváltó segéd (`e2e/helpers.ts`) és 3 e2e-hivatkozás kész; lámpa-specifikus e2e és axe-ellenőrzés még nincs                                                                  |
-| Dokumentáció               | részben   | ez a dokumentum, a README, a beadandó és a megfelelőségi táblázat kész; nyitott: a Kézikönyv-fejezet az alkalmazásban                                                             |
+| Rész                       | Állapot   | Hol van                                                                                                                                                                                           |
+| -------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fénykör és vázlat logikája | elkészült | `apps/web/src/play/lamp-mode.ts`: `lampLight` (falon meg nem álló elárasztás), `lampTrack` (képkockánkénti fény), `sketchAfterRun`, `lampView`; tesztek: `test/lamp-mode.test.ts`                 |
+| Pályabeállítás             | elkészült | `maps.lamp_mode` (`open`, `lamp`, `dark`), migráció: `apps/server/drizzle/0002_lamp_mode.sql`; a kampány fokozatait a seed adja (`apps/server/src/seed/maps.ts`): 9 Lámpafény és 7 Vaksötét pálya |
+| Választó a szerkesztőben   | elkészült | a térképszerkesztő jobb oldali paneljén, a láthatóság alatt, magyarázó szöveggel                                                                                                                  |
+| Sötét bánya a játékoldalon | elkészült | `PlayScreen.tsx`: a sötét mező tartalma nem is kerül a rajzba; a megvilágított mező rácsmintás; „Lámpafény”/„Vaksötét” címke a fejlécben                                                          |
+| Akku-jelző                 | elkészült | a műszersáv állapotjelzője mellett 4 cella, szöveges értékkel a képernyőolvasónak; összetört lámpánál veszélyjelző minta                                                                          |
+| Vázlat                     | elkészült | `useLampSketch.ts`: böngészőben, felhasználónként és pályaverziónként; csak a természetes véggel lezárt futás frissíti, falnak ütközés törli                                                      |
+| Összetört lámpa            | elkészült | a futás végén csak a robot mezője látszik, és figyelmeztetés magyarázza, mi történt és hogyan kerülhető el                                                                                        |
+| Teljes térkép feloldása    | elkészült | a Nézet kapcsoló három rög után (és a szerzőnek, adminisztrátornak) választható, addig zárolt                                                                                                     |
+| Spoilervédelem             | elkészült | export csak a szerzőnek és az adminisztrátornak; mások visszajátszása zárolt Lámpafény nézetben                                                                                                   |
+| Tesztek                    | elkészült | web: a lámpa-mód unit-tesztjei (köztük a sötét indulás, a vázlat, a falnál törlés, a feloldás és a szerkesztő); szerver: beállítás, export-tiltás, seed                                           |
+| Szerveroldali vázlat       | még nincs | a vázlat most böngészőhöz kötött; több eszközhöz `map_sketches` tábla kellene                                                                                                                     |
+| Hangok, lámpa-animáció     | még nincs | a falnál a meglévő hiba-hang és ütközés-animáció szól; külön lámpa-csörömpölés nincs                                                                                                              |
+| E2E és axe                 | részben   | a nézetváltó segéd (`e2e/helpers.ts`) és 3 e2e-hivatkozás kész; lámpa-specifikus e2e és axe-ellenőrzés még nincs                                                                                  |
+| Dokumentáció               | részben   | ez a dokumentum, a README, a beadandó és a megfelelőségi táblázat kész; nyitott: a Kézikönyv-fejezet az alkalmazásban                                                                             |
 
 ## Nyitott kérdések a csapatnak
 
