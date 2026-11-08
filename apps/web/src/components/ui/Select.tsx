@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "react-aria-components";
 import { PixelIcon } from "../../pixel/PixelIcon.tsx";
+import { OVERLAY_SKIN } from "./overlay-skin.ts";
 import "./Field.css";
 
 export type SelectOption<K extends string> = { id: K; label: string };
@@ -46,7 +47,7 @@ export function Select<K extends string>({
         <SelectValue />
         <PixelIcon name="chevronDown" />
       </Button>
-      <Popover className="field-popover" isNonModal>
+      <Popover className="field-popover" isNonModal {...OVERLAY_SKIN}>
         <ListBox items={options} className="field-list-box">
           {(option) => (
             <ListBoxItem id={option.id} textValue={option.label} className="field-option">

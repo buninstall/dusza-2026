@@ -155,7 +155,7 @@ export function ControlDeck({
   extra,
 }: ControlDeckProps) {
   return (
-    <section aria-label={hu.play.transport} className="deck" data-layout={layout}>
+    <section aria-label={hu.play.transport} className="deck k-panel" data-layout={layout}>
       {layout === "cab" ? (
         <>
           <DeckKeys centerRef={centerRef} />

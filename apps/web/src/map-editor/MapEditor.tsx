@@ -1,5 +1,5 @@
 import type { Pos } from "@minescript/engine";
-import { useId, useMemo, useReducer, useRef, useState } from "react";
+import { type ReactNode, type RefObject, useId, useMemo, useReducer, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Button } from "../components/ui/Button.tsx";
 import { Menu, MenuItem } from "../components/ui/Menu.tsx";
@@ -8,8 +8,9 @@ import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
 import { downloadText, safeFilename } from "../lib/files.ts";
+import { useRustWear } from "../lib/rust-wear.ts";
 import { hasVisibleText } from "../lib/text.ts";
-import { clampSceneZoom } from "../mine/scene/zoom.ts";
+import { clampSceneZoom, nextSceneZoom, SCENE_ZOOM_MIN } from "../mine/scene/zoom.ts";
 import { canvasOverlay } from "./canvas-overlay.tsx";
 import { EditorBar, type SaveState } from "./EditorBar.tsx";
 import { EditorCanvas } from "./EditorCanvas.tsx";
@@ -52,7 +53,7 @@ import { parseMapFile } from "./map-file.ts";
 import { ToolRail } from "./ToolRail.tsx";
 import { TrialPlay } from "./TrialPlay.tsx";
 import { useCanvasTools } from "./useCanvasTools.ts";
-import { useEditorKeys } from "./useEditorKeys.ts";
+import { type EditorKeys, useEditorKeys, type ZoomStep } from "./useEditorKeys.ts";
 
 export type MapFormValues = MapDetails & { content: string };
 
@@ -66,6 +67,23 @@ type MapEditorProps = {
 };
 
 type Baseline = { text: string; details: MapDetails };
+
+type EditorRootProps = {
+  rootRef: RefObject<HTMLDivElement | null>;
+  tool: Tool;
+  keys: EditorKeys;
+  children: ReactNode;
+};
+
+function EditorRoot({ rootRef, tool, keys, children }: EditorRootProps) {
+  useRustWear(rootRef);
+  useEditorKeys(rootRef, keys);
+  return (
+    <div ref={rootRef} className="ed" data-tool={tool} data-theme="tarna" data-skin="akna">
+      {children}
+    </div>
+  );
+}
 
 export function MapEditor({
   mapId,
@@ -183,12 +201,16 @@ export function MapEditor({
       ?.focus();
   };
 
-  useEditorKeys(rootRef, {
+  const zoomBy = (zoomStep: ZoomStep) =>
+    setZoom((current) => (zoomStep === 0 ? SCENE_ZOOM_MIN : nextSceneZoom(current, zoomStep)));
+
+  const keys: EditorKeys = {
     undo: () => step("undo"),
     redo: () => step("redo"),
     save: () => void save(),
+    zoom: zoomBy,
     letter: tools.onLetter,
-  });
+  };
 
   const shownState: SaveState = saveState === "saving" || !isDirty ? saveState : "dirty";
   const marks = unreachableMarks(unreachable);
@@ -256,7 +278,7 @@ export function MapEditor({
   }
 
   return (
-    <div ref={rootRef} className="ed" data-tool={tool}>
+    <EditorRoot rootRef={rootRef} tool={tool} keys={keys}>
       <EditorBar
         mapId={mapId}
         title={details.title}
@@ -382,6 +404,6 @@ export function MapEditor({
       </div>
       <output className="visually-hidden">{announcement}</output>
       <LeaveGuard shouldBlock={() => isDirty && !isLeaving.current} />
-    </div>
+    </EditorRoot>
   );
 }

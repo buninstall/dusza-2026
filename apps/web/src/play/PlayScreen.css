@@ -3,20 +3,42 @@
   display: grid;
   gap: var(--space-3);
   min-width: 0;
+  color: var(--c-text);
 }
 
 .play[data-layout="cab"] {
   --split-w: calc(var(--space-3) + var(--space-2));
+  --sheet-min: 18.75rem;
+  --stage-min: 35rem;
 
   flex: 1;
   min-height: 0;
   grid-template-columns:
-    clamp(20rem, var(--sheet-share, min(36%, 28rem)), calc(100% - 36rem - var(--split-w)))
+    clamp(
+      var(--sheet-min),
+      var(--sheet-share, min(30%, 25rem)),
+      calc(100% - var(--stage-min) - var(--split-w))
+    )
     var(--split-w)
     minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   grid-template-areas: "sheet split stage";
   column-gap: 0;
+}
+
+.play .k-panel:not(.k-panel--inset) {
+  background-position:
+    left var(--px) top var(--px),
+    right var(--px) top var(--px),
+    left var(--px) bottom var(--px),
+    right var(--px) bottom var(--px),
+    0 0;
+  background-size:
+    calc(var(--px) * 4) calc(var(--px) * 4),
+    calc(var(--px) * 4) calc(var(--px) * 4),
+    calc(var(--px) * 4) calc(var(--px) * 4),
+    calc(var(--px) * 4) calc(var(--px) * 4),
+    72px 72px;
 }
 
 .play[data-layout="cab"] > .split-handle {

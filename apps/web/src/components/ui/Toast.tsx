@@ -9,6 +9,7 @@ import { hu } from "../../i18n/hu.ts";
 import type { IconName } from "../../pixel/icons.ts";
 import { PixelIcon } from "../../pixel/PixelIcon.tsx";
 import { Button } from "./Button.tsx";
+import { OVERLAY_SKIN } from "./overlay-skin.ts";
 import "./Overlay.css";
 
 type ToastTone = "success" | "error" | "info";
@@ -46,6 +47,7 @@ export function Toasts() {
       queue={toastQueue}
       aria-label={hu.common.notifications}
       className="overlay-toast-region"
+      {...OVERLAY_SKIN}
     >
       {({ toast: item }) => (
         <AriaToast toast={item} className="overlay-toast" data-tone={item.content.tone}>

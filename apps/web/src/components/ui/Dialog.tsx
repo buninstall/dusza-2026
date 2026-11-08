@@ -11,6 +11,7 @@ import { HazardStripe } from "../../pixel/HazardStripe.tsx";
 import type { IconName } from "../../pixel/icons.ts";
 import { Button, type ButtonSize, type ButtonVariant } from "./Button.tsx";
 import { IconButton } from "./IconButton.tsx";
+import { OVERLAY_SKIN } from "./overlay-skin.ts";
 import "./Overlay.css";
 
 type ModalShellProps = {
@@ -33,7 +34,13 @@ export function ModalShell({
   const control = isOpen === undefined ? {} : { isOpen };
   const listener = onOpenChange === undefined ? {} : { onOpenChange };
   return (
-    <ModalOverlay isDismissable {...control} {...listener} className="overlay-backdrop">
+    <ModalOverlay
+      isDismissable
+      {...control}
+      {...listener}
+      className="overlay-backdrop"
+      {...OVERLAY_SKIN}
+    >
       <Modal
         className="overlay-modal"
         data-size={size}
@@ -57,7 +64,7 @@ export function ModalShell({
                   />
                 ) : null}
               </div>
-              {children(close)}
+              <div className="overlay-content">{children(close)}</div>
             </>
           )}
         </AriaDialog>

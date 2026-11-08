@@ -109,42 +109,112 @@ table {
 }
 
 ::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
+  width: var(--akna-scrollbar);
+  height: var(--akna-scrollbar);
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--c-screen);
-  box-shadow: inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-lo);
+  background-color: var(--px-iron-edge);
+  background-image: var(--k-tex-iron-dk);
+  background-size: var(--akna-tex) var(--akna-tex);
+  image-rendering: pixelated;
+}
+
+::-webkit-scrollbar-track:vertical {
+  box-shadow:
+    inset var(--akna-px) 0 0 0 var(--px-void),
+    inset calc(var(--akna-px) * -1) 0 0 0 var(--px-iron-dk);
+}
+
+::-webkit-scrollbar-track:horizontal {
+  box-shadow:
+    inset 0 var(--akna-px) 0 0 var(--px-void),
+    inset 0 calc(var(--akna-px) * -1) 0 0 var(--px-iron-dk);
 }
 
 ::-webkit-scrollbar-thumb {
-  border: 3px solid var(--c-screen);
-  background: var(--c-line-strong);
+  --thumb-face: var(--px-iron-md);
+  --thumb-hi: var(--px-iron-lt);
+  --thumb-lo: var(--px-iron-dk);
+  --thumb-ring: var(--px-iron-edge);
+
+  background-color: var(--thumb-face);
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-size:
+    6px 6px,
+    6px 6px,
+    8px 8px,
+    var(--akna-tex) var(--akna-tex);
   box-shadow:
-    inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-hi),
-    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-shadow);
+    inset 0 0 0 var(--akna-px) var(--thumb-ring),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--thumb-hi),
+    inset calc(var(--akna-px-2) * -1) calc(var(--akna-px-2) * -1) 0 0 var(--thumb-lo);
+  image-rendering: pixelated;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+  min-height: var(--akna-h);
+  background-image: var(--k-tex-rivet), var(--k-tex-rivet), var(--akna-speck-l), var(--k-tex-iron-md);
+  background-position:
+    center top 5px,
+    center bottom 5px,
+    left 2px bottom 12px,
+    0 0;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  min-width: var(--akna-h);
+  background-image: var(--k-tex-rivet), var(--k-tex-rivet), var(--akna-speck-r), var(--k-tex-iron-md);
+  background-position:
+    left 5px center,
+    right 5px center,
+    right 12px bottom 2px,
+    0 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--c-text-muted);
+  --thumb-face: var(--px-iron-hi);
+  --thumb-hi: var(--px-brass-hi);
+  --thumb-ring: var(--px-brass-dk);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: var(--c-accent);
+  --thumb-face: var(--px-iron-hi);
+  --thumb-hi: var(--px-iron-edge);
+  --thumb-lo: var(--px-brass);
+  --thumb-ring: var(--px-brass-dk);
 }
 
 ::-webkit-scrollbar-corner {
-  background: var(--c-screen);
+  background: var(--px-iron-edge);
 }
 
 ::-webkit-scrollbar-button {
   display: none;
 }
 
+@media (max-width: 40rem) {
+  ::-webkit-scrollbar {
+    width: var(--akna-scrollbar-narrow);
+    height: var(--akna-scrollbar-narrow);
+  }
+
+  ::-webkit-scrollbar-thumb:vertical,
+  ::-webkit-scrollbar-thumb:horizontal {
+    background-image: var(--akna-speck-l), var(--k-tex-iron-md);
+    background-position:
+      left 1px bottom 8px,
+      0 0;
+    background-size:
+      6px 6px,
+      var(--akna-tex) var(--akna-tex);
+    background-repeat: no-repeat, repeat;
+  }
+}
+
 @supports not selector(::-webkit-scrollbar) {
   * {
-    scrollbar-color: var(--c-line-strong) var(--c-screen);
+    scrollbar-color: var(--px-iron-hi) var(--px-iron-edge);
   }
 }
 

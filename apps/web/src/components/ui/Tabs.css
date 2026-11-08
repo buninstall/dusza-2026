@@ -51,3 +51,98 @@
   outline: var(--focus-width) solid var(--c-focus);
   outline-offset: var(--focus-offset);
 }
+
+[data-skin="akna"] .tabs {
+  gap: var(--space-4);
+}
+
+[data-skin="akna"] .tabs-list {
+  gap: var(--akna-px-2);
+  padding-top: var(--akna-px);
+  border: 0;
+  background: transparent;
+}
+
+[data-skin="akna"] .tabs-tab {
+  --tab-cat: var(--px-iron-lt);
+
+  position: relative;
+  min-height: var(--akna-h);
+  padding: 0 var(--space-3) var(--akna-px-2);
+  border: 0;
+  background-color: var(--px-iron-dk);
+  color: var(--c-text-muted);
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-iron-md);
+  font: var(--akna-label);
+  letter-spacing: var(--akna-track);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+[data-skin="akna"] .tabs-tab + .tabs-tab {
+  border: 0;
+}
+
+[data-skin="akna"] .tabs-tab::after {
+  content: "";
+  position: absolute;
+  right: var(--akna-px);
+  bottom: var(--akna-px);
+  left: var(--akna-px);
+  height: var(--akna-px-2);
+  background: var(--tab-cat);
+}
+
+[data-skin="akna"] .tabs-tab[data-hovered] {
+  background-color: var(--px-iron);
+  color: var(--c-text);
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-brass);
+}
+
+[data-skin="akna"] .tabs-tab[data-pressed] {
+  translate: 0 var(--akna-px);
+}
+
+[data-skin="akna"] .tabs-tab[data-selected] {
+  --tab-cat: var(--c-gold);
+
+  z-index: 1;
+  background-color: var(--px-iron-md);
+  background-image: var(--k-tex-iron-md);
+  background-size: var(--akna-tex) var(--akna-tex);
+  color: var(--c-text);
+  translate: 0 calc(var(--akna-px) * -1);
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-iron-lt),
+    inset calc(var(--akna-px-2) * -1) 0 0 0 var(--px-iron-dk),
+    0 var(--akna-px) 0 0 var(--px-iron-edge);
+  image-rendering: pixelated;
+}
+
+[data-skin="akna"] .tabs-tab[data-selected][data-hovered] {
+  background-color: var(--px-iron-hi);
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-brass-dk),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-brass-hi),
+    inset calc(var(--akna-px-2) * -1) 0 0 0 var(--px-iron-dk),
+    0 var(--akna-px) 0 0 var(--px-iron-edge);
+}
+
+[data-skin="akna"] .tabs-tab[data-disabled] {
+  --tab-cat: var(--px-iron);
+
+  color: var(--px-iron-lt);
+  cursor: not-allowed;
+  translate: none;
+}
+
+[data-skin="akna"] .tabs-tab[data-focus-visible] {
+  z-index: 2;
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: var(--focus-offset);
+}

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LocationPlate } from "../../components/LocationPlate.tsx";
+import { useDocumentTitle } from "../../components/LocationPlate.tsx";
 import { Segmented } from "../../components/ui/Segmented.tsx";
 import { hu } from "../../i18n/hu.ts";
 import { usePlayUi } from "../play-ui-store.ts";
@@ -41,24 +41,28 @@ export function Bezel({
   actions,
   isFullLocked = false,
 }: BezelProps) {
+  useDocumentTitle(documentTitle ?? title);
   return (
-    <LocationPlate
-      name={name}
-      detail={title}
-      isDocked={false}
-      className="stage-bezel"
-      {...(documentTitle ? { documentTitle } : {})}
-      {...(meta ? { meta } : {})}
-      actions={
-        <>
-          {actions}
-          <ViewSwitch isLocked={isFullLocked} />
-          <WellZoom />
-          <span className="bezel-keys">
-            <KeysPopover rows={hu.play.shortcuts} />
+    <header className="bezel k-panel">
+      <div className="bezel-id">
+        <h1 className="bezel-plaque k-plaque">
+          <span className="bezel-title">{title}</span>
+        </h1>
+        <div className="bezel-facts">
+          <span aria-hidden="true" className="bezel-sign">
+            {name}
           </span>
-        </>
-      }
-    />
+          {meta ? <p className="bezel-meta">{meta}</p> : null}
+        </div>
+      </div>
+      <div className="bezel-controls">
+        {actions}
+        <ViewSwitch isLocked={isFullLocked} />
+        <WellZoom />
+        <span className="bezel-keys">
+          <KeysPopover rows={hu.play.shortcuts} />
+        </span>
+      </div>
+    </header>
   );
 }

@@ -421,9 +421,12 @@ export const hu = {
       { keys: ["Ctrl+S"], action: "mentés" },
       { keys: ["Esc"], action: "téglalap megszakítása" },
       { keys: ["Egér"], action: "bal gomb fest, jobb gomb töröl, Shift+kattintás egyenest húz" },
+      { keys: ["+", "−", "0"], action: "nagyítás, kicsinyítés, eredeti méret" },
+      { keys: ["Ctrl+görgő", "Csippentés"], action: "nagyítás a kurzor körül" },
+      { keys: ["Középső gomb", "Szóköz+húzás"], action: "a nagyított térkép mozgatása" },
     ],
     gridHelp:
-      "Nyilakkal mozogsz, Enter vagy Szóköz fest. 1–4: eszköz, E, T, K: festésmód, R: robot forgatása, Ctrl+Z: visszavonás.",
+      "Nyilakkal mozogsz, Enter vagy Szóköz fest. 1–4: eszköz, E, T, K: festésmód, R: robot forgatása, + és −: nagyítás, Ctrl+Z: visszavonás.",
   },
   mine: {
     cell: (row: number, col: number, content: string) => `${row}. sor, ${col}. oszlop: ${content}`,

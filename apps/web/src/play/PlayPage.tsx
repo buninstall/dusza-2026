@@ -102,7 +102,7 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
             size="sm"
             icon="pickaxe"
           >
-            {hu.play.editMap}
+            <span className="bezel-label">{hu.play.editMap}</span>
           </Link>
         ) : null
       }

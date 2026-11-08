@@ -17,8 +17,9 @@
   top: 0;
   bottom: 0;
   left: 50%;
-  width: var(--border-thin);
-  background: var(--c-line);
+  width: var(--px);
+  background: var(--px-iron-md);
+  box-shadow: var(--px) 0 0 var(--px-iron-edge);
   translate: -50% 0;
 }
 
@@ -27,25 +28,31 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 8px;
-  height: 48px;
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface-raised);
+  width: calc(var(--px) * 3);
+  height: calc(var(--px) * 16);
+  background-color: var(--px-iron-md);
+  background-image: var(--k-tex-iron-md);
+  background-size: 72px 72px;
   box-shadow:
-    inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-hi),
-    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-bevel-lo);
+    inset var(--px) var(--px) 0 0 var(--px-iron-lt),
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--px-iron-dk),
+    var(--k-outline);
   translate: -50% -50%;
 }
 
 .split-handle:hover::after,
 .split-handle:active::after {
-  border-color: var(--c-accent);
-  background: var(--c-accent);
+  background-color: var(--px-brass);
+  background-image: none;
+  box-shadow:
+    inset var(--px) var(--px) 0 0 var(--px-brass-lt),
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--px-brass-dk),
+    var(--k-outline-dk);
 }
 
 .split-handle:hover::before,
 .split-handle:active::before {
-  background: var(--c-accent);
+  background: var(--px-brass);
 }
 
 .split-handle:focus-visible {

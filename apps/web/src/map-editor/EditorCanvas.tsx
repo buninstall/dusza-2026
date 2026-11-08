@@ -8,6 +8,7 @@ import type { BoardInteraction } from "../mine/board-input.ts";
 import type { RulerMarks } from "../mine/MineBoard.tsx";
 import { MineScene } from "../mine/scene/MineScene.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
+import { EditorZoom } from "./EditorZoom.tsx";
 import { MAX_SIZE, MIN_SIZE } from "./editor-state.ts";
 
 type SizeProps = {
@@ -52,9 +53,10 @@ type StripProps = {
 
 function CanvasStrip(props: StripProps) {
   return (
-    <div className="ed-strip">
+    <div className="k-panel ed-strip">
       <Button
         size="sm"
+        variant="ghost"
         icon="undo"
         isDisabled={!props.canUndo}
         aria-keyshortcuts="Control+Z"
@@ -64,6 +66,7 @@ function CanvasStrip(props: StripProps) {
       </Button>
       <Button
         size="sm"
+        variant="ghost"
         icon="redo"
         isDisabled={!props.canRedo}
         aria-keyshortcuts="Control+Shift+Z"
@@ -71,9 +74,7 @@ function CanvasStrip(props: StripProps) {
       >
         {hu.mapEditor.redo}
       </Button>
-      <span className="ed-strip-text">
-        <span className="mono">{props.cursorText}</span>
-      </span>
+      <span className="k-screen ed-pos">{props.cursorText}</span>
       <ToggleButton
         isSelected={props.showReach}
         onChange={props.onReachChange}
@@ -108,7 +109,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
   const { map } = props;
   return (
     <section aria-label={hu.mapEditor.gridLabel} className="ed-canvas">
-      <div className="ed-sizebar">
+      <div className="k-panel ed-sizebar">
         <SizeStepper
           label={hu.mapEditor.rows}
           value={map.rows}
@@ -121,6 +122,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
           kind="col"
           onChange={props.onCols}
         />
+        <EditorZoom zoom={props.zoom} onZoomChange={props.onZoomChange} />
       </div>
       <DropZone
         aria-label={hu.mapEditor.dropZone}
@@ -157,17 +159,17 @@ export function EditorCanvas(props: EditorCanvasProps) {
         <p className="ed-drop-hint" aria-hidden="true">
           {hu.mapEditor.dropHint}
         </p>
+        {props.doomNotes.row ? (
+          <p className="k-screen ed-size-note" data-kind="row">
+            {props.doomNotes.row}
+          </p>
+        ) : null}
+        {props.doomNotes.col ? (
+          <p className="k-screen ed-size-note" data-kind="col">
+            {props.doomNotes.col}
+          </p>
+        ) : null}
       </DropZone>
-      {props.doomNotes.row ? (
-        <p className="ed-size-note" data-kind="row">
-          {props.doomNotes.row}
-        </p>
-      ) : null}
-      {props.doomNotes.col ? (
-        <p className="ed-size-note" data-kind="col">
-          {props.doomNotes.col}
-        </p>
-      ) : null}
       <CanvasStrip {...props} />
       <p id={props.helpId} className="visually-hidden">
         {hu.mapEditor.gridHelp}

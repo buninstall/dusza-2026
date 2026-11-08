@@ -156,3 +156,250 @@
   outline: var(--focus-width) solid var(--c-focus);
   outline-offset: var(--focus-offset);
 }
+
+:is([data-skin="akna"], .overlay-popover) .btn {
+  --btn-face: var(--px-iron-md);
+  --btn-hi: var(--px-iron-lt);
+  --btn-lo: var(--px-iron-dk);
+  --btn-ring: var(--px-iron-edge);
+  --btn-side: var(--px-void);
+  --btn-ink: var(--c-text);
+  --btn-tex: var(--k-tex-iron-md);
+  --btn-drop: var(--akna-px);
+
+  gap: var(--akna-gap);
+  min-height: var(--akna-h);
+  padding: 0 var(--akna-pad);
+  border: 0;
+  color: var(--btn-ink);
+  background-color: var(--btn-face);
+  background-image: var(--akna-speck-l), var(--akna-speck-r), var(--btn-tex);
+  background-position:
+    left var(--akna-px-2) bottom var(--akna-px-2),
+    right var(--akna-px-2) bottom var(--akna-px-2),
+    0 0;
+  background-size:
+    8px 8px,
+    8px 8px,
+    var(--akna-tex) var(--akna-tex);
+  background-repeat: no-repeat, no-repeat, repeat;
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--btn-ring),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--btn-hi),
+    inset calc(var(--akna-px-2) * -1) calc(var(--akna-px-2) * -1) 0 0 var(--btn-lo),
+    0 var(--btn-drop) 0 0 var(--btn-side);
+  font: var(--akna-label);
+  letter-spacing: var(--akna-track);
+  text-transform: uppercase;
+  image-rendering: pixelated;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-size="sm"] {
+  min-height: var(--akna-h-sm);
+  padding: 0 var(--akna-pad-sm);
+  font: var(--akna-label);
+  letter-spacing: var(--akna-track);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn-icon-only {
+  min-width: var(--akna-h);
+  padding: 0;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn-icon-only[data-size="sm"] {
+  min-width: var(--akna-h-sm);
+  padding: 0;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-hovered] {
+  --btn-face: var(--px-iron-hi);
+  --btn-hi: var(--px-brass-hi);
+  --btn-ring: var(--px-brass-dk);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-pressed] {
+  --btn-hi: var(--px-iron-edge);
+  --btn-lo: var(--px-iron-hi);
+  --btn-drop: 0px;
+  translate: 0 var(--akna-px);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="primary"] {
+  --btn-face: var(--c-gold);
+  --btn-hi: var(--px-flame-hi);
+  --btn-lo: var(--px-ore-lo);
+  --btn-ring: var(--px-ore-edge);
+  --btn-side: var(--px-ore-edge);
+  --btn-ink: var(--c-on-gold);
+
+  background-image: var(--k-tex-chip);
+  background-position: left var(--akna-px-2) bottom var(--akna-px-2);
+  background-size: 8px 8px;
+  background-repeat: no-repeat;
+  font-weight: 800;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="primary"][data-hovered] {
+  --btn-face: var(--c-gold-hover);
+  --btn-hi: var(--px-flame-core);
+  --btn-ring: var(--px-brass-dk);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="primary"][data-pressed] {
+  --btn-face: var(--c-gold);
+  --btn-hi: var(--px-ore-lo);
+  --btn-lo: var(--px-flame-hi);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="danger"] {
+  --btn-face: var(--px-rust);
+  --btn-hi: var(--px-rust-hi);
+  --btn-lo: var(--px-rust-dk);
+  --btn-tex: var(--rust-pattern);
+  --btn-ink: var(--c-text);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="danger"][data-hovered] {
+  --btn-face: var(--px-rust-md);
+  --btn-hi: var(--px-rust-lt);
+  --btn-ring: var(--px-brass-dk);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="danger"][data-pressed] {
+  --btn-hi: var(--px-rust-dk);
+  --btn-lo: var(--px-rust-hi);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="ghost"] {
+  --btn-face: transparent;
+  --btn-ink: var(--c-text-muted);
+
+  background-image: none;
+  box-shadow: none;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="ghost"][data-hovered] {
+  --btn-face: var(--px-iron-md);
+  --btn-ink: var(--c-text);
+
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset 0 calc(var(--akna-px-2) * -1) 0 0 var(--px-brass);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="ghost"][data-pressed] {
+  --btn-face: var(--px-iron-dk);
+  --btn-ink: var(--c-text);
+
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-iron-edge);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[aria-pressed] {
+  padding-right: calc(var(--akna-pad) + var(--akna-px-3));
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn-icon-only[aria-pressed] {
+  padding-right: 0;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[aria-pressed]::after {
+  content: "";
+  position: absolute;
+  top: var(--akna-px-2);
+  right: var(--akna-px-2);
+  width: var(--akna-px-2);
+  height: var(--akna-px-2);
+  background: var(--px-glass-off);
+  box-shadow: var(--akna-ring);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[aria-pressed="true"] {
+  --btn-face: var(--px-iron-md);
+  --btn-ink: var(--c-gold);
+  --btn-drop: 0px;
+
+  translate: 0 var(--akna-px);
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--btn-ring),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-iron-edge),
+    inset 0 0 0 var(--akna-px-3) var(--px-led-amber-dk),
+    inset calc(var(--akna-px-2) * -1) calc(var(--akna-px-2) * -1) 0 0 var(--btn-lo);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[aria-pressed="true"]::after {
+  background:
+    var(--k-hl-lit) 0 0 / var(--akna-px) var(--akna-px) no-repeat,
+    var(--px-led-amber);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[aria-pressed="true"][data-hovered] {
+  --btn-ring: var(--px-brass-dk);
+  --btn-ink: var(--c-gold-hover);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="ghost"][aria-pressed="true"] {
+  --btn-face: var(--px-iron-dk);
+
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-iron-edge),
+    inset 0 calc(var(--akna-px-2) * -1) 0 0 var(--px-led-amber);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-disabled] {
+  --btn-face: var(--px-iron);
+  --btn-hi: var(--px-iron-md);
+  --btn-lo: var(--px-iron-dk);
+  --btn-ring: var(--px-iron-edge);
+  --btn-ink: var(--c-text-faint);
+  --btn-drop: var(--akna-px);
+
+  translate: none;
+  background-image: none;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="primary"][data-disabled] {
+  --btn-face: var(--px-led-amber-dk);
+  --btn-hi: var(--px-brass-dk);
+  --btn-side: var(--px-void);
+  --btn-ink: var(--c-text-muted);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="danger"][data-disabled] {
+  --btn-face: var(--px-rust-dk);
+  --btn-hi: var(--px-rust);
+  --btn-ink: var(--c-text-muted);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-variant="ghost"][data-disabled] {
+  --btn-face: transparent;
+
+  box-shadow: none;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-blocked="true"] {
+  --btn-face: var(--px-iron);
+  --btn-ink: var(--c-text-muted);
+
+  background-image: var(--hatch-pattern), var(--k-tex-iron-dk);
+  background-size:
+    8px 8px,
+    var(--akna-tex) var(--akna-tex);
+  background-repeat: repeat, repeat;
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn[data-focus-visible] {
+  z-index: 1;
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: var(--focus-offset);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn-text-link {
+  text-decoration-color: var(--px-brass-hi);
+}
+
+:is([data-skin="akna"], .overlay-popover) .btn-text-link[data-hovered] {
+  color: var(--px-brass-lt);
+}

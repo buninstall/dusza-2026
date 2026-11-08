@@ -48,3 +48,30 @@
 .search-field[data-empty] .search-clear {
   display: none;
 }
+
+[data-skin="akna"] .search-box > .px-icon {
+  inset-inline-start: var(--space-2);
+  color: var(--px-brass-hi);
+}
+
+[data-skin="akna"] .search-box .search-input {
+  padding-inline: calc(var(--space-2) + 20px + var(--space-2)) calc(var(--akna-h-xs) + var(--space-2));
+}
+
+[data-skin="akna"] .search-clear {
+  inset-inline-end: var(--space-1);
+  width: var(--akna-h-xs);
+  height: var(--akna-h-xs);
+  border: 0;
+  color: var(--c-text-muted);
+}
+
+[data-skin="akna"] .search-clear[data-hovered] {
+  background: var(--px-iron-md);
+  color: var(--c-text);
+  box-shadow: var(--akna-ring-brass);
+}
+
+[data-skin="akna"] .search-clear[data-pressed] {
+  background: var(--px-iron-dk);
+}

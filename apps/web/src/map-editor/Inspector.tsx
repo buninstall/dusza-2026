@@ -11,7 +11,6 @@ import { Segmented } from "../components/ui/Segmented.tsx";
 import { TextField } from "../components/ui/TextField.tsx";
 import { diagnosticTitles, hu } from "../i18n/hu.ts";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
-import { PixelText } from "../pixel/PixelText.tsx";
 import type { LampMode } from "../play/lamp-mode.ts";
 
 export type Visibility = "public" | "private";
@@ -46,13 +45,12 @@ function InspectorSection({
   children: ReactNode;
 }) {
   return (
-    <section className={clsx("ed-section", className)} aria-label={title}>
+    <section className={clsx("k-panel ed-section", className)} aria-label={title}>
       {isTitleHidden ? (
         <h2 className="visually-hidden">{title}</h2>
       ) : (
         <h2 ref={headingRef} tabIndex={-1} className="ed-section-title">
-          <PixelText text={title} scale={2} />
-          <span className="visually-hidden">{title}</span>
+          {title}
         </h2>
       )}
       {children}

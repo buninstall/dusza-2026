@@ -1,53 +1,243 @@
 .stage {
-  --log-h: clamp(9rem, 22vh, 14rem);
-  --well-min: 12rem;
+  --log-h: clamp(8rem, 20vh, 13rem);
+  --well-min: 10rem;
 
+  container: stage / inline-size;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  min-width: 0;
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface);
-  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
-}
-
-.stage[data-layout="cab"] {
-  container: stage / inline-size;
-  min-height: 32rem;
-  overflow-x: hidden;
-  overflow-y: auto;
-  grid-template-rows: auto auto minmax(var(--well-min), 1fr) auto auto auto;
   grid-template-areas:
     "bezel"
     "rail"
     "well"
-    "status"
     "deck"
     "log";
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--px) calc(var(--px) * 2) calc(var(--px) * 2) var(--px);
+}
+
+.stage[data-layout="cab"] {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  grid-template-rows: auto auto minmax(var(--well-min), 1fr) auto auto;
+}
+
+.stage[data-layout="cab"] > .hud {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.stage[data-layout="cab"] > .deck {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
 }
 
 @media (max-height: 48rem) {
   .stage[data-layout="cab"] {
     --well-min: 8rem;
-    --log-h: clamp(7rem, 16vh, 14rem);
-
-    min-height: 0;
-  }
-
-  .stage[data-layout="cab"] .board[data-size="play"] {
-    --tile-min: 12px;
+    --log-h: clamp(7rem, 16vh, 12rem);
   }
 }
 
-.stage[data-layout="panes"] {
-  container: stage / inline-size;
-  grid-template-areas:
-    "bezel"
-    "rail"
-    "well"
-    "deck"
-    "status"
-    "log";
+.bezel {
+  grid-area: bezel;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  min-width: 0;
+  padding: var(--space-1) var(--space-4);
+}
+
+.bezel-id {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.bezel .bezel-plaque {
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: calc(var(--px) * 9);
+  margin: var(--px) calc(var(--px) * 2) calc(var(--px) * 2) var(--px);
+  padding: 0 calc(var(--px) * 8);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  background-position:
+    left calc(var(--px) * 2) center,
+    right calc(var(--px) * 2) center,
+    0 0;
+  background-size:
+    calc(var(--px) * 3) calc(var(--px) * 3),
+    calc(var(--px) * 3) calc(var(--px) * 3),
+    72px 36px;
+}
+
+.bezel .bezel-plaque::before {
+  inset: calc(var(--px) * 2) calc(var(--px) * 6);
+}
+
+.bezel-title {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bezel-facts {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bezel-sign {
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-text-faint);
+  white-space: nowrap;
+}
+
+.bezel-meta {
+  min-width: 0;
+  overflow: hidden;
+  font: var(--type-mono-sm);
+  line-height: 1.2;
+  color: var(--c-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bezel-controls {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bezel .btn {
+  min-height: var(--control-height-xs);
+}
+
+.bezel .btn-icon-only {
+  min-width: var(--control-height-xs);
+  padding: 0;
+}
+
+.bezel .seg {
+  flex: none;
+}
+
+.bezel .seg-segment {
+  min-height: var(--control-height-xs);
+}
+
+.bezel-keys {
+  display: contents;
+}
+
+.well-zoom {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.well-zoom .well-zoom-level {
+  min-width: 5.5ch;
+  margin: 0 var(--px);
+  padding: var(--space-1) var(--space-1);
+  font: var(--type-mono-sm);
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.play-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.play-dark-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--c-reward);
+  font: var(--type-micro);
+  letter-spacing: var(--track-nav);
+  text-transform: uppercase;
+}
+
+.play-dark-tag .px-icon {
+  width: 14px;
+  height: 14px;
+}
+
+@container stage (width < 64rem) {
+  .bezel .seg-segment-label,
+  .bezel-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .bezel .seg-segment {
+    min-width: var(--control-height-xs);
+  }
+}
+
+@container stage (width < 44rem) {
+  .bezel {
+    flex-wrap: wrap;
+  }
+
+  .bezel-controls {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+
+@container stage (width < 30rem) {
+  .bezel-keys {
+    display: none;
+  }
+
+  .bezel-id {
+    flex-wrap: wrap;
+  }
+}
+
+.stage-well {
+  position: relative;
+  grid-area: well;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) fit-content(55%);
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+}
+
+.stage[data-layout="panes"] .stage-well {
+  grid-template-rows:
+    max(9rem, min(62svh, calc(100cqw * var(--rows) / var(--cols) + var(--space-7))))
+    auto;
 }
 
 .stage-status {
@@ -58,8 +248,13 @@
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  box-shadow: 0 calc(var(--shadow-offset) * -1) 0 var(--c-shadow);
+  background: var(--px-iron-dk);
+  box-shadow: var(--k-outline);
   animation: status-rise var(--motion-enter) var(--ease-px3);
+}
+
+.stage-status:empty {
+  display: none;
 }
 
 @keyframes status-rise {
@@ -67,105 +262,6 @@
     translate: 0 16px;
     opacity: 0;
   }
-}
-
-.stage-status:empty {
-  display: none;
-}
-
-.stage-bezel {
-  grid-area: bezel;
-  z-index: 2;
-  padding: var(--space-2) var(--space-3);
-  border-width: 0 0 var(--border-thin);
-  box-shadow:
-    inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-hi),
-    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-bevel-lo);
-}
-
-.stage-bezel .plate-sign svg {
-  width: auto;
-  height: 20px;
-}
-
-.stage-bezel .plate-detail {
-  font: var(--type-h3);
-  letter-spacing: var(--track-tight);
-}
-
-.stage-bezel .plate-text {
-  flex: 1 1 15rem;
-}
-
-.stage-bezel .plate-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-3);
-}
-
-.stage-bezel .plate-actions {
-  flex: 0 1 auto;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.stage-bezel .plate-actions .seg {
-  flex: none;
-}
-
-.stage-well {
-  position: relative;
-  grid-area: well;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) fit-content(55%);
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  background: var(--c-screen);
-}
-
-.stage[data-layout="cab"] {
-  display: flex;
-  flex-direction: column;
-}
-
-.stage[data-layout="cab"] > * {
-  flex: none;
-}
-
-.stage[data-layout="cab"] > .stage-well {
-  flex: 1 1 0;
-  min-height: var(--well-min);
-}
-
-.stage[data-layout="cab"] > .deck {
-  position: sticky;
-  bottom: 0;
-  z-index: 4;
-}
-
-.stage[data-layout="cab"] > .hud {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
-.well-view {
-  --well-pad: var(--space-1);
-
-  min-width: 0;
-  min-height: 0;
-  container: well / size;
-  overflow: auto;
-  overscroll-behavior: contain;
-  padding: var(--well-pad);
-}
-
-.stage[data-layout="panes"] .well-view {
-  height: min(62svh, calc(100cqw * var(--rows) / var(--cols) + var(--space-7)));
-  min-height: 9rem;
 }
 
 .stage-well::before {
@@ -224,147 +320,8 @@
   }
 }
 
-@container plate (width < 46rem) {
-  .stage-bezel .plate-actions {
-    flex: 1 0 100%;
-    flex-wrap: wrap;
-  }
-
-  .stage-bezel .bezel-keys > .btn-icon-only {
-    order: -1;
-  }
-}
-
-.bezel-keys {
-  display: contents;
-}
-
-@container plate (width < 30rem) {
-  .stage-bezel .bezel-keys {
-    display: none;
-  }
-
-  .stage-bezel .seg-segment {
-    min-width: var(--target-min);
-  }
-
-  .stage-bezel .seg-segment-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-}
-
-.play-progress {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-3);
-}
-
-.play-dark-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0 var(--space-2);
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-screen);
-  color: var(--c-reward);
-  font: var(--type-label);
-}
-
-.well-view[data-zoomed="true"] {
-  cursor: grab;
-}
-
-.well-view[data-panning="true"] {
-  cursor: grabbing;
-  user-select: none;
-}
-
-.well-view[data-zoomed="true"] .board-viewport[data-fit="both"] {
-  width: max-content;
-  min-width: 100%;
-  height: max-content;
-  min-height: 100%;
-}
-
-.well-view[data-zoomed="true"] .board {
-  --tile-snap: 8px;
-  --tile: calc(clamp(var(--tile-min), var(--tile-fit), var(--tile-max)) * var(--zoom, 1));
-
-  margin: auto;
-}
-
-@supports (width: round(up, 10px, 4px)) {
-  .well-view[data-zoomed="true"] .board {
-    --tile: max(
-      var(--tile-min),
-      round(
-        up,
-        clamp(var(--tile-min), var(--tile-fit), var(--tile-max)) *
-        var(--zoom, 1),
-        var(--tile-snap)
-      )
-    );
-  }
-}
-
-.well-view .board-corner,
-.well-view .board-ruler-top,
-.well-view .board-ruler-left {
-  position: sticky;
-  z-index: 7;
-  background: var(--c-screen);
-}
-
-.well-view .board-corner {
-  top: calc(-1 * var(--well-pad));
-  left: calc(-1 * var(--well-pad));
-  z-index: 8;
-}
-
-.well-view .board-ruler-top {
-  top: calc(-1 * var(--well-pad));
-}
-
-.well-view .board-ruler-left {
-  left: calc(-1 * var(--well-pad));
-}
-
-.well-zoom {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 2px;
-}
-
-.well-zoom-level {
-  min-width: 5ch;
-  font: var(--type-mono-sm);
-  font-weight: 700;
-  color: var(--c-text);
-  text-align: center;
-}
-
 @media (max-width: 47.99rem) {
-  .stage[data-layout="cab"] > .deck,
-  .stage[data-layout="cab"] > .hud {
-    position: static;
-  }
-
-  .stage[data-layout="panes"] .stage-well {
-    grid-template-rows: auto auto;
-  }
-
   .stage[data-layout="panes"] .stage-status {
-    position: static;
-    max-height: none;
     overflow: visible;
-    box-shadow: none;
   }
 }

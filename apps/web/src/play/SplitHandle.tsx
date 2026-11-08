@@ -13,37 +13,46 @@ import "./SplitHandle.css";
 const KEY_STEP = 2;
 const PAGE_STEP = 10;
 const PERCENT = 100;
-const STAGE_MIN_REM = 36;
-const INITIAL_MAX_REM = 28;
+const SHEET_MIN_REM = 18.75;
+const STAGE_MIN_REM = 35;
+const INITIAL_MAX_REM = 25;
 
-type Bounds = { max: number; initial: number };
+type Bounds = { min: number; max: number; initial: number };
+
+const FALLBACK: Bounds = {
+  min: SHEET_SHARE.min,
+  max: SHEET_SHARE.max,
+  initial: SHEET_SHARE.initial,
+};
 
 type SplitHandleProps = {
   containerRef: RefObject<HTMLElement | null>;
   controls: string;
 };
 
+function clamp(value: number, low: number, high: number): number {
+  return Math.min(Math.max(value, low), high);
+}
+
 function boundsOf(container: HTMLElement | null): Bounds {
   const width = container?.getBoundingClientRect().width ?? 0;
   if (!container || width <= 0) {
-    return { max: SHEET_SHARE.max, initial: SHEET_SHARE.initial };
+    return FALLBACK;
   }
   const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
   const split = Number.parseFloat(getComputedStyle(container).getPropertyValue("--split-w")) || 0;
-  const fits = ((width - STAGE_MIN_REM * rem - split) / width) * PERCENT;
-  const max = Math.max(Math.min(SHEET_SHARE.max, Math.floor(fits)), SHEET_SHARE.min);
-  const capped = ((INITIAL_MAX_REM * rem) / width) * PERCENT;
+  const share = (pixels: number) => (pixels / width) * PERCENT;
+  const fits = Math.floor(share(width - STAGE_MIN_REM * rem - split));
+  const max = Math.max(Math.min(SHEET_SHARE.max, fits), SHEET_SHARE.min);
+  const min = clamp(Math.ceil(share(SHEET_MIN_REM * rem)), SHEET_SHARE.min, max);
   const initial = Math.round(
-    Math.min(Math.max(Math.min(SHEET_SHARE.initial, capped), SHEET_SHARE.min), max),
+    clamp(Math.min(SHEET_SHARE.initial, share(INITIAL_MAX_REM * rem)), min, max),
   );
-  return { max, initial };
+  return { min, max, initial };
 }
 
 function useBounds(containerRef: RefObject<HTMLElement | null>): Bounds {
-  const [bounds, setBounds] = useState<Bounds>({
-    max: SHEET_SHARE.max,
-    initial: SHEET_SHARE.initial,
-  });
+  const [bounds, setBounds] = useState<Bounds>(FALLBACK);
   useEffect(() => {
     const container = containerRef.current;
     if (!container) {
@@ -61,19 +70,16 @@ function useBounds(containerRef: RefObject<HTMLElement | null>): Bounds {
   return bounds;
 }
 
-function clampShare(share: number, max: number): number {
-  return Math.min(Math.max(share, SHEET_SHARE.min), max);
-}
-
 function shareAt(container: HTMLElement, clientX: number): number {
   const rect = container.getBoundingClientRect();
   if (rect.width <= 0) {
     return SHEET_SHARE.initial;
   }
-  return clampShare(((clientX - rect.left) / rect.width) * PERCENT, boundsOf(container).max);
+  const { min, max } = boundsOf(container);
+  return clamp(((clientX - rect.left) / rect.width) * PERCENT, min, max);
 }
 
-function keyedShare(key: string, share: number, max: number): number | null {
+function keyedShare(key: string, share: number, bounds: Bounds): number | null {
   switch (key) {
     case "ArrowLeft":
       return share - KEY_STEP;
@@ -84,9 +90,9 @@ function keyedShare(key: string, share: number, max: number): number | null {
     case "PageUp":
       return share + PAGE_STEP;
     case "Home":
-      return SHEET_SHARE.min;
+      return bounds.min;
     case "End":
-      return max;
+      return bounds.max;
     default:
       return null;
   }
@@ -96,8 +102,8 @@ export function SplitHandle({ containerRef, controls }: SplitHandleProps) {
   const stored = usePlayUi((state) => state.sheetShare);
   const setSheetShare = usePlayUi((state) => state.setSheetShare);
   const dragRef = useRef<{ share: number; isMoved: boolean } | null>(null);
-  const { max, initial } = useBounds(containerRef);
-  const shown = Math.round(Math.min(stored ?? initial, max));
+  const bounds = useBounds(containerRef);
+  const shown = Math.round(clamp(stored ?? bounds.initial, bounds.min, bounds.max));
 
   const preview = (next: number) => {
     containerRef.current?.style.setProperty("--sheet-share", `${next}%`);
@@ -134,12 +140,12 @@ export function SplitHandle({ containerRef, controls }: SplitHandleProps) {
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLHRElement>) => {
-    const next = keyedShare(event.key, shown, max);
+    const next = keyedShare(event.key, shown, bounds);
     if (next === null) {
       return;
     }
     event.preventDefault();
-    setSheetShare(clampShare(next, max));
+    setSheetShare(clamp(next, bounds.min, bounds.max));
   };
 
   return (
@@ -148,8 +154,8 @@ export function SplitHandle({ containerRef, controls }: SplitHandleProps) {
       aria-orientation="vertical"
       aria-label={hu.play.splitLabel}
       aria-controls={controls}
-      aria-valuemin={SHEET_SHARE.min}
-      aria-valuemax={max}
+      aria-valuemin={bounds.min}
+      aria-valuemax={bounds.max}
       aria-valuenow={shown}
       aria-valuetext={hu.play.splitValue(shown)}
       className="split-handle"

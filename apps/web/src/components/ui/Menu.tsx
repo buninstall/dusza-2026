@@ -9,6 +9,7 @@ import {
 } from "react-aria-components";
 import type { IconName } from "../../pixel/icons.ts";
 import { Button, type ButtonVariant } from "./Button.tsx";
+import { OVERLAY_SKIN } from "./overlay-skin.ts";
 import "./Overlay.css";
 
 type MenuProps = {
@@ -41,7 +42,7 @@ export function Menu({
       >
         {label}
       </Button>
-      <Popover placement={placement} className="overlay-menu-popover">
+      <Popover placement={placement} className="overlay-menu-popover" {...OVERLAY_SKIN}>
         <AriaMenu className="overlay-menu">{children}</AriaMenu>
       </Popover>
     </MenuTrigger>

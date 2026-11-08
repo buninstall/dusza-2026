@@ -4,6 +4,7 @@ import { Notice } from "../components/Notice.tsx";
 import { RegionBoundary } from "../components/RegionBoundary.tsx";
 import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
+import { addRunWear, useRustWear } from "../lib/rust-wear.ts";
 import { useStableCallback } from "../lib/stable-callback.ts";
 import { MineScene } from "../mine/scene/MineScene.tsx";
 import type { Exploration, FogMode } from "../mine/tiles-model.ts";
@@ -223,6 +224,7 @@ export function PlayScreen(props: PlayScreenProps) {
   usePlaybackTimer();
   usePlaybackSounds();
   useBreakpointNotice();
+  useRustWear(rootRef);
 
   useEffect(() => () => usePlayback.getState().clear(), []);
   useEffect(() => {
@@ -234,6 +236,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const afterRun = (isStarted: boolean, isFromLever: boolean) => {
     ui.markRun();
     if (isStarted) {
+      addRunWear();
       if (layout === "panes") {
         stageRef.current?.scrollIntoView({ block: "start" });
       }
@@ -347,7 +350,7 @@ export function PlayScreen(props: PlayScreenProps) {
           extra={<LogToggle count={consoleCount} isOpen={ui.isLogOpen} onToggle={ui.toggleLog} />}
         />
         {ui.isLogOpen ? (
-          <div className="log" id={LOG_ID}>
+          <div className="log k-panel k-panel--inset" id={LOG_ID}>
             <ConsoleTape
               entries={frame?.console ?? []}
               canSeek={isScrubbable(status)}
@@ -388,7 +391,15 @@ export function PlayScreen(props: PlayScreenProps) {
       : undefined;
 
   return (
-    <div ref={rootRef} className="play" data-layout={layout} data-mode={mode} style={share}>
+    <div
+      ref={rootRef}
+      className="play"
+      data-layout={layout}
+      data-mode={mode}
+      data-theme="tarna"
+      data-skin="akna"
+      style={share}
+    >
       {panes}
       <GoldFlight flight={motion.flight} rootRef={rootRef} />
       <LiveAnnouncer frame={frame} final={finalAnnouncement(view, map)} urgent={urgent} />

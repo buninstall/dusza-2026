@@ -7,8 +7,6 @@
   height: var(--log-h);
   min-height: 0;
   padding: var(--space-2);
-  border-top: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface);
 }
 
 .stage[data-layout="panes"] .log {
@@ -26,7 +24,7 @@
 .log-toggle-count {
   min-width: 2ch;
   padding: 0 var(--space-1);
-  background: var(--c-screen);
+  background: var(--px-iron-edge);
   color: var(--c-reward);
   font: var(--type-micro);
   text-align: center;
@@ -38,8 +36,15 @@
   gap: var(--space-1);
   min-width: 0;
   min-height: 0;
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-screen);
+  margin: var(--px);
+  background-color: var(--px-iron-edge);
+  background-image: var(--k-tex-scan);
+  background-size: var(--px) calc(var(--px) * 2);
+  box-shadow:
+    inset var(--px) var(--px) 0 0 var(--px-iron-md),
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--px-void),
+    var(--k-outline);
+  image-rendering: pixelated;
 }
 
 .log-console {
@@ -93,6 +98,7 @@
   min-height: var(--target-min);
   align-items: center;
   padding: 0 var(--space-1);
+  color: var(--px-phosphor);
   border: 0;
   background: transparent;
   text-align: left;
@@ -100,7 +106,12 @@
 }
 
 .log-line-button:hover:not(:disabled) {
-  background: var(--c-surface);
+  background: var(--px-iron-dk);
+}
+
+.log-line-button:focus-visible {
+  outline: var(--focus-width) solid var(--c-focus);
+  outline-offset: calc(var(--focus-width) * -1);
 }
 
 .log-line-button:disabled {
@@ -130,7 +141,7 @@
 .log-table th,
 .log-table td {
   padding: 2px var(--space-2);
-  border-bottom: 1px solid var(--c-line);
+  border-bottom: 1px solid var(--px-iron-md);
   text-align: left;
 }
 

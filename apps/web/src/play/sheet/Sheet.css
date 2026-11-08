@@ -2,11 +2,23 @@
   container: sheet / inline-size;
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
   min-width: 0;
   min-height: 0;
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface);
-  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
+  padding: var(--space-2) var(--space-3);
+}
+
+.sheet:not(.k-panel) {
+  background-color: var(--px-iron);
+  box-shadow:
+    inset var(--px) var(--px) 0 0 var(--px-iron-hi),
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--px-iron-dk),
+    var(--k-outline),
+    var(--k-drop);
+}
+
+.play[data-layout="cab"] > .sheet {
+  margin: var(--px) 0 calc(var(--px) * 2) var(--px);
 }
 
 .sheet > :not(.sheet-editor) {
@@ -18,12 +30,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  border-bottom: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface-raised);
-  box-shadow:
-    inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-hi),
-    inset calc(var(--border-thin) * -1) calc(var(--border-thin) * -1) 0 var(--c-bevel-lo);
 }
 
 .sheet-tab {
@@ -31,8 +37,7 @@
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
-  padding: var(--space-1) var(--space-3);
-  border-bottom: var(--border-thin) solid var(--c-line);
+  padding: var(--space-1) var(--space-2);
   font: var(--type-mono-sm);
   color: var(--c-text-muted);
 }
@@ -43,7 +48,7 @@
   min-width: 0;
 }
 
-@container sheet (width < 34rem) {
+@container sheet (width < 26rem) {
   .sheet-compact {
     padding-inline: var(--space-2);
   }
@@ -59,14 +64,14 @@
   }
 }
 
-.sheet-toolbar .btn,
-.drawers .btn {
+.sheet .sheet-toolbar .btn,
+.sheet .drawers .btn {
   min-height: var(--control-height-xs);
   padding-inline: var(--space-2);
   gap: var(--space-1);
 }
 
-.sheet-toolbar .btn-icon-only {
+.sheet .sheet-toolbar .btn-icon-only {
   min-width: var(--control-height-xs);
   padding: 0;
 }
@@ -76,28 +81,35 @@
   flex-wrap: wrap;
   gap: var(--space-1);
   min-width: 0;
-  padding: var(--space-1) var(--space-2);
-  border-bottom: var(--border-thin) solid var(--c-line);
 }
 
 @media (pointer: coarse) {
-  .sheet-toolbar .btn,
-  .drawers .btn {
+  .sheet .sheet-toolbar .btn,
+  .sheet .drawers .btn {
     min-height: var(--control-height-sm);
   }
 
-  .sheet-toolbar .btn-icon-only {
+  .sheet .sheet-toolbar .btn-icon-only {
     min-width: var(--control-height-sm);
   }
 }
 
-.drawer-button {
+.sheet .drawers .drawer-button {
   flex: 1 0 auto;
   min-width: 0;
+  padding-bottom: var(--px);
   font-size: 0.75rem;
-  box-shadow:
-    inset 0 calc(var(--border-thin) * -2) 0 var(--drawer-tick, var(--c-line-strong)),
-    var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow);
+}
+
+.sheet .drawers .drawer-button::after {
+  content: "";
+  position: absolute;
+  right: var(--px);
+  bottom: var(--px);
+  left: var(--px);
+  height: var(--px);
+  background: var(--drawer-tick, var(--px-iron-lt));
+  pointer-events: none;
 }
 
 .drawer-button[data-drawer="robot"] {
@@ -204,7 +216,17 @@
 .sheet-editor {
   flex: 1 1 0;
   min-height: 0;
+  margin: var(--px);
+  padding: var(--px);
   overflow: hidden;
+  background-color: var(--px-iron-edge);
+  background-image: var(--k-tex-scan);
+  background-size: var(--px) calc(var(--px) * 2);
+  box-shadow:
+    inset var(--px) var(--px) 0 0 var(--px-iron-md),
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--px-void),
+    var(--k-outline);
+  image-rendering: pixelated;
 }
 
 .play[data-layout="panes"] .sheet-editor {
@@ -212,7 +234,18 @@
 }
 
 .sheet-editor .code-host {
-  min-height: 12rem;
+  height: 100%;
+  min-height: 10rem;
+}
+
+.sheet-editor .cm-editor {
+  background: transparent;
+  color: var(--px-phosphor);
+}
+
+.sheet-editor .cm-editor .cm-gutters {
+  border-right: var(--border-thin) solid var(--px-iron-md);
+  background: transparent;
 }
 
 .sheet-limit {
@@ -227,8 +260,6 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border-top: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface-raised);
 }
 
 .faults-bar {
@@ -236,8 +267,12 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1) var(--space-3);
-  min-height: 40px;
-  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  min-height: var(--control-height-xs);
+  padding: 0 0 0 var(--space-1);
+}
+
+.faults .faults-toggle {
+  min-height: var(--control-height-xs);
 }
 
 .faults-led {
@@ -286,10 +321,11 @@
 .faults-list {
   display: flex;
   flex-direction: column;
-  max-height: 20rem;
+  max-height: 14rem;
   overflow-y: auto;
   list-style: none;
-  border-bottom: var(--border-thin) dashed var(--c-line);
+  background: var(--px-iron-dk);
+  box-shadow: var(--k-outline);
   animation: sheet-rise var(--motion-tick) var(--ease-px2);
 }
 

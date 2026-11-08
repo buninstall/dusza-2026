@@ -17,7 +17,7 @@ export function WellZoom() {
         isDisabled={zoom <= ZOOM_MIN}
         onPress={() => shiftZoom(-1)}
       />
-      <output className="well-zoom-level" aria-live="polite">
+      <output className="well-zoom-level k-screen" aria-live="polite">
         {hu.play.zoomLevel(Math.round(zoom * PERCENT))}
       </output>
       <IconButton

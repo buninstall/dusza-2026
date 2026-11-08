@@ -21,7 +21,7 @@ export type Pane = "stage" | "sheet";
 
 const STORAGE_KEY = "minescript.play-ui";
 
-export const SHEET_SHARE = { min: 24, max: 64, initial: 36 } as const;
+export const SHEET_SHARE = { min: 16, max: 64, initial: 30 } as const;
 
 export const ZOOM_LEVELS = [1, 1.25, 1.5, 2, 2.5, 3, 4] as const;
 export const ZOOM_MIN = 1;
