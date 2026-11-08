@@ -42,8 +42,73 @@
   transition: opacity var(--motion-enter) var(--ease-px2);
 }
 
-.sb-pager {
-  justify-content: space-between;
+.lv-more.sb-pager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.sb-pager .pager {
+  --pager-slot: 3.5rem;
+
+  justify-content: flex-start;
+}
+
+.sb-pager .pager-page.btn {
+  padding-inline: 0;
+}
+
+.sb-pager .pager-current {
+  --btn-hi: var(--px-ore-hi);
+  --btn-lo: var(--px-ore-lo);
+
+  position: relative;
+  border-color: var(--c-on-accent);
+  background-image: var(--rust-chip-pattern);
+  background-size: 42px 42px;
+  image-rendering: pixelated;
+  clip-path: var(--stone-clip);
+}
+
+@container pager (width < 48rem) {
+  .sb-pager .pager-track {
+    grid-template-columns: repeat(var(--pager-cells), minmax(0, 1fr));
+    gap: var(--space-1);
+    width: 100%;
+  }
+
+  .sb-pager .pager-prev {
+    grid-column: 1;
+  }
+
+  .sb-pager .pager-pages {
+    grid-column: 2 / -2;
+    grid-template-columns: subgrid;
+  }
+
+  .sb-pager .pager-next {
+    grid-column: -2;
+  }
+
+  .sb-pager .pager-step.btn {
+    padding-inline: 0;
+  }
+
+  .sb-pager .pager-step-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .sb-pager .pager .btn::before,
+  .sb-pager .pager .btn::after,
+  .sb-pager .pager-current::before,
+  .sb-pager .pager-current::after {
+    display: none;
+  }
 }
 
 .lv-fav.btn {
@@ -93,6 +158,66 @@
 
 .maps-plate.maps-plate-sandbox {
   --plate-left: 17rem;
+}
+
+.maps-progress.maps-stats {
+  container: maps-stats / inline-size;
+  padding-inline: var(--space-1);
+}
+
+.maps-stats > .px-icon {
+  margin-inline-start: var(--space-1);
+}
+
+.maps-stats-lines {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  min-width: 0;
+  margin-inline-end: var(--space-1);
+  white-space: nowrap;
+}
+
+.maps-stat {
+  color: var(--c-text-muted);
+}
+
+.maps-stat-value {
+  color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+}
+
+@container maps-stats (width < 14.5rem) {
+  .maps-stats-lines {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: 2px var(--space-1);
+    font: var(--type-micro);
+    line-height: 1;
+  }
+
+  .maps-stat {
+    display: contents;
+  }
+
+  .maps-stat-value {
+    justify-self: end;
+  }
+
+  .maps-stats-sep {
+    display: none;
+  }
+}
+
+@container maps-stats (width < 7.5rem) {
+  .maps-stats > .px-icon {
+    display: none;
+  }
+
+  .maps-stats-lines {
+    margin-inline: auto;
+  }
 }
 
 .maps-plate-sandbox .tabs-tab {

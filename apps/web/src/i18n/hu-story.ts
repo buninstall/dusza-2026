@@ -204,7 +204,8 @@ export const story = {
   continue: "Folytatás",
   continueLabel: (title: string) => `Folytatás: ${title}`,
   allDone: "Minden pálya kész",
-  sandboxStats: (maps: number, authors: number) => `${maps} pálya · ${authors} készítő`,
+  sandboxMaps: "pálya",
+  sandboxAuthors: "készítő",
   counterLabel: (remaining: number, name: string) =>
     `Még ${remaining} pályán kell minden aranyat kibányászni, hogy kinyíljon ${name}.`,
   counterOpenLabel: (name: string) =>

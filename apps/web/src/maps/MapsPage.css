@@ -1,5 +1,20 @@
 .maps-page {
   --mine-gap: 5.25rem;
+  --stone-clip: polygon(
+    0 4px,
+    4px 4px,
+    4px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 2px,
+    calc(100% - 2px) 2px,
+    100% 6px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    6px 100%,
+    6px calc(100% - 2px),
+    0 calc(100% - 2px)
+  );
 
   position: relative;
   z-index: 1;
@@ -292,22 +307,7 @@
   background-image: var(--btn-rust);
   background-size: var(--btn-rust-size) var(--btn-rust-size);
   image-rendering: pixelated;
-
-  clip-path: polygon(
-    0 4px,
-    4px 4px,
-    4px 0,
-    calc(100% - 8px) 0,
-    calc(100% - 8px) 2px,
-    calc(100% - 2px) 2px,
-    100% 6px,
-    100% calc(100% - 4px),
-    calc(100% - 4px) calc(100% - 4px),
-    calc(100% - 4px) 100%,
-    6px 100%,
-    6px calc(100% - 2px),
-    0 calc(100% - 2px)
-  );
+  clip-path: var(--stone-clip);
 }
 
 .maps-page .btn[data-hovered] {
@@ -316,7 +316,9 @@
 }
 
 .maps-page .btn::before,
-.maps-page .btn::after {
+.maps-page .btn::after,
+.maps-page .pager-current::before,
+.maps-page .pager-current::after {
   content: "";
   position: absolute;
   top: calc(50% - 3px);
@@ -326,11 +328,13 @@
   box-shadow: 2px 2px 0 var(--btn-lo);
 }
 
-.maps-page .btn::before {
+.maps-page .btn::before,
+.maps-page .pager-current::before {
   left: 6px;
 }
 
-.maps-page .btn::after {
+.maps-page .btn::after,
+.maps-page .pager-current::after {
   right: 8px;
 }
 

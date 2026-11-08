@@ -298,7 +298,20 @@ function MineLayer({
 function SandboxStats() {
   const { data } = useQuery(sandboxStatsQuery());
   return (
-    <StoryStatusChip icon="list" text={story.sandboxStats(data?.maps ?? 0, data?.authors ?? 0)} />
+    <p className="maps-progress maps-stats">
+      <PixelIcon name="list" />
+      <span className="maps-stats-lines">
+        <span className="maps-stat">
+          <span className="maps-stat-value">{data?.maps ?? 0}</span> {story.sandboxMaps}
+        </span>
+        <span className="maps-stats-sep" aria-hidden="true">
+          ·
+        </span>
+        <span className="maps-stat">
+          <span className="maps-stat-value">{data?.authors ?? 0}</span> {story.sandboxAuthors}
+        </span>
+      </span>
+    </p>
   );
 }
 
