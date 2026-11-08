@@ -162,6 +162,7 @@ test("egy teljes recept betöltése és lefuttatása csak billentyűzettel, mind
 });
 
 test("a játék oldal minden tabulátor-megállóján látható a fókusz", async ({ page }) => {
+  await skipTourPrompt(page);
   await page.goto("/login");
   await page.getByLabel("Felhasználónév").fill(DEMO.username);
   await page.getByLabel("Jelszó").fill(DEMO.password);
