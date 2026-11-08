@@ -17,7 +17,8 @@ export function LampScene({ panelRef }: LampSceneProps) {
     if (!canvas || !panel || !root || typeof ResizeObserver === "undefined") {
       return;
     }
-    const host = { root, canvas, panel, isStatic };
+    const isRevealed = document.documentElement.dataset.lampReveal === "all";
+    const host = { root, canvas, panel, isStatic, isRevealed };
     let scene = startLampScene(host);
     let timer = 0;
     const observer = new ResizeObserver(() => {

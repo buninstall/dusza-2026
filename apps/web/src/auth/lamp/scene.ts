@@ -45,6 +45,7 @@ export type SceneHost = {
   canvas: HTMLCanvasElement;
   panel: HTMLElement;
   isStatic: boolean;
+  isRevealed?: boolean;
 };
 
 const T = TILE;
@@ -256,6 +257,11 @@ export function startLampScene(host: SceneHost): LampScene {
   const reveal = new Float32Array(cols * rows);
   const revealAt = new Float32Array(cols * rows).fill(Number.POSITIVE_INFINITY);
   const shadeTiles = { size: T, cols, memory, reveal };
+  if (host.isRevealed) {
+    memory.fill(1);
+    reveal.fill(1);
+    revealAt.fill(0);
+  }
 
   let lanterns = lanternSpots(box, isNarrow);
   const rand = seeded(99);
@@ -375,7 +381,7 @@ export function startLampScene(host: SceneHost): LampScene {
     for (const burst of bursts) burst.t += dt;
     bursts = bursts.filter((burst) => burst.t < 0.9);
     for (let k = 0; k < memory.length; k += 1) {
-      memory[k] = Math.max(0, (memory[k] ?? 0) - dt * MEMORY_FADE);
+      if (!host.isRevealed) memory[k] = Math.max(0, (memory[k] ?? 0) - dt * MEMORY_FADE);
       if (time >= (revealAt[k] ?? Number.POSITIVE_INFINITY)) {
         reveal[k] = Math.min(1, (reveal[k] ?? 0) + dt * REVEAL_RATE);
       }
