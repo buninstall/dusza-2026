@@ -16,7 +16,6 @@ import {
   openConsole,
   openFromLibrary,
   openLeaderboardFromPlay,
-  pickView,
   readNumber,
   register,
   replaceProgram,
@@ -313,11 +312,12 @@ test.describe("3.4 futtatás új fiókkal", () => {
   });
 });
 
-test("lámpa-módú pályán a nézetváltó látszik és átkapcsol", async ({ page }) => {
-  await login(page);
+test("lámpa-módú pályán a nézetváltó látszik, a teljes térkép a rögök előtt zárolt", async ({
+  page,
+}) => {
+  await register(page, "lampa");
   await gotoPlay(page, "5. Kígyó");
-  await pickView(page, "Teljes térkép");
-  await expect(page.getByRole("radio", { name: "Teljes térkép" })).toBeChecked();
-  await pickView(page, "Lámpafény");
+  await expect(page.getByRole("radiogroup", { name: "Nézet" })).toBeVisible();
   await expect(page.getByRole("radio", { name: "Lámpafény" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "Teljes térkép" })).toBeDisabled();
 });
