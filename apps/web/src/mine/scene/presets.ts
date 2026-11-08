@@ -14,6 +14,7 @@ export type Preset = {
   ruler: number;
   memory: number;
   shroud: number;
+  hidden: number;
   levels: number;
 };
 
@@ -29,6 +30,7 @@ export const PRESETS: Readonly<Record<SceneLighting, Preset>> = {
     ruler: 0,
     memory: 0,
     shroud: 0.55,
+    hidden: 0.2,
     levels: 6,
   },
   lamp: {
@@ -42,6 +44,7 @@ export const PRESETS: Readonly<Record<SceneLighting, Preset>> = {
     ruler: 0.55,
     memory: 0.56,
     shroud: 0.5,
+    hidden: 0,
     levels: 6,
   },
   dark: {
@@ -55,6 +58,7 @@ export const PRESETS: Readonly<Record<SceneLighting, Preset>> = {
     ruler: 0.42,
     memory: 0.38,
     shroud: 0.4,
+    hidden: 0,
     levels: 5,
   },
   work: {
@@ -68,6 +72,7 @@ export const PRESETS: Readonly<Record<SceneLighting, Preset>> = {
     ruler: 0,
     memory: 0,
     shroud: 0,
+    hidden: 0.2,
     levels: 7,
   },
 };

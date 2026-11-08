@@ -61,7 +61,7 @@
   box-shadow: none;
 }
 
-.mine-scene .board-tile-art {
+.mine-scene .board-cell .board-tile-art {
   visibility: hidden;
 }
 

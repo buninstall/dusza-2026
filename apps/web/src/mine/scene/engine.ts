@@ -247,6 +247,7 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
       levels: preset.levels,
       memory: preset.memory,
       shroud: preset.shroud,
+      hidden: preset.hidden,
       base: colors.rgb("void"),
       haze: colors.rgb("beam"),
     };

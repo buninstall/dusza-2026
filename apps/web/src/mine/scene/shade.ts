@@ -28,6 +28,7 @@ export type ShadeLook = {
   levels: number;
   memory: number;
   shroud: number;
+  hidden: number;
   base: Rgb;
   haze: Rgb;
 };
@@ -74,9 +75,10 @@ export function shadeView(
       const k = block * 3;
       const sight = sightAt(board, wx, wy);
       if (sight === SIGHT_HIDDEN) {
-        out[o] = look.base[0];
-        out[o + 1] = look.base[1];
-        out[o + 2] = look.base[2];
+        const dim = look.hidden > 0 && bayer(wx, wy) < 0.75 ? look.hidden : 0;
+        out[o] = Math.max(look.base[0], (albedo[i] ?? 0) * dim * 0.9);
+        out[o + 1] = Math.max(look.base[1], (albedo[i + 1] ?? 0) * dim * 0.92);
+        out[o + 2] = Math.max(look.base[2], (albedo[i + 2] ?? 0) * dim);
         continue;
       }
       const amb = ambient[block] ?? 0;
