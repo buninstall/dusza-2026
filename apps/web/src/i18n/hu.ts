@@ -933,6 +933,10 @@ export const hu = {
         title: "A robot odament, de nem bányászott",
         body: "A `step forward` csak lépteti a robotot. Az aranyat a `mine here` bányássza ki abból a mezőből, ahol a robot áll. Írd a program végére egy új sorba: `mine here`.",
       },
+      watchIdle: {
+        title: "A robot a helyén maradt",
+        body: "Ebben a programban nincs `step forward`, ezért a robot meg sem mozdult. Írd be a szerkesztőbe: `step forward 3`, alá egy új sorba pedig: `mine here`, ez kibányássza az aranyat abból a mezőből, ahol a robot áll.",
+      },
       mine: {
         title: "Futtasd újra",
         body: "A futás mindig az alaphelyzetből indul. Indítsd el újra, és figyeld az Arany műszert!",

@@ -125,17 +125,23 @@ export function TourCoach({ mapId, source, onSourceChange }: TourCoachProps) {
     return null;
   }
   const index = TOUR_STEPS.indexOf(step);
-  const copy = hu.tour.steps[step];
+  const isIdleWatch = step === "watch" && !hasFirstLine(source);
+  const copy = isIdleWatch ? hu.tour.steps.watchIdle : hu.tour.steps[step];
   const isLast = step === "stars";
   const insert =
     step === "editor"
       ? { label: hu.tour.insert(FIRST_LINE), apply: () => onSourceChange(FIRST_LINE) }
-      : step === "watch"
+      : isIdleWatch
         ? {
-            label: hu.tour.insert(MINE_LINE),
-            apply: () => onSourceChange(`${source.replace(/\n+$/, "")}\n${MINE_LINE}`),
+            label: hu.tour.insert(`${FIRST_LINE}, ${MINE_LINE}`),
+            apply: () => onSourceChange(`${FIRST_LINE}\n${MINE_LINE}`),
           }
-        : null;
+        : step === "watch"
+          ? {
+              label: hu.tour.insert(MINE_LINE),
+              apply: () => onSourceChange(`${source.replace(/\n+$/, "")}\n${MINE_LINE}`),
+            }
+          : null;
 
   return (
     <Popover
