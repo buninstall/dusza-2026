@@ -152,7 +152,7 @@ export function lampView(input: LampViewInput): LampView {
   }
   if (input.isBroken && frame.atEnd) {
     return {
-      discovered: new Set([posKey(frame.robot.pos)]),
+      discovered: union(frame.discovered, new Set([posKey(frame.robot.pos)])),
       lit: new Set(),
       radius: 0,
       isBroken: true,

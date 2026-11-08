@@ -121,19 +121,20 @@ describe("lámpa a lejátszásban", () => {
     expect(view.radius).toBe(1);
   });
 
-  test("összetört lámpánál a futás végén csak a robot mezője marad", () => {
+  test("összetört lámpánál a futás végén a lámpa kialszik, a korábbi vázlat elvész, a futás felfedezett mezői látszanak", () => {
     const track = lampTrack(map, start, walk, "lamp");
     const view = lampView({
       map,
       start,
       mode: "lamp",
       sketch: { discovered: new Set(["2:4"]), lit: new Set() },
-      frame: { index: 3, discovered: new Set(["0:0"]), robot: start, atEnd: true },
+      frame: { index: 3, discovered: new Set(["0:0", "0:1", "0:2"]), robot: start, atEnd: true },
       track,
       isBroken: true,
     });
     expect(view.isBroken).toBe(true);
-    expect([...view.discovered]).toEqual(["0:0"]);
+    expect([...view.discovered].sort()).toEqual(["0:0", "0:1", "0:2"]);
+    expect(view.discovered.has("2:4")).toBe(false);
     expect(view.lit.size).toBe(0);
   });
 });
