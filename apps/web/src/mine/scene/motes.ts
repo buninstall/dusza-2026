@@ -1,6 +1,6 @@
 import type { View } from "./camera.ts";
 import type { SceneLayout } from "./layout.ts";
-import type { LightField, Rgb } from "./light.ts";
+import type { LightField } from "./light.ts";
 import { hash } from "./scene-art.ts";
 
 export type Mote = {
@@ -46,17 +46,22 @@ export function stepMotes(motes: Mote[], dt: number): void {
   }
 }
 
+export function motePixel(mote: Mote): { x: number; y: number } {
+  return { x: Math.round(mote.x0 + mote.x * mote.w), y: Math.round(mote.y0 + mote.y * mote.h) };
+}
+
 export function drawMotes(
-  out: Uint8ClampedArray,
+  ctx: CanvasRenderingContext2D,
   view: View,
   motes: readonly Mote[],
   field: LightField,
-  color: Rgb,
+  color: string,
   time: number,
 ): void {
+  ctx.save();
+  ctx.fillStyle = color;
   for (const mote of motes) {
-    const wx = Math.round(mote.x0 + mote.x * mote.w);
-    const wy = Math.round(mote.y0 + mote.y * mote.h);
+    const { x: wx, y: wy } = motePixel(mote);
     const x = wx - view.x;
     const y = wy - view.y;
     if (x < 0 || y < 0 || x >= view.width || y >= view.height) {
@@ -67,10 +72,8 @@ export function drawMotes(
       continue;
     }
     const twinkle = 0.5 + 0.5 * Math.sin(time * 3 + mote.phase);
-    const a = Math.min(0.75, lum * 0.55) * twinkle;
-    const i = (y * view.width + x) * 4;
-    out[i] = (out[i] ?? 0) + (color[0] - (out[i] ?? 0)) * a;
-    out[i + 1] = (out[i + 1] ?? 0) + (color[1] - (out[i + 1] ?? 0)) * a;
-    out[i + 2] = (out[i + 2] ?? 0) + (color[2] - (out[i + 2] ?? 0)) * a;
+    ctx.globalAlpha = Math.min(0.75, lum * 0.55) * twinkle;
+    ctx.fillRect(x, y, 1, 1);
   }
+  ctx.restore();
 }

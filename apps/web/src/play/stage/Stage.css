@@ -347,3 +347,29 @@
   max-height: min(var(--log-h), var(--scene-reserve));
   margin-left: calc(55% + var(--space-2));
 }
+
+.ghost-chip {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  max-width: calc(100% - 2 * var(--space-2));
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  font: var(--type-mono-sm);
+  pointer-events: none;
+}
+
+.ghost-chip-label {
+  color: var(--c-text-faint);
+  font: var(--type-micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+}
+
+.ghost-chip[data-error="true"] {
+  color: var(--px-rust-lt);
+}

@@ -50,6 +50,7 @@ export function TrialPlay({ map, text, title, onBack }: TrialPlayProps) {
       blocked={engineRun.blocked}
       attempt={engineRun.attempt}
       editorSource={draft.source}
+      mapText={text}
       bezel={
         <Bezel
           name={hu.trial.sign}

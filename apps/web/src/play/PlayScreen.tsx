@@ -11,6 +11,7 @@ import type { Exploration, FogMode } from "../mine/tiles-model.ts";
 import { usePlaybackSounds } from "../sound/usePlaybackSounds.ts";
 import { deriveFault, isOffMapHit } from "./fault.ts";
 import { GoldFlight } from "./GoldFlight.tsx";
+import { useGhostRun } from "./ghost-run.ts";
 import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
 import {
   isDarkMine,
@@ -72,6 +73,7 @@ type PlayScreenProps = {
   blocked: Blocked | null;
   attempt: number;
   editorSource: string;
+  mapText?: string | undefined;
   bezel: ReactNode;
   sheet: ReactNode;
   reportFooter: ReactNode;
@@ -222,6 +224,12 @@ export function PlayScreen(props: PlayScreenProps) {
   const runId = usePlayback((state) => state.runId);
   const ui = usePlayUi();
   const motion = useStageMotion(map, view, start, props.lamp);
+  const ghost = useGhostRun(
+    props.editorSource,
+    props.mapText,
+    start,
+    !view.isLocked && !view.isTraceOfEditor && !isFullViewLocked(props.lamp),
+  );
   const lampSight = motion.sight.lamp;
   usePlaybackTimer();
   usePlaybackSounds();
@@ -316,6 +324,7 @@ export function PlayScreen(props: PlayScreenProps) {
             zoom={ui.zoom}
             onZoomChange={ui.setZoom}
             reserve={layout === "cab" ? SCENE_RESERVE : 0}
+            ghost={ghost}
             isWheelZoom={layout === "cab"}
             map={map}
             robot={motion.robot}
@@ -330,6 +339,13 @@ export function PlayScreen(props: PlayScreenProps) {
             cellMarks={motion.dressing.cellMarks}
             cellNotes={motion.dressing.cellNotes}
           />
+          {ghost ? (
+            <p className="ghost-chip k-screen" data-error={ghost.isError}>
+              <span className="ghost-chip-label">{hu.play.ghostLabel}</span>
+              <span>{hu.play.ghostSummary(ghost.gold, facts.goldTotal, ghost.steps)}</span>
+              {ghost.errorLine !== null ? <span>{hu.play.ghostError(ghost.errorLine)}</span> : null}
+            </p>
+          ) : null}
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
           <div className="stage-status">
             <LongRunNotice />

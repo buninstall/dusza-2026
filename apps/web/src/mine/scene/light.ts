@@ -1,6 +1,9 @@
 const MIN_CONTRIBUTION = 0.012;
 const RAY_STEP = 1.5;
-const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+export const BAYER = Float32Array.from(
+  [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5],
+  (v) => (v + 0.5) / 16,
+);
 
 export type Rgb = readonly [number, number, number];
 
@@ -30,15 +33,19 @@ export type Baked = {
   data: Float32Array;
 };
 
+export type BlockRect = { x0: number; y0: number; x1: number; y1: number };
+
 export type LightField = {
   BW: number;
   BH: number;
   rgb: Float32Array;
   beam: Float32Array;
   bake: (light: Light) => Baked;
-  addBaked: (baked: Baked, color: Rgb, intensity: number) => void;
-  addDynamic: (light: DynamicLight, hazeWeight?: number) => void;
+  addBaked: (baked: Baked, color: Rgb, intensity: number, clip?: BlockRect) => void;
+  addDynamic: (light: DynamicLight, hazeWeight?: number, clip?: BlockRect) => void;
+  addHaze: (baked: Baked, weight: number, clip?: BlockRect) => void;
   clear: () => void;
+  clearBlocks: (clip: BlockRect) => void;
   at: (x: number, y: number) => number;
 };
 
@@ -147,20 +154,25 @@ export function createLightField(
     return { ...b, w, data };
   };
 
-  const addBaked = (baked: Baked, color: Rgb, intensity: number): void => {
+  const addBaked = (baked: Baked, color: Rgb, intensity: number, clip?: BlockRect): void => {
     if (intensity <= 0) {
       return;
     }
     const [cr, cg, cb] = color;
-    for (let by = baked.y0; by <= baked.y1; by += 1) {
-      let k = (by * BW + baked.x0) * 3;
-      let j = (by - baked.y0) * baked.w;
-      for (let bx = baked.x0; bx <= baked.x1; bx += 1) {
-        const f = (baked.data[j] ?? 0) * intensity;
+    const x0 = clip ? Math.max(baked.x0, clip.x0) : baked.x0;
+    const x1 = clip ? Math.min(baked.x1, clip.x1) : baked.x1;
+    const y0 = clip ? Math.max(baked.y0, clip.y0) : baked.y0;
+    const y1 = clip ? Math.min(baked.y1, clip.y1) : baked.y1;
+    const data = baked.data;
+    for (let by = y0; by <= y1; by += 1) {
+      let k = (by * BW + x0) * 3;
+      let j = (by - baked.y0) * baked.w + (x0 - baked.x0);
+      for (let bx = x0; bx <= x1; bx += 1) {
+        const f = (data[j] as number) * intensity;
         if (f > 0) {
-          rgb[k] = (rgb[k] ?? 0) + f * cr;
-          rgb[k + 1] = (rgb[k + 1] ?? 0) + f * cg;
-          rgb[k + 2] = (rgb[k + 2] ?? 0) + f * cb;
+          rgb[k] = (rgb[k] as number) + f * cr;
+          rgb[k + 1] = (rgb[k + 1] as number) + f * cg;
+          rgb[k + 2] = (rgb[k + 2] as number) + f * cb;
         }
         k += 3;
         j += 1;
@@ -168,11 +180,15 @@ export function createLightField(
     }
   };
 
-  const addDynamic = (light: DynamicLight, hazeWeight = 0): void => {
+  const addDynamic = (light: DynamicLight, hazeWeight = 0, clip?: BlockRect): void => {
     const b = box(light);
+    const x0 = clip ? Math.max(b.x0, clip.x0) : b.x0;
+    const x1 = clip ? Math.min(b.x1, clip.x1) : b.x1;
+    const y0 = clip ? Math.max(b.y0, clip.y0) : b.y0;
+    const y1 = clip ? Math.min(b.y1, clip.y1) : b.y1;
     const [cr, cg, cb] = light.color;
-    for (let by = b.y0; by <= b.y1; by += 1) {
-      for (let bx = b.x0; bx <= b.x1; bx += 1) {
+    for (let by = y0; by <= y1; by += 1) {
+      for (let bx = x0; bx <= x1; bx += 1) {
         const f = sample(light, bx, by) * light.i;
         if (f <= 0) {
           continue;
@@ -188,9 +204,40 @@ export function createLightField(
     }
   };
 
+  const addHaze = (baked: Baked, weight: number, clip?: BlockRect): void => {
+    if (weight <= 0) {
+      return;
+    }
+    const x0 = clip ? Math.max(baked.x0, clip.x0) : baked.x0;
+    const x1 = clip ? Math.min(baked.x1, clip.x1) : baked.x1;
+    const y0 = clip ? Math.max(baked.y0, clip.y0) : baked.y0;
+    const y1 = clip ? Math.min(baked.y1, clip.y1) : baked.y1;
+    for (let by = y0; by <= y1; by += 1) {
+      let j = (by - baked.y0) * baked.w + (x0 - baked.x0);
+      let k = by * BW + x0;
+      for (let bx = x0; bx <= x1; bx += 1) {
+        const f = baked.data[j] as number;
+        if (f > 0) {
+          beam[k] = (beam[k] as number) + f * weight;
+        }
+        j += 1;
+        k += 1;
+      }
+    }
+  };
+
   const clear = (): void => {
     rgb.fill(0);
     beam.fill(0);
+  };
+
+  const clearBlocks = (clip: BlockRect): void => {
+    const x0 = Math.max(clip.x0, 0);
+    const x1 = Math.min(clip.x1, BW - 1);
+    for (let by = Math.max(clip.y0, 0); by <= Math.min(clip.y1, BH - 1); by += 1) {
+      rgb.fill(0, (by * BW + x0) * 3, (by * BW + x1 + 1) * 3);
+      beam.fill(0, by * BW + x0, by * BW + x1 + 1);
+    }
   };
 
   const at = (x: number, y: number): number => {
@@ -200,5 +247,5 @@ export function createLightField(
     return Math.max(rgb[k] ?? 0, rgb[k + 1] ?? 0, rgb[k + 2] ?? 0);
   };
 
-  return { BW, BH, rgb, beam, bake, addBaked, addDynamic, clear, at };
+  return { BW, BH, rgb, beam, bake, addBaked, addDynamic, addHaze, clear, clearBlocks, at };
 }

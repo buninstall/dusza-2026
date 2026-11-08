@@ -1,4 +1,4 @@
-import { type ComponentProps, useLayoutEffect, useRef, useState } from "react";
+import { type ComponentProps, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MineBoard } from "../MineBoard.tsx";
 import { posKey } from "../tiles-model.ts";
 import {
@@ -13,6 +13,7 @@ import {
   zoomScale,
 } from "./camera.ts";
 import { createSceneEngine, type SceneEngine } from "./engine.ts";
+import type { GhostPath } from "./ghost.ts";
 import { type Box, type Point, type SceneLayout, SILL_H, T } from "./layout.ts";
 import type { SceneLighting } from "./presets.ts";
 import { type PanButton, useSceneInput } from "./useSceneInput.ts";
@@ -27,6 +28,7 @@ export type MineSceneProps = Omit<ComponentProps<typeof MineBoard>, "fit" | "siz
   panButton?: PanButton;
   isWheelZoom?: boolean;
   reserve?: number;
+  ghost?: GhostPath | null;
 };
 
 const CART_MOUTH = { x: 4, y: 0, w: 18, h: 6 };
@@ -58,6 +60,7 @@ export function MineScene({
   panButton = "primary",
   isWheelZoom = true,
   reserve = 0,
+  ghost = null,
   ...board
 }: MineSceneProps) {
   const { map, robot, exploration, shade = null, rulerMarks } = board;
@@ -153,6 +156,10 @@ export function MineScene({
       robotKey: robot ? posKey(robot.pos) : null,
     });
   }, [map, exploration, shade, lighting, rulerMarks, robot]);
+
+  useEffect(() => {
+    engineRef.current?.setGhost(ghost);
+  }, [ghost]);
 
   const previousScale = useRef(0);
   const dims = useRef("");

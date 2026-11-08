@@ -128,6 +128,7 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
         blocked={engineRun.blocked}
         attempt={engineRun.attempt}
         editorSource={draft.source}
+        mapText={detail.version.content}
         bezel={bezel}
         sheet={
           <ProgramSheet

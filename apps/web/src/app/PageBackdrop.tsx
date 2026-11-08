@@ -50,7 +50,7 @@ export function PageBackdrop({ routeKey, isCalm }: { routeKey: string; isCalm: b
           roofY: header.getBoundingClientRect().bottom + window.scrollY,
           safe: contentBox(main),
           isCalm,
-          isStatic,
+          isStatic: isStatic || isCalm,
         }) ?? (() => undefined);
       releaseAfterPaint(release);
     };

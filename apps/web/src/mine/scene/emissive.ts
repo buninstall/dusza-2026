@@ -128,7 +128,6 @@ export function drawEmissive(
   preset: Preset,
   state: EmissiveState,
 ): void {
-  ctx.clearRect(0, 0, view.width, view.height);
   ctx.save();
   ctx.translate(-view.x, -view.y);
   drawFlames(ctx, layout, colors, preset, state);
@@ -136,17 +135,4 @@ export function drawEmissive(
   drawRulers(ctx, layout, colors, preset, state);
   drawSparkle(ctx, layout, colors, state);
   ctx.restore();
-}
-
-export function overlayEmissive(out: Uint8ClampedArray, glow: Uint8ClampedArray): void {
-  for (let i = 0; i < out.length; i += 4) {
-    const alpha = glow[i + 3] ?? 0;
-    if (alpha === 0) {
-      continue;
-    }
-    const a = alpha / 255;
-    out[i] = Math.max(out[i] ?? 0, (glow[i] ?? 0) * a);
-    out[i + 1] = Math.max(out[i + 1] ?? 0, (glow[i + 1] ?? 0) * a);
-    out[i + 2] = Math.max(out[i + 2] ?? 0, (glow[i + 2] ?? 0) * a);
-  }
 }

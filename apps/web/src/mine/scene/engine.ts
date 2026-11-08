@@ -2,10 +2,19 @@ import type { MineMap } from "@minescript/engine";
 import type { BoardShade } from "../MineBoard.tsx";
 import type { Exploration, TileKind } from "../tiles-model.ts";
 import type { View } from "./camera.ts";
-import { type Burst, drawEmissive, type Glint, overlayEmissive } from "./emissive.ts";
+import {
+  pointRect,
+  tileRect,
+  toBlockRect,
+  viewRects,
+  viewWorldRect,
+  type WorldRect,
+} from "./dirty.ts";
+import { type Burst, drawEmissive, type Glint } from "./emissive.ts";
+import { drawGhost, type GhostPath } from "./ghost.ts";
 import { type SceneLayout, sceneLayout, T } from "./layout.ts";
 import { createLightField, type LightField } from "./light.ts";
-import { createMotes, drawMotes, type Mote, stepMotes } from "./motes.ts";
+import { createMotes, drawMotes, type Mote, motePixel, stepMotes } from "./motes.ts";
 import { kindsOf, paintBoard, SIGHT_KNOWN, seedSeen, sightFromSeen } from "./paint-board.ts";
 import { cartLevel, paintFixtures } from "./paint-fixtures.ts";
 import { paintRulers, paintWorld, type RulerFlags } from "./paint-world.ts";
@@ -14,12 +23,18 @@ import {
   addRobotLights,
   type BakedFixture,
   bakeFixtures,
+  bakeRobotLamp,
+  burstBox,
+  fixtureBox,
+  isFlickering,
+  type RobotLamp,
   type RobotLight,
   readRobot,
+  robotBox,
 } from "./robot-light.ts";
-import { readRustLevel, rustify } from "./rust.ts";
+import { applyRust, type RustPatch, readRustLevel, rustPatch } from "./rust.ts";
 import { type Colors, readColors } from "./scene-art.ts";
-import { shadeView } from "./shade.ts";
+import { shadeView, type ViewRect } from "./shade.ts";
 
 export type SceneInput = {
   map: MineMap;
@@ -34,6 +49,7 @@ export type SceneEngine = {
   layoutFor: (cols: number, rows: number) => SceneLayout;
   setInput: (input: SceneInput) => void;
   setView: (view: View) => void;
+  setGhost: (ghost: GhostPath | null) => void;
   destroy: () => void;
 };
 
@@ -71,8 +87,6 @@ function wallKey(kinds: readonly TileKind[]): string {
 
 export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement): SceneEngine {
   const ctx = canvas.getContext("2d");
-  const emis = canvasOf(1, 1);
-  const emisCtx = emis.getContext("2d", { willReadFrequently: true });
   const isStill = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const colors: Colors = readColors(host);
   let world: World | null = null;
@@ -86,7 +100,15 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
   let robot: RobotLight | null = null;
   let frame = 0;
   let last = 0;
-  let isDirty = true;
+  let needsFull = true;
+  let pending: WorldRect[] = [];
+  let lastRobotBox: WorldRect | null = null;
+  let flickerTime = 0;
+  let ghost: GhostPath | null = null;
+  let patch: RustPatch | null = null;
+  let paintedLook = "";
+  let robotLamp: RobotLamp | null = null;
+  let isLampStale = true;
   let walls = "";
   let mined = new Set<number>();
   let painted = "";
@@ -142,11 +164,13 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     };
     walls = "";
     painted = "";
+    paintedLook = "";
+    patch = null;
     motes = createMotes(layout);
     return world;
   };
 
-  const repaint = (w: World, next: SceneInput) => {
+  const repaint = (w: World, next: SceneInput, isPartial = false) => {
     const staticCtx = w.canvas.getContext("2d", { willReadFrequently: true });
     if (!staticCtx) {
       return;
@@ -154,12 +178,30 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     staticCtx.drawImage(w.rock, 0, 0);
     paintBoard(staticCtx, w.layout, colors, w.kinds, w.face);
     paintRulers(staticCtx, w.layout, colors, next.flags);
-    const minedCount = shownMined;
-    const goldCount = minedCount + w.kinds.filter((kind) => kind === "gold").length;
-    paintFixtures(staticCtx, w.layout, colors, preset, cartLevel(minedCount, goldCount));
-    w.albedo = staticCtx.getImageData(0, 0, w.layout.W, w.layout.H).data;
+    const goldCount = shownMined + w.kinds.filter((kind) => kind === "gold").length;
+    paintFixtures(staticCtx, w.layout, colors, preset, cartLevel(shownMined, goldCount));
+    const { layout } = w;
+    if (isPartial && patch && w.albedo.length === layout.W * layout.H * 4) {
+      const x0 = layout.bx;
+      const y0 = layout.cart.y - 8;
+      const x1 = Math.min(layout.W, layout.cart.x + 32);
+      const y1 = Math.min(layout.H, Math.max(layout.by + layout.bh, layout.cart.y + 20));
+      const top = Math.min(layout.by, y0);
+      const part = staticCtx.getImageData(x0, top, x1 - x0, y1 - top).data;
+      const rowBytes = (x1 - x0) * 4;
+      for (let y = top; y < y1; y += 1) {
+        w.albedo.set(
+          part.subarray((y - top) * rowBytes, (y - top + 1) * rowBytes),
+          (y * layout.W + x0) * 4,
+        );
+      }
+      applyRust(w.albedo, patch);
+      return;
+    }
+    w.albedo = staticCtx.getImageData(0, 0, layout.W, layout.H).data;
     rustLevel = readRustLevel(host);
-    rustify(w.albedo, w.layout, colors, rustLevel);
+    patch = rustPatch(w.albedo, layout, colors, rustLevel);
+    applyRust(w.albedo, patch);
   };
 
   const noteMined = (w: World) => {
@@ -215,14 +257,34 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     discoveredSize = discovered;
     seenLighting = next.lighting;
     seedSeen(seen, next.map, next.exploration, next.robotKey);
-    w.sight = sightFromSeen(seen, preset.memory === 0, next.exploration?.mode === "full");
+    applySight(w, sightFromSeen(seen, preset.memory === 0, next.exploration?.mode === "full"));
+    if (next.lighting !== input?.lighting || next.shade?.isBroken !== input?.shade?.isBroken) {
+      needsFull = true;
+    }
     input = next;
+    isLampStale = true;
     const paintKey = `${next.lighting}|${kinds.join(",")}|${[...(next.flags?.rows ?? [])].join(",")}|${[...(next.flags?.cols ?? [])].join(",")}|${w.layout.cols}x${w.layout.rows}`;
     if (paintKey !== painted) {
       painted = paintKey;
-      repaint(w, next);
+      const look = `${next.lighting}|${[...(next.flags?.rows ?? [])].join(",")}|${[...(next.flags?.cols ?? [])].join(",")}|${w.layout.cols}x${w.layout.rows}|${wallKey(kinds)}`;
+      repaint(w, next, look === paintedLook);
+      paintedLook = look;
+      needsFull = true;
     }
-    isDirty = true;
+  };
+
+  const applySight = (w: World, next: Uint8Array) => {
+    if (next.length !== w.sight.length) {
+      w.sight = next;
+      needsFull = true;
+      return;
+    }
+    next.forEach((value, index) => {
+      if (value !== w.sight[index]) {
+        pending.push(tileRect(w.layout, index));
+      }
+    });
+    w.sight = next;
   };
 
   const markLit = (w: World) => {
@@ -262,28 +324,76 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     }
   };
 
-  const render = (time: number, w: World, v: View) => {
-    if (!ctx || !emisCtx || !input || v.width <= 0 || v.height <= 0) {
+  const rebuildLight = (w: World, rects: readonly ViewRect[], v: View, isFull: boolean) => {
+    if (!input) {
       return;
     }
-    if (!output || output.width !== v.width || output.height !== v.height) {
-      output = ctx.createImageData(v.width, v.height);
-      emis.width = v.width;
-      emis.height = v.height;
+    const contained = containedIn(w);
+    if (isLampStale) {
+      robotLamp = bakeRobotLamp(w.field, {
+        robot,
+        lighting: input.lighting,
+        shade: input.shade,
+        contained,
+      });
+      isLampStale = false;
     }
-    w.field.clear();
-    addRobotLights(w.field, w.layout, w.baked, preset, {
-      time,
+    const scene = {
+      time: flickerTime,
       isStill,
       robot,
       shade: input.shade,
       lighting: input.lighting,
       bursts,
-      contained: containedIn(w),
-    });
+      contained,
+      lamp: robotLamp,
+    };
+    if (isFull) {
+      w.field.clear();
+      addRobotLights(w.field, w.layout, w.baked, preset, scene);
+      return;
+    }
+    for (const rect of rects) {
+      const blocks = toBlockRect(rect, v);
+      w.field.clearBlocks(blocks);
+      addRobotLights(w.field, w.layout, w.baked, preset, scene, blocks);
+    }
+  };
+
+  const effectBoxes = (w: World): WorldRect[] => [
+    ...bursts.map((burst) => burstBox(w.layout, burst)),
+    ...glints.map((glint) => pointRect(glint.x, glint.y, 3)),
+  ];
+
+  const moteDots = (): { x: number; y: number }[] => (isStill ? [] : motes.map(motePixel));
+
+  const render = (
+    time: number,
+    w: World,
+    v: View,
+    world: WorldRect[],
+    isFull: boolean,
+    dots: readonly { x: number; y: number }[],
+  ) => {
+    if (!ctx || !input || v.width <= 0 || v.height <= 0) {
+      return;
+    }
+    if (!output || output.width !== v.width || output.height !== v.height) {
+      output = ctx.createImageData(v.width, v.height);
+    }
+    const full: ViewRect[] = [{ x0: 0, y0: 0, x1: v.width, y1: v.height }];
+    let rects = isFull ? full : viewRects(world, v);
+    if (rects.length === 0) {
+      return;
+    }
+    rebuildLight(w, rects, v, rects === full);
     if (preset.memory > 0) {
       markLit(w);
-      w.sight = sightFromSeen(seen, false, input.exploration?.mode === "full");
+      applySight(w, sightFromSeen(seen, false, input.exploration?.mode === "full"));
+      if (pending.length > 0 && rects !== full) {
+        rects = viewRects([...world, ...pending], v);
+        pending = [];
+      }
     }
     const board = {
       bx: w.layout.bx,
@@ -307,19 +417,47 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
       face: w.face,
       ambient: w.ambient,
     };
-    shadeView(output.data, v, worldData, w.field, board, look);
-    drawEmissive(emisCtx, v, w.layout, colors, preset, {
-      time,
+    ctx.save();
+    ctx.beginPath();
+    for (const rect of rects) {
+      shadeView(output.data, v, worldData, w.field, board, look, rect);
+      ctx.putImageData(output, 0, 0, rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0);
+      ctx.rect(rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0);
+    }
+    if (rects !== full) {
+      const data = output.data;
+      for (const dot of dots) {
+        const x = dot.x - v.x;
+        const y = dot.y - v.y;
+        if (x < 0 || y < 0 || x >= v.width || y >= v.height) {
+          continue;
+        }
+        shadeView(data, v, worldData, w.field, board, look, { x0: x, y0: y, x1: x + 1, y1: y + 1 });
+        const o = (y * v.width + x) * 4;
+        ctx.fillStyle = `rgb(${data[o]},${data[o + 1]},${data[o + 2]})`;
+        ctx.fillRect(x, y, 1, 1);
+        ctx.rect(x, y, 1, 1);
+      }
+    }
+    ctx.clip();
+    ctx.globalCompositeOperation = "lighten";
+    drawEmissive(ctx, v, w.layout, colors, preset, {
+      time: flickerTime,
       isStill,
       bursts,
       glints,
       flags: input.flags,
     });
-    overlayEmissive(output.data, emisCtx.getImageData(0, 0, v.width, v.height).data);
-    if (!isStill) {
-      drawMotes(output.data, v, motes, w.field, colors.rgb("lamp"), time);
+    if (ghost) {
+      ctx.translate(-v.x, -v.y);
+      drawGhost(ctx, w.layout, colors, w.sight, ghost);
+      ctx.translate(v.x, v.y);
     }
-    ctx.putImageData(output, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    if (!isStill) {
+      drawMotes(ctx, v, motes, w.field, colors.css("lamp"), time);
+    }
+    ctx.restore();
   };
 
   const tick = (now: number) => {
@@ -333,27 +471,55 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
       rustCheck = now;
       if (readRustLevel(host) !== rustLevel) {
         repaint(w, input);
-        isDirty = true;
+        needsFull = true;
       }
     }
     if (cartDue > 0 && now >= cartDue && input) {
       cartDue = 0;
       shownMined = w.kinds.filter((kind) => kind === "mined").length;
-      repaint(w, input);
-      isDirty = true;
+      repaint(w, input, true);
+      needsFull = true;
     }
     const nextRobot = readRobot(host, canvas, v);
     const hasMoved =
       nextRobot?.x !== robot?.x || nextRobot?.y !== robot?.y || nextRobot?.angle !== robot?.angle;
     robot = nextRobot;
+    if (hasMoved) {
+      isLampStale = true;
+    }
     const isLive = !isStill && (preset.lanterns > 0 || preset.bulbs > 0 || bursts.length > 0);
-    if (!isDirty && !hasMoved && !(isLive && now - last >= IDLE_FRAME_MS)) {
+    const isFlickerDue = isLive && now - last >= IDLE_FRAME_MS;
+    if (!needsFull && pending.length === 0 && !hasMoved && !isFlickerDue) {
       return;
     }
+    const before = effectBoxes(w);
+    const dotsBefore = moteDots();
     step(Math.min((now - (last || now)) / 1000, 0.1), w);
-    last = now;
-    isDirty = false;
-    render(now / 1000, w, v);
+    if (isFlickerDue || needsFull) {
+      flickerTime = now / 1000;
+      last = now;
+    }
+    const scene = input ? { lighting: input.lighting, shade: input.shade } : null;
+    const box = scene ? robotBox(robot, scene) : null;
+    const flickers = isFlickerDue
+      ? w.baked.filter((fixture) => isFlickering(fixture, preset)).map(fixtureBox)
+      : [];
+    const rects: WorldRect[] = [
+      ...pending,
+      ...(hasMoved && lastRobotBox ? [lastRobotBox] : []),
+      ...(hasMoved && box ? [box] : []),
+      ...flickers,
+      ...before,
+      ...effectBoxes(w),
+    ];
+    pending = [];
+    lastRobotBox = box;
+    const isFull = needsFull;
+    needsFull = false;
+    render(now / 1000, w, v, isFull ? [viewWorldRect(v)] : rects, isFull, [
+      ...dotsBefore,
+      ...moteDots(),
+    ]);
   };
   frame = requestAnimationFrame(tick);
 
@@ -369,7 +535,11 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
         canvas.width = next.width;
         canvas.height = next.height;
       }
-      isDirty = true;
+      needsFull = true;
+    },
+    setGhost: (next) => {
+      ghost = next;
+      needsFull = true;
     },
     destroy: () => cancelAnimationFrame(frame),
   };

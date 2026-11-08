@@ -1,6 +1,6 @@
 import type { View } from "./camera.ts";
 import { T } from "./layout.ts";
-import { bayer, type LightField, type Rgb } from "./light.ts";
+import { BAYER, type LightField, type Rgb } from "./light.ts";
 import { SIGHT_HIDDEN, SIGHT_SHROUD } from "./paint-board.ts";
 
 const MEMORY_TINT: Rgb = [0.42, 0.47, 0.64];
@@ -33,20 +33,10 @@ export type ShadeLook = {
   haze: Rgb;
 };
 
-const FACE_LIGHT = [1, 1.12, 0.5, 0.58];
+const FACE_LIGHT = Float32Array.from([1, 1.12, 0.5, 0.58]);
+const TILE_SHIFT = 4;
 
-function sightAt(board: BoardSight, wx: number, wy: number): number {
-  const c = Math.floor((wx - board.bx) / T);
-  const r = Math.floor((wy - board.by) / T);
-  if (c < 0 || r < 0 || c >= board.cols || r >= board.rows) {
-    return -1;
-  }
-  return board.sight[r * board.cols + c] ?? -1;
-}
-
-function isVeilCell(wx: number, wy: number): boolean {
-  return ((wx >> 1) + (wy >> 1)) % 2 === 0;
-}
+export type ViewRect = { x0: number; y0: number; x1: number; y1: number };
 
 export function shadeView(
   out: Uint8ClampedArray,
@@ -55,63 +45,93 @@ export function shadeView(
   light: LightField,
   board: BoardSight,
   look: ShadeLook,
+  rect: ViewRect = { x0: 0, y0: 0, x1: view.width, y1: view.height },
 ): void {
   const { W, H, albedo, face, ambient } = world;
   const { rgb, beam, BW } = light;
-  for (let y = 0; y < view.height; y += 1) {
+  const { bx, by, cols, rows, sight: sights } = board;
+  const [baseR, baseG, baseB] = look.base;
+  const [hazeR, hazeG, hazeB] = look.haze;
+  const { levels, memory, shroud, hidden } = look;
+  const memR = MEMORY_TINT[0] * memory;
+  const memG = MEMORY_TINT[1] * memory;
+  const memB = MEMORY_TINT[2] * memory;
+  const veilR = SHROUD_TINT[0] * shroud;
+  const veilG = SHROUD_TINT[1] * shroud;
+  const veilB = SHROUD_TINT[2] * shroud;
+  const width = view.width;
+  for (let y = rect.y0; y < rect.y1; y += 1) {
     const wy = view.y + y;
-    for (let x = 0; x < view.width; x += 1) {
+    const isRowInside = wy >= 0 && wy < H;
+    const tileRow = wy - by;
+    const tr = tileRow >= 0 && tileRow < rows * T ? tileRow >> TILE_SHIFT : -1;
+    const bayerRow = (wy & 3) * 4;
+    const hazeRow = ((wy + 1) & 3) * 4;
+    const blockRow = (wy >> 1) * BW;
+    for (let x = rect.x0; x < rect.x1; x += 1) {
       const wx = view.x + x;
-      const o = (y * view.width + x) * 4;
+      const o = (y * width + x) * 4;
       out[o + 3] = 255;
-      if (wx < 0 || wy < 0 || wx >= W || wy >= H) {
-        out[o] = look.base[0];
-        out[o + 1] = look.base[1];
-        out[o + 2] = look.base[2];
+      if (!isRowInside || wx < 0 || wx >= W) {
+        out[o] = baseR;
+        out[o + 1] = baseG;
+        out[o + 2] = baseB;
         continue;
       }
       const i = (wy * W + wx) * 4;
-      const block = (wy >> 1) * BW + (wx >> 1);
+      const block = blockRow + (wx >> 1);
       const k = block * 3;
-      const sight = sightAt(board, wx, wy);
+      const tileCol = wx - bx;
+      const sight =
+        tr >= 0 && tileCol >= 0 && tileCol < cols * T
+          ? (sights[tr * cols + (tileCol >> TILE_SHIFT)] as number)
+          : -1;
+      const threshold = BAYER[bayerRow + (wx & 3)] as number;
+      const ar = albedo[i] as number;
+      const ag = albedo[i + 1] as number;
+      const ab = albedo[i + 2] as number;
       if (sight === SIGHT_HIDDEN) {
-        const dim = look.hidden > 0 && bayer(wx, wy) < 0.75 ? look.hidden : 0;
-        out[o] = Math.max(look.base[0], (albedo[i] ?? 0) * dim * 0.9);
-        out[o + 1] = Math.max(look.base[1], (albedo[i + 1] ?? 0) * dim * 0.92);
-        out[o + 2] = Math.max(look.base[2], (albedo[i + 2] ?? 0) * dim);
+        const dim = hidden > 0 && threshold < 0.75 ? hidden : 0;
+        out[o] = Math.max(baseR, ar * dim * 0.9);
+        out[o + 1] = Math.max(baseG, ag * dim * 0.92);
+        out[o + 2] = Math.max(baseB, ab * dim);
         continue;
       }
-      const amb = ambient[block] ?? 0;
-      const mul = FACE_LIGHT[face[wy * W + wx] ?? 0] ?? 1;
-      const lr = ((rgb[k] ?? 0) + amb) * mul;
-      const lg = ((rgb[k + 1] ?? 0) + amb * 0.86) * mul;
-      const lb = ((rgb[k + 2] ?? 0) + amb * 0.72) * mul;
+      const amb = ambient[block] as number;
+      const mul = FACE_LIGHT[face[wy * W + wx] as number] as number;
+      const lr = ((rgb[k] as number) + amb) * mul;
+      const lg = ((rgb[k + 1] as number) + amb * 0.86) * mul;
+      const lb = ((rgb[k + 2] as number) + amb * 0.72) * mul;
       const lum = Math.max(lr, lg, lb);
-      const threshold = bayer(wx, wy);
-      const q = Math.min(MAX_LEVEL, Math.floor(lum * look.levels + threshold) / look.levels);
-      let r = look.base[0];
-      let g = look.base[1];
-      let b = look.base[2];
+      const stepped = Math.floor(lum * levels + threshold) / levels;
+      const q = Math.min(stepped, MAX_LEVEL);
+      let r = baseR;
+      let g = baseG;
+      let b = baseB;
       if (q > 0) {
         const s = q / lum;
-        r = Math.max(r, (albedo[i] ?? 0) * lr * s);
-        g = Math.max(g, (albedo[i + 1] ?? 0) * lg * s);
-        b = Math.max(b, (albedo[i + 2] ?? 0) * lb * s);
-      } else if (sight !== -1 && look.memory > 0 && threshold < 0.55) {
-        r = Math.max(r, (albedo[i] ?? 0) * MEMORY_TINT[0] * look.memory);
-        g = Math.max(g, (albedo[i + 1] ?? 0) * MEMORY_TINT[1] * look.memory);
-        b = Math.max(b, (albedo[i + 2] ?? 0) * MEMORY_TINT[2] * look.memory);
+        r = Math.max(r, ar * lr * s);
+        g = Math.max(g, ag * lg * s);
+        b = Math.max(b, ab * lb * s);
+      } else if (sight !== -1 && memory > 0 && threshold < 0.55) {
+        r = Math.max(r, ar * memR);
+        g = Math.max(g, ag * memG);
+        b = Math.max(b, ab * memB);
       }
-      const haze = beam[block] ?? 0;
-      if (haze > 0.05 && q < 0.5 && haze * HAZE_SHARE > bayer(wx + 2, wy + 1)) {
-        r = Math.max(r, look.haze[0] * 0.16);
-        g = Math.max(g, look.haze[1] * 0.13);
-        b = Math.max(b, look.haze[2] * 0.09);
+      const haze = beam[block] as number;
+      if (
+        haze > 0.05 &&
+        q < 0.5 &&
+        haze * HAZE_SHARE > (BAYER[hazeRow + ((wx + 2) & 3)] as number)
+      ) {
+        r = Math.max(r, hazeR * 0.16);
+        g = Math.max(g, hazeG * 0.13);
+        b = Math.max(b, hazeB * 0.09);
       }
-      if (sight === SIGHT_SHROUD && isVeilCell(wx, wy)) {
-        r = Math.max(look.base[0], r * SHROUD_TINT[0] * look.shroud);
-        g = Math.max(look.base[1], g * SHROUD_TINT[1] * look.shroud);
-        b = Math.max(look.base[2], b * SHROUD_TINT[2] * look.shroud);
+      if (sight === SIGHT_SHROUD && ((wx >> 1) + (wy >> 1)) % 2 === 0) {
+        r = Math.max(baseR, r * veilR);
+        g = Math.max(baseG, g * veilG);
+        b = Math.max(baseB, b * veilB);
       }
       out[o] = r;
       out[o + 1] = g;

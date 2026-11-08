@@ -554,6 +554,10 @@ export const hu = {
     zoomIn: "Nagyítás",
     zoomOut: "Kicsinyítés",
     zoomLevel: (percent: number) => `${percent}%`,
+    ghostLabel: "Előnézet",
+    ghostSummary: (gold: number, total: number, steps: number) =>
+      `${gold}/${total} arany · ${steps} lépés`,
+    ghostError: (line: number) => `hiba a(z) ${line}. sorban`,
     diagnosticsHeading: "Hibalista",
     diagnosticsEmpty: "Nincs szintaktikai hiba.",
     diagnosticsCount: (errors: number, warnings: number) =>

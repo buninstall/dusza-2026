@@ -3,7 +3,7 @@ import type { BoardShade } from "../MineBoard.tsx";
 import type { View } from "./camera.ts";
 import type { Burst } from "./emissive.ts";
 import { type SceneLayout, T } from "./layout.ts";
-import type { Baked, LightField, Solid } from "./light.ts";
+import type { Baked, BlockRect, LightField, Solid } from "./light.ts";
 import {
   BULB_COLOR,
   BURST_COLOR,
@@ -35,6 +35,7 @@ export type RobotScene = {
   lighting: SceneLighting;
   bursts: readonly Burst[];
   contained: Solid;
+  lamp: RobotLamp | null;
 };
 
 const HALF = T / 2;
@@ -175,12 +176,57 @@ const FIXTURE_COLOR = {
   flood: FLOOD_COLOR,
 } as const;
 
-function robotReach(scene: RobotScene): number {
+function robotReach(scene: Pick<RobotScene, "lighting" | "shade">): number {
   if (scene.lighting === "open") {
     return OPEN_REACH;
   }
   const radius = scene.shade?.radius ?? 1;
   return radius > 0 ? (radius + REACH_PAD) * T * REACH_GAIN : 0;
+}
+
+export type WorldRect = { x0: number; y0: number; x1: number; y1: number };
+
+const BURST_REACH = 42;
+const HALO_REACH = 26;
+const BOX_PAD = 9;
+
+export function robotBox(
+  robot: RobotLight | null,
+  scene: Pick<RobotScene, "lighting" | "shade">,
+): WorldRect | null {
+  if (!robot || scene.lighting === "work") {
+    return null;
+  }
+  const reach = Math.max(robotReach(scene), HALO_REACH) + BOX_PAD;
+  return { x0: robot.x - reach, y0: robot.y - reach, x1: robot.x + reach, y1: robot.y + reach };
+}
+
+export function burstBox(layout: SceneLayout, burst: Burst): WorldRect {
+  const x = layout.bx + burst.c * T + HALF;
+  const y = layout.by + burst.r * T + HALF;
+  const reach = BURST_REACH + BOX_PAD;
+  return { x0: x - reach, y0: y - reach, x1: x + reach, y1: y + reach };
+}
+
+const FLICKER_SHARE = 0.72;
+
+export function fixtureBox(fixture: BakedFixture): WorldRect {
+  const { data } = fixture;
+  const cx = (data.x0 + data.x1 + 1) * 1;
+  const cy = (data.y0 + data.y1 + 1) * 1;
+  const rx = (data.x1 - data.x0 + 1) * FLICKER_SHARE;
+  const ry = (data.y1 - data.y0 + 1) * FLICKER_SHARE;
+  return { x0: cx - rx, y0: cy - ry, x1: cx + rx, y1: cy + ry };
+}
+
+export function isFlickering(fixture: BakedFixture, preset: Preset): boolean {
+  if (fixture.kind === "lantern" || fixture.kind === "floor") {
+    return preset.lanterns > 0;
+  }
+  if (fixture.kind === "bulb") {
+    return preset.bulbs > 0 && fixture.isFaulty;
+  }
+  return fixture.kind === "pilot" && preset.pilot > 0;
 }
 
 export function addRobotLights(
@@ -189,57 +235,87 @@ export function addRobotLights(
   baked: readonly BakedFixture[],
   preset: Preset,
   scene: RobotScene,
+  clip?: BlockRect,
 ): void {
   for (const fixture of baked) {
     field.addBaked(
       fixture.data,
       FIXTURE_COLOR[fixture.kind],
       fixtureIntensity(fixture, preset, scene),
+      clip,
     );
   }
   const contained = scene.contained;
-  const isDark = scene.lighting === "lamp" || scene.lighting === "dark";
   for (const burst of scene.bursts) {
-    field.addDynamic({
-      x: layout.bx + burst.c * T + HALF,
-      y: layout.by + burst.r * T + HALF,
-      r: 42,
-      i: 1.1 * Math.max(0, 1 - burst.t / 0.55),
-      falloff: 1.4,
-      color: BURST_COLOR,
-      solid: contained,
-    });
+    field.addDynamic(
+      {
+        x: layout.bx + burst.c * T + HALF,
+        y: layout.by + burst.r * T + HALF,
+        r: 42,
+        i: 1.1 * Math.max(0, 1 - burst.t / 0.55),
+        falloff: 1.4,
+        color: BURST_COLOR,
+        solid: contained,
+      },
+      0,
+      clip,
+    );
   }
-  const robot = scene.robot;
-  if (!robot || scene.lighting === "work" || scene.shade?.isBroken) {
+  const lamp = scene.lamp;
+  if (!lamp) {
     return;
   }
+  if (lamp.cone) {
+    field.addBaked(lamp.cone, LAMP_COLOR, lamp.coneI, clip);
+    field.addHaze(lamp.cone, lamp.coneI * lamp.haze, clip);
+  }
+  field.addBaked(lamp.halo, HALO_COLOR, lamp.haloI, clip);
+}
+
+export type RobotLamp = {
+  cone: Baked | null;
+  halo: Baked;
+  coneI: number;
+  haloI: number;
+  haze: number;
+};
+
+export function bakeRobotLamp(
+  field: LightField,
+  scene: Pick<RobotScene, "robot" | "lighting" | "shade" | "contained">,
+): RobotLamp | null {
+  const robot = scene.robot;
+  if (!robot || scene.lighting === "work" || scene.shade?.isBroken) {
+    return null;
+  }
+  const isDark = scene.lighting === "lamp" || scene.lighting === "dark";
   const dx = Math.cos(robot.angle);
   const dy = Math.sin(robot.angle);
   const reach = robotReach(scene);
-  if (reach > 0) {
-    field.addDynamic(
-      {
-        x: robot.x + dx * 5,
-        y: robot.y + dy * 5,
-        r: reach,
-        i: isDark ? 1.3 : 0.75,
-        falloff: 1.2,
-        color: LAMP_COLOR,
-        cone: { dx, dy, half: 0.5, soft: 0.42 },
-        near: 9,
-        solid: contained,
-      },
-      isDark ? 1 : 0.35,
-    );
-  }
-  field.addDynamic({
+  const cone =
+    reach > 0
+      ? field.bake({
+          x: robot.x + dx * 5,
+          y: robot.y + dy * 5,
+          r: reach,
+          falloff: 1.2,
+          cone: { dx, dy, half: 0.5, soft: 0.42 },
+          near: 9,
+          solid: scene.contained,
+        })
+      : null;
+  const halo = field.bake({
     x: robot.x,
     y: robot.y,
     r: reach > 0 ? 26 : 15,
-    i: reach > 0 ? 0.55 : 0.85,
     falloff: 1.7,
-    color: HALO_COLOR,
-    solid: contained,
+    solid: scene.contained,
   });
+  return {
+    cone,
+    halo,
+    coneI: isDark ? 1.3 : 0.75,
+    haloI: reach > 0 ? 0.55 : 0.85,
+    haze: isDark ? 1 : 0.35,
+  };
 }
