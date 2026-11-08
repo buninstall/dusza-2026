@@ -75,7 +75,13 @@ function signature(lights: readonly Light[]): string {
   return out;
 }
 
-function sizeLayer(layer: HTMLCanvasElement, W: number, H: number, scale: number, density = 1): void {
+function sizeLayer(
+  layer: HTMLCanvasElement,
+  W: number,
+  H: number,
+  scale: number,
+  density = 1,
+): void {
   layer.width = Math.round(W * density);
   layer.height = Math.round(H * density);
   layer.style.width = `${W * scale}px`;
