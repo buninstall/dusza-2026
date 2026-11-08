@@ -115,7 +115,7 @@ A `minescript` rendszerfelhasználó nem tud belépni, és nincs saját könyvt�
 
 - `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, `PrivateDevices`, `PrivateUsers`, `ProtectProc=invisible`. Írni csak a saját `/var/lib/minescript` könyvtárába tud.
 - `NoNewPrivileges`, üres `CapabilityBoundingSet`, `SystemCallFilter=@system-service`, `RestrictNamespaces`, `LockPersonality`, `RestrictSUIDSGID`.
-- Hálózat: `IPAddressDeny=any` és `IPAddressAllow=localhost`. Az alkalmazás csak a helyi MySQL-hez és az Apache-hoz kapcsolódhat, kifelé semmit sem érhet el.
+- Hálózat: `IPAddressAllow=localhost`, és `IPAddressDeny` a magáncímekre, a link-local és a CGNAT tartományra (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.0.0/16`, `100.64.0.0/10`, `fc00::/7`, `fe80::/10`). Az alkalmazás a helyi MySQL-t és az internetet éri el (a GitHub API-t az asztali kiadásokhoz), a belső hálózatot és a metaadat-címeket nem. A DNS a `127.0.0.53`-on futó `systemd-resolved`-en át megy, ezért a localhost engedélye elég hozzá.
 - Erőforrás-korlátok: `MemoryMax=1G`, `TasksMax=512`. Leállás esetén `Restart=always`, 2 másodperc múlva újraindul.
 - `TRUST_PROXY=1`: a belépési korlát (5 próbálkozás / perc / IP + név) az `X-Forwarded-For` utolsó elemét tekinti a kliens címének. Ezt a helyi Apache fűzi hozzá, ezért kívülről nem hamisítható. Enélkül minden kérés a `127.0.0.1`-ről jönne.
 
