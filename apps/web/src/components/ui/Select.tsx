@@ -47,7 +47,7 @@ export function Select<K extends string>({
         <SelectValue />
         <PixelIcon name="chevronDown" />
       </Button>
-      <Popover className="field-popover" isNonModal {...OVERLAY_SKIN}>
+      <Popover className="field-popover" {...OVERLAY_SKIN}>
         <ListBox items={options} className="field-list-box">
           {(option) => (
             <ListBoxItem id={option.id} textValue={option.label} className="field-option">
