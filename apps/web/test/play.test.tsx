@@ -1,6 +1,7 @@
 import type { Diagnostic, RunResult } from "@minescript/engine";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
+import { usePlayUi } from "../src/play/play-ui-store.ts";
 import { SPEED_MAX, usePlayback } from "../src/play/playback-store.ts";
 import { callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
@@ -243,19 +244,18 @@ describe("lejátszásvezérlés", () => {
     await waitFor(() => expect(callsTo("POST", "/runs")).toHaveLength(1));
   });
 
-  test("a nézetváltó a felderítetlen mezőket jelöli vagy elrejti", async () => {
+  test("nyitott bányán nincs nézetváltó, a felderítetlen mezők rejtve maradnak", async () => {
     seedProgram(PROGRAM);
+    act(() => usePlayUi.getState().setFogMode("full"));
     vi.spyOn(realEngine, "run").mockReturnValue(walkTrace);
     act(() => usePlayback.getState().setSpeed(1));
     const { user } = await openPlay();
+    expect(screen.queryByRole("radio", { name: "Teljes térkép" })).toBeNull();
+    expect(screen.queryByRole("radio", { name: "Lámpafény" })).toBeNull();
     expect(screen.getByRole("gridcell", { name: "4. sor, 1. oszlop: fal" })).toBeTruthy();
     await user.click(runButton());
     await user.click(screen.getByRole("button", { name: "Szünet" }));
     expect(screen.getByRole("gridcell", { name: "4. sor, 1. oszlop: felderítetlen" })).toBeTruthy();
-    await user.click(screen.getByRole("radio", { name: "Teljes térkép" }));
-    expect(
-      screen.getByRole("gridcell", { name: "4. sor, 1. oszlop: fal, még nem felfedezett" }),
-    ).toBeTruthy();
   });
 });
 

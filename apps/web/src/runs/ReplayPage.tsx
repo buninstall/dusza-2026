@@ -103,6 +103,7 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
       name={hu.signs.replay}
       title={run.mapTitle}
       meta={meta}
+      hasLampView={isDarkMine(detail.map.lampMode)}
       isFullLocked={isDarkMine(detail.map.lampMode) && !run.isOwn}
       actions={
         <>

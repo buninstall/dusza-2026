@@ -81,6 +81,7 @@ export function PlayPage({ detail, map, initialDraft, shouldFocusEditor = false 
     <Bezel
       name={hu.signs.play}
       title={detail.map.title}
+      hasLampView={lamp !== undefined}
       isFullLocked={isFullViewLocked(lamp)}
       meta={
         detail.player.stars === null ? undefined : (

@@ -11,8 +11,15 @@ type BezelProps = {
   title: string;
   meta?: ReactNode | undefined;
   actions: ReactNode;
+  hasLampView?: boolean;
   isFullLocked?: boolean;
 };
+
+const FOG_KEY = "L";
+
+const PLAIN_SHORTCUTS = hu.play.shortcuts.filter(
+  (row) => !row.keys.some((key: string) => key === FOG_KEY),
+);
 
 export function ViewSwitch({ isLocked = false }: { isLocked?: boolean }) {
   const fogMode = usePlayUi((state) => state.fogMode);
@@ -32,7 +39,14 @@ export function ViewSwitch({ isLocked = false }: { isLocked?: boolean }) {
   );
 }
 
-export function Bezel({ name, title, meta, actions, isFullLocked = false }: BezelProps) {
+export function Bezel({
+  name,
+  title,
+  meta,
+  actions,
+  hasLampView = false,
+  isFullLocked = false,
+}: BezelProps) {
   useDocumentTitle();
   return (
     <header className="bezel k-panel">
@@ -49,10 +63,10 @@ export function Bezel({ name, title, meta, actions, isFullLocked = false }: Beze
       </div>
       <div className="bezel-controls">
         {actions}
-        <ViewSwitch isLocked={isFullLocked} />
+        {hasLampView ? <ViewSwitch isLocked={isFullLocked} /> : null}
         <WellZoom />
         <span className="bezel-keys">
-          <KeysPopover rows={hu.play.shortcuts} />
+          <KeysPopover rows={hasLampView ? hu.play.shortcuts : PLAIN_SHORTCUTS} />
         </span>
       </div>
     </header>

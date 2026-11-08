@@ -162,7 +162,7 @@ function useStageMotion(
   const runId = usePlayback((state) => state.runId);
   const result = usePlayback((state) => state.result);
   const chosenFog = usePlayUi((state) => state.fogMode);
-  const fogMode: FogMode = isFullViewLocked(lamp) ? "lamp" : chosenFog;
+  const fogMode: FogMode = !lamp || isFullViewLocked(lamp) ? "lamp" : chosenFog;
   const previousIndex = usePrevious(index);
   const isReduced = usePrefersReducedMotion();
   const frame = view.frame;
