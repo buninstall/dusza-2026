@@ -7,6 +7,7 @@ mod gateway;
 #[cfg(target_os = "macos")]
 mod menu;
 mod navigation;
+mod probe;
 mod target;
 mod updater;
 mod window;
@@ -42,6 +43,7 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(Target { remote, local })
+        .invoke_handler(tauri::generate_handler![probe::probe])
         .setup(move |app| {
             let handle = app.handle();
             let target = handle.state::<Target>();
