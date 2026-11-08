@@ -105,6 +105,7 @@ async function start(config: ServerConfig, database: Database) {
     now: Date.now,
     desktop: config.desktop ? createDesktopReleases(config.desktop) : undefined,
   };
+  console.log("A játékkörnyezet ellenőrzése (első indításkor fél percig is tarthat)…");
   printSeedReport(await seedDemo(deps, { reset: config.resetDemo, crowd: config.seedCrowd }));
   const app = createApp(
     deps,

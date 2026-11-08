@@ -15,7 +15,7 @@ Szerepek: **rust** (gergogyulai) – `crates/`, `packages/engine` kötés; **web
 ### P2
 
 - [x] Formázó (D22, D25), linter (minden `LINT_*` kód), szemantikus tokenek, blokkhatárok, szimbólumok, környezetfüggő kiegészítés és súgó.
-- [ ] `wasm-opt` a CI-ban, a `.wasm` méretének figyelése.
+- [ ] `wasm-opt` a kiadási folyamatban, a `.wasm` méretének figyelése.
 - [ ] A már nem használt `SYN_NOT_IMPLEMENTED` kód eltávolítása (a frontend összefésülése után).
 
 ### P3

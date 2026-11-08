@@ -23,7 +23,7 @@ Más AI-eszközt (Copilot, ChatGPT stb.) nem használtunk. A csapat minden gépe
 - **Kód:** a Rust-motor (szintaxis, futtató, formázó, linter, szerkesztő-támogatás), a WASM-kötés, a Bun/Hono szerver MySQL-lel, a React-felület, a CLI és a lámpafény-mód.
 - **Tesztek:** conformance-esetek, egy független referencia-interpreter, property- és differenciális tesztek, Playwright + axe végponttól végpontig tesztek, és a kiírás mondatonkénti ellenőrzése (`docs/megfeleles.md`).
 - **Dokumentáció:** a megfelelőségi táblázat, a döntésnapló, a telepítési leírás, a README és ez a fájl.
-- **Üzemeltetés:** telepítőszkript, a verseny szerver beállítása, `minescriptctl` vezérlő, CI.
+- **Üzemeltetés:** telepítőszkript, a verseny szerver beállítása, `minescriptctl` vezérlő, a kiadásokat építő GitHub Actions-folyamatok.
 
 A kód szinte egészét (becslésünk szerint 95% fölött) AI írta. Ami a miénk: a kiírás értelmezésével kapcsolatos döntések jóváhagyása (`docs/dontesek.md`), a prioritások, a munka irányítása és visszautasítása, a kézi tesztelés és a végső elfogadás.
 
@@ -32,7 +32,7 @@ A kód szinte egészét (becslésünk szerint 95% fölött) AI írta. Ami a mié
 1. **Szabályok előre, nem utólag.** A `CLAUDE.md` minden munkamenetben betöltődik. Rögzíti, amit az AI magától nem tartana be: a core-ban nincs `unwrap`/`panic`, és semmilyen bemenetre nem pánikol; minden felhasználói szöveg magyar; React Aria komponensek és látható fókusz; nincs CDN; verziószámot nem írhat fejből; mindenki csak a saját területét szerkesztheti; a kódban nincs komment.
 2. **Előbb döntés, utána kód.** Ahol a kiírás nem egyértelmű, az AI nem dönthetett csendben. Javaslatot tett, mi elfogadtuk vagy átírtuk, a döntés azonosítót kapott, és tesztesetek kötik a kódhoz. A `docs/megfeleles.md` a kiírás minden mondatához megmutatja, hol és melyik teszttel teljesül.
 3. **A teszt nem ugyanabból a fejből jön.** Ugyanazt a viselkedést három implementáció futtatja: a Rust-motor, a WASM-build és egy, csak a specifikációból írt TypeScript referencia-interpreter. Ezeket conformance-esetek és seedelt véletlen programok veti össze.
-4. **Gépi kapu push előtt.** `just ci`: rustfmt, clippy `-D warnings`, Biome, typecheck, minden unit- és property-teszt, build, Playwright e2e akadálymentességi (axe) ellenőrzéssel. Ugyanez fut GitHub Actionsben is.
+4. **Gépi kapu push előtt.** `just ci`: rustfmt, clippy `-D warnings`, Biome, typecheck, minden unit- és property-teszt, build, Playwright e2e akadálymentességi (axe) ellenőrzéssel. Ez helyben fut minden push előtt; a GitHub Actions csak a kiadásokat építi (szerver-binárisok, asztali alkalmazás, parancssori értelmező).
 5. **Független átnézés.** A kész részeket párhuzamos, csak olvasó átnézőügynökök vizsgálták: frontend hibák és akadálymentesség, szerver és biztonság, a Rust-motor a kiírás ellen, a dokumentáció pontossága, a tesztek valódi lefedettsége. Minden talált hibát a gazdája javított, és regressziós teszt került mellé.
 6. **Kézi ellenőrzés.** Minden pályán végigjátszottuk a kész programokat (`docs/receptek/`), valódi böngészőben és telefonon is, 320 px-től asztali szélességig. A diffeket átolvastuk, a rossz irányt visszadobtuk, és a hibát új tesztesetként rögzítettük, hogy ne jöhessen vissza.
 7. **Éles üzem.** A telepítés health checkkel és automatikus visszaállással megy. Ha az AI által írt új verzió nem indul el, az élő oldal érintetlen marad.

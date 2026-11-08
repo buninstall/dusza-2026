@@ -6,7 +6,7 @@ A típusok forrása a Rust (`crates/minescript-core`). Ha egy határon átmenő 
 2. futtasd: `just types`;
 3. commitold a `packages/engine/src/generated` változásait ugyanabban a commitban.
 
-A CI a `just types` után `git diff --exit-code`-dal ellenőrzi, hogy a generált fájlok naprakészek.
+Push előtt a `just types` után a `git diff --exit-code` ellenőrzi, hogy a generált fájlok naprakészek.
 
 Általános szabályok: minden mezőnév camelCase; az enumok `kind` címkével (`{ "kind": "ok" }`); a kódenumok SCREAMING_SNAKE_CASE stringek; a koordináták 0-alapúak; a diagnosztikák `line`/`colStart`/`colEnd` értéke 1-alapú, a `from`/`to` UTF-16 offset (D18).
 
