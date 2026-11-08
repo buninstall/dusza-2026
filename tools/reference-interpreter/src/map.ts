@@ -78,8 +78,7 @@ function checkRow(
   if (badSymbol) {
     const { at, length } = badSymbol;
     diagnostics.push(mapDiagnostic("MAP_BAD_SYMBOL", line, at + 1, length));
-  }
-  else if (cells.length !== cols) diagnostics.push(mapDiagnostic("MAP_ROW_LENGTH", line));
+  } else if (cells.length !== cols) diagnostics.push(mapDiagnostic("MAP_ROW_LENGTH", line));
   return cells;
 }
 
