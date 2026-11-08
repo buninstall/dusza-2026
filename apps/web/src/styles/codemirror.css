@@ -91,9 +91,17 @@
   border-left: 2px solid var(--c-current);
 }
 
-.code-host .cm-editor .cm-selectionLayer .cm-selectionBackground,
+.code-host .cm-editor .cm-selectionLayer .cm-selectionBackground {
+  background: color-mix(in srgb, var(--c-gold) 14%, transparent);
+}
+
 .code-host .cm-editor.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
-  background: var(--c-selection);
+  background: color-mix(in srgb, var(--c-gold) 26%, transparent);
+}
+
+.code-host .cm-editor:has(.cm-selectionBackground) .cm-activeLine,
+.code-host .cm-editor:has(.cm-selectionBackground) .cm-activeLineGutter {
+  background: transparent;
 }
 
 .code-host .cm-editor .cm-content ::selection {

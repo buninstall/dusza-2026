@@ -220,6 +220,26 @@ table {
   }
 }
 
+html {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+:is(
+  input,
+  textarea,
+  [contenteditable="true"],
+  .cm-editor,
+  pre,
+  code,
+  .manual-article,
+  .notice,
+  [role="alert"]
+) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 ::selection {
   background: var(--c-selection);
   color: var(--c-text);
