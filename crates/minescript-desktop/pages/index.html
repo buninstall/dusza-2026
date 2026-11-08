@@ -10,13 +10,23 @@
   </head>
   <body>
     <main class="stage" data-state="loading" aria-live="polite">
-      <img class="logo" src="logo.svg" alt="" width="96" height="96" />
-      <h1 class="title">MineScript Desktop</h1>
-      <p class="status" id="status">Kapcsolódás a bányához…</p>
-      <div class="bar" aria-hidden="true"><span></span></div>
-      <div class="offline">
-        <p class="detail" id="detail"></p>
-        <button type="button" id="retry">Újrapróbálás</button>
+      <div class="card plate">
+        <div class="card-body">
+          <div class="emblem">
+            <img class="mark" src="mark.svg" alt="" width="96" height="96" />
+          </div>
+          <h1 class="name">
+            <img class="wordmark" src="wordmark.svg" alt="MineScript" width="236" height="40" />
+            <span class="sign">Desktop</span>
+          </h1>
+          <p class="status" id="status">Kapcsolódás a bányához…</p>
+          <div class="bar screen" aria-hidden="true"><span></span></div>
+          <div class="offline">
+            <p class="detail" id="detail"></p>
+            <button type="button" class="button" id="retry">Újrapróbálás</button>
+          </div>
+        </div>
+        <div class="hazard" aria-hidden="true"></div>
       </div>
     </main>
   </body>

@@ -17,7 +17,7 @@ pub fn show(app: &AppHandle) -> tauri::Result<()> {
     let opener = app.clone();
     WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("about.html".into()))
         .title(format!("A {APP_NAME} névjegye"))
-        .inner_size(360.0, 500.0)
+        .inner_size(380.0, 560.0)
         .resizable(false)
         .minimizable(false)
         .maximizable(false)
