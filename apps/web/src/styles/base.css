@@ -5,7 +5,6 @@
 }
 
 html {
-  overflow: visible !important;
   scrollbar-gutter: stable;
   background: var(--c-bg);
   color: var(--c-text);
