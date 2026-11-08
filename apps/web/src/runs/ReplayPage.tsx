@@ -24,6 +24,7 @@ import { Bezel } from "../play/stage/Bezel.tsx";
 import { usePlayView } from "../play/usePlayView.ts";
 import { useEngineRun } from "../play/useRunSession.ts";
 import type { RunDetail } from "./queries.ts";
+import "./ReplayPage.css";
 import { ReplaySheet } from "./ReplaySheet.tsx";
 
 type ReplayPageProps = { detail: RunDetail; map: MineMap };
@@ -125,7 +126,7 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
   );
 
   return (
-    <>
+    <div className="replay-page" data-theme="tarna" data-skin="akna">
       <PlayScreen
         mode="replay"
         map={map}
@@ -181,6 +182,6 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
           </>
         )}
       </ModalShell>
-    </>
+    </div>
   );
 }

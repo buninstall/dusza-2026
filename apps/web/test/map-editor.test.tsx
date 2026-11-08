@@ -229,6 +229,27 @@ describe("új térkép", () => {
     expect(screen.getAllByRole("gridcell")).toHaveLength(70);
   });
 
+  test("a térkép nagyítása gombbal és billentyűvel állítható, a 0 visszaállítja", async () => {
+    const { user } = await openNew();
+    const zoomIn = screen.getByRole("button", { name: "Nagyítás" });
+    const zoomOut = screen.getByRole("button", { name: "Kicsinyítés" });
+    const level = within(screen.getByRole("toolbar", { name: "Térkép nagyítása" }));
+    expect(level.getByText("100%")).toBeTruthy();
+    expect(zoomOut.hasAttribute("disabled")).toBe(true);
+    await user.click(zoomIn);
+    expect(level.getByText("125%")).toBeTruthy();
+    cell("2. sor, 2. oszlop: üres kamra").focus();
+    await user.keyboard("++");
+    expect(level.getByText("200%")).toBeTruthy();
+    await user.keyboard("-");
+    expect(level.getByText("150%")).toBeTruthy();
+    expect(cell("2. sor, 2. oszlop: üres kamra")).toBeTruthy();
+    await user.keyboard("0");
+    expect(level.getByText("100%")).toBeTruthy();
+    await user.type(screen.getByRole("textbox", { name: /Cím/ }), "+0");
+    expect(level.getByText("100%")).toBeTruthy();
+  });
+
   test("hibás térképfájl importja érthető hibát ad, és nem tölt be semmit", async () => {
     const { user } = await openNew();
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;

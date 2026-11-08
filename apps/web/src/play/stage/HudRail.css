@@ -3,7 +3,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-1) var(--space-4);
+  gap: var(--space-1) calc(var(--space-2) + var(--border-thin));
   min-width: 0;
   padding: var(--space-1) var(--space-3);
 }
@@ -12,7 +12,7 @@
   display: flex;
   flex: none;
   align-items: center;
-  gap: var(--space-2);
+  gap: calc(var(--space-1) + var(--border-thin));
   min-width: 0;
   min-height: calc(var(--px) * 9);
   white-space: nowrap;
@@ -79,7 +79,7 @@
 }
 
 .hud .hud-gauge {
-  width: calc(var(--px) * 20);
+  width: calc(var(--px) * 16);
   min-width: 0;
   height: calc(var(--px) * 6);
   margin: var(--px);
@@ -92,7 +92,16 @@
 }
 
 .hud .hud-battery-gauge {
-  width: calc(var(--px) * 16);
+  width: calc(var(--px) * 13);
+}
+
+.hud:has(.hud-battery) .hud-compass > .hud-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .hud-cart-art {
@@ -136,7 +145,7 @@
 }
 
 .hud-line {
-  flex: 1 1 8rem;
+  flex: 1 1 7rem;
 }
 
 .hud-line-idle {
@@ -202,6 +211,11 @@
 
   .hud-status {
     min-width: 0;
+  }
+
+  .hud:has(.hud-battery) .hud-depth .hud-gauge,
+  .hud:has(.hud-battery) .hud-cart-art {
+    display: none;
   }
 }
 

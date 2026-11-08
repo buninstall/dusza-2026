@@ -2,6 +2,7 @@ import { keepPreviousData, queryOptions, useQuery, useQueryClient } from "@tanst
 import type { SessionUser } from "../auth/session.ts";
 import "../components/DataTable.css";
 import { EmptyState } from "../components/EmptyState.tsx";
+import { IronPage, IronPanel } from "../components/IronPage.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
 import { Notice } from "../components/Notice.tsx";
 import { Pager } from "../components/Pager.tsx";
@@ -122,43 +123,45 @@ export function AdminPage({ me, page, q, onPageChange, onSearch }: AdminPageProp
   };
 
   return (
-    <div className="admin-page">
+    <IronPage className="admin-page">
       <LocationPlate
         name={hu.signs.admin}
         meta={data ? hu.admin.meta(data.total, data.admins) : undefined}
         actions={<NewAccountDialog onCreate={create} />}
       />
-      <SearchField
-        className="admin-search"
-        label={people.searchLabel}
-        clearLabel={browse.searchClear}
-        placeholder={people.searchPlaceholder}
-        maxLength={USERNAME_MAX}
-        value={q}
-        onCommit={onSearch}
-      />
-      {error ? (
-        <Notice tone="error" title={errorMessage(error, hu.admin.loadFailed)} live="alert" />
-      ) : null}
-      {data?.total === 0 ? <EmptyState text={people.noMatch(q)} /> : null}
-      {data && data.total > 0 ? (
-        <>
-          <div
-            className="data-table admin-paged"
-            aria-busy={isPlaceholderData}
-            data-turning={isPlaceholderData}
-          >
-            <AccountsTable
-              accounts={data.users}
-              me={me}
-              onRole={(account, role) => void setRole(account, role)}
-              onRemove={(account) => void remove(account)}
-            />
-          </div>
-          <UsersPager data={data} onPageChange={onPageChange} />
-        </>
-      ) : null}
-    </div>
+      <IronPanel className="admin-panel">
+        <SearchField
+          className="admin-search"
+          label={people.searchLabel}
+          clearLabel={browse.searchClear}
+          placeholder={people.searchPlaceholder}
+          maxLength={USERNAME_MAX}
+          value={q}
+          onCommit={onSearch}
+        />
+        {error ? (
+          <Notice tone="error" title={errorMessage(error, hu.admin.loadFailed)} live="alert" />
+        ) : null}
+        {data?.total === 0 ? <EmptyState text={people.noMatch(q)} /> : null}
+        {data && data.total > 0 ? (
+          <>
+            <div
+              className="data-table admin-paged"
+              aria-busy={isPlaceholderData}
+              data-turning={isPlaceholderData}
+            >
+              <AccountsTable
+                accounts={data.users}
+                me={me}
+                onRole={(account, role) => void setRole(account, role)}
+                onRemove={(account) => void remove(account)}
+              />
+            </div>
+            <UsersPager data={data} onPageChange={onPageChange} />
+          </>
+        ) : null}
+      </IronPanel>
+    </IronPage>
   );
 }
 

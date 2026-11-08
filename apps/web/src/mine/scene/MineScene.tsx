@@ -27,12 +27,23 @@ export type MineSceneProps = Omit<ComponentProps<typeof MineBoard>, "fit" | "siz
   onZoomChange: (zoom: number) => void;
   follow?: Pos | null;
   panButton?: PanButton;
+  isWheelZoom?: boolean;
 };
 
 const FOLLOW_MARGIN = 2 * T;
 
+function deviceRatio(): number {
+  const ratio = window.devicePixelRatio || 1;
+  return ratio > 0 ? ratio : 1;
+}
+
 function pixelQuantum(): number {
-  return 1 / Math.max(1, Math.round(window.devicePixelRatio || 1));
+  return 1 / deviceRatio();
+}
+
+function snap(value: number): number {
+  const ratio = deviceRatio();
+  return Math.round(value * ratio) / ratio;
 }
 
 type Anchor = { world: Point; clientX: number; clientY: number };
@@ -43,6 +54,7 @@ export function MineScene({
   onZoomChange,
   follow = null,
   panButton = "primary",
+  isWheelZoom = true,
   ...board
 }: MineSceneProps) {
   const { map, robot, exploration, shade = null, rulerMarks } = board;
@@ -69,10 +81,16 @@ export function MineScene({
     const view = placeView(center, viewport, scale, { width: layout.W, height: layout.H });
     centerRef.current = viewCenter(view);
     viewRef.current = view;
-    canvas.style.width = `${view.width * scale}px`;
-    canvas.style.height = `${view.height * scale}px`;
-    holder.style.transform = `translate(${(layout.bx - view.x) * scale}px, ${(layout.by - view.y) * scale}px)`;
-    holder.style.setProperty("--scene-tile", `${T * scale}px`);
+    const origin = rootRef.current?.getBoundingClientRect();
+    const shiftX = origin ? origin.left - snap(origin.left) : 0;
+    const shiftY = origin ? origin.top - snap(origin.top) : 0;
+    canvas.style.width = `${snap(view.width * scale)}px`;
+    canvas.style.height = `${snap(view.height * scale)}px`;
+    canvas.style.left = `${snap(-view.fx * scale) - shiftX}px`;
+    canvas.style.top = `${snap(-view.fy * scale) - shiftY}px`;
+    holder.style.left = `${snap((layout.bx - view.x - view.fx) * scale) - shiftX}px`;
+    holder.style.top = `${snap((layout.by - view.y - view.fy) * scale) - shiftY}px`;
+    holder.style.setProperty("--scene-tile", `${snap(T * scale)}px`);
     engineRef.current?.setView(view);
   };
 
@@ -163,6 +181,7 @@ export function MineScene({
   });
 
   useSceneInput(rootRef, panButton, {
+    isWheelZoom: () => isWheelZoom,
     canPan: () => {
       const layout = layoutOf();
       const view = viewRef.current;
@@ -193,8 +212,8 @@ export function MineScene({
       const rect = root.getBoundingClientRect();
       anchorRef.current = {
         world: {
-          x: view.x + (clientX - rect.left) / view.scale,
-          y: view.y + (clientY - rect.top) / view.scale,
+          x: view.x + view.fx + (clientX - rect.left) / view.scale,
+          y: view.y + view.fy + (clientY - rect.top) / view.scale,
         },
         clientX,
         clientY,

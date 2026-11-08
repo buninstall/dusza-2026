@@ -26,6 +26,26 @@
   }
 }
 
+@container stage (width < 34rem) {
+  .deck[data-layout="cab"] {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "keys keys"
+      "timeline timeline"
+      "tempo extra"
+      "lever lever";
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .deck .deck-keys {
+    justify-content: space-between;
+  }
+
+  .deck .deck-lever .btn {
+    width: 100%;
+  }
+}
+
 .deck-extra {
   grid-area: extra;
   display: flex;

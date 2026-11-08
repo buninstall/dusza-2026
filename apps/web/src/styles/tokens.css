@@ -431,6 +431,8 @@
   --px-phosphor: #e8d9b8;
   --px-hazard: #f2c21b;
   --px-hazard-ink: #15120f;
+  --px-ink-muted: #bcae98;
+  --px-ink-faint: #988a76;
   --c-gold-hover: var(--c-accent-hover);
   --c-on-gold: var(--c-on-accent);
   --px: 3px;

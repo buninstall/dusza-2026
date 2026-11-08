@@ -10,6 +10,9 @@
 
 .sheet:not(.k-panel) {
   background-color: var(--px-iron);
+  background-image: var(--k-tex-iron);
+  background-size: 72px 72px;
+  image-rendering: pixelated;
   box-shadow:
     inset var(--px) var(--px) 0 0 var(--px-iron-hi),
     inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--px-iron-dk),
@@ -48,7 +51,7 @@
   min-width: 0;
 }
 
-@container sheet (width < 26rem) {
+@container sheet (width < 21.5rem) {
   .sheet-compact {
     padding-inline: var(--space-2);
   }
@@ -97,8 +100,9 @@
 .sheet .drawers .drawer-button {
   flex: 1 0 auto;
   min-width: 0;
-  padding-bottom: var(--px);
-  font-size: 0.75rem;
+  padding: 0 var(--space-1) var(--px);
+  font-size: 0.6875rem;
+  letter-spacing: var(--track-control);
 }
 
 .sheet .drawers .drawer-button::after {
@@ -271,10 +275,6 @@
   padding: 0 0 0 var(--space-1);
 }
 
-.faults .faults-toggle {
-  min-height: var(--control-height-xs);
-}
-
 .faults-led {
   display: inline-flex;
 }
@@ -309,8 +309,9 @@
   text-decoration: underline;
 }
 
-.faults-toggle {
+.faults .faults-toggle {
   flex: none;
+  min-height: var(--control-height-xs);
   margin-left: auto;
 }
 

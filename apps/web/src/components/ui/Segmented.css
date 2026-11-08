@@ -17,7 +17,7 @@
   box-shadow: inset var(--border-thin) var(--border-thin) 0 var(--c-bevel-lo);
 }
 
-.seg[data-orientation="vertical"] .seg-track {
+:where(.seg[data-orientation="vertical"]) .seg-track {
   flex-direction: column;
 }
 
@@ -41,7 +41,7 @@
   border-left: var(--border-thin) solid var(--c-line);
 }
 
-.seg[data-orientation="vertical"] .seg-segment + .seg-segment {
+:where(.seg[data-orientation="vertical"]) .seg-segment + .seg-segment {
   border-left: 0;
   border-top: var(--border-thin) solid var(--c-line);
 }
@@ -132,8 +132,7 @@
   user-select: none;
 }
 
-[data-skin="akna"] .seg-segment + .seg-segment,
-[data-skin="akna"] .seg[data-orientation="vertical"] .seg-segment + .seg-segment {
+[data-skin="akna"] .seg-segment + .seg-segment {
   border: 0;
 }
 

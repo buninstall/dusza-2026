@@ -29,7 +29,9 @@ export function Odometer({ value, digits, isRolling = false }: OdometerProps) {
         const isTurning = isRolling && memory.turn > 0 && before[position] !== digit;
         return (
           <span
-            key={isTurning ? `p${place.toString()}-${memory.turn.toString()}` : `p${place.toString()}`}
+            key={
+              isTurning ? `p${place.toString()}-${memory.turn.toString()}` : `p${place.toString()}`
+            }
             className="k-odo-digit"
             data-roll={isTurning ? "in" : undefined}
           >

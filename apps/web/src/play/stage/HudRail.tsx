@@ -114,8 +114,7 @@ export function HudRail({
 }: HudRailProps) {
   return (
     <section aria-label={hu.play.gauges} className="hud k-panel k-panel--inset">
-      <StatusLamp phase={phase} />{" "}
-      <CartGauge gold={gold} total={goldTotal} isRolling={isRolling} />{" "}
+      <StatusLamp phase={phase} /> <CartGauge gold={gold} total={goldTotal} isRolling={isRolling} />{" "}
       <DepthGauge steps={steps} isLimit={isLimit} />{" "}
       {battery ? (
         <>

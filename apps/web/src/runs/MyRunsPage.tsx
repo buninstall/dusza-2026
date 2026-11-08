@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import "../components/DataTable.css";
 import { EmptyState } from "../components/EmptyState.tsx";
+import { IronPage, IronPanel } from "../components/IronPage.tsx";
 import { Led } from "../components/Led.tsx";
 import { LoadFailed } from "../components/LoadFailed.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
@@ -95,7 +96,7 @@ function PagedRuns({
 }) {
   const from = (data.page - 1) * data.pageSize;
   return (
-    <>
+    <IronPanel className="runs-panel">
       <div aria-busy={isTurning} data-turning={isTurning} className="runs-paged">
         <RunsTable runs={data.runs} />
       </div>
@@ -103,20 +104,20 @@ function PagedRuns({
         <p className="runs-range">{pager.range(from + 1, from + data.runs.length, data.total)}</p>
         <Pager page={data.page} pageCount={data.pageCount} onChange={onPageChange} />
       </div>
-    </>
+    </IronPanel>
   );
 }
 
 export function MyRunsPage({ page, onPageChange }: MyRunsPageProps) {
   const { data, error, refetch, isPlaceholderData } = useQuery(myRunsQuery(Math.max(1, page)));
   return (
-    <div className="runs-page">
+    <IronPage className="runs-page">
       <LocationPlate name={hu.signs.runs} meta={hu.runs.meta(data?.total ?? null)} />
       {error ? (
         <LoadFailed error={error} fallback={hu.runs.loadFailed} onRetry={() => void refetch()} />
       ) : null}
       {data?.total === 0 ? (
-        <div className="runs-empty">
+        <IronPanel className="runs-empty">
           <EmptyState
             text={hu.runs.empty}
             action={
@@ -125,11 +126,11 @@ export function MyRunsPage({ page, onPageChange }: MyRunsPageProps) {
               </Link>
             }
           />
-        </div>
+        </IronPanel>
       ) : null}
       {data && data.total > 0 ? (
         <PagedRuns data={data} isTurning={isPlaceholderData} onPageChange={onPageChange} />
       ) : null}
-    </div>
+    </IronPage>
   );
 }

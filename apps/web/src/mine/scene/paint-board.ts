@@ -31,25 +31,29 @@ export function kindsOf(map: MineMap, exploration: Exploration | null): TileKind
   );
 }
 
-export function sightOf(
+export function seedSeen(
+  seen: Uint8Array,
   map: MineMap,
   exploration: Exploration | null,
   robotKey: string | null,
-): Uint8Array {
-  const sight = new Uint8Array(map.rows * map.cols);
-  if (exploration === null) {
-    return sight;
-  }
-  const veiled = exploration.mode === "full" ? SIGHT_SHROUD : SIGHT_HIDDEN;
+): void {
   for (let r = 0; r < map.rows; r += 1) {
     for (let c = 0; c < map.cols; c += 1) {
       const key = posKey({ row: r, col: c });
-      const isKnown =
-        key === robotKey || exploration.discovered.has(key) || (exploration.lit?.has(key) ?? false);
-      sight[r * map.cols + c] = isKnown ? SIGHT_KNOWN : veiled;
+      if (key === robotKey || exploration?.discovered.has(key)) {
+        seen[r * map.cols + c] = 1;
+      }
     }
   }
-  return sight;
+}
+
+export function sightFromSeen(
+  seen: Uint8Array,
+  isAllKnown: boolean,
+  isVeiled: boolean,
+): Uint8Array {
+  const veiled = isVeiled ? SIGHT_SHROUD : SIGHT_HIDDEN;
+  return seen.map((value) => (isAllKnown || value > 0 ? SIGHT_KNOWN : veiled));
 }
 
 function isWallAt(kinds: readonly TileKind[], cols: number, rows: number, c: number, r: number) {

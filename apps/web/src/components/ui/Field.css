@@ -246,9 +246,7 @@
 }
 
 [data-skin="akna"] .field-error {
-  font: var(--akna-label);
-  letter-spacing: var(--akna-track);
-  text-transform: uppercase;
+  font: var(--type-help-strong);
   color: var(--px-led-red);
 }
 

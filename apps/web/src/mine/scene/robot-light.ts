@@ -120,7 +120,7 @@ export function bakeFixtures(
     data: field.bake({
       x: layout.pilot.x,
       y: layout.pilot.y + bulb.y,
-      r: 76,
+      r: 44,
       falloff: 1.15,
       shadow: false,
     }),

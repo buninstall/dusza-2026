@@ -3,9 +3,10 @@ import { type RefObject, useEffect, useRef } from "react";
 const DRAG_THRESHOLD = 4;
 const LINE_PX = 16;
 const PINCH_SCALE = 100;
-const WHEEL_CAP = 25;
+const PINCH_CAP = 25;
+const WHEEL_SCALE = 400;
+const WHEEL_CAP = 100;
 const MIDDLE = 1;
-const RIGHT = 2;
 
 export type PanButton = "primary" | "secondary";
 
@@ -13,6 +14,7 @@ export type SceneInputHandlers = {
   panBy: (dxPx: number, dyPx: number) => void;
   zoomAt: (factor: number, clientX: number, clientY: number) => void;
   canPan: () => boolean;
+  isWheelZoom: () => boolean;
   onPanning: (isPanning: boolean) => void;
 };
 
@@ -35,7 +37,7 @@ function isPanStart(event: PointerEvent, mode: PanButton, isSpace: boolean): boo
   if (mode === "primary") {
     return event.button === 0 || event.button === MIDDLE;
   }
-  return event.button === MIDDLE || event.button === RIGHT || (event.button === 0 && isSpace);
+  return event.button === MIDDLE || (event.button === 0 && isSpace);
 }
 
 function suppressClick(element: HTMLElement): void {
@@ -69,15 +71,20 @@ export function useSceneInput(
       const delta = wheelDelta(event, element.clientHeight);
       if (event.ctrlKey || event.metaKey) {
         event.preventDefault();
-        const clamped = Math.max(Math.min(delta.y, WHEEL_CAP), -WHEEL_CAP);
+        const clamped = Math.max(Math.min(delta.y, PINCH_CAP), -PINCH_CAP);
         latest.current.zoomAt(Math.exp(-clamped / PINCH_SCALE), event.clientX, event.clientY);
         return;
       }
-      if (!latest.current.canPan()) {
+      if (latest.current.canPan()) {
+        event.preventDefault();
+        latest.current.panBy(-delta.x, -delta.y);
         return;
       }
-      event.preventDefault();
-      latest.current.panBy(-delta.x, -delta.y);
+      if (latest.current.isWheelZoom() && delta.y !== 0) {
+        event.preventDefault();
+        const clamped = Math.max(Math.min(delta.y, WHEEL_CAP), -WHEEL_CAP);
+        latest.current.zoomAt(Math.exp(-clamped / WHEEL_SCALE), event.clientX, event.clientY);
+      }
     };
 
     const onDown = (event: PointerEvent) => {
@@ -146,11 +153,6 @@ export function useSceneInput(
       drag = null;
     };
 
-    const onContext = (event: MouseEvent) => {
-      if (mode === "secondary") {
-        event.preventDefault();
-      }
-    };
     const onKey = (event: KeyboardEvent) => {
       if (event.code === "Space" && !(event.target instanceof HTMLInputElement)) {
         isSpace = event.type === "keydown";
@@ -163,7 +165,6 @@ export function useSceneInput(
     element.addEventListener("pointermove", onMove);
     element.addEventListener("pointerup", onUp);
     element.addEventListener("pointercancel", onUp);
-    element.addEventListener("contextmenu", onContext);
     if (mode === "secondary") {
       window.addEventListener("keydown", onKey);
       window.addEventListener("keyup", onKey);
@@ -174,7 +175,6 @@ export function useSceneInput(
       element.removeEventListener("pointermove", onMove);
       element.removeEventListener("pointerup", onUp);
       element.removeEventListener("pointercancel", onUp);
-      element.removeEventListener("contextmenu", onContext);
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("keyup", onKey);
     };

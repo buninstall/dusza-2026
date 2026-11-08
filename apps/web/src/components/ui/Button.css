@@ -197,6 +197,10 @@
 :is([data-skin="akna"], .overlay-popover) .btn[data-size="sm"] {
   min-height: var(--akna-h-sm);
   padding: 0 var(--akna-pad-sm);
+  background-image: var(--btn-tex);
+  background-position: 0 0;
+  background-size: var(--akna-tex) var(--akna-tex);
+  background-repeat: repeat;
   font: var(--akna-label);
   letter-spacing: var(--akna-track);
 }

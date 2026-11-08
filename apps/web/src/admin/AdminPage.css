@@ -1,12 +1,7 @@
-.admin-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-}
-
 .admin-name {
-  font: var(--type-mono);
+  font: var(--akna-field);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .admin-role {
@@ -14,22 +9,28 @@
 }
 
 .admin-role .px-icon {
+  display: inline-block;
   margin-right: var(--space-2);
-  vertical-align: -2px;
+  color: var(--c-text-muted);
+  vertical-align: -4px;
+}
+
+.admin-role[data-role="admin"] {
+  color: var(--px-brass-hi);
 }
 
 .admin-role[data-role="admin"] .px-icon {
-  color: var(--c-reward);
+  color: var(--c-gold);
 }
 
 .admin-new-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .admin-search {
-  max-width: 24rem;
+  max-width: 22rem;
 }
 
 .admin-pager {
@@ -42,8 +43,9 @@
 
 .admin-range {
   margin: 0;
-  font: var(--type-mono-sm);
   color: var(--c-text-muted);
+  font: var(--akna-label);
+  letter-spacing: var(--akna-track);
 }
 
 .admin-paged[data-turning="true"] {

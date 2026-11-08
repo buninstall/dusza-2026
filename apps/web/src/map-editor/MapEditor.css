@@ -192,7 +192,7 @@
   outline-offset: 0;
 }
 
-.ed-rack-group[data-inactive="true"] .ed-slot-art {
+.ed-rack-group[data-inactive="true"] .ed-slot.k-rack-slot .ed-slot-art {
   opacity: 0.45;
 }
 
@@ -319,7 +319,7 @@
 
 .ed-canvas {
   grid-area: canvas;
-  container: ed-canvas / inline-size;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -368,12 +368,10 @@
   flex: none;
   display: grid;
   grid-template-rows: minmax(0, 1fr);
-  height: clamp(16rem, 70svh, 40rem);
+  height: clamp(16rem, 85cqi, 70svh);
   min-width: 0;
   background: var(--px-void);
-  box-shadow:
-    var(--k-outline),
-    var(--k-drop);
+  box-shadow: var(--k-outline), var(--k-drop);
   container-type: size;
   outline: none;
 }
@@ -406,7 +404,6 @@
 }
 
 .ed-strip.k-panel {
-  flex-wrap: nowrap;
   gap: var(--space-2);
 }
 
@@ -429,16 +426,6 @@
   --btn-edge: var(--c-discovery);
 
   color: var(--c-discovery);
-}
-
-@container ed-canvas (width < 34rem) {
-  .ed-strip.k-panel {
-    flex-wrap: wrap;
-  }
-
-  .ed-zoom {
-    margin-left: 0;
-  }
 }
 
 .ed-size-note.k-screen {

@@ -220,7 +220,7 @@ test.describe("elrendezés és térkép", () => {
     await register(page, "wheel");
     await gotoPlay(page, "8. A nagy bánya");
     const zoom = page.getByRole("toolbar", { name: "Térkép nagyítása" });
-    const board = await page.locator(".well-view .board").boundingBox();
+    const board = await page.locator(".mine-scene .board-grid").boundingBox();
     if (!board) throw new Error("Nincs térkép.");
     const middle = await page.evaluate(
       ({ x, y }) => {
@@ -234,7 +234,7 @@ test.describe("elrendezés és térkép", () => {
       { x: board.x + board.width / 2, y: board.y + board.height / 2 },
     );
     if (!middle) throw new Error("Nincs középső mező.");
-    const target = page.locator(`.well-view [data-row="${middle.row}"][data-col="${middle.col}"]`);
+    const target = page.locator(`.mine-scene [data-row="${middle.row}"][data-col="${middle.col}"]`);
     const start = await target.boundingBox();
     if (!start) throw new Error("Nincs középső mező.");
     const x = start.x + start.width / 2;
@@ -256,9 +256,14 @@ test.describe("elrendezés és térkép", () => {
     expect((await target.boundingBox())?.width ?? 0).toBeGreaterThan(start.width);
     await page.mouse.wheel(0, -300);
     await page.mouse.wheel(0, -300);
-    const well = page.locator(".well-view");
+    const holder = page.locator(".mine-scene-board");
     const offset = () =>
-      well.evaluate((element) => Math.round(element.scrollLeft + element.scrollTop));
+      holder.evaluate((element) =>
+        Math.round(
+          Number.parseFloat((element as HTMLElement).style.left) +
+            Number.parseFloat((element as HTMLElement).style.top),
+        ),
+      );
     const before = await offset();
     await page.mouse.move(x, y);
     await page.mouse.down();

@@ -6,7 +6,7 @@ import { type Burst, drawEmissive, type Glint, overlayEmissive } from "./emissiv
 import { type SceneLayout, sceneLayout, T } from "./layout.ts";
 import { createLightField, type LightField } from "./light.ts";
 import { createMotes, drawMotes, type Mote, stepMotes } from "./motes.ts";
-import { kindsOf, paintBoard, SIGHT_KNOWN, sightOf } from "./paint-board.ts";
+import { kindsOf, paintBoard, SIGHT_KNOWN, seedSeen, sightFromSeen } from "./paint-board.ts";
 import { cartLevel, paintFixtures } from "./paint-fixtures.ts";
 import { paintRulers, paintWorld, type RulerFlags } from "./paint-world.ts";
 import { buildAmbient, PRESETS, type Preset, type SceneLighting } from "./presets.ts";
@@ -39,6 +39,7 @@ export type SceneEngine = {
 
 const IDLE_FRAME_MS = 45;
 const RUST_CHECK_MS = 2000;
+const SEEN_LIGHT = 0.2;
 const BURST_S = 0.6;
 const GLINT_S = 0.5;
 const GLINT_RATE = 0.6;
@@ -88,6 +89,9 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
   let walls = "";
   let mined = new Set<number>();
   let painted = "";
+  let seen = new Uint8Array(0);
+  let discoveredSize = 0;
+  let seenLighting = "";
   let rustLevel = 0;
   let rustCheck = 0;
 
@@ -188,7 +192,20 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     if (isNewLook) {
       w.ambient = buildAmbient(w.layout, w.field, preset);
     }
-    w.sight = sightOf(next.map, next.exploration, next.robotKey);
+    const tiles = next.map.rows * next.map.cols;
+    const discovered = next.exploration?.discovered.size ?? 0;
+    if (
+      seen.length !== tiles ||
+      next.lighting !== seenLighting ||
+      discovered < discoveredSize ||
+      next.shade?.isBroken
+    ) {
+      seen = new Uint8Array(tiles);
+    }
+    discoveredSize = discovered;
+    seenLighting = next.lighting;
+    seedSeen(seen, next.map, next.exploration, next.robotKey);
+    w.sight = sightFromSeen(seen, preset.memory === 0, next.exploration?.mode === "full");
     input = next;
     const paintKey = `${next.lighting}|${kinds.join(",")}|${[...(next.flags?.rows ?? [])].join(",")}|${[...(next.flags?.cols ?? [])].join(",")}|${w.layout.cols}x${w.layout.rows}`;
     if (paintKey !== painted) {
@@ -196,6 +213,24 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
       repaint(w, next);
     }
     isDirty = true;
+  };
+
+  const markLit = (w: World) => {
+    const { bx, by, cols, rows } = w.layout;
+    for (let r = 0; r < rows; r += 1) {
+      for (let c = 0; c < cols; c += 1) {
+        const x = bx + c * T;
+        const y = by + r * T;
+        const lit = Math.max(
+          w.field.at(x + 8, y + 8),
+          w.field.at(x + 3, y + 3),
+          w.field.at(x + 12, y + 12),
+        );
+        if (lit > SEEN_LIGHT) {
+          seen[r * cols + c] = 1;
+        }
+      }
+    }
   };
 
   const step = (dt: number, w: World) => {
@@ -218,7 +253,7 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
   };
 
   const render = (time: number, w: World, v: View) => {
-    if (!ctx || !emisCtx || !input) {
+    if (!ctx || !emisCtx || !input || v.width <= 0 || v.height <= 0) {
       return;
     }
     if (!output || output.width !== v.width || output.height !== v.height) {
@@ -236,6 +271,10 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
       bursts,
       contained: containedIn(w),
     });
+    if (preset.memory > 0) {
+      markLit(w);
+      w.sight = sightFromSeen(seen, false, input.exploration?.mode === "full");
+    }
     const board = {
       bx: w.layout.bx,
       by: w.layout.by,

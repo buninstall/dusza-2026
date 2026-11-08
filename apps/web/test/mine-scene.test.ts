@@ -15,7 +15,8 @@ import {
   SIGHT_HIDDEN,
   SIGHT_KNOWN,
   SIGHT_SHROUD,
-  sightOf,
+  seedSeen,
+  sightFromSeen,
 } from "../src/mine/scene/paint-board.ts";
 import { cartLevel } from "../src/mine/scene/paint-fixtures.ts";
 import { rustShare } from "../src/mine/scene/rust.ts";
@@ -52,6 +53,7 @@ describe("bányajelenet kamerája", () => {
     expect(windowSize({ width: 300, height: 300 }, 3)).toEqual({ width: 100, height: 100 });
     expect(view.x).toBe(0);
     expect(view.y).toBe(-25);
+    expect(view.width).toBe(101);
   });
 
   test("a kurzor alatti pont a nagyítás után is a kurzor alatt marad", () => {
@@ -60,7 +62,17 @@ describe("bányajelenet kamerája", () => {
   });
 
   test("a követett mező a kilógás mértékével húzza a nézetet", () => {
-    const view = { scale: 2, x: 0, y: 0, width: 100, height: 100 };
+    const view = {
+      scale: 2,
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      fx: 0,
+      fy: 0,
+      spanW: 100,
+      spanH: 100,
+    };
     const next = followCenter({ x: 50, y: 50 }, view, { x0: 110, y0: 10, x1: 126, y1: 26 }, 4);
     expect(next).toEqual({ x: 80, y: 50 });
   });
@@ -85,25 +97,20 @@ describe("bányajelenet elrendezése", () => {
   });
 });
 
-describe("látótér a játék szabályai szerint", () => {
-  test("futás előtt minden mező látszik", () => {
-    expect([...sightOf(MAP, null, null)]).toEqual([0, 0, 0, 0, 0, 0]);
+describe("látótér: amit a fény megvilágít, az felfedezett marad", () => {
+  test("nyitott bányán minden mező látszik", () => {
+    expect([...sightFromSeen(new Uint8Array(6), true, false)]).toEqual([0, 0, 0, 0, 0, 0]);
   });
 
-  test("lámpafényben a felfedezetlen mező rejtett, teljes térképen fátyolos", () => {
-    const lamp = {
-      discovered: new Set(["0:0"]),
-      mined: new Set<string>(),
-      mode: "lamp" as const,
-      lit: new Set(["1:0"]),
-    };
-    const sight = sightOf(MAP, lamp, "1:1");
+  test("a bejárt mező és a robot helye eleve felfedezett, a többi sötét vagy fátyolos", () => {
+    const seen = new Uint8Array(6);
+    const lamp = { discovered: new Set(["0:0"]), mined: new Set<string>(), mode: "lamp" as const };
+    seedSeen(seen, MAP, lamp, "1:1");
+    const sight = sightFromSeen(seen, false, false);
     expect(sight[0]).toBe(SIGHT_KNOWN);
-    expect(sight[3]).toBe(SIGHT_KNOWN);
     expect(sight[4]).toBe(SIGHT_KNOWN);
     expect(sight[2]).toBe(SIGHT_HIDDEN);
-    const full = sightOf(MAP, { ...lamp, mode: "full" }, null);
-    expect(full[2]).toBe(SIGHT_SHROUD);
+    expect(sightFromSeen(seen, false, true)[2]).toBe(SIGHT_SHROUD);
   });
 
   test("a kibányászott arany kiásott mezőként rajzolódik", () => {

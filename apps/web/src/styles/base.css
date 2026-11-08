@@ -154,7 +154,8 @@ table {
 
 ::-webkit-scrollbar-thumb:vertical {
   min-height: var(--akna-h);
-  background-image: var(--k-tex-rivet), var(--k-tex-rivet), var(--akna-speck-l), var(--k-tex-iron-md);
+  background-image:
+    var(--k-tex-rivet), var(--k-tex-rivet), var(--akna-speck-l), var(--k-tex-iron-md);
   background-position:
     center top 5px,
     center bottom 5px,
@@ -164,7 +165,8 @@ table {
 
 ::-webkit-scrollbar-thumb:horizontal {
   min-width: var(--akna-h);
-  background-image: var(--k-tex-rivet), var(--k-tex-rivet), var(--akna-speck-r), var(--k-tex-iron-md);
+  background-image:
+    var(--k-tex-rivet), var(--k-tex-rivet), var(--akna-speck-r), var(--k-tex-iron-md);
   background-position:
     left 5px center,
     right 5px center,

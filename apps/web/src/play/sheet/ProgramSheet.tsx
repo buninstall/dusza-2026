@@ -137,7 +137,12 @@ export function ProgramSheet(props: ProgramSheetProps) {
   const onSave = useStableCallback(() => persistence.saveCurrent());
 
   return (
-    <section id="program" ref={props.ref} aria-label={hu.play.programHeading} className="sheet k-panel">
+    <section
+      id="program"
+      ref={props.ref}
+      aria-label={hu.play.programHeading}
+      className="sheet k-panel"
+    >
       <SheetToolbar
         isLocked={isLocked}
         isSaving={persistence.isSaving}

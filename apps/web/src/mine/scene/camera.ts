@@ -4,7 +4,17 @@ export const MAX_SCALE = 16;
 
 export type Viewport = { width: number; height: number };
 
-export type View = { scale: number; x: number; y: number; width: number; height: number };
+export type View = {
+  scale: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fx: number;
+  fy: number;
+  spanW: number;
+  spanH: number;
+};
 
 export function fitScale(frame: Box, viewport: Viewport, quantum = 1): number {
   const width = frame.x1 - frame.x0;
@@ -29,11 +39,11 @@ export function windowSize(viewport: Viewport, scale: number): { width: number; 
   };
 }
 
-function clampAxis(start: number, size: number, worldSize: number): number {
-  if (size >= worldSize) {
-    return Math.round((worldSize - size) / 2);
+function clampAxis(start: number, span: number, worldSize: number): number {
+  if (span >= worldSize) {
+    return (worldSize - span) / 2;
   }
-  return Math.min(Math.max(start, 0), worldSize - size);
+  return Math.min(Math.max(start, 0), worldSize - span);
 }
 
 export function placeView(
@@ -42,13 +52,22 @@ export function placeView(
   scale: number,
   world: { width: number; height: number },
 ): View {
-  const size = windowSize(viewport, scale);
+  const spanW = viewport.width / scale;
+  const spanH = viewport.height / scale;
+  const startX = clampAxis(center.x - spanW / 2, spanW, world.width);
+  const startY = clampAxis(center.y - spanH / 2, spanH, world.height);
+  const x = Math.floor(startX);
+  const y = Math.floor(startY);
   return {
     scale,
-    width: size.width,
-    height: size.height,
-    x: clampAxis(Math.round(center.x - size.width / 2), size.width, world.width),
-    y: clampAxis(Math.round(center.y - size.height / 2), size.height, world.height),
+    x,
+    y,
+    fx: startX - x,
+    fy: startY - y,
+    spanW,
+    spanH,
+    width: Math.ceil(spanW) + 1,
+    height: Math.ceil(spanH) + 1,
   };
 }
 
@@ -57,7 +76,7 @@ export function frameCenter(frame: Box): Point {
 }
 
 export function viewCenter(view: View): Point {
-  return { x: view.x + view.width / 2, y: view.y + view.height / 2 };
+  return { x: view.x + view.fx + view.spanW / 2, y: view.y + view.fy + view.spanH / 2 };
 }
 
 export function anchorCenter(

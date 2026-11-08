@@ -1,9 +1,3 @@
-.runs-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
 .runs-table {
   min-width: 52rem;
 }
@@ -12,18 +6,25 @@
   white-space: nowrap;
 }
 
+.runs-table td.mono {
+  color: var(--c-text-muted);
+  font: var(--akna-field);
+}
+
 .runs-outcome .led-label {
   font: var(--type-mono-sm);
 }
 
 .runs-outcome[data-outcome="runtimeError"] .led-label {
-  color: var(--c-danger-ink);
+  color: var(--px-led-red);
 }
 
-.runs-empty {
-  border: var(--border-thin) solid var(--c-line-strong);
-  background: var(--c-surface);
-  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
+.runs-table .btn-text-link {
+  font-weight: 700;
+}
+
+.runs-empty .empty {
+  padding-block: var(--space-6);
 }
 
 .runs-pager {
@@ -36,8 +37,9 @@
 
 .runs-range {
   margin: 0;
-  font: var(--type-mono-sm);
   color: var(--c-text-muted);
+  font: var(--akna-label);
+  letter-spacing: var(--akna-track);
 }
 
 .runs-paged[data-turning="true"] {
