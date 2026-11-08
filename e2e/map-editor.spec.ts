@@ -82,8 +82,8 @@ test("festésmódok, visszavonás, robotforgatás és a kilépés megerősítés
   await page.keyboard.press("Shift+R");
   await expect(cell(1, 1, "robot, kelet felé")).toBeVisible();
 
-  await page.keyboard.press("k");
   await page.keyboard.press("2");
+  await page.keyboard.press("k");
   await cell(4, 4, "üres kamra").click();
   await expect(page.getByText(/^Kitöltés: \d+ mező, Arany$/)).toBeAttached();
   await expect(cell(7, 10, "arany")).toBeVisible();
