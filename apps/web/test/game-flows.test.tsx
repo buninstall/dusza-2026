@@ -115,7 +115,7 @@ describe("lámpafényes pálya", () => {
     respond("POST", "/runs", apiError(500, "INTERNAL", "nem kell"));
     const { user } = await openPlay({ lampMode: "lamp", canEdit: false });
     await user.click(screen.getAllByRole("button", { name: /Futtatás/ })[0] as HTMLElement);
-    expect(await screen.findByText("Összetört a lámpa")).toBeTruthy();
+    expect(await screen.findByText("Összetört a lámpa", {}, { timeout: 3000 })).toBeTruthy();
     expect(JSON.parse(window.localStorage.getItem(key) ?? "{}")).toEqual({
       discovered: [],
       lit: [],

@@ -70,6 +70,16 @@ describe("lejátszás-tár", () => {
     expect(store().runId).toBe(before + 1);
   });
 
+  test("az utolsó lépés után a futás csak a robot beérkezésekor fejeződik be", () => {
+    store().load(walkTrace, corridorStart, "");
+    for (let tick = 0; tick < 5; tick += 1) {
+      store().tick();
+    }
+    expect(store()).toMatchObject({ index: 5, status: "playing", hasEnded: false });
+    store().tick();
+    expect(store()).toMatchObject({ index: 5, status: "finished", hasEnded: true });
+  });
+
   test("a tick a végén befejezett állapotba megy", () => {
     store().load(walkTrace, corridorStart, "");
     for (let tick = 0; tick < 8; tick += 1) {
