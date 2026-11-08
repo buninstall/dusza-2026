@@ -43,9 +43,53 @@
 }
 
 .lv-more.sb-pager {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--px-iron-dk);
+  background-image:
+    var(--k-tex-rivet), var(--k-tex-rivet), var(--k-tex-rivet), var(--k-tex-rivet),
+    var(--k-tex-iron-dk);
+  background-position:
+    left 6px top 6px,
+    right 6px top 6px,
+    left 6px bottom 6px,
+    right 6px bottom 6px,
+    0 0;
+  background-size:
+    18px 18px,
+    18px 18px,
+    18px 18px,
+    18px 18px,
+    72px 72px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  box-shadow:
+    inset 3px 3px 0 0 var(--px-iron-edge),
+    inset -3px -3px 0 0 var(--px-iron-md),
+    var(--k-outline);
+}
+
+.lv-more.sb-pager::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--k-rust-c), var(--k-rust-d), var(--k-rust-edge);
+  background-position:
+    left 3px top 3px,
+    right 3px top 3px,
+    left 0 bottom 3px;
+  background-size:
+    21px 21px,
+    21px 21px,
+    192px 24px;
+  background-repeat: no-repeat, no-repeat, repeat-x;
+  opacity: var(--rust, var(--rust-min));
+  pointer-events: none;
+  image-rendering: pixelated;
 }
 
 .sb-pager .pager {

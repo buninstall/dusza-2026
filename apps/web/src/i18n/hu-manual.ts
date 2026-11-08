@@ -83,7 +83,7 @@ const sections: readonly ManualSection[] = [
           "**Összes és Sajátjaim.** Az `Összes` fül minden közzétett pályát mutat, a `Sajátjaim` csak a tieidet, a privátokat is.",
           "**Szűrés és rendezés.** A tábla alsó sorában szűrhetsz nehézségre (`Könnyű`, `Közepes`, `Nehéz`), és rendezhetsz (`Legújabb`, `Sorrend`, `Méret`, `Arany`). A pályák nyolcasával jelennek meg, a lista alján a `Továbbiak` gomb hozza a következőket.",
           "**Nehézség.** A nehézséget a szerver számolja a pálya legrövidebb megoldásából: legfeljebb 12 lépés könnyű, legfeljebb 40 közepes, fölötte nehéz. Így minden új pálya magától besorolódik.",
-          "**Új térkép.** A tábla jobb felső gombja és a lista alján a `Fúrófront` a térképszerkesztőbe visz.",
+          "**Új térkép.** A tábla jobb felső gombja a térképszerkesztőbe visz.",
           "**Napi kihívás.** Minden nap új, géppel generált pálya a lista tetején: mindenki ugyanazt kapja, és saját ranglistája van.",
         ],
       },

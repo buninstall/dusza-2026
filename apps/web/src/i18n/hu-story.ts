@@ -236,7 +236,4 @@ export const story = {
   nuggets: (earned: number, max: number) => `${earned} / ${max}`,
   chapterReached: (numeral: string) => `${numeral}`,
   backToStory: "Vissza a Történethez",
-  frontStory:
-    "Innen szól a kopogás. Ha egy fejezet minden pályája kész, a fúrófront egy réteggel mélyebbre jut.",
-  frontSilent: "A kopogás elhallgatott. A Történet véget ért, a Homokozóban új szinteket vájhatsz.",
 };

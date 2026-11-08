@@ -203,14 +203,14 @@ function StoryGrid({ user }: { user: SessionUser }) {
           return (
             <>
               <EmptyState text={hu.maps.empty} />
-              <DrillFront isSilent={false} isStory />
+              <DrillFront isSilent={false} />
             </>
           );
         }
         return (
           <>
             <StoryChapters campaign={campaign} user={user} />
-            <DrillFront isSilent={campaign.isSilent} isStory />
+            <DrillFront isSilent={campaign.isSilent} />
           </>
         );
       }}
@@ -218,24 +218,8 @@ function StoryGrid({ user }: { user: SessionUser }) {
   );
 }
 
-function DrillFront({ isSilent, isStory = false }: { isSilent: boolean; isStory?: boolean }) {
-  return (
-    <section
-      className="mine-front"
-      data-mine="front"
-      data-silent={isSilent}
-      aria-labelledby="mine-front-heading"
-    >
-      <h2 id="mine-front-heading" className="mine-front-head">
-        <PixelIcon name="pickaxe" />
-        {hu.maps.frontHeading}
-      </h2>
-      <p className="mine-front-text">
-        {isStory ? (isSilent ? story.frontSilent : story.frontStory) : hu.maps.frontText}
-      </p>
-      {isStory ? <StoryBoardLink /> : <NewMapLink />}
-    </section>
-  );
+function DrillFront({ isSilent }: { isSilent: boolean }) {
+  return <div className="mine-front" data-mine="front" data-silent={isSilent} aria-hidden="true" />;
 }
 
 function StoryBoardLink({ isCompact = false }: { isCompact?: boolean }) {

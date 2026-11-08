@@ -75,7 +75,8 @@ describe("térképlista", () => {
     await screen.findByRole("list", { name: "Pályák listája" });
     await user.click(screen.getByRole("tab", { name: "Sajátjaim" }));
     expect(await screen.findByText(/Még nincs saját pályád/)).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Fúrófront" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Fúrófront" })).toBeNull();
+    expect(document.querySelector('[data-mine="front"]')).toBeTruthy();
     expect(callsTo("GET", "/maps").some((call) => call.search.get("scope") === "mine")).toBe(true);
   });
 
