@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { articleFor, hu } from "../src/i18n/hu.ts";
+import { manual } from "../src/i18n/hu-manual.ts";
 
 type Builder = (...args: unknown[]) => unknown;
 
@@ -50,5 +51,24 @@ describe("articleFor", () => {
     [2000, "a"],
   ])("%i előtt %s", (value, article) => {
     expect(articleFor(value)).toBe(article);
+  });
+});
+
+function strings(value: unknown): string[] {
+  if (typeof value === "string") {
+    return [value];
+  }
+  if (value !== null && typeof value === "object") {
+    return Object.values(value).flatMap(strings);
+  }
+  return [];
+}
+
+describe("kézikönyv-jelölések", () => {
+  test("félkövér jelölés csak a mondat elején áll, így sosem marad nyers csillag a szövegben", () => {
+    const stray = strings(manual).filter(
+      (text) => text.includes("**") && !/^\*\*[^*]+\*\*(?!.*\*\*)/s.test(text),
+    );
+    expect(stray).toEqual([]);
   });
 });

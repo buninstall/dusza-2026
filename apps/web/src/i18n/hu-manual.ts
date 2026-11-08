@@ -38,7 +38,7 @@ const sections: readonly ManualSection[] = [
       },
       {
         kind: "paragraph",
-        text: "Két játékmód van. A **Homokozó** a szabad bánya: a játékosok pályái, a napi kihívás és a MineScriptet bemutató pályák. A **Történet** harminc pályán, hat fejezetben vezet le a hegy szívéig. A `Pályák` oldal tetején, a rozsdás táblán váltasz közöttük.",
+        text: "Két játékmód van. A Homokozó a szabad bánya: a játékosok pályái, a napi kihívás és a MineScriptet bemutató pályák. A Történet harminc pályán, hat fejezetben vezet le a hegy szívéig. A `Pályák` oldal tetején, a rozsdás táblán váltasz közöttük.",
       },
       { kind: "heading", text: "Egy kör menete" },
       {
