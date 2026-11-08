@@ -20,10 +20,16 @@ const completionType: Record<CompletionKind, string> = {
   value: "constant",
 };
 
+function isAtSlot(context: CompletionContext): boolean {
+  const line = context.state.doc.lineAt(context.pos);
+  const before = line.text.slice(0, context.pos - line.from);
+  return before.endsWith(" ") || before.length === 0;
+}
+
 export function completionSource(engine: Engine) {
   return (context: CompletionContext): CompletionResult | null => {
-    const word = context.matchBefore(/[A-Za-z]*/);
-    if (!word || (word.from === word.to && !context.explicit)) {
+    const word = context.matchBefore(/[A-Za-z0-9]*/);
+    if (!word || (word.from === word.to && !context.explicit && !isAtSlot(context))) {
       return null;
     }
     const items = engine.complete(context.state.doc.toString(), context.pos);
@@ -39,7 +45,7 @@ export function completionSource(engine: Engine) {
         type: completionType[item.kind],
       }),
     );
-    return { from: word.from, options };
+    return { from: word.from, options, validFor: /^[A-Za-z0-9]*$/ };
   };
 }
 

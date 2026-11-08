@@ -61,9 +61,26 @@ describe("szerkesztőbővítmények", () => {
     expect(result?.from).toBe(0);
     expect(result?.options.map((option) => option.label)).toContain("step forward");
     const empty = EditorState.create({ doc: "" });
-    expect(completionSource(realEngine)(new CompletionContext(empty, 0, false))).toBeNull();
+    const atStart = completionSource(realEngine)(new CompletionContext(empty, 0, false));
+    expect(atStart?.options.map((option) => option.label)).toContain("step forward");
+    const glued = EditorState.create({ doc: "set x to 1+" });
+    expect(completionSource(realEngine)(new CompletionContext(glued, 11, false))).toBeNull();
     vi.spyOn(realEngine, "complete").mockReturnValueOnce([]);
     expect(completionSource(realEngine)(new CompletionContext(state, 2, true))).toBeNull();
+  });
+
+  test("szóköz után magától ajánl: kulcsszót, lépésszámot és fordulatot magyarázattal", () => {
+    const offered = (doc: string) =>
+      completionSource(realEngine)(
+        new CompletionContext(EditorState.create({ doc }), doc.length, false),
+      );
+    expect(offered("step ")?.options.map((option) => option.label)).toEqual(["forward"]);
+    const steps = offered("step forward ")?.options ?? [];
+    expect(steps.map((option) => option.label)).toEqual(["1", "2", "3"]);
+    expect(steps[0]?.info).toBe("egy mezőt lép előre");
+    const turns = offered("turn by ")?.options ?? [];
+    expect(turns.find((option) => option.label === "3")?.info).toBe("jobbra fordul 90°-ot");
+    expect(offered("mine here ")).toBeNull();
   });
 
   test("a kiegészítés eltűnik, ha a szó már teljesen be van gépelve", () => {

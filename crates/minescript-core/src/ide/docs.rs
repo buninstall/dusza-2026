@@ -73,6 +73,21 @@ pub const PROBE_DETAIL: &str = "isThere kód";
 pub const ISTHERE_SNIPPET: &str = "isThere ${w}";
 pub const NOT_SNIPPET: &str = "not ${x}";
 
+pub const STEP_DETAIL: &str = "mezők száma";
+pub const TURN_DETAIL: &str = "negyedfordulat balra";
+
+pub const STEP_COUNTS: [(&str, &str); 3] = [
+    ("1", "egy mezőt lép előre"),
+    ("2", "két mezőt lép előre"),
+    ("3", "három mezőt lép előre"),
+];
+
+pub const TURN_COUNTS: [(&str, &str); 3] = [
+    ("1", "balra fordul 90°-ot"),
+    ("2", "megfordul (180°)"),
+    ("3", "jobbra fordul 90°-ot"),
+];
+
 pub const PROBE_CODES: [(&str, &str); 3] = [
     ("0", "üres kamra"),
     ("1", "fal (vagy a térkép széle)"),

@@ -1,6 +1,6 @@
 use super::docs::{
     BOOL_DETAIL, COMMAND_DOCS, ISTHERE_SNIPPET, NOT_SNIPPET, PROBE_CODES, PROBE_DETAIL,
-    VARIABLE_DETAIL, keyword_doc, operator_doc,
+    STEP_COUNTS, STEP_DETAIL, TURN_COUNTS, TURN_DETAIL, VARIABLE_DETAIL, keyword_doc, operator_doc,
 };
 use super::outline::assignment_sites;
 use super::{CompletionItem, CompletionKind};
@@ -11,10 +11,17 @@ use crate::syntax::lexeme::classify;
 use crate::syntax::scanner::SPACE;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Count {
+    Steps,
+    Turns,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Slot {
     Command,
     Keyword(Keyword),
     Value { with_booleans: bool },
+    Count { kind: Count },
     Target,
     Expression,
     ProbeCode,
@@ -53,9 +60,8 @@ fn slot_after(words: &[&str]) -> Slot {
         ["step"] => Slot::Keyword(Keyword::Forward),
         ["turn"] => Slot::Keyword(Keyword::By),
         ["mine"] => Slot::Keyword(Keyword::Here),
-        ["step", "forward"] | ["turn", "by"] => Slot::Value {
-            with_booleans: false,
-        },
+        ["step", "forward"] => Slot::Count { kind: Count::Steps },
+        ["turn", "by"] => Slot::Count { kind: Count::Turns },
         ["print" | "if" | "while"] | ["set", _, "to", "not"] => Slot::Value {
             with_booleans: true,
         },
@@ -76,6 +82,18 @@ fn items_for(slot: Slot, variables: &[&str]) -> Vec<CompletionItem> {
         Slot::Command => commands(),
         Slot::Keyword(keyword) => vec![keyword_item(keyword)],
         Slot::Value { with_booleans } => values(variables, with_booleans),
+        Slot::Count { kind } => {
+            let (counts, detail) = match kind {
+                Count::Steps => (STEP_COUNTS, STEP_DETAIL),
+                Count::Turns => (TURN_COUNTS, TURN_DETAIL),
+            };
+            let mut items: Vec<CompletionItem> = counts
+                .iter()
+                .map(|(count, meaning)| item(count, CompletionKind::Value, detail, meaning, count))
+                .collect();
+            items.extend(variable_items(variables));
+            items
+        }
         Slot::Target => variable_items(variables),
         Slot::Expression => {
             let mut items = values(variables, true);
@@ -224,8 +242,9 @@ mod tests {
         assert_eq!(labels(&format!("{DEFINED}set ")), vec!["arany", "count"]);
         assert_eq!(
             labels(&format!("{DEFINED}step forward ")),
-            vec!["arany", "count"]
+            vec!["1", "2", "3", "arany", "count"]
         );
+        assert_eq!(labels("turn by "), vec!["1", "2", "3"]);
         assert_eq!(
             labels(&format!("{DEFINED}if ")),
             vec!["arany", "count", "true", "false"]
