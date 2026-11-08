@@ -1,7 +1,7 @@
 use url::Url;
 
 const BASE_VAR: &str = "MINESCRIPT_BASE_URL";
-const DEFAULT_BASE: &str = "https://csapat13.dusza.cloudsyso.com/";
+const DEFAULT_BASE: &str = "https://minescript.hu/";
 
 fn main() {
     println!("cargo:rerun-if-env-changed={BASE_VAR}");
