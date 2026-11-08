@@ -13,9 +13,9 @@ export function depthTone(steps: number): "calm" | "warn" | "danger" {
   return steps >= WARN_AT ? "warn" : "calm";
 }
 
-type DepthGaugeProps = { steps: number; isLimit: boolean };
+type DepthGaugeProps = { steps: number; isLimit: boolean; isRolling?: boolean };
 
-export function DepthGauge({ steps, isLimit }: DepthGaugeProps) {
+export function DepthGauge({ steps, isLimit, isRolling = false }: DepthGaugeProps) {
   const tone = depthTone(steps);
   const fill = { "--v": Math.min(steps, STEP_LIMIT) / STEP_LIMIT } as CSSProperties;
   return (
@@ -24,7 +24,7 @@ export function DepthGauge({ steps, isLimit }: DepthGaugeProps) {
       <span className="visually-hidden">
         {steps} {hu.play.stepsLimit(STEP_LIMIT)}
       </span>
-      <Odometer value={steps} digits={String(STEP_LIMIT).length} />
+      <Odometer value={steps} digits={String(STEP_LIMIT).length} isRolling={isRolling} />
       <span
         aria-hidden="true"
         className="k-gauge hud-gauge"
