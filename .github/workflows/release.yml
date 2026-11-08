@@ -120,6 +120,7 @@ jobs:
       VERSION: ${{ needs.desktop-prepare.outputs.version }}
       TAURI_SIGNING_PRIVATE_KEY: ${{ needs.desktop-prepare.result == 'success' && secrets.TAURI_SIGNING_PRIVATE_KEY || '' }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      TAURI_BUNDLER_DMG_IGNORE_CI: "true"
     steps:
       - uses: actions/checkout@v4
       - if: runner.os == 'Linux'
