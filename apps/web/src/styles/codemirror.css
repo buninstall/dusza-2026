@@ -96,7 +96,7 @@
 }
 
 .code-host .cm-editor.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
-  background: color-mix(in srgb, var(--c-gold) 26%, transparent);
+  background: color-mix(in srgb, var(--c-gold) 22%, transparent);
 }
 
 .code-host .cm-editor:has(.cm-selectionBackground) .cm-activeLine,
@@ -104,8 +104,10 @@
   background: transparent;
 }
 
-.code-host .cm-editor .cm-content ::selection {
+.code-host .cm-editor .cm-content ::selection,
+.code-host .cm-editor .cm-content::selection {
   background: transparent;
+  color: currentcolor;
 }
 
 .cm-editor .cm-exec-line {
