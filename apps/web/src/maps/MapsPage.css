@@ -43,13 +43,18 @@
 
 .lv-tile {
   position: relative;
-  isolation: isolate;
   display: grid;
   grid-template-columns: auto minmax(min(100%, 17rem), 1fr) auto;
   grid-template-areas: "window body actions";
   align-items: center;
   gap: var(--space-2) var(--space-4);
   padding: var(--space-3) var(--space-5);
+}
+
+.lv-tile,
+.daily {
+  position: relative;
+  isolation: isolate;
   background-color: var(--px-iron);
   background-image:
     var(--k-tex-rivet), var(--k-tex-rivet), var(--k-tex-rivet), var(--k-tex-rivet),
@@ -73,7 +78,8 @@
     var(--k-outline);
 }
 
-.lv-tile::after {
+.lv-tile::after,
+.daily::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -241,7 +247,7 @@
   grid-template-areas: "window body actions";
   align-items: center;
   gap: var(--space-2) var(--space-4);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-5);
 }
 
 .daily-window .preview {
