@@ -50,8 +50,14 @@
   min-height: var(--header-height);
 }
 
+.shell-lockup {
+  display: flex;
+  align-items: center;
+}
+
 .shell-mark {
   display: none;
+  align-items: center;
 }
 
 .shell-nav {
@@ -222,7 +228,7 @@
   }
 
   .shell-mark {
-    display: block;
+    display: flex;
   }
 
   .shell-nav-link {
