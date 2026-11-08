@@ -9,7 +9,7 @@ A MineScript-interpreter önálló parancssori program: ugyanaz a Rust-motor fut
 | macOS (Apple Silicon) | `minescript-cli-macos-arm64`     |
 | macOS (Intel)         | `minescript-cli-macos-x64`       |
 
-Az ellenőrzőösszegek a `SHA256SUMS.txt` fájlban vannak. Linuxon és macOS-en előbb futtathatóvá kell tenni: `chmod +x minescript-cli-*`. macOS-en az első indításkor a Finderben jobb gomb, majd Megnyitás.
+Az ellenőrzőösszegek a `SHA256SUMS.txt` fájlban vannak. Linuxon és macOS-en előbb futtathatóvá kell tenni: `chmod +x minescript-cli-*`. macOS-en az első indításkor a Finderben jobb gomb, majd Megnyitás. A lenti példák kedvéért érdemes a letöltött fájlt `minescript`-re (Windowson `minescript.exe`-re) átnevezni.
 
 ## Használat
 
