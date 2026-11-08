@@ -1,5 +1,5 @@
 import { describe, expect, setDefaultTimeout, test } from "bun:test";
-import { eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { maps, mapVersions, programs, runs, users } from "../src/db/schema.ts";
 import { CROWD_MAPS_PER_PLAYER, crowdPlayers, crowdTitle, ensureCrowd } from "../src/seed/crowd.ts";
 import { seedDemo } from "../src/seed/index.ts";
@@ -353,6 +353,44 @@ describe("felhasználók lapozva", () => {
 });
 
 describe("homokozó-tömeg a seedben", () => {
+  test("a korábban feltöltött adatbázisban a tömeg utólag megkapja a Történet-futásokat, egyszer", async () => {
+    await using context = await createTestContext();
+    await seedDemo(context.deps, { reset: false });
+    await ensureCrowd(context.deps, context.deps.now());
+    const crowdIds = (
+      await context.deps.db
+        .select({ id: users.id })
+        .from(users)
+        .where(
+          inArray(
+            users.username,
+            crowdPlayers().map((player) => player.username),
+          ),
+        )
+    ).map((row) => row.id);
+    const storyVersionIds = (
+      await context.deps.db
+        .select({ id: mapVersions.id })
+        .from(mapVersions)
+        .innerJoin(maps, eq(maps.id, mapVersions.mapId))
+        .where(
+          inArray(
+            maps.title,
+            TUTORIAL_MAPS.map((tutorial) => tutorial.title),
+          ),
+        )
+    ).map((row) => row.id);
+    await context.deps.db
+      .delete(runs)
+      .where(and(inArray(runs.userId, crowdIds), inArray(runs.mapVersionId, storyVersionIds)));
+
+    const topUp = await ensureCrowd(context.deps, context.deps.now());
+    expect(topUp.players).toBe(0);
+    expect(topUp.runs).toBeGreaterThan(0);
+    const again = await ensureCrowd(context.deps, context.deps.now());
+    expect(again.runs).toBe(0);
+  }, 120_000);
+
   test("száz bányász háromszáz pályája, idempotensen, belépés nélkül", async () => {
     await using context = await createTestContext();
     await seedDemo(context.deps, { reset: false });

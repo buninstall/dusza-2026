@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { maps, mapVersions } from "../db/schema.ts";
+import { maps, mapVersions, runs, users } from "../db/schema.ts";
 import type { Deps } from "../env.ts";
 import { seededRandom, seedFromText } from "../services/generator.ts";
 import { executeAndRecord } from "../services/runs.ts";
@@ -85,4 +85,42 @@ export async function recordStoryRuns(
     }
   }
   return recorded;
+}
+
+export async function topUpStoryRuns(
+  deps: Deps,
+  usernames: readonly string[],
+  base: number,
+): Promise<number> {
+  const levels = await storyLevels(deps);
+  if (levels.length === 0 || usernames.length === 0) {
+    return 0;
+  }
+  const crowd = await deps.db
+    .select({ id: users.id, username: users.username })
+    .from(users)
+    .where(inArray(users.username, [...usernames]));
+  if (crowd.length === 0) {
+    return 0;
+  }
+  const played = await deps.db
+    .selectDistinct({ userId: runs.userId })
+    .from(runs)
+    .where(
+      and(
+        inArray(
+          runs.userId,
+          crowd.map((player) => player.id),
+        ),
+        inArray(
+          runs.mapVersionId,
+          levels.map((level) => level.version.id),
+        ),
+      ),
+    );
+  const done = new Set(played.map((row) => row.userId));
+  const pending = new Map(
+    crowd.filter((player) => !done.has(player.id)).map((player) => [player.username, player.id]),
+  );
+  return pending.size === 0 ? 0 : recordStoryRuns(deps, pending, base);
 }

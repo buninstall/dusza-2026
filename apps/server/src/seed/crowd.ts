@@ -17,7 +17,7 @@ import {
 import { createMapWithVersion, validateMapContent } from "../services/maps.ts";
 import { solveRoute } from "../services/route-solver.ts";
 import { executeAndRecord } from "../services/runs.ts";
-import { partialRoute, recordStoryRuns } from "./crowd-story.ts";
+import { partialRoute, recordStoryRuns, topUpStoryRuns } from "./crowd-story.ts";
 
 const CRAFTS = [
   "vajar",
@@ -281,7 +281,12 @@ export async function ensureCrowd(deps: Deps, base: number): Promise<CrowdReport
   const taken = new Set(existing.map((row) => row.username.toLowerCase()));
   const missing = players.filter((player) => !taken.has(player.username));
   if (missing.length === 0) {
-    return { players: 0, maps: 0, favorites: 0, runs: 0 };
+    const storyRuns = await topUpStoryRuns(
+      deps,
+      players.map((player) => player.username),
+      base + CROWD_OFFSET_MS,
+    );
+    return { players: 0, maps: 0, favorites: 0, runs: storyRuns };
   }
   const passwordHash = await hashPassword(randomBytes(PASSWORD_BYTES).toString("base64url"));
   const playerIds = new Map<string, number>();
