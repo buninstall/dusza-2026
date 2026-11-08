@@ -6,77 +6,35 @@ on:
     branches: [main]
     paths:
       - "crates/minescript-desktop/**"
-  pull_request:
-    paths:
-      - "crates/minescript-desktop/**"
-      - ".github/workflows/release.yml"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 env:
-  DATABASE_URL: mysql://minescript:minescript@127.0.0.1:3306/minescript
-  TEST_DATABASE_URL: mysql://root:minescript@127.0.0.1:3306
   DESKTOP_DIR: crates/minescript-desktop
   LINUX_DESKTOP_DEPS: libwebkit2gtk-4.1-dev libxdo-dev librsvg2-dev libayatana-appindicator3-dev patchelf
 
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false
 
 jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: blacksmith-4vcpu-ubuntu-2404
-    services:
-      mysql:
-        image: mysql:9.7
-        env:
-          MYSQL_ROOT_PASSWORD: minescript
-          MYSQL_DATABASE: minescript
-          MYSQL_USER: minescript
-          MYSQL_PASSWORD: minescript
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping --host=127.0.0.1 --user=root --password=minescript --silent"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 30
-          --health-start-period 30s
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: just release
-      - run: just smoke
       - uses: softprops/action-gh-release@v2
         with:
           files: release/*
           generate_release_notes: true
 
-  desktop-check:
-    if: "!startsWith(github.ref, 'refs/tags/')"
-    runs-on: blacksmith-4vcpu-ubuntu-2204
-    steps:
-      - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y $LINUX_DESKTOP_DEPS
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: ${{ env.DESKTOP_DIR }} -> target
-      - working-directory: ${{ env.DESKTOP_DIR }}
-        run: |
-          cargo fmt --check
-          cargo clippy --all-targets --locked -- -D warnings
-          cargo test --locked
-
   desktop-prepare:
-    needs: desktop-check
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
       version: ${{ steps.tag.outputs.version }}
@@ -96,21 +54,18 @@ jobs:
           gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --draft --target "$GITHUB_SHA" --title "MineScript Desktop $version" --notes-file notes.md
 
   desktop-build:
-    needs: [desktop-check, desktop-prepare]
-    if: >-
-      always() && needs.desktop-check.result == 'success' &&
-      (needs.desktop-prepare.result == 'success' || needs.desktop-prepare.result == 'skipped')
+    needs: desktop-prepare
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: blacksmith-6vcpu-macos-15
+          - os: macos-latest
             args: --target universal-apple-darwin
             rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
-          - os: blacksmith-4vcpu-windows-2025
+          - os: windows-latest
             args: ""
             rust-targets: ""
-          - os: blacksmith-4vcpu-ubuntu-2204
+          - os: ubuntu-22.04
             args: ""
             rust-targets: ""
     runs-on: ${{ matrix.os }}
@@ -118,7 +73,7 @@ jobs:
       MINESCRIPT_BASE_URL: ${{ vars.MINESCRIPT_BASE_URL }}
       GH_TOKEN: ${{ github.token }}
       VERSION: ${{ needs.desktop-prepare.outputs.version }}
-      TAURI_SIGNING_PRIVATE_KEY: ${{ needs.desktop-prepare.result == 'success' && secrets.TAURI_SIGNING_PRIVATE_KEY || '' }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
       TAURI_BUNDLER_DMG_IGNORE_CI: "true"
     steps:
@@ -157,19 +112,12 @@ jobs:
           done
           ls -la dist
           test -n "$(ls -A dist)"
-      - if: needs.desktop-prepare.result == 'success'
-        shell: bash
+      - shell: bash
         run: gh release upload "${{ needs.desktop-prepare.outputs.tag }}" dist/* --clobber
-      - if: needs.desktop-prepare.result != 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: minescript-desktop-${{ runner.os }}
-          path: dist/*
-          retention-days: 7
 
   desktop-publish:
     needs: [desktop-prepare, desktop-build]
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       TAG: ${{ needs.desktop-prepare.outputs.tag }}

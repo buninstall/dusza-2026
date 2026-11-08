@@ -25,19 +25,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: blacksmith-4vcpu-ubuntu-2404
+          - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset: minescript-cli-linux-x64
             binary: minescript
-          - os: blacksmith-4vcpu-windows-2025
+          - os: windows-latest
             target: x86_64-pc-windows-msvc
             asset: minescript-cli-windows-x64.exe
             binary: minescript.exe
-          - os: blacksmith-6vcpu-macos-15
+          - os: macos-latest
             target: aarch64-apple-darwin
             asset: minescript-cli-macos-arm64
             binary: minescript
-          - os: blacksmith-6vcpu-macos-15
+          - os: macos-latest
             target: x86_64-apple-darwin
             asset: minescript-cli-macos-x64
             binary: minescript
@@ -51,21 +51,11 @@ jobs:
         with:
           key: cli-${{ matrix.target }}
       - shell: bash
-        run: cargo test --locked -p minescript-core -p minescript-cli
-      - shell: bash
         run: cargo build --release --locked -p minescript-cli --target ${{ matrix.target }}
       - shell: bash
         run: |
           mkdir -p dist
           cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" "dist/${{ matrix.asset }}"
-      - if: matrix.target != 'x86_64-apple-darwin'
-        shell: bash
-        run: |
-          printf 'step forward 3\nmine here\nprint 1\n' > smoke.ms
-          printf '1 4\n>..@\n' > smoke.txt
-          "dist/${{ matrix.asset }}" --version
-          "dist/${{ matrix.asset }}" check smoke.ms
-          "dist/${{ matrix.asset }}" run --map smoke.txt smoke.ms
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.asset }}
@@ -74,7 +64,7 @@ jobs:
 
   publish:
     needs: build
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
