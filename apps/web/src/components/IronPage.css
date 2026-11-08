@@ -1,0 +1,95 @@
+.iron-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  color: var(--c-text);
+}
+
+.iron-page .plate {
+  --rivet-inset: 4px;
+
+  gap: var(--space-2) var(--space-4);
+  min-height: 0;
+  padding: var(--space-3) var(--space-5);
+  border: 0;
+  background-color: var(--px-iron);
+  background-image: var(--k-rust-a), var(--k-rust-b), var(--k-tex-iron);
+  background-position:
+    left var(--akna-px) bottom var(--akna-px),
+    right var(--akna-px) bottom var(--akna-px),
+    0 0;
+  background-size:
+    18px 18px,
+    18px 18px,
+    72px 72px;
+  background-repeat: no-repeat, no-repeat, repeat;
+  box-shadow:
+    inset 0 0 0 var(--akna-px) var(--px-iron-edge),
+    inset var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-iron-hi),
+    inset calc(var(--akna-px-2) * -1) calc(var(--akna-px-2) * -1) 0 0 var(--px-iron-dk),
+    var(--k-drop);
+  image-rendering: pixelated;
+}
+
+.iron-page .plate::before,
+.iron-page .plate::after,
+.iron-page .plate-rivets::before,
+.iron-page .plate-rivets::after {
+  width: 12px;
+  height: 12px;
+  background: var(--k-tex-rivet) 0 0 / 12px 12px no-repeat;
+  box-shadow: none;
+  image-rendering: pixelated;
+}
+
+.iron-page .plate-sign {
+  padding: var(--space-2) var(--space-5);
+  border: 0;
+  background-color: var(--px-brass-hi);
+  background-image: var(--k-tex-screw), var(--k-tex-screw);
+  background-position:
+    left var(--space-2) center,
+    right var(--space-2) center;
+  background-size: 8px 8px;
+  background-repeat: no-repeat;
+  color: var(--px-hazard-ink);
+  box-shadow:
+    inset var(--akna-px) var(--akna-px) 0 0 var(--px-brass-lt),
+    inset calc(var(--akna-px) * -1) calc(var(--akna-px) * -1) 0 0 var(--px-brass),
+    var(--akna-ring-brass),
+    var(--akna-px-2) var(--akna-px-2) 0 0 var(--px-iron-edge);
+  image-rendering: pixelated;
+}
+
+.iron-page .plate-sign .px-text {
+  width: auto;
+  height: 20px;
+}
+
+.iron-page .plate-detail {
+  font: var(--type-h3);
+}
+
+.iron-page .plate-meta {
+  color: var(--c-text-muted);
+  font: var(--akna-label);
+  letter-spacing: var(--akna-track);
+  text-transform: uppercase;
+}
+
+.iron-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+@media (max-width: 40rem) {
+  .iron-page {
+    gap: var(--space-3);
+  }
+
+  .iron-panel {
+    padding: var(--space-4) var(--space-3);
+  }
+}
