@@ -5,19 +5,47 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use clap::{Parser, Subcommand};
+use clap::error::{ContextKind, ContextValue, ErrorKind};
+use clap::{ArgAction, CommandFactory, FromArgMatches, Parser, Subcommand};
 use minescript_core::diagnostics::has_errors;
-use minescript_core::{FormatOptions, Outcome, RunResult};
+use minescript_core::{Dir, FormatOptions, Outcome, RunResult, Severity};
 
-use crate::render::{Rendered, print_diagnostics};
+use crate::render::{Rendered, print_diagnostics, print_runtime_error};
 
 const EXIT_OK: u8 = 0;
 const EXIT_DIAGNOSTICS: u8 = 1;
 const EXIT_USAGE: u8 = 2;
 
+const HELP_TEMPLATE: &str = "{about-with-newline}\nHasználat: {usage}\n\n{all-args}{after-help}";
+const OPTIONS_HEADING: &str = "Kapcsolók";
+const ARGUMENTS_HEADING: &str = "Argumentumok";
+const AFTER_HELP: &str = "Kilépési kódok:
+  0  rendben
+  1  a program vagy a térkép hibás (szintaktikai, futásidejű vagy térképhiba)
+  2  hibás parancssor vagy olvashatatlan fájl
+
+Példák:
+  minescript check program.ms
+  minescript run --map terkep.txt program.ms
+  minescript run --map terkep.txt program.ms --trace
+  minescript fmt --write program.ms
+  minescript map-check terkep.txt";
+
 #[derive(Parser)]
-#[command(name = "minescript", version, about = "MineScript parancssori eszköz")]
+#[command(
+    name = "minescript",
+    version,
+    about = "MineScript parancssori eszköz: a kincskereső robot programjainak ellenőrzése, formázása és futtatása",
+    after_help = AFTER_HELP,
+    disable_help_flag = true,
+    disable_version_flag = true,
+    disable_help_subcommand = true,
+    subcommand_help_heading = "Parancsok",
+    subcommand_value_name = "PARANCS"
+)]
 struct Cli {
+    #[arg(short = 'V', long, action = ArgAction::Version, help = "A verziószám kiírása")]
+    version: Option<bool>,
     #[command(subcommand)]
     command: Command,
 }
@@ -25,9 +53,13 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     #[command(about = "Szintaktikai ellenőrzés")]
-    Check { file: PathBuf },
+    Check {
+        #[arg(value_name = "PROGRAM", help = "A programfájl útvonala")]
+        file: PathBuf,
+    },
     #[command(about = "Program formázása")]
     Fmt {
+        #[arg(value_name = "PROGRAM", help = "A programfájl útvonala")]
         file: PathBuf,
         #[arg(
             long,
@@ -39,11 +71,15 @@ enum Command {
         check: bool,
     },
     #[command(about = "Szintaktikai ellenőrzés és figyelmeztetések")]
-    Lint { file: PathBuf },
+    Lint {
+        #[arg(value_name = "PROGRAM", help = "A programfájl útvonala")]
+        file: PathBuf,
+    },
     #[command(about = "Program futtatása egy térképen")]
     Run {
-        #[arg(long, help = "A térképfájl útvonala")]
+        #[arg(long, value_name = "TÉRKÉP", help = "A térképfájl útvonala")]
         map: PathBuf,
+        #[arg(value_name = "PROGRAM", help = "A programfájl útvonala")]
         program: PathBuf,
         #[arg(long, help = "Az eredményt JSON-ként írja ki")]
         json: bool,
@@ -51,9 +87,124 @@ enum Command {
         trace: bool,
     },
     #[command(about = "A szintaxisfa JSON-ként")]
-    Ast { file: PathBuf },
+    Ast {
+        #[arg(value_name = "PROGRAM", help = "A programfájl útvonala")]
+        file: PathBuf,
+    },
     #[command(name = "map-check", about = "Térképfájl ellenőrzése")]
-    MapCheck { file: PathBuf },
+    MapCheck {
+        #[arg(value_name = "TÉRKÉP", help = "A térképfájl útvonala")]
+        file: PathBuf,
+    },
+}
+
+fn help_flag() -> clap::Arg {
+    clap::Arg::new("help")
+        .short('h')
+        .long("help")
+        .action(ArgAction::Help)
+        .help("A súgó megjelenítése")
+}
+
+fn usage_of(name: &str) -> String {
+    let operands = match name {
+        "run" => "[KAPCSOLÓK] --map <TÉRKÉP> <PROGRAM>",
+        "fmt" => "[KAPCSOLÓK] <PROGRAM>",
+        "map-check" => "<TÉRKÉP>",
+        "minescript" => "<PARANCS>",
+        _ => "<PROGRAM>",
+    };
+    if name == "minescript" {
+        format!("minescript {operands}")
+    } else {
+        format!("minescript {name} {operands}")
+    }
+}
+
+fn localized(command: clap::Command) -> clap::Command {
+    let usage = usage_of(command.get_name());
+    command
+        .override_usage(usage)
+        .help_template(HELP_TEMPLATE)
+        .disable_help_flag(true)
+        .arg(help_flag())
+        .mut_args(|arg| {
+            let heading = if arg.is_positional() {
+                ARGUMENTS_HEADING
+            } else {
+                OPTIONS_HEADING
+            };
+            arg.help_heading(heading)
+        })
+}
+
+fn cli_command() -> clap::Command {
+    localized(Cli::command()).mut_subcommands(localized)
+}
+
+fn context_text(error: &clap::Error, kind: ContextKind) -> String {
+    match error.get(kind) {
+        Some(ContextValue::String(text)) => text.clone(),
+        Some(ContextValue::Strings(texts)) => texts.join(", "),
+        _ => String::new(),
+    }
+}
+
+fn usage_problem(error: &clap::Error) -> String {
+    match error.kind() {
+        ErrorKind::InvalidSubcommand => format!(
+            "ismeretlen parancs: „{}”",
+            context_text(error, ContextKind::InvalidSubcommand)
+        ),
+        ErrorKind::UnknownArgument => format!(
+            "ismeretlen kapcsoló vagy fölösleges argumentum: „{}”",
+            context_text(error, ContextKind::InvalidArg)
+        ),
+        ErrorKind::MissingRequiredArgument => format!(
+            "hiányzó kötelező argumentum: {}",
+            context_text(error, ContextKind::InvalidArg)
+        ),
+        ErrorKind::ArgumentConflict => format!(
+            "ezek a kapcsolók nem használhatók együtt: {}, {}",
+            context_text(error, ContextKind::InvalidArg),
+            context_text(error, ContextKind::PriorArg)
+        ),
+        ErrorKind::MissingSubcommand => "hiányzik a parancs".to_owned(),
+        _ => "hibás parancssori argumentumok".to_owned(),
+    }
+}
+
+fn parse_cli() -> Result<Cli, ExitCode> {
+    let matches = cli_command()
+        .try_get_matches()
+        .map_err(|error| match error.kind() {
+            ErrorKind::DisplayHelp | ErrorKind::DisplayVersion => {
+                print!("{error}");
+                ExitCode::from(EXIT_OK)
+            }
+            ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand => {
+                eprint!("{error}");
+                ExitCode::from(EXIT_USAGE)
+            }
+            _ => {
+                eprintln!("Hiba: {}.", usage_problem(&error));
+                eprintln!("Súgó: minescript --help");
+                ExitCode::from(EXIT_USAGE)
+            }
+        })?;
+    Cli::from_arg_matches(&matches).map_err(|error| {
+        eprintln!("Hiba: {}.", usage_problem(&error));
+        ExitCode::from(EXIT_USAGE)
+    })
+}
+
+fn direction(dir: Dir) -> &'static str {
+    match dir {
+        Dir::North => "észak",
+        Dir::East => "kelet",
+        Dir::South => "dél",
+        Dir::West => "nyugat",
+    }
 }
 
 struct CliError(String);
@@ -98,7 +249,11 @@ fn lint(file: &Path) -> CliResult {
     let source = read(file)?;
     let analysis = minescript_core::analyze(&source);
     print_diagnostics(&Rendered::new(file, &source), &analysis.diagnostics);
-    Ok(status(!analysis.diagnostics.is_empty()))
+    let reportable = analysis
+        .diagnostics
+        .iter()
+        .any(|diagnostic| matches!(diagnostic.severity, Severity::Error | Severity::Warning));
+    Ok(status(reportable))
 }
 
 fn fmt(file: &Path, write: bool, check_only: bool) -> CliResult {
@@ -133,12 +288,13 @@ fn print_run_summary(result: &RunResult, trace: bool) {
     if trace {
         for event in &result.events {
             println!(
-                "#{:>4}  {}. sor  ({}, {})  arany: {}",
+                "#{:>4}  {}. sor  ({}, {})  arany: {}  irány: {}",
                 event.steps,
                 event.line,
                 event.robot.pos.row + 1,
                 event.robot.pos.col + 1,
-                event.gold
+                event.gold,
+                direction(event.robot.dir)
             );
         }
     }
@@ -146,11 +302,12 @@ fn print_run_summary(result: &RunResult, trace: bool) {
         println!("{line}");
     }
     println!(
-        "Arany: {}, feldolgozott sorok: {}, robot: {}. sor, {}. oszlop",
+        "Arany: {}, feldolgozott sorok: {}, robot: {}. sor, {}. oszlop, {} felé néz",
         result.gold,
         result.steps,
         result.final_robot.pos.row + 1,
-        result.final_robot.pos.col + 1
+        result.final_robot.pos.col + 1,
+        direction(result.final_robot.dir)
     );
 }
 
@@ -159,7 +316,11 @@ fn run(map_path: &Path, program_path: &Path, json: bool, trace: bool) -> CliResu
     let source = read(program_path)?;
     let parsed_map = minescript_core::parse_map(&map_text);
     let Some(map) = parsed_map.map else {
-        print_diagnostics(&Rendered::new(map_path, &map_text), &parsed_map.diagnostics);
+        if json {
+            println!("{}", to_json(&parsed_map)?);
+        } else {
+            print_diagnostics(&Rendered::new(map_path, &map_text), &parsed_map.diagnostics);
+        }
         return Ok(EXIT_DIAGNOSTICS);
     };
     let result = minescript_core::run(&source, &map);
@@ -180,6 +341,12 @@ fn run(map_path: &Path, program_path: &Path, json: bool, trace: bool) -> CliResu
         } => {
             if !json {
                 print_run_summary(&result, trace);
+                print_runtime_error(
+                    &Rendered::new(program_path, &source),
+                    code.as_str(),
+                    *line,
+                    message,
+                );
                 eprintln!(
                     "Futásidejű hiba: {} a(z) {line}. sorban: {message}",
                     code.as_str()
@@ -219,7 +386,10 @@ fn map_check(file: &Path) -> CliResult {
 }
 
 fn main() -> ExitCode {
-    let cli = Cli::parse();
+    let cli = match parse_cli() {
+        Ok(cli) => cli,
+        Err(code) => return code,
+    };
     let result = match &cli.command {
         Command::Check { file } => check(file),
         Command::Fmt { file, write, check } => fmt(file, *write, *check),

@@ -261,3 +261,89 @@ fn ast_dumps_the_parse_result() {
     assert_eq!(broken.status.code(), Some(1));
     assert_eq!(json(&broken)["program"], serde_json::Value::Null);
 }
+
+#[test]
+fn help_and_usage_errors_are_hungarian() {
+    let help = minescript(&["--help"]);
+    assert_eq!(help.status.code(), Some(0));
+    let text = stdout(&help);
+    for expected in [
+        "Használat:",
+        "Parancsok:",
+        "Kapcsolók:",
+        "Kilépési kódok:",
+        "Példák:",
+    ] {
+        assert!(text.contains(expected), "{expected}: {text}");
+    }
+    assert!(
+        !text.contains("Usage:") && !text.contains("Print help"),
+        "{text}"
+    );
+    let run_help = stdout(&minescript(&["run", "--help"]));
+    assert!(
+        run_help.contains("minescript run [KAPCSOLÓK] --map <TÉRKÉP> <PROGRAM>"),
+        "{run_help}"
+    );
+    assert!(run_help.contains("Argumentumok:"), "{run_help}");
+    let unknown = minescript(&["ásás"]);
+    assert_eq!(unknown.status.code(), Some(2));
+    assert!(stderr(&unknown).contains("ismeretlen parancs: „ásás”"));
+    let missing = minescript(&["run", "tests/fixtures/empty.ms"]);
+    assert_eq!(missing.status.code(), Some(2));
+    assert!(stderr(&missing).contains("hiányzó kötelező argumentum: --map <TÉRKÉP>"));
+}
+
+#[test]
+fn piped_reports_are_plain_hungarian_text() {
+    let output = minescript(&["check", "tests/fixtures/broken.ms"]);
+    let stderr = stderr(&output);
+    assert!(!stderr.contains('\u{1b}'), "{stderr}");
+    assert!(stderr.contains("Hiba:"), "{stderr}");
+    assert!(
+        !stderr.contains("Error:") && !stderr.contains("Help:"),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn runtime_errors_point_at_the_failing_line() {
+    let output = minescript(&[
+        "run",
+        "--map",
+        "tests/fixtures/spec-map.txt",
+        "tests/fixtures/into-wall.ms",
+    ]);
+    let stderr = stderr(&output);
+    assert!(
+        stderr.contains("[E_BEDROCK_HIT] Futásidejű hiba:"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("itt állt meg a futás (1. sor)"), "{stderr}");
+    assert!(stdout(&output).contains("kelet felé néz"));
+}
+
+#[test]
+fn run_json_reports_bad_maps_as_json() {
+    let output = minescript(&[
+        "run",
+        "--map",
+        "tests/fixtures/two-robots.txt",
+        "tests/fixtures/empty.ms",
+        "--json",
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+    let result = json(&output);
+    assert_eq!(result["map"], serde_json::Value::Null);
+    assert_eq!(result["diagnostics"][0]["code"], "MAP_MULTIPLE_ROBOTS");
+}
+
+#[test]
+fn lint_fails_only_on_errors_and_warnings() {
+    let path = std::env::temp_dir().join(format!("minescript-cli-{}-info.ms", std::process::id()));
+    fs::write(&path, "print 007\n").unwrap();
+    let output = minescript(&["lint", path.to_str().unwrap()]);
+    fs::remove_file(&path).unwrap();
+    assert!(stderr(&output).contains("LINT_LEADING_ZERO"));
+    assert_eq!(output.status.code(), Some(0));
+}
