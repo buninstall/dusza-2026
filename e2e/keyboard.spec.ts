@@ -32,6 +32,9 @@ test("bejelentkezés, játék és kijelentkezés csak billentyűzettel", async (
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { level: 1, name: "Pályák" })).toBeVisible();
 
+  await tabUntil(page, async () => (await focusedName(page)) === "Homokozó");
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/mode=story/);
   await tabUntil(page, async () => (await focusedName(page)) === "Játék: 2. Az első kanyar");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/play\/\d+/);
@@ -102,6 +105,9 @@ test("egy teljes recept betöltése és lefuttatása csak billentyűzettel, mind
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { level: 1, name: "Pályák" })).toBeVisible();
 
+  await tabTo("Homokozó");
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/mode=story/);
   await tabTo("Játék: 2. Az első kanyar");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/play\/\d+/);
@@ -110,6 +116,8 @@ test("egy teljes recept betöltése és lefuttatása csak billentyűzettel, mind
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: "Mentett programok" });
   await expect(dialog).toBeVisible();
+  await tabTo("Keresés a programok között");
+  await page.keyboard.type("Recept – 2. Az első kanyar");
   await tabTo("Megnyitás: Recept – 2. Az első kanyar");
   await page.keyboard.press("Enter");
   const confirm = dialog.getByRole("button", { name: "Megnyitás", exact: true });
@@ -126,7 +134,7 @@ test("egy teljes recept betöltése és lefuttatása csak billentyűzettel, mind
   }
   await expect(dialog).toBeHidden();
   await expect(
-    page.getByText("A(z) „Recept – 2. Az első kanyar” program megnyitva.").first(),
+    page.getByText("A „Recept – 2. Az első kanyar” program megnyitva.").first(),
   ).toBeVisible();
 
   await tabUntil(page, async () =>
@@ -159,9 +167,12 @@ test("a játék oldal minden tabulátor-megállóján látható a fókusz", asyn
   await page.getByLabel("Jelszó").fill(DEMO.password);
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { level: 1, name: "Pályák" })).toBeVisible();
+  await page.goto("/maps?mode=story");
   await page.getByRole("link", { name: "Játék: 1. Egyenes folyosó" }).focus();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/play\/\d+/);
+  await expect(page.getByRole("grid", { name: /térképe$/ })).toBeVisible();
+  await expect(page.locator("#main")).toBeFocused();
   const STOPS = 40;
   for (let press = 0; press < STOPS; press += 1) {
     await leaveEditor(page);
@@ -175,8 +186,8 @@ test("a játék oldal minden tabulátor-megállóján látható a fókusz", asyn
 
 test("a játék billentyűparancsai: Ctrl+Enter, Szóköz, nyilak, L és Shift+F5", async ({ page }) => {
   await login(page);
-  await gotoPlay(page, "5. Kígyó");
-  await openFromLibrary(page, "Recept – 5. Kígyó");
+  await gotoPlay(page, "3. Kis labirintus");
+  await openFromLibrary(page, "Recept – 3. Kis labirintus");
   await setSpeed(page, "min");
   await editor(page).click();
   await page.keyboard.press("ControlOrMeta+Enter");

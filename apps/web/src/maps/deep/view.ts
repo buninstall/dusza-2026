@@ -25,7 +25,7 @@ export type View = {
   render: (lights: readonly Light[], canRelight?: boolean) => void;
 };
 
-const AMBIENT = [0.44, 0.3, 1, 0.45, 0.36, 0.5, 0.5];
+const AMBIENT = [0.44, 0.3, 1, 0.45, 0.36, 0.5, 0.5, 1.45];
 const PAD_RATIO = 0.25;
 const PENETRATION = 5;
 const POOL = 4;

@@ -23,7 +23,7 @@ function runDetail(overrides: { gold?: number; versionId?: number } = {}) {
       createdAt: 1_793_960_000_000,
       source: SOURCE,
     },
-    map: { content: CORRIDOR },
+    map: { content: CORRIDOR, lampMode: "open" },
   };
 }
 

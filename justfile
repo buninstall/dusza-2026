@@ -26,7 +26,10 @@ db-setup *flags:
 
 test:
     cargo test --workspace
-    bun run --filter '*' test
+    bun run --filter '@minescript/engine' test
+    bun run --filter '@minescript/reference' test
+    bun run --filter '@minescript/server' test
+    bun run --filter '@minescript/web' test
 
 conformance:
     bun scripts/conformance.ts

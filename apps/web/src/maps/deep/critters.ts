@@ -25,6 +25,8 @@ type Bat = {
   startle: number;
   home: number;
   jumpy: number;
+  fuse: number;
+  fleeX: number;
 };
 
 function batSet(world: World, body: string, eye: string): BatSet {
@@ -39,12 +41,16 @@ function batSet(world: World, body: string, eye: string): BatSet {
 export type Bats = {
   update: (dt: number, view: View, threatX: number) => void;
   draw: (view: View, ctx: CanvasRenderingContext2D) => void;
+  scare: (x: number, y: number) => void;
 };
 
 const MAX_CAVE_BATS = 8;
 const ROOF_GAP = 70;
+const SCARE_REACH = 6;
+const SCARE_SPREAD = 26;
+const SCARE_KICK = 1.7;
 
-export function createBats(world: World, rand: () => number, roofY: number, isCalm = false): Bats {
+export function createBats(world: World, rand: () => number, roofY: number): Bats {
   const lit = batSet(world, "rubble-hi", "bat-eye");
   const dim = batSet(world, "bat-lit", "bat-eye");
   const dark = batSet(world, "lantern-off-hi", "bat-eye");
@@ -72,16 +78,19 @@ export function createBats(world: World, rand: () => number, roofY: number, isCa
     startle: -rand() * 6,
     home: 0,
     jumpy: 0.12 + rand() * 0.4,
+    fuse: 0,
+    fleeX: r.x,
     isRoof: r.isRoof,
   }));
-  const takeOff = (b: Bat, fromX: number) => {
+  const takeOff = (b: Bat, fromX: number, kick = 1) => {
     b.isHanging = false;
     b.isHoming = false;
+    b.fuse = 0;
     b.t = 4 + rand() * 5;
     b.retarget = 0;
     b.home = 0;
-    b.vx = (b.x < fromX ? -1 : 1) * (24 + rand() * 20);
-    b.vy = 20 + rand() * 12;
+    b.vx = (b.x < fromX ? -1 : 1) * (24 + rand() * 20) * kick;
+    b.vy = (20 + rand() * 12) * kick;
   };
   const roost = (b: Bat) => {
     b.isHanging = true;
@@ -93,7 +102,12 @@ export function createBats(world: World, rand: () => number, roofY: number, isCa
     b.startle = -3 - rand() * 6;
   };
   const hang = (b: Bat & { isRoof: boolean }, dt: number, view: View, threatX: number) => {
-    if (isCalm || !view.isVisible(b.ry, 30)) return;
+    if (b.fuse > 0) {
+      b.fuse -= dt;
+      if (b.fuse <= 0) takeOff(b, b.fleeX, SCARE_KICK);
+      return;
+    }
+    if (!view.isVisible(b.ry, 30)) return;
     const l = b.isRoof ? 0 : view.lightAt(b.rx, b.ry + 2);
     if (l > 0.55) b.startle += dt;
     else b.startle = b.startle < 0 ? Math.min(0, b.startle + dt) : Math.max(0, b.startle - dt);
@@ -144,7 +158,18 @@ export function createBats(world: World, rand: () => number, roofY: number, isCa
       else ctx.drawImage(Math.floor(b.flap) % 2 ? set.up : set.down, x - 4, y - 2);
     }
   };
-  return { update, draw };
+  const scare = (x: number, y: number) => {
+    for (const b of bats) {
+      if (!b.isHanging || b.fuse > 0) continue;
+      const d = Math.hypot(b.rx - x, b.ry + 2 - y);
+      if (d < SCARE_REACH) takeOff(b, x, SCARE_KICK);
+      else if (d < SCARE_SPREAD) {
+        b.fleeX = x;
+        b.fuse = 0.12 + (d / SCARE_SPREAD) * 0.3 + rand() * 0.25;
+      }
+    }
+  };
+  return { update, draw, scare };
 }
 
 type DripState = {

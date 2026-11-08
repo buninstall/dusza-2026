@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loading } from "../app/StatusScreens.tsx";
 import type { SessionUser } from "../auth/session.ts";
 import { LoadFailed } from "../components/LoadFailed.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
@@ -141,7 +140,6 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
           </div>
         </div>
       ) : null}
-      {!data && !error ? <Loading /> : null}
     </div>
   );
 }

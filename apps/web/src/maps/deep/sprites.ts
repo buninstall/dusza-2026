@@ -3,7 +3,7 @@ import type { Light } from "../../auth/lamp/lighting.ts";
 import { mirror } from "../../pixel/pixel-art.ts";
 import { ROBOT_TONES } from "../../pixel/tiles.ts";
 import type { View } from "./view.ts";
-import { SKY, toneHex, type World } from "./world.ts";
+import { type CrystalKind, SKY, toneHex, type World } from "./world.ts";
 
 const ROBOT_SIDE = [
   "................",
@@ -149,20 +149,50 @@ export function drawVeinGlints(view: View, world: World, sprites: Sprites, time:
   }
 }
 
+const CRYSTAL_GLINT: Record<CrystalKind, string> = {
+  gem: "crystal-hi",
+  amethyst: "amethyst-hi",
+  emerald: "emerald-hi",
+};
+
+const CRYSTAL_LIGHT: Record<CrystalKind, readonly [number, number, number]> = {
+  gem: [0.45, 0.9, 1],
+  amethyst: [0.78, 0.45, 1],
+  emerald: [0.35, 1, 0.6],
+};
+
+function drawLava(view: View, world: World, sprites: Sprites, time: number): void {
+  const { ctx } = view;
+  const beat = Math.floor(time * 4);
+  for (const p of world.lavas) {
+    if (!view.isVisible(p.y, 2)) continue;
+    const pop = (p.x * 7 + beat * 13) % 23;
+    if (pop === 0) {
+      ctx.fillStyle = sprites.tone("lava-top");
+      ctx.fillRect(p.x, p.y - 1 - view.camY, 1, 1);
+    } else if (pop === 1) {
+      ctx.fillStyle = sprites.tone("lava");
+      ctx.fillRect(p.x, p.y - 2 - view.camY, 1, 1);
+    }
+  }
+}
+
 export function drawGlows(view: View, world: World, sprites: Sprites, time: number): void {
   const { ctx } = view;
   for (const c of world.crystals) {
     if (!view.isVisible(c.y, 4) || 0.5 + 0.5 * Math.sin(time * 1.3 + c.phase) < 0.75) continue;
-    ctx.fillStyle = sprites.tone("crystal-hi");
+    ctx.fillStyle = sprites.tone(CRYSTAL_GLINT[c.kind]);
     ctx.fillRect(c.x, c.y - view.camY, 1, 1);
   }
   for (const g of world.glows) {
-    if (g.kind !== "worm" || !view.isVisible(g.y, 2)) continue;
+    if ((g.kind !== "worm" && g.kind !== "moss") || !view.isVisible(g.y, 2)) continue;
     const tw = Math.sin(time * 1.6 + g.phase * 3);
     if (tw < 0.1) continue;
-    ctx.fillStyle = sprites.tone(tw > 0.8 ? "worm-hi" : "worm");
-    ctx.fillRect(g.x, g.y - view.camY, 1, 1);
+    const isMoss = g.kind === "moss";
+    ctx.fillStyle = sprites.tone(isMoss ? "moss-hi" : tw > 0.8 ? "worm-hi" : "worm");
+    ctx.fillRect(g.x, g.y - view.camY - (isMoss ? 1 : 0), 1, 1);
   }
+  drawLava(view, world, sprites, time);
   const shift = Math.floor(time * 5);
   for (const p of world.puddles) {
     if (!view.isVisible(p.y, 1)) continue;
@@ -179,12 +209,35 @@ export function glowLights(world: World, time: number): Light[] {
     (c): Light => ({
       x: c.x,
       y: c.y,
-      radius: 30,
+      radius: c.kind === "amethyst" ? 34 : 30,
       intensity: 0.32 + 0.22 * (0.5 + 0.5 * Math.sin(time * 1.3 + c.phase)),
-      color: [0.45, 0.9, 1],
+      color: CRYSTAL_LIGHT[c.kind],
       falloff: 1.6,
     }),
   );
+  const molten = world.glows
+    .filter((g) => g.kind === "lava" || g.kind === "moss")
+    .map(
+      (g): Light =>
+        g.kind === "lava"
+          ? {
+              x: g.x,
+              y: g.y,
+              radius: 34,
+              intensity: 0.55 + 0.1 * Math.sin(time * 2.1 + g.phase),
+              color: [1, 0.48, 0.18],
+              falloff: 1.5,
+              hasShadow: false,
+            }
+          : {
+              x: g.x,
+              y: g.y,
+              radius: 20,
+              intensity: 0.3 + 0.1 * Math.sin(time * 1.4 + g.phase),
+              color: [0.4, 1, 0.55],
+              falloff: 1.7,
+            },
+    );
   const mushrooms = world.glows
     .filter((g) => g.kind === "mushroom")
     .map(
@@ -197,5 +250,5 @@ export function glowLights(world: World, time: number): Light[] {
         falloff: 1.7,
       }),
     );
-  return [...crystals, ...mushrooms];
+  return [...crystals, ...mushrooms, ...molten];
 }

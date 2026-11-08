@@ -1,8 +1,10 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
+  closeImportRejection,
   editor,
   expectFinished,
   importProgramFile,
+  importRejection,
   login,
   mapGrid,
   openLeaderboardFromPlay,
@@ -85,22 +87,26 @@ test("a programtár receptje végigfut, és a szerver rögzíti a pontos eredmé
   await expect(page.getByText("A szerver rögzítette: 2 arany, 5 lépés.")).toBeVisible();
 });
 
-test("programfájl importja: a hibás program is betöltődik, a bináris nem", async ({ page }) => {
+test("programfájl importja: a hibás és a bináris program sem töltődik be", async ({ page }) => {
   await openPlay(page, "3. Kis labirintus");
+  const before = (await editor(page).textContent()) ?? "";
   await importProgramFile(page, {
     name: "probalkozas.ms",
     mimeType: "text/plain",
     buffer: Buffer.from("set arany to isThere 2\r\nprint  arany\r\n", "utf8"),
   });
-  await expect(page.getByText("A(z) probalkozas.ms program betöltve.")).toBeVisible();
-  await expect(editor(page)).toContainText("print  arany");
+  await expect(importRejection(page)).toContainText("Fájl: probalkozas.ms");
+  await expect(importRejection(page)).toContainText("2. sor");
+  await closeImportRejection(page);
+  await expect(editor(page)).toHaveText(before);
   await importProgramFile(page, {
     name: "kep.ms",
     mimeType: "application/octet-stream",
     buffer: Buffer.from([0x00, 0xff, 0xfe]),
   });
-  await expect(page.getByText(/nem érvényes UTF-8|NUL karaktert/).first()).toBeVisible();
-  await expect(editor(page)).toContainText("print  arany");
+  await expect(importRejection(page)).toContainText(/nem érvényes UTF-8|NUL karaktert/);
+  await closeImportRejection(page);
+  await expect(editor(page)).toHaveText(before);
 });
 
 async function recordedRunCount(page: Page, mapTitle: string): Promise<number> {

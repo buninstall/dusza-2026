@@ -22,6 +22,10 @@ export function aheadOf(pos: Pos, dir: Dir): Pos {
   return { row: pos.row + delta.row, col: pos.col + delta.col };
 }
 
+export function isOffMapHit(result: RunResult | null, map: MineMap): boolean {
+  return result !== null && deriveFault(result, map)?.kind === "edge";
+}
+
 export function deriveFault(result: RunResult, map: MineMap): Fault | null {
   const { outcome } = result;
   if (outcome.kind !== "runtimeError") {

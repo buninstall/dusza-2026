@@ -27,3 +27,26 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+.admin-search {
+  max-width: 24rem;
+}
+
+.admin-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.admin-range {
+  margin: 0;
+  font: var(--type-mono-sm);
+  color: var(--c-text-muted);
+}
+
+.admin-paged[data-turning="true"] {
+  opacity: 0.55;
+  transition: opacity var(--motion-enter) var(--ease-px2);
+}

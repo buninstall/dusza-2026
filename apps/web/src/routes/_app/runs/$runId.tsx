@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loading } from "../../../app/StatusScreens.tsx";
 import { LoadFailed } from "../../../components/LoadFailed.tsx";
 import { Notice } from "../../../components/Notice.tsx";
 import { withEngine } from "../../../engine/EngineProvider.tsx";
@@ -20,7 +19,7 @@ function ReplayRoute() {
     );
   }
   if (!data) {
-    return <Loading />;
+    return null;
   }
   const map = engine.parseMap(data.map.content).map;
   if (!map) {

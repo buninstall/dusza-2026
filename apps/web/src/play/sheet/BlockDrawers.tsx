@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { Menu, MenuItem, MenuTrigger, Popover, Text, Toolbar } from "react-aria-components";
 import { Button } from "../../components/ui/Button.tsx";
 import { tokenizeLine } from "../../editor/language.ts";
@@ -76,7 +76,7 @@ function Drawer({ drawer, isDisabled, keywords, onInsert }: DrawerProps) {
   );
 }
 
-export function BlockDrawers({
+export const BlockDrawers = memo(function BlockDrawers({
   isDisabled,
   onInsert,
 }: {
@@ -98,4 +98,4 @@ export function BlockDrawers({
       ))}
     </Toolbar>
   );
-}
+});

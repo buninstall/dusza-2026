@@ -87,6 +87,7 @@
   color: var(--c-text);
   font: var(--type-control);
   letter-spacing: var(--track-control);
+  text-decoration: none;
   cursor: pointer;
   outline: none;
 }

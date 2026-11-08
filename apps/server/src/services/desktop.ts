@@ -1,221 +1,330 @@
-export const DESKTOP_TAG_PREFIX = "desktop-v";
-export const DESKTOP_MANIFEST = "latest.json";
-export const DESKTOP_CACHE_MS = 5 * 60 * 1000;
-export const DEFAULT_DESKTOP_REPO = "buninstall/dusza-2026";
+import { z } from "zod";
 
-export const DESKTOP_PLATFORMS = {
-  mac: /\.dmg$/,
-  windows: /-setup\.exe$/,
-  "windows-msi": /\.msi$/,
-  linux: /\.AppImage$/,
-  "linux-deb": /\.deb$/,
-  "linux-rpm": /\.rpm$/,
-} as const satisfies Record<string, RegExp>;
+export const DESKTOP_FORMATS = ["dmg", "exe", "msi", "appimage", "deb", "rpm"] as const;
+export type DesktopFormat = (typeof DESKTOP_FORMATS)[number];
+export type DesktopPlatform = "macos" | "windows" | "linux";
 
-export type DesktopPlatform = keyof typeof DESKTOP_PLATFORMS;
+export type DesktopAsset = {
+  format: DesktopFormat;
+  platform: DesktopPlatform;
+  name: string;
+  size: number;
+  id: number;
+  url: string;
+};
 
-export type DesktopManifest = {
+export type DesktopFile = { id: number; name: string; url: string };
+
+export type DesktopRelease = {
   version: string;
-  notes?: string;
-  pub_date?: string;
-  platforms: Record<string, { url: string; signature: string }>;
+  tag: string;
+  publishedAt: string;
+  assets: DesktopAsset[];
+  files: DesktopFile[];
 };
 
-export type DesktopInfo = {
-  version: string;
-  publishedAt: string | null;
-  files: Record<DesktopPlatform, string | null>;
-};
+export type UpdaterManifest = z.infer<typeof manifestSchema>;
 
-type Asset = { id: number; name: string };
-type Release = {
-  tag_name: string;
-  draft: boolean;
-  prerelease: boolean;
-  published_at: string | null;
-  assets: Asset[];
-};
-type Snapshot = { release: Release; manifest: DesktopManifest };
-
-export type DesktopReleaseOptions = {
-  repo: string;
-  token: string;
-  fetch?: (input: string, init?: RequestInit) => Promise<Response>;
-  now?: () => number;
-};
-
-export class DesktopUnavailableError extends Error {}
+export type DesktopFileResult =
+  | { status: "ok"; response: Response }
+  | { status: "missing" }
+  | { status: "unavailable" };
 
 export type DesktopReleases = {
-  manifest(downloadBase: string): Promise<DesktopManifest | null>;
-  info(): Promise<DesktopInfo | null>;
-  assetLocation(name: string): Promise<string | null>;
-  assetStream(name: string): Promise<Response | null>;
-  platformLocation(platform: DesktopPlatform): Promise<string | null>;
+  latest(): Promise<DesktopRelease | null>;
+  resolve(asset: DesktopAsset): Promise<string | null>;
+  manifest(downloadBase: string): Promise<UpdaterManifest | null>;
+  file(name: string): Promise<DesktopFileResult>;
 };
 
-export function isDesktopPlatform(value: string): value is DesktopPlatform {
-  return Object.hasOwn(DESKTOP_PLATFORMS, value);
+type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
+
+export type DesktopOptions = {
+  repo: string;
+  token?: string | null | undefined;
+  fetch?: Fetch;
+  now?: () => number;
+  log?: (message: string) => void;
+};
+
+export const DEFAULT_DESKTOP_REPO = "buninstall/dusza-2026";
+export const UPDATER_MANIFEST = "latest.json";
+export const FRESH_MS = 10 * 60_000;
+export const RETRY_MS = 60_000;
+
+const API = "https://api.github.com";
+const TAG_PREFIX = "desktop-v";
+const RELEASES_PER_PAGE = 30;
+const TIMEOUT_MS = 5000;
+const FILE_TIMEOUT_MS = 5 * 60_000;
+const REPO_PATTERN = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
+const VERSION_PATTERN = /^desktop-v(\d+\.\d+\.\d+)/;
+const TRUSTED_HOSTS = ["github.com", "githubusercontent.com"];
+const REDIRECTS = new Set([301, 302, 303, 307, 308]);
+
+const RULES: readonly { suffix: string; format: DesktopFormat; platform: DesktopPlatform }[] = [
+  { suffix: ".dmg", format: "dmg", platform: "macos" },
+  { suffix: "-setup.exe", format: "exe", platform: "windows" },
+  { suffix: ".msi", format: "msi", platform: "windows" },
+  { suffix: ".appimage", format: "appimage", platform: "linux" },
+  { suffix: ".deb", format: "deb", platform: "linux" },
+  { suffix: ".rpm", format: "rpm", platform: "linux" },
+];
+
+const assetSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  size: z.number().int().nonnegative(),
+  state: z.string().optional(),
+  browser_download_url: z.string(),
+});
+
+const manifestSchema = z.object({
+  version: z.string(),
+  notes: z.string().optional(),
+  pub_date: z.string().optional(),
+  platforms: z.record(z.string(), z.object({ url: z.string(), signature: z.string() })),
+});
+
+const releasesSchema = z.array(
+  z.object({
+    tag_name: z.string(),
+    draft: z.boolean(),
+    prerelease: z.boolean(),
+    published_at: z.string().nullable(),
+    assets: z.array(assetSchema),
+  }),
+);
+
+export type GithubRelease = z.infer<typeof releasesSchema>[number];
+type GithubAsset = z.infer<typeof assetSchema>;
+
+export function isValidRepo(repo: string): boolean {
+  return REPO_PATTERN.test(repo);
 }
 
-function isManifest(value: unknown): value is DesktopManifest {
-  if (typeof value !== "object" || value === null) return false;
-  const candidate = value as Partial<DesktopManifest>;
-  return (
-    typeof candidate.version === "string" &&
-    typeof candidate.platforms === "object" &&
-    candidate.platforms !== null &&
-    Object.values(candidate.platforms).every(
-      (entry) =>
-        typeof entry === "object" &&
-        entry !== null &&
-        typeof entry.url === "string" &&
-        typeof entry.signature === "string",
-    )
-  );
+export function isTrustedDownload(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    return (
+      url.protocol === "https:" &&
+      TRUSTED_HOSTS.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`))
+    );
+  } catch {
+    return false;
+  }
 }
 
-export function createDesktopReleases(options: DesktopReleaseOptions): DesktopReleases {
-  const http = options.fetch ?? ((input: string, init?: RequestInit) => fetch(input, init));
+function toAsset(asset: GithubAsset): DesktopAsset | null {
+  if (asset.state !== undefined && asset.state !== "uploaded") {
+    return null;
+  }
+  const name = asset.name.toLowerCase();
+  const rule = RULES.find((candidate) => name.endsWith(candidate.suffix));
+  if (!rule) {
+    return null;
+  }
+  return {
+    format: rule.format,
+    platform: rule.platform,
+    name: asset.name,
+    size: asset.size,
+    id: asset.id,
+    url: asset.browser_download_url,
+  };
+}
+
+function toRelease(release: GithubRelease): DesktopRelease | null {
+  if (release.draft || release.prerelease || release.published_at === null) {
+    return null;
+  }
+  if (!release.tag_name.startsWith(TAG_PREFIX)) {
+    return null;
+  }
+  const assets = RULES.flatMap((rule) => {
+    const match = release.assets
+      .map(toAsset)
+      .find((asset): asset is DesktopAsset => asset?.format === rule.format);
+    return match ? [match] : [];
+  });
+  if (assets.length === 0) {
+    return null;
+  }
+  const version =
+    VERSION_PATTERN.exec(release.tag_name)?.[1] ?? release.tag_name.slice(TAG_PREFIX.length);
+  const files = release.assets
+    .filter((asset) => asset.state === undefined || asset.state === "uploaded")
+    .map(({ id, name, browser_download_url }) => ({ id, name, url: browser_download_url }));
+  return { version, tag: release.tag_name, publishedAt: release.published_at, assets, files };
+}
+
+export function pickLatest(releases: readonly GithubRelease[]): DesktopRelease | null {
+  const candidates = releases
+    .map(toRelease)
+    .filter((release): release is DesktopRelease => release !== null)
+    .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+  return candidates[0] ?? null;
+}
+
+type CacheEntry = { value: DesktopRelease | null; until: number };
+
+export function createDesktopReleases(options: DesktopOptions): DesktopReleases {
+  const { repo, token } = options;
+  const fetchImpl: Fetch = options.fetch ?? ((input, init) => fetch(input, init));
   const now = options.now ?? Date.now;
-  let snapshot: Snapshot | null | undefined;
-  let fetchedAt = 0;
-  let pending: Promise<Snapshot | null> | undefined;
+  const log = options.log ?? ((message: string) => console.warn(message));
+  let cached: CacheEntry | null = null;
+  const manifests = new Map<string, UpdaterManifest>();
+  let pending: Promise<DesktopRelease | null> | null = null;
 
-  const github = (path: string, binary = false) =>
-    http(`https://api.github.com/repos/${options.repo}${path}`, {
-      headers: {
-        Accept: binary ? "application/octet-stream" : "application/vnd.github+json",
-        Authorization: `Bearer ${options.token}`,
-        "X-GitHub-Api-Version": "2022-11-28",
-        "User-Agent": "minescript-server",
-      },
-      redirect: binary ? "manual" : "follow",
+  const headers = (accept: string): Record<string, string> => ({
+    Accept: accept,
+    "User-Agent": "MineScript-Server",
+    "X-GitHub-Api-Version": "2022-11-28",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  });
+
+  const load = async (): Promise<DesktopRelease | null> => {
+    const response = await fetchImpl(
+      `${API}/repos/${repo}/releases?per_page=${RELEASES_PER_PAGE}`,
+      { headers: headers("application/vnd.github+json"), signal: AbortSignal.timeout(TIMEOUT_MS) },
+    );
+    if (!response.ok) {
+      throw new Error(`a GitHub ${response.status} választ adott`);
+    }
+    const parsed = releasesSchema.safeParse(await response.json());
+    if (!parsed.success) {
+      throw new Error("a GitHub válasza nem a várt formájú");
+    }
+    return pickLatest(parsed.data);
+  };
+
+  const refresh = async (): Promise<DesktopRelease | null> => {
+    try {
+      const value = await load();
+      cached = { value, until: now() + (value ? FRESH_MS : RETRY_MS) };
+      return value;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      log(`Az asztali alkalmazás kiadásai nem érhetők el: ${reason}`);
+      const stale = cached?.value ?? null;
+      cached = { value: stale, until: now() + RETRY_MS };
+      return stale;
+    } finally {
+      pending = null;
+    }
+  };
+
+  const resolveSigned = async (asset: { id: number }): Promise<string | null> => {
+    const response = await fetchImpl(`${API}/repos/${repo}/releases/assets/${asset.id}`, {
+      headers: headers("application/octet-stream"),
+      redirect: "manual",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-
-  const signedLocation = async (asset: Asset): Promise<string> => {
-    const response = await github(`/releases/assets/${asset.id}`, true);
     const location = response.headers.get("location");
-    if (response.status < 300 || response.status >= 400 || !location) {
-      throw new DesktopUnavailableError(`GitHub asset ${asset.name}: ${response.status}`);
+    if (!REDIRECTS.has(response.status) || !location) {
+      throw new Error(`a letöltési hivatkozás helyett ${response.status} válasz jött`);
     }
     return location;
   };
 
-  const unavailable = <T>(task: () => Promise<T>) =>
-    task().catch((error: unknown) => {
-      if (error instanceof DesktopUnavailableError) throw error;
-      throw new DesktopUnavailableError(error instanceof Error ? error.message : String(error));
+  const download = async (file: DesktopFile, timeout: number): Promise<Response> => {
+    const url = token ? await resolveSigned(file) : file.url;
+    if (url === null || !isTrustedDownload(url)) {
+      throw new Error(`a(z) ${file.name} letöltési címe nem megbízható`);
+    }
+    const response = await fetchImpl(url, {
+      redirect: "follow",
+      signal: AbortSignal.timeout(timeout),
     });
-
-  const load = async (): Promise<Snapshot | null> => {
-    const response = await github("/releases?per_page=30");
-    if (!response.ok) {
-      throw new DesktopUnavailableError(`GitHub releases: ${response.status}`);
+    if (!response.ok || !response.body) {
+      throw new Error(`a(z) ${file.name} letöltése ${response.status} választ adott`);
     }
-    const releases = (await response.json()) as Release[];
-    const release = releases.find(
-      (candidate) =>
-        !candidate.draft &&
-        !candidate.prerelease &&
-        candidate.tag_name.startsWith(DESKTOP_TAG_PREFIX) &&
-        candidate.assets.some((asset) => asset.name === DESKTOP_MANIFEST),
-    );
-    const asset = release?.assets.find((candidate) => candidate.name === DESKTOP_MANIFEST);
-    if (!release || !asset) return null;
-    const body = await http(await signedLocation(asset), { redirect: "follow" });
-    if (!body.ok) {
-      throw new DesktopUnavailableError(`latest.json: ${body.status}`);
-    }
-    const manifest: unknown = await body.json();
-    if (!isManifest(manifest)) {
-      throw new DesktopUnavailableError("latest.json: invalid shape");
-    }
-    return { release, manifest };
+    return response;
   };
 
-  const latest = async (): Promise<Snapshot | null> => {
-    if (snapshot !== undefined && now() - fetchedAt < DESKTOP_CACHE_MS) return snapshot;
-    pending ??= unavailable(load)
-      .then((result) => {
-        snapshot = result;
-        fetchedAt = now();
-        return result;
-      })
-      .finally(() => {
-        pending = undefined;
-      });
-    return pending;
-  };
-
-  const locate = async (match: (asset: Asset) => boolean) => {
-    const current = await latest();
-    const asset = current?.release.assets.find(match);
-    return asset ? unavailable(() => signedLocation(asset)) : null;
+  const loadManifest = async (release: DesktopRelease): Promise<UpdaterManifest | null> => {
+    const known = manifests.get(release.tag);
+    if (known) {
+      return known;
+    }
+    const file = release.files.find((candidate) => candidate.name === UPDATER_MANIFEST);
+    if (!file) {
+      return null;
+    }
+    try {
+      const parsed = manifestSchema.safeParse(await (await download(file, TIMEOUT_MS)).json());
+      if (!parsed.success) {
+        throw new Error("a latest.json nem a várt formájú");
+      }
+      manifests.clear();
+      manifests.set(release.tag, parsed.data);
+      return parsed.data;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      log(`Az asztali alkalmazás frissítési adatai nem érhetők el: ${reason}`);
+      return null;
+    }
   };
 
   return {
     async manifest(downloadBase) {
-      const current = await latest();
-      if (!current) return null;
+      const release = await this.latest();
+      const manifest = release ? await loadManifest(release) : null;
+      if (!manifest) {
+        return null;
+      }
       const base = downloadBase.replace(/\/+$/, "");
       const platforms = Object.fromEntries(
-        Object.entries(current.manifest.platforms).map(([key, entry]) => [
+        Object.entries(manifest.platforms).map(([key, entry]) => [
           key,
           { ...entry, url: `${base}/${encodeURIComponent(entry.url)}` },
         ]),
       );
-      return { ...current.manifest, platforms };
+      return { ...manifest, platforms };
     },
-    async info() {
-      const current = await latest();
-      if (!current) return null;
-      const files = Object.fromEntries(
-        Object.entries(DESKTOP_PLATFORMS).map(([platform, pattern]) => [
-          platform,
-          current.release.assets.find((asset) => pattern.test(asset.name))?.name ?? null,
-        ]),
-      ) as Record<DesktopPlatform, string | null>;
-      return {
-        version: current.manifest.version,
-        publishedAt: current.release.published_at,
-        files,
-      };
-    },
-    assetLocation(name) {
-      return locate((asset) => asset.name === name && asset.name !== DESKTOP_MANIFEST);
-    },
-    async assetStream(name) {
-      const location = await locate(
-        (asset) => asset.name === name && asset.name !== DESKTOP_MANIFEST,
+    async file(name) {
+      const release = await this.latest();
+      const file = release?.files.find(
+        (candidate) => candidate.name === name && candidate.name !== UPDATER_MANIFEST,
       );
-      if (!location) return null;
-      return unavailable(async () => {
-        const upstream = await http(location, { redirect: "follow" });
-        if (!upstream.ok || !upstream.body) {
-          throw new DesktopUnavailableError(`${name}: ${upstream.status}`);
-        }
+      if (!file) {
+        return { status: "missing" };
+      }
+      try {
+        const upstream = await download(file, FILE_TIMEOUT_MS);
         const headers = new Headers({
           "Content-Type": "application/octet-stream",
-          "Content-Disposition": `attachment; filename="${name.replace(/[^A-Za-z0-9._-]/g, "_")}"`,
+          "Content-Disposition": `attachment; filename="${file.name.replace(/[^A-Za-z0-9._-]/g, "_")}"`,
+          "Cache-Control": "no-store",
         });
         const length = upstream.headers.get("content-length");
-        if (length) headers.set("Content-Length", length);
-        return new Response(upstream.body, { status: 200, headers });
-      });
+        if (length) {
+          headers.set("Content-Length", length);
+        }
+        return { status: "ok", response: new Response(upstream.body, { status: 200, headers }) };
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        log(`Az asztali alkalmazás frissítése nem tölthető le: ${reason}`);
+        return { status: "unavailable" };
+      }
     },
-    platformLocation(platform) {
-      const pattern = DESKTOP_PLATFORMS[platform];
-      return locate((asset) => pattern.test(asset.name));
+    latest() {
+      if (cached && now() < cached.until) {
+        return Promise.resolve(cached.value);
+      }
+      pending ??= refresh();
+      return pending;
+    },
+    async resolve(asset) {
+      try {
+        const url = token ? await resolveSigned(asset) : asset.url;
+        return url !== null && isTrustedDownload(url) ? url : null;
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        log(`Az asztali alkalmazás letöltése nem indítható: ${reason}`);
+        return null;
+      }
     },
   };
-}
-
-export function desktopReleasesFromEnv(
-  env: Readonly<Record<string, string | undefined>>,
-): DesktopReleases | undefined {
-  const token = env.DESKTOP_RELEASES_TOKEN?.trim();
-  if (!token) return undefined;
-  const repo = env.DESKTOP_RELEASES_REPO?.trim() || DEFAULT_DESKTOP_REPO;
-  return createDesktopReleases({ repo, token });
 }

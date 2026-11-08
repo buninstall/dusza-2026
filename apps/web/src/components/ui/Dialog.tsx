@@ -68,6 +68,7 @@ export function ModalShell({
 
 type ConfirmDialogProps = {
   triggerLabel: string;
+  isTriggerIconOnly?: boolean;
   triggerAriaLabel?: string;
   triggerIcon?: IconName;
   triggerVariant?: ButtonVariant;
@@ -80,6 +81,7 @@ type ConfirmDialogProps = {
 
 export function ConfirmDialog({
   triggerLabel,
+  isTriggerIconOnly = false,
   triggerAriaLabel,
   triggerIcon,
   triggerVariant = "danger",
@@ -89,15 +91,16 @@ export function ConfirmDialog({
   confirmLabel,
   onConfirm,
 }: ConfirmDialogProps) {
+  const ariaLabel = triggerAriaLabel ?? (isTriggerIconOnly ? triggerLabel : undefined);
   return (
     <DialogTrigger>
       <Button
         variant={triggerVariant}
         size={triggerSize}
         icon={triggerIcon}
-        {...(triggerAriaLabel ? { "aria-label": triggerAriaLabel } : {})}
+        {...(ariaLabel ? { "aria-label": ariaLabel } : {})}
       >
-        {triggerLabel}
+        {isTriggerIconOnly ? undefined : triggerLabel}
       </Button>
       <ModalShell title={title} role="alertdialog">
         {(close) => (

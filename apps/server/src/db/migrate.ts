@@ -1,4 +1,5 @@
 import type { Connection, RowDataPacket } from "mysql2/promise";
+import { capitalArticle } from "../lib/article.ts";
 import { connectionOptions, withConnection } from "./admin.ts";
 import { DatabaseError, toDatabaseError } from "./errors.ts";
 import { type Migration, migrations } from "./migrations.gen.ts";
@@ -27,7 +28,7 @@ async function withMigrationLock<T>(
   ]);
   if (lock?.acquired !== 1) {
     throw new DatabaseError(
-      `A(z) „${database}” adatbázist egy másik folyamat migrálja, és ${LOCK_TIMEOUT_SECONDS} másodperc alatt sem végzett.`,
+      `${capitalArticle(database)} „${database}” adatbázist egy másik folyamat migrálja, és ${LOCK_TIMEOUT_SECONDS} másodperc alatt sem végzett.`,
       "Várd meg, amíg a másik szerverpéldány elindul, vagy állítsd le.",
     );
   }
@@ -44,7 +45,7 @@ async function apply(connection: Connection, migration: Migration): Promise<void
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     throw new DatabaseError(
-      `A(z) ${migration.name} migráció sikertelen: ${detail}`,
+      `${capitalArticle(migration.name)} ${migration.name} migráció sikertelen: ${detail}`,
       PARTIAL_MIGRATION_HINT,
       { cause: error },
     );

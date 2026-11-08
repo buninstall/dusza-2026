@@ -4,7 +4,7 @@ import { passwordProblem, usernameProblem } from "../src/auth/credentials.ts";
 import { safeRedirect } from "../src/auth/session.ts";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { CORRIDOR, demoUser, mapSummary } from "./support/fixtures.ts";
+import { CORRIDOR, demoUser, mapSummary, respondMaps, respondRuns } from "./support/fixtures.ts";
 
 describe("bejelentkezési szabályok", () => {
   test("a felhasználónév 3–24 karakter, csak angol betű, szám és aláhúzás", () => {
@@ -33,7 +33,7 @@ describe("bejelentkezés és regisztráció", () => {
   test("védett oldal kijelentkezve a belépéshez irányít, belépés után visszavisz", async () => {
     const { user, router } = renderApp("/runs", "none");
     respond("POST", "/auth/login", { user: demoUser });
-    respond("GET", "/me/runs", { runs: [] });
+    respondRuns([]);
     expect(await screen.findByRole("heading", { level: 1, name: "Bejelentkezés" })).toBeTruthy();
     expect(router.state.location.pathname).toBe("/login");
 
@@ -64,7 +64,7 @@ describe("bejelentkezés és regisztráció", () => {
   test("a regisztráció ellenőrzi a mezőket, majd a térképekhez visz", async () => {
     const { user } = renderApp("/register", "none");
     respond("POST", "/auth/register", { user: { ...demoUser, username: "uj_banyasz" } }, 201);
-    respond("GET", "/maps", { maps: [mapSummary(1, "Folyosó", CORRIDOR)] });
+    respondMaps([mapSummary(1, "Folyosó", CORRIDOR)]);
     await user.type(await screen.findByLabelText(/Felhasználónév/), "ab");
     await user.type(screen.getByLabelText(/Jelszó/), "rovid");
     await user.click(screen.getByRole("button", { name: "Fiók létrehozása" }));

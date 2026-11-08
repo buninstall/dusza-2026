@@ -116,7 +116,7 @@ describe("MySQL-hibák fordítása", () => {
     for (const code of ["ER_BAD_DB_ERROR", "ER_DBACCESS_DENIED_ERROR"]) {
       const error = toDatabaseError(Object.assign(new Error(code), { code }), target);
       expect(error.message).toBe(
-        "A(z) „banya” adatbázis nem létezik, vagy a(z) „dusza” felhasználónak nincs hozzá joga.",
+        "A „banya” adatbázis nem létezik, vagy a „dusza” felhasználónak nincs hozzá joga.",
       );
       expect(error.hint).toContain("just db-setup");
     }

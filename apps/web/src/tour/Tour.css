@@ -34,3 +34,36 @@
   outline: var(--border-thick) solid var(--c-reward);
   outline-offset: 2px;
 }
+
+.tour-modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-3);
+}
+
+.tour-mode {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+  font: var(--type-help);
+  color: var(--c-text);
+}
+
+.tour-mode p {
+  margin: 0;
+}
+
+.tour-mode-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font: var(--type-label);
+  color: var(--c-reward);
+}
+
+.tour-question {
+  font: var(--type-body-strong);
+}

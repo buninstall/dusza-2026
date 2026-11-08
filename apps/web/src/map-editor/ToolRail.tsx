@@ -42,11 +42,11 @@ export function Swatch({ tool, dir }: { tool: Tool; dir: Dir }) {
   );
 }
 
-const COMPASS: readonly { dir: Dir; icon: IconName; area: string }[] = [
-  { dir: "north", icon: "arrowUp", area: "n" },
-  { dir: "west", icon: "arrowLeft", area: "w" },
-  { dir: "east", icon: "arrowRight", area: "e" },
-  { dir: "south", icon: "arrowDown", area: "s" },
+const COMPASS: readonly { dir: Dir; icon: IconName }[] = [
+  { dir: "north", icon: "arrowUp" },
+  { dir: "east", icon: "arrowRight" },
+  { dir: "south", icon: "arrowDown" },
+  { dir: "west", icon: "arrowLeft" },
 ];
 
 type ToolRailProps = {
@@ -102,19 +102,11 @@ export function ToolRail({
         <Label className="label">{hu.mapEditor.robotDir}</Label>
         <div className="ed-compass">
           {COMPASS.map((item) => (
-            <Radio
-              key={item.dir}
-              value={item.dir}
-              className="ed-compass-key"
-              style={{ gridArea: item.area }}
-            >
+            <Radio key={item.dir} value={item.dir} className="ed-compass-key">
               <PixelIcon name={item.icon} />
               <span>{dirNames[item.dir]}</span>
             </Radio>
           ))}
-          <span className="ed-compass-center" aria-hidden="true">
-            <Swatch tool="robot" dir={dir} />
-          </span>
         </div>
       </RadioGroup>
       <RadioGroup
@@ -123,19 +115,22 @@ export function ToolRail({
         className="ed-group"
         data-inactive={tool === "robot"}
       >
-        <Label className="label">{hu.mapEditor.modeLabel}</Label>
-        <div className="ed-options" data-kind="modes">
+        <span className="ed-group-head">
+          <Label className="label">{hu.mapEditor.modeLabel}</Label>
+          <span className="ed-group-value" aria-hidden="true">
+            {MODE_LABEL[mode]}
+          </span>
+        </span>
+        <div className="ed-modes">
           {MODES.map((item) => (
-            <Radio key={item} value={item} className="ed-option">
-              <span aria-hidden="true" className="ed-mode-icon">
-                <PixelIcon name={MODE_ICON[item]} />
-              </span>
-              <span className="ed-option-label">{MODE_LABEL[item]}</span>
+            <Radio key={item} value={item} className="ed-option ed-mode">
+              <PixelIcon name={MODE_ICON[item]} />
+              <span className="visually-hidden">{MODE_LABEL[item]}</span>
             </Radio>
           ))}
         </div>
       </RadioGroup>
-      {actions ? <div className="ed-quick">{actions}</div> : null}
+      {actions ? <div className="ed-actions">{actions}</div> : null}
     </aside>
   );
 }

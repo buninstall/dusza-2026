@@ -13,15 +13,32 @@ function baseSprite(view: TileView): string {
     : SPRITE_ID.floor(tileVariant(row, col, TILE_SPRITES.floor.length));
 }
 
-function lightOf(view: TileView): "lit" | "glow" | "dark" {
+function lightOf(view: TileView): "lit" | "glow" | "dark" | "sealed" {
   if (view.lighting !== "dark") {
     return "lit";
+  }
+  if (view.isSealed) {
+    return "sealed";
   }
   return view.isLampLit ? "glow" : "dark";
 }
 
+function SealedLayers({ view }: { view: TileView }) {
+  return (
+    <>
+      <rect width={TILE_SIZE} height={TILE_SIZE} className="board-void" data-light="sealed" />
+      {view.fringe.map((side) => (
+        <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} className="board-fringe" />
+      ))}
+    </>
+  );
+}
+
 function TileLayers({ view }: { view: TileView }) {
   const light = lightOf(view);
+  if (light === "sealed") {
+    return <SealedLayers view={view} />;
+  }
   return (
     <>
       <use href={spriteHref(baseSprite(view))} />
@@ -32,7 +49,9 @@ function TileLayers({ view }: { view: TileView }) {
       ) : null}
       <rect width={TILE_SIZE} height={TILE_SIZE} className="board-void" data-light={light} />
       {light === "dark"
-        ? view.fringe.map((side) => <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} />)
+        ? view.fringe.map((side) => (
+            <use key={side} href={spriteHref(SPRITE_ID.fringe(side))} className="board-fringe" />
+          ))
         : null}
     </>
   );

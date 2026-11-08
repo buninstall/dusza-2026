@@ -4,6 +4,7 @@ import {
   editor,
   expectFinished,
   expectReadings,
+  gotoLeaderboard,
   gotoPlay,
   loginAs,
   register,
@@ -42,6 +43,10 @@ test.describe("bevezető", () => {
     const prompt = page.getByRole("dialog", { name: TOUR_PROMPT });
     await expect(prompt).toBeVisible();
     await prompt.getByRole("button", { name: "Igen, mutasd" }).click();
+    await page
+      .getByRole("dialog", { name: "Két játékmód vár" })
+      .getByRole("button", { name: "Történet" })
+      .click();
     await expect(page.getByRole("grid", { name: `${CORRIDOR} térképe` })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Ez a bánya" })).toBeVisible();
     await setSpeed(page, "max");
@@ -105,7 +110,7 @@ test.describe("rögök és eredmény", () => {
     await result.getByRole("button", { name: "Bezárás" }).click();
     await expect(result).toBeHidden();
 
-    await page.goto("/maps");
+    await page.goto("/maps?mode=story");
     const tile = page.getByRole("listitem").filter({ hasText: CORRIDOR });
     await expect(tile.getByRole("img", { name: "3 / 3 rög" })).toBeVisible();
     await expect(tile).toContainText("2 arany · 4 lépés");
@@ -402,8 +407,7 @@ test.describe("megosztható visszajátszás", () => {
   test("a ranglistáról bárki megnézheti más futását, kóddal együtt", async ({ page, context }) => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await loginAs(page, { username: "demo2", password: "demo2026" });
-    await page.goto("/maps");
-    await page.getByRole("link", { name: `Ranglista: ${CORRIDOR}`, exact: true }).click();
+    await gotoLeaderboard(page, CORRIDOR);
     await page.getByRole("link", { name: "Megnézem: demo1 futása", exact: true }).click();
     await expect(page).toHaveURL(/\/runs\/\d+$/);
     await expect(page.getByText("demo1 futása")).toBeVisible();

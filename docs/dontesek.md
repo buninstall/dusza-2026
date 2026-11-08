@@ -276,6 +276,8 @@ A formázott program futtatásának eredménye megegyezik az eredetiével.
 
 ## D23 – Programfájl importja
 
+Felváltotta: [D26](#d26--programfájl-importja-szigorúan) (2026. november 7.).
+
 Spec: 1, 3.3. A program szerkesztés közben lehet hibás, ezért a szintaktikailag hibás programfájl betölthető a szerkesztőbe (a hibák azonnal látszanak). Nem tölthető be és érthető hibaüzenetet kap a fájl, ha nem érvényes UTF-8 szöveg, ha NUL karaktert tartalmaz, vagy ha nagyobb 100 000 karakternél. A térképfájl csak teljesen érvényes formában tölthető be (D15).
 
 ## D24 – Pontosítások a referencia-interpreter alapján
@@ -311,3 +313,14 @@ A spec ezeket nem írja elő; a D22 kiegészítése és a plusz szolgáltatások
 - A linter folyamatelemzése: sikeres olvasás után a változó az adott ágon értéket kapottnak számít; a literál `true`/`false` feltétel konstans, a `while true` utáni kód elérhetetlen; a lépések és fordulások összevonása nem ad 100-nál nagyobb literált.
 - A linter súlyosságai: `LINT_LEADING_ZERO` és `LINT_TURN_MOD4` info, `LINT_MERGE_STEPS` és `LINT_MERGE_TURNS` hint, a többi figyelmeztetés. A figyelmeztetések nem akadályozzák a futtatást.
 - A térkép-diagnosztikák sor, azon belül oszlop szerint rendezettek; egy sorban az ismeretlen jel mellett a robotok is számítanak (`>x<` → `MAP_BAD_SYMBOL` és `MAP_MULTIPLE_ROBOTS`).
+
+## D26 – Programfájl importja szigorúan
+
+Spec: 1, 3.3. A D23 helyett.
+
+- Programfájl csak akkor tölthető be, ha a 2. fejezet szerint szintaktikailag helyes. A hibás fájl nem kerül a szerkesztőbe: a felület hibaablakban mutatja a fájl nevét és a hibás sorokat (soronként a hiba címét és leírását, legfeljebb nyolcat, a többit darabszámmal), a szerkesztő tartalma változatlan.
+- Ugyanígy nem tölthető be a nem UTF-8, a NUL karaktert tartalmazó és a 100 000 karakternél hosszabb fájl; ezeknél a hibaablak az okot írja ki.
+- A helyes fájl a sorvégek egységesítése (D2) után töltődik be; ha a szerkesztőben nem mentett munka van, előbb megerősítést kér.
+- A szerkesztés továbbra is engedékeny: a szerkesztőben a program lehet hibás, csak futtatás előtt kell helyessé válnia (3.3, D16).
+
+Indoklás: az 1. fejezet szerint a hibás formátumú importált fájlt érthető hibaüzenettel kell jelezni, és nem szabad betölteni; a 3.3 „a 2. fejezetben leírt formátumú programfájl” importját írja. A szerkesztés közbeni hibás állapotot a 3.3 a szerkesztésre engedi meg, nem az importra.

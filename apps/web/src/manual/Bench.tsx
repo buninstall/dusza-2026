@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/ui/Button.tsx";
 import { useEngine } from "../engine/useEngine.ts";
 import { hu } from "../i18n/hu.ts";
+import { manual } from "../i18n/hu-manual.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { MineBoard } from "../mine/MineBoard.tsx";
 import { posKey } from "../mine/tiles-model.ts";
@@ -78,7 +79,7 @@ export function Bench({ code, map, caption }: BenchProps) {
             <MineBoard
               map={parsed}
               robot={frame.robot}
-              label={hu.manual.benchBoard(caption)}
+              label={manual.benchBoard(caption)}
               exploration={{ discovered: known, mined: frame.mined, mode: "full" }}
               stepMs={isReduced ? 0 : TICK_MS - 100}
               fit="width"
@@ -91,13 +92,13 @@ export function Bench({ code, map, caption }: BenchProps) {
               icon={ticker.isPlaying ? "pause" : "play"}
               onPress={ticker.toggle}
             >
-              {ticker.isPlaying ? hu.manual.benchPause : hu.manual.benchPlay}
+              {ticker.isPlaying ? manual.benchPause : manual.benchPlay}
             </Button>
             <Button size="sm" icon="rewind" onPress={ticker.restart} isDisabled={frame.atStart}>
-              {hu.manual.benchRestart}
+              {manual.benchRestart}
             </Button>
             <output className="bench-stats">
-              {fault ?? hu.manual.benchStats(frame.gold, frame.steps)}
+              {fault ?? manual.benchStats(frame.gold, frame.steps)}
             </output>
           </div>
           {frame.console.length > 0 ? (

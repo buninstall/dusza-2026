@@ -8,7 +8,16 @@ import { DatabaseError, isDuplicateEntry } from "../src/db/errors.ts";
 import { migrate } from "../src/db/migrate.ts";
 import { migrations } from "../src/db/migrations.gen.ts";
 import { firstRow } from "../src/db/rows.ts";
-import { COLLATION, maps, mapVersions, programs, runs, sessions, users } from "../src/db/schema.ts";
+import {
+  COLLATION,
+  mapFavorites,
+  maps,
+  mapVersions,
+  programs,
+  runs,
+  sessions,
+  users,
+} from "../src/db/schema.ts";
 import type { DatabaseTarget } from "../src/db/url.ts";
 import {
   createTestContext,
@@ -112,7 +121,7 @@ describe("migrátor", () => {
     };
     const error = await rejection(migrate(database.target, [...migrations, broken]));
     expect(error).toBeInstanceOf(DatabaseError);
-    expect((error as DatabaseError).message).toStartWith("A(z) 9999_hibas migráció sikertelen:");
+    expect((error as DatabaseError).message).toStartWith("A 9999_hibas migráció sikertelen:");
     expect((error as DatabaseError).hint).toContain("azonnal véglegesíti");
     const applied = await query<NameRow>(database.target, "SELECT name FROM __migrations");
     expect(applied.map((row) => row.name)).not.toContain(broken.name);
@@ -126,7 +135,9 @@ describe("migrátor", () => {
 
   test("a migráció a séma minden indexét és idegen kulcsát létrehozza", async () => {
     await using database = await createTestDatabase();
-    const tables = [users, sessions, maps, mapVersions, programs, runs].map(getTableConfig);
+    const tables = [users, sessions, maps, mapVersions, mapFavorites, programs, runs].map(
+      getTableConfig,
+    );
     const indexes = await query<NameRow>(
       database.target,
       "SELECT DISTINCT INDEX_NAME AS name FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = ?",

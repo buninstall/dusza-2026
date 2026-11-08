@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { LABYRINTH, mapDetail } from "./support/fixtures.ts";
+import { LABYRINTH, mapDetail, respondMaps } from "./support/fixtures.ts";
 
 function textFile(name: string, content: string): File {
   return new File([content], name, { type: "text/plain" });
@@ -39,7 +39,7 @@ describe("új térkép", () => {
     respond("GET", "/maps/9", mapDetail(9, "Saját akna", "1 3\n>@.\n"));
     const { user, router } = await openNew();
     expect(within(screen.getByRole("grid")).getAllByRole("gridcell")).toHaveLength(70);
-    expect(screen.getByText("A térkép címe hiányzik.")).toBeTruthy();
+    expect(screen.getByText("Nincs cím.")).toBeTruthy();
     expect(saveButton().getAttribute("data-blocked")).toBe("true");
     await user.click(saveButton());
     expect(callsTo("POST", "/maps")).toHaveLength(0);
@@ -74,7 +74,7 @@ describe("új térkép", () => {
     await user.keyboard("{Delete}");
     expect(screen.getAllByText("Nincs robot.", { exact: false }).length).toBeGreaterThan(0);
     expect(screen.getByText("hiányzik")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Robot kiválasztása" }));
+    await user.click(screen.getByRole("button", { name: "Robot eszköz" }));
     expect((screen.getByRole("radio", { name: /Robot/ }) as HTMLInputElement).checked).toBe(true);
     await user.click(screen.getByRole("radio", { name: "dél" }));
     cell("1. sor, 1. oszlop: üres kamra").focus();
@@ -289,7 +289,7 @@ describe("új térkép", () => {
   test("a láthatatlan karakterből álló cím hiányzónak számít", async () => {
     const { user } = await openNew();
     await user.type(screen.getByRole("textbox", { name: /Cím/ }), "​  ");
-    expect(screen.getByText("A térkép címe hiányzik.")).toBeTruthy();
+    expect(screen.getByText("Nincs cím.")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Cím megadása" }));
     expect(document.activeElement).toBe(screen.getByRole("textbox", { name: /Cím/ }));
   });
@@ -317,11 +317,24 @@ describe("térkép szerkesztése", () => {
     expect(screen.getByText("Mentve")).toBeTruthy();
   });
 
+  test("a bánya fokozata választható és mentődik", async () => {
+    respond("GET", "/maps/4", mapDetail(4, "Labirintus", LABYRINTH, { lampMode: "lamp" }));
+    respond("PUT", "/maps/4", { map: { id: 4 }, createdNewVersion: false });
+    const { user } = renderApp("/maps/4/edit");
+    const lamp = await screen.findByRole("radio", { name: "Lámpafény" });
+    expect(lamp).toHaveProperty("checked", true);
+    await user.click(screen.getByRole("radio", { name: "Vaksötét" }));
+    expect(screen.getByRole("radio", { name: "Vaksötét" })).toHaveProperty("checked", true);
+    await user.click(saveButton());
+    expect(await screen.findByText("A térkép elmentve.")).toBeTruthy();
+    expect(callsTo("PUT", "/maps/4")[0]?.body).toMatchObject({ lampMode: "dark" });
+  });
+
   test("futás nélkül helyben ment, törlés megerősítéssel a listára visz", async () => {
     respond("GET", "/maps/4", mapDetail(4, "Labirintus", LABYRINTH));
     respond("PUT", "/maps/4", { map: { id: 4 }, createdNewVersion: false });
     respond("DELETE", "/maps/4", { ok: true });
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { user, router } = renderApp("/maps/4/edit");
     expect(await screen.findByText(/még nincs futás/)).toBeTruthy();
     await user.click(saveButton());
@@ -335,7 +348,7 @@ describe("térkép szerkesztése", () => {
 
   test("nem mentett módosítással kilépéskor megerősítést kér", async () => {
     respond("GET", "/maps/4", mapDetail(4, "Labirintus", LABYRINTH));
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { user, router } = renderApp("/maps/4/edit");
     await screen.findByRole("grid", { name: "Térképrács" });
     await user.type(screen.getByRole("textbox", { name: /Leírás/ }), " új");

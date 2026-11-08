@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { SessionUser } from "../auth/session.ts";
 import { Menu, MenuItem, MenuSeparator } from "../components/ui/Menu.tsx";
 import { toast, toastQueue } from "../components/ui/Toast.tsx";
+import { announceDownload, downloadHref, useDesktopOffer } from "../desktop/release.ts";
 import { hu } from "../i18n/hu.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
 import { type CursorStyle, initialCursor, saveCursor } from "../lib/cursor.ts";
@@ -13,6 +14,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
   const queryClient = useQueryClient();
   const [cursor, setCursor] = useState<CursorStyle>(initialCursor);
   const navigate = useNavigate();
+  const { offer } = useDesktopOffer();
 
   const logout = async () => {
     toastQueue.clear();
@@ -45,6 +47,16 @@ export function UserMenu({ user }: { user: SessionUser }) {
       >
         {cursor === "pickaxe" ? hu.nav.cursorSystem : hu.nav.cursorPickaxe}
       </MenuItem>
+      {offer ? <MenuSeparator /> : null}
+      {offer ? (
+        <MenuItem
+          href={downloadHref(offer.primary.format)}
+          download
+          onAction={() => announceDownload(offer.primary.format)}
+        >
+          {hu.desktop.menuItem[offer.platform]}
+        </MenuItem>
+      ) : null}
       <MenuSeparator />
       <MenuItem onAction={() => void logout()}>{hu.nav.logout}</MenuItem>
     </Menu>

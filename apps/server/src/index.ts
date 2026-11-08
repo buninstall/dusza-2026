@@ -8,9 +8,10 @@ import { migrate } from "./db/migrate.ts";
 import { describeTarget } from "./db/url.ts";
 import { loadEngine } from "./engine.ts";
 import type { Deps } from "./env.ts";
+import { capitalArticle } from "./lib/article.ts";
 import { behindProxy } from "./lib/request.ts";
 import { DEMO_ACCOUNTS, type SeedReport, seedDemo } from "./seed/index.ts";
-import { desktopReleasesFromEnv } from "./services/desktop.ts";
+import { createDesktopReleases } from "./services/desktop.ts";
 import { loadStaticHandler } from "./static.ts";
 
 function isAddressInUse(error: unknown): boolean {
@@ -29,7 +30,7 @@ function serve(
       if (!isAddressInUse(error) || offset === PORT_ATTEMPTS) {
         throw error;
       }
-      console.warn(`A(z) ${port} port foglalt, próbálom a következőt…`);
+      console.warn(`${capitalArticle(port)} ${port} port foglalt, próbálom a következőt…`);
     }
   }
   throw new Error(`Nincs szabad port ${config.port} és ${config.port + PORT_ATTEMPTS} között.`);
@@ -66,7 +67,18 @@ function printWelcome(url: string, config: ServerConfig): void {
   console.log("  Leállítás: Ctrl+C");
 }
 
+function printCrowdReport(report: SeedReport): void {
+  const { crowd } = report;
+  if (crowd.players === 0) {
+    return;
+  }
+  console.log(
+    `Homokozó feltöltve: ${crowd.players} bányász, ${crowd.maps} térkép, ${crowd.favorites} kedvenc, ${crowd.runs} futás`,
+  );
+}
+
 function printSeedReport(report: SeedReport): void {
+  printCrowdReport(report);
   if (!report.seeded) {
     return;
   }
@@ -89,9 +101,9 @@ async function start(config: ServerConfig, database: Database) {
     engine: await loadEngine(),
     limiter: createLoginLimiter({ ...LOGIN_LIMIT, now: Date.now }),
     now: Date.now,
-    desktop: desktopReleasesFromEnv(process.env),
+    desktop: config.desktop ? createDesktopReleases(config.desktop) : undefined,
   };
-  printSeedReport(await seedDemo(deps, { reset: config.resetDemo }));
+  printSeedReport(await seedDemo(deps, { reset: config.resetDemo, crowd: config.seedCrowd }));
   const app = createApp(
     deps,
     config.serveStatic ? { staticHandler: await loadStaticHandler() } : {},

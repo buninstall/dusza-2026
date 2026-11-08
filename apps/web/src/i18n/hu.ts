@@ -1,5 +1,4 @@
 import type { Cell, DiagCode, Dir, RuntimeErrorCode, Severity } from "@minescript/engine";
-import { manual } from "./hu-manual.ts";
 
 export const runtimeErrors: Record<RuntimeErrorCode, { title: string; hint: string }> = {
   E_TYPE_MISMATCH: {
@@ -106,7 +105,22 @@ export const dirNames: Record<Dir, string> = {
 
 const lineRef = (line: number) => `${line}. sor`;
 
-function runtimeTitle(code: string): string {
+export const edgeHit = {
+  title: "Lelépés a térképről",
+  hint: "A robot a térkép szélén állt, és kilépett volna. Az isThere 1 a térképen kívüli mezőt is falnak látja, lépés előtt ezzel ellenőrizz.",
+};
+
+export function runtimeErrorText(
+  code: RuntimeErrorCode,
+  isOffMap = false,
+): { title: string; hint: string } {
+  return code === "E_BEDROCK_HIT" && isOffMap ? edgeHit : runtimeErrors[code];
+}
+
+function runtimeTitle(code: string, isOffMap = false): string {
+  if (code === "E_BEDROCK_HIT" && isOffMap) {
+    return edgeHit.title;
+  }
   const known: Partial<Record<string, { title: string }>> = runtimeErrors;
   return known[code]?.title ?? code;
 }
@@ -118,12 +132,27 @@ export function articleFor(value: number): "a" | "az" {
   return startsWithVowel ? "az" : "a";
 }
 
+const VOWELS = "aáeéiíoóöőuúüű";
+
+export function articleForText(text: string): "a" | "az" {
+  const trimmed = text.trimStart();
+  const leadingNumber = /^\d+/.exec(trimmed);
+  if (leadingNumber) {
+    return articleFor(Number(leadingNumber[0]));
+  }
+  const first = trimmed.charAt(0).toLocaleLowerCase("hu");
+  return first !== "" && VOWELS.includes(first) ? "az" : "a";
+}
+
+function capitalArticle(text: string): "A" | "Az" {
+  return articleForText(text) === "az" ? "Az" : "A";
+}
+
 export const hu = {
   app: {
     name: "MineScript",
     skipToContent: "Ugrás a tartalomra",
     pageChanged: (title: string) => `Új oldal: ${title}`,
-    engineLoading: "A MineScript-motor indul…",
     engineFailed:
       "A MineScript-motor nem tölthető be. Frissítsd az oldalt, vagy próbáld másik böngészővel.",
     unexpected: "Váratlan hiba történt.",
@@ -169,20 +198,6 @@ export const hu = {
     signedInAs: (username: string) => `Bejelentkezve: ${username}`,
     logout: "Kijelentkezés",
   },
-  desktop: {
-    label: "Asztali app",
-    menuFor: (version: string) => `Asztali alkalmazás letöltése, ${version}. verzió`,
-    version: (version: string) => `MineScript Desktop ${version}`,
-    recommended: (platform: string) => `${platform} (ajánlott)`,
-    platforms: {
-      mac: "macOS (.dmg)",
-      windows: "Windows telepítő (.exe)",
-      "windows-msi": "Windows MSI (.msi)",
-      linux: "Linux AppImage",
-      "linux-deb": "Linux Debian/Ubuntu (.deb)",
-      "linux-rpm": "Linux Fedora (.rpm)",
-    },
-  },
   auth: {
     loginTitle: "Bejelentkezés",
     registerTitle: "Regisztráció",
@@ -205,6 +220,38 @@ export const hu = {
     usernameCharset: "A felhasználónévben csak angol betű, számjegy és aláhúzás állhat.",
     passwordRequired: "Add meg a jelszót.",
     passwordShort: "A jelszó legalább 8 karakter legyen.",
+  },
+  desktop: {
+    primary: {
+      macos: "Asztali alkalmazás macOS-re",
+      windows: "Asztali alkalmazás Windowsra",
+      linux: "Asztali alkalmazás Linuxra",
+    },
+    menuItem: {
+      macos: "Asztali alkalmazás letöltése macOS-re",
+      windows: "Asztali alkalmazás letöltése Windowsra",
+      linux: "Asztali alkalmazás letöltése Linuxra",
+    },
+    formats: {
+      dmg: "macOS lemezkép (.dmg)",
+      exe: "Windows telepítő (.exe)",
+      msi: "Windows Installer (.msi)",
+      appimage: "Linux AppImage",
+      deb: "Linux csomag, Debian és Ubuntu (.deb)",
+      rpm: "Linux csomag, Fedora és openSUSE (.rpm)",
+    },
+    more: "Más rendszerre",
+    moreLabel: "Asztali alkalmazás más rendszerre vagy formátumban",
+    started: "A letöltés elindult.",
+    firstRun: {
+      dmg: "Ha a macOS nem engedi megnyitni: Rendszerbeállítások › Adatvédelem és biztonság › Megnyitás mindenképp.",
+      exe: "Ha a Windows figyelmeztet: További információ › Futtatás mindenképp.",
+      msi: "Ha a Windows figyelmeztet: További információ › Futtatás mindenképp.",
+      appimage:
+        "Indítás előtt tedd futtathatóvá: Tulajdonságok › Futtatható programként, vagy chmod +x.",
+      deb: null,
+      rpm: null,
+    },
   },
   maps: {
     title: "Pályák",
@@ -261,6 +308,10 @@ export const hu = {
     visibility: "Láthatóság",
     visibilityPublicHint: "Mindenki látja és játszhat rajta.",
     visibilityPrivateHint: "Csak neked és az adminisztrátoroknak látszik.",
+    lampMode: "Bánya",
+    lampOpen: "Nyitott",
+    lampLamp: "Lámpafény",
+    lampDark: "Vaksötét",
     rows: "Sorok",
     cols: "Oszlopok",
     sizeLosesRobot: "A robot is törlődik.",
@@ -303,11 +354,10 @@ export const hu = {
     checkHeading: "Ellenőrzés",
     valid: "A térkép érvényes, menthető.",
     invalid: "A térkép így nem menthető.",
-    issueCount: (errors: number, warnings: number) => `${errors} hiba · ${warnings} figyelmeztetés`,
-    titleMissing: "A térkép címe hiányzik.",
+    titleMissing: "Nincs cím.",
     fixTitle: "Cím megadása",
-    fixRobot: "Robot kiválasztása",
-    fixGold: "Arany kiválasztása",
+    fixRobot: "Robot eszköz",
+    fixGold: "Arany eszköz",
     goTo: (row: number, col: number) => `${row}. sor, ${col}. oszlop`,
     goToLabel: (row: number, col: number) => `Ugrás ide: ${row}. sor, ${col}. oszlop`,
     unreachableNote: "elérhetetlen arany",
@@ -351,7 +401,7 @@ export const hu = {
     deleteMap: "Térkép törlése",
     deleteTitle: "Biztosan törlöd a térképet?",
     deleteConfirm: (title: string) =>
-      `A(z) „${title}” térkép minden verziójával és ranglistájával együtt törlődik. Ez nem vonható vissza.`,
+      `${capitalArticle(title)} „${title}” térkép minden verziójával és ranglistájával együtt törlődik. Ez nem vonható vissza.`,
     confirmDelete: "Végleges törlés",
     deleted: "A térkép törölve.",
     leaveTitle: "Nem mentett módosítások",
@@ -424,9 +474,12 @@ export const hu = {
     format: "Formázás",
     formatted: "A program formázva.",
     formatFailed: "A formázás csak szintaktikailag helyes programon végezhető el.",
-    imported: (name: string) => `A(z) ${name} program betöltve.`,
-    importHasErrors: (count: number, line: number) =>
-      `A betöltött program ${count} szintaktikai hibát tartalmaz, az első ${articleFor(line)} ${lineRef(line)}ban. Futtatás előtt javítsd ki: a hibás sorok a szerkesztőben és a Hibalistában láthatók.`,
+    imported: (name: string) => `${capitalArticle(name)} ${name} program betöltve.`,
+    importRejectedTitle: "A program nem tölthető be",
+    importRejectedSyntax:
+      "A fájl nem felel meg a MineScript nyelvtanának, ezért nem töltöttük be. A szerkesztő tartalma nem változott.",
+    importFile: (name: string) => `Fájl: ${name}`,
+    importMoreErrors: (count: number) => `…és még ${count} hiba.`,
     importEncoding: "A fájl nem érvényes UTF-8 szöveg, ezért nem töltöttük be.",
     importNul: "A fájl NUL karaktert tartalmaz, ezért nem programfájl.",
     importTooLong: (limit: string) =>
@@ -442,6 +495,14 @@ export const hu = {
     viewFull: "Teljes térkép",
     viewLampHint: "Csak a felfedezett mezők látszanak.",
     viewFullHint: "Minden mező látszik, a felderítetlenek rácsmintásak.",
+    viewLocked: "Sötét bánya: a teljes térkép három rög után nyílik meg.",
+    battery: "Akku",
+    batterySpoken: (radius: number, max: number) =>
+      `Akku: ${radius} / ${max}, a lámpa ${radius} mezőnyire világít.`,
+    lampBrokenTitle: "Összetört a lámpa",
+    lampBrokenBody:
+      "A robot falnak ment, a vázlat elveszett: a következő futás újra sötétben indul. Lépés előtt az isThere 1 megmutatja, hol a fal.",
+    lampSketch: (count: number) => `Vázlat: ${count} ismert mező`,
     keys: "Billentyűk",
     keysTitle: "Billentyűparancsok",
     gauges: "Műszerek",
@@ -506,10 +567,10 @@ export const hu = {
     blockedAnnounce: (count: number, line: number, title: string) =>
       `A program nem indítható: ${count} szintaktikai hiba. Első: ${lineRef(line)}, ${title}.`,
     runtimeErrorTitle: (code: RuntimeErrorCode, line: number) => `${code} · ${lineRef(line)}`,
-    runtimeErrorWithCode: (code: RuntimeErrorCode, line: number) =>
-      `${runtimeTitle(code)} ${articleFor(line)} ${lineRef(line)}ban · ${code}`,
-    runtimeErrorSpoken: (code: RuntimeErrorCode, line: number) =>
-      `${runtimeTitle(code)} ${articleFor(line)} ${lineRef(line)}ban. Hibakód: ${code}.`,
+    runtimeErrorWithCode: (code: RuntimeErrorCode, line: number, isOffMap = false) =>
+      `${runtimeTitle(code, isOffMap)} ${articleFor(line)} ${lineRef(line)}ban · ${code}`,
+    runtimeErrorSpoken: (code: RuntimeErrorCode, line: number, isOffMap = false) =>
+      `${runtimeTitle(code, isOffMap)} ${articleFor(line)} ${lineRef(line)}ban. Hibakód: ${code}.`,
     errorCodeLabel: "Hibakód",
     finishedBody: (gold: number, steps: number) =>
       `A program hiba nélkül lefutott: ${gold} arany, ${steps} lépés.`,
@@ -527,7 +588,7 @@ export const hu = {
       `A korábbi legjobbad számít: ${rank}. hely a ranglistán (${players} játékos).`,
     submitFailed: "Az eredményt nem sikerült rögzíteni.",
     submitRetry: "Rögzítés újra",
-    showLine: (line: number) => `Mutasd a(z) ${lineRef(line)}t`,
+    showLine: (line: number) => `Mutasd ${articleFor(line)} ${lineRef(line)}t`,
     insertGuard: (line: number) => `Falfigyelő ${articleFor(line)} ${lineRef(line)} elé`,
     guardInserted: (line: number) =>
       `Falfigyelő beszúrva ${articleFor(line)} ${lineRef(line)} elé. A Ctrl+Z visszavonja.`,
@@ -549,7 +610,8 @@ export const hu = {
     versionChip: (version: number) => `v${version}`,
     versionLong: (version: number) => `${version}. verzió`,
     mapMeta: (rows: number, cols: number, gold: number) => `${rows}×${cols} · ${gold} arany`,
-    recipeLoaded: (title: string) => `A(z) „${title}” recept betöltve. Futtatás: a robot indul.`,
+    recipeLoaded: (title: string) =>
+      `${capitalArticle(title)} „${title}” recept betöltve. Futtatás: a robot indul.`,
     replaceRecipeTitle: "Betöltöd a receptet?",
     shortcuts: [
       { keys: ["Ctrl+Enter", "F5"], action: "Futtatás" },
@@ -651,14 +713,14 @@ export const hu = {
     saveAsTitle: "Program mentése",
     titleField: "Program neve",
     titleInvisible: "A program neve nem lehet üres vagy csak láthatatlan karakter.",
-    saved: (title: string) => `A(z) „${title}” program elmentve.`,
+    saved: (title: string) => `${capitalArticle(title)} „${title}” program elmentve.`,
     load: "Megnyitás",
     loadFor: (title: string) => `Megnyitás: ${title}`,
-    loaded: (title: string) => `A(z) „${title}” program megnyitva.`,
+    loaded: (title: string) => `${capitalArticle(title)} „${title}” program megnyitva.`,
     remove: "Törlés",
     removeFor: (title: string) => `Törlés: ${title}`,
     removeTitle: "Biztosan törlöd a programot?",
-    removeBody: (title: string) => `A(z) „${title}” program végleg törlődik.`,
+    removeBody: (title: string) => `${capitalArticle(title)} „${title}” program végleg törlődik.`,
     removeConfirm: "Program törlése",
     removed: "A program törölve.",
     replaceTitle: "Felülírod a szerkesztő tartalmát?",
@@ -705,7 +767,8 @@ export const hu = {
   },
   runs: {
     title: "Futásaim",
-    meta: "a legutóbbi 100 futás",
+    meta: (total: number | null) =>
+      total === null ? "rögzített futások" : `${formatCount(total)} rögzített futás`,
     tableLabel: "Saját futások",
     when: "Időpont",
     map: "Pálya",
@@ -758,12 +821,10 @@ export const hu = {
     createSubmit: "Fiók létrehozása",
     createdToast: (username: string, role: string) => `${username} fiókja elkészült (${role}).`,
   },
-  manual,
   recipes: {
     back: "Kézikönyv",
     entry: "Receptek",
     entryLabel: "Receptek: kész programok minden pályához",
-    sectionMaps: "Pályák",
     sectionErrors: "Hibapróbák",
     sectionBadMaps: "Hibás térképek",
     errorsHint:
@@ -783,7 +844,8 @@ export const hu = {
     actions: "Műveletek",
     syntaxError: "szintaktikai hiba",
     notInDb: "Ez a pálya nincs az adatbázisban.",
-    loaded: (title: string) => `A(z) „${title}” recept betöltve. Futtatás: a robot indul.`,
+    loaded: (title: string) =>
+      `${capitalArticle(title)} „${title}” recept betöltve. Futtatás: a robot indul.`,
   },
   game: {
     nuggetsLabel: (earned: number) => `${earned} / 3 rög`,
@@ -834,7 +896,7 @@ export const hu = {
   tour: {
     askTitle: "Kérsz egy rövid bevezetőt?",
     askBody:
-      "Két perc alatt végigvezetünk az első pályán: megírod az első programodat, és kibányászod az első aranyat.",
+      "Két perc alatt bemutatjuk a két játékmódot, aztán egy bemelegítő pályán megírod az első programodat, és kibányászod az első aranyat.",
     accept: "Igen, mutasd",
     decline: "Nem, köszönöm",
     restart: "Bevezető újrakezdése",
@@ -920,14 +982,12 @@ export const hu = {
   },
   par: {
     field: "Célérték (lépés)",
-    help: "A 3. röghöz ennyi lépés a határ. Üresen hagyva legfeljebb 2 rög jár.",
     compute: "Gépi megoldás",
     computing: "Számolás…",
     computed: (steps: number) => `A gép megoldása ${steps} lépés.`,
     noSolution: "Ezen a térképen nincs kibányászható arany, ezért célérték sem adható.",
     failed: "A célértéket nem sikerült kiszámolni.",
-    stale:
-      "A térkép változott, mióta ezt a célértéket megadtad. Számold újra a Gépi megoldással, vagy írd át.",
+    stale: "A térkép azóta változott, számold újra.",
   },
   share: {
     copy: "Link másolása",

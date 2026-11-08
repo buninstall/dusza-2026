@@ -69,8 +69,61 @@ export async function logout(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/login/);
 }
 
+const VOWELS = "aáeéiíoóöőuúüű";
+
+export function articleFor(value: number): "a" | "az" {
+  const digits = String(Math.abs(Math.trunc(value)));
+  const startsWithVowel =
+    digits.startsWith("5") || (digits.startsWith("1") && digits.length % 3 === 1);
+  return startsWithVowel ? "az" : "a";
+}
+
+export function capitalArticle(text: string): "A" | "Az" {
+  const leadingNumber = /^\d+/.exec(text);
+  const isVowel = leadingNumber
+    ? articleFor(Number(leadingNumber[0])) === "az"
+    : VOWELS.includes(text.charAt(0).toLocaleLowerCase("hu")) && text !== "";
+  return isVowel ? "Az" : "A";
+}
+
+export function importRejection(page: Page): Locator {
+  return page.getByRole("alertdialog", { name: "A program nem tölthető be" });
+}
+
+export async function closeImportRejection(page: Page): Promise<void> {
+  await importRejection(page).getByRole("button", { name: "Bezárás" }).click();
+  await expect(importRejection(page)).toBeHidden();
+}
+
+type MapRow = { id: number; title: string };
+
+export async function mapIdByTitle(page: Page, title: string): Promise<number> {
+  const query = new URLSearchParams({ q: title, pageSize: "60" });
+  const response = await page.request.get(`/api/maps?${query.toString()}`);
+  expect(response.ok()).toBe(true);
+  const body = (await response.json()) as { maps: MapRow[] };
+  const found = body.maps.find((map) => map.title === title);
+  if (!found) {
+    throw new Error(`Nincs ilyen térkép: ${title}`);
+  }
+  return found.id;
+}
+
+export async function gotoEdit(page: Page, title: string): Promise<void> {
+  await page.goto(`/maps/${await mapIdByTitle(page, title)}/edit`);
+}
+
+export async function gotoLeaderboard(page: Page, title: string): Promise<void> {
+  await page.goto(`/leaderboard/${await mapIdByTitle(page, title)}`);
+}
+
 export async function openPlay(page: Page, title: string): Promise<void> {
-  await page.getByRole("link", { name: `Játék: ${title}`, exact: true }).click();
+  const link = page.getByRole("link", { name: `Játék: ${title}`, exact: true });
+  if ((await link.count()) > 0) {
+    await link.first().click();
+  } else {
+    await page.goto(`/play/${await mapIdByTitle(page, title)}`);
+  }
   await expect(page).toHaveURL(/\/play\/\d+/);
   await expect(page.getByRole("grid", { name: `${title} térképe` })).toBeVisible();
 }
@@ -217,9 +270,9 @@ export async function openLeaderboardFromPlay(page: Page): Promise<void> {
 }
 
 export function runtimeErrorReport(page: Page, line: number): Locator {
-  return page
-    .getByRole("status")
-    .filter({ has: page.getByRole("button", { name: `Mutasd a(z) ${line}. sort` }) });
+  return page.getByRole("status").filter({
+    has: page.getByRole("button", { name: `Mutasd ${articleFor(line)} ${line}. sort` }),
+  });
 }
 
 export function syntaxReport(page: Page): Locator {
@@ -264,8 +317,9 @@ export async function dismissToasts(page: Page): Promise<void> {
 export async function openFromLibrary(page: Page, title: string): Promise<void> {
   await page.getByRole("button", { name: "Programtár", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Mentett programok" });
+  await dialog.getByRole("searchbox", { name: "Keresés a programok között" }).fill(title);
   await dialog.getByRole("button", { name: `Megnyitás: ${title}`, exact: true }).click();
-  const loaded = page.getByText(`A(z) „${title}” program megnyitva.`).first();
+  const loaded = page.getByText(`${capitalArticle(title)} „${title}” program megnyitva.`).first();
   const confirm = dialog
     .getByRole("alert")
     .filter({ hasText: "Felülírod a szerkesztő tartalmát?" });
@@ -447,6 +501,7 @@ export async function focusedName(page: Page): Promise<string> {
     if (!element) {
       return "";
     }
-    return (element.getAttribute("aria-label") ?? element.textContent ?? "").trim();
+    const label = element instanceof HTMLInputElement ? element.labels?.[0]?.textContent : null;
+    return (element.getAttribute("aria-label") ?? label ?? element.textContent ?? "").trim();
   });
 }

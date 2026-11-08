@@ -17,7 +17,8 @@ test("a kézikönyv csendes bejárata a receptekhez vezet, onnan a recept a pál
   await expect(page.getByRole("heading", { level: 1, name: "Kézikönyv" })).toBeVisible();
   await page.getByRole("link", { name: "Receptek: kész programok minden pályához" }).click();
   await expect(page).toHaveURL(/\/manual\/receptek$/);
-  await expect(page.getByRole("heading", { level: 2, name: "Pályák" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Történet" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Homokozó bemutatók" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Hibapróbák" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Hibás térképek" })).toBeVisible();
 

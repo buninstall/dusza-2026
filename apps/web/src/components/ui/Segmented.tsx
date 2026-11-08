@@ -18,6 +18,7 @@ type SegmentedProps<K extends string> = {
   options: readonly SegmentOption<K>[];
   onChange: (value: K) => void;
   orientation?: "horizontal" | "vertical";
+  isDisabled?: boolean;
 };
 
 export function Segmented<K extends string>({
@@ -28,6 +29,7 @@ export function Segmented<K extends string>({
   options,
   onChange,
   orientation = "horizontal",
+  isDisabled = false,
 }: SegmentedProps<K>) {
   const handleChange = (next: string) => {
     const match = options.find((option) => option.id === next);
@@ -40,6 +42,7 @@ export function Segmented<K extends string>({
       value={value}
       onChange={handleChange}
       orientation={orientation}
+      isDisabled={isDisabled}
       className="seg"
       data-orientation={orientation}
     >

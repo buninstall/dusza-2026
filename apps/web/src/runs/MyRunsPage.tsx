@@ -1,14 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loading } from "../app/StatusScreens.tsx";
 import "../components/DataTable.css";
 import { EmptyState } from "../components/EmptyState.tsx";
 import { Led } from "../components/Led.tsx";
 import { LoadFailed } from "../components/LoadFailed.tsx";
 import { LocationPlate } from "../components/LocationPlate.tsx";
+import { Pager } from "../components/Pager.tsx";
 import { Link } from "../components/ui/Link.tsx";
 import { formatTime, hu } from "../i18n/hu.ts";
+import { pager } from "../i18n/hu-pager.ts";
 import "./MyRunsPage.css";
-import { myRunsQuery, type RunRow } from "./queries.ts";
+import { myRunsQuery, type RunPage, type RunRow } from "./queries.ts";
 
 function outcomeText(run: RunRow): string {
   if (run.outcomeKind === "ok" || run.errorCode === null || run.errorLine === null) {
@@ -81,16 +82,40 @@ function RunsTable({ runs }: { runs: readonly RunRow[] }) {
   );
 }
 
-export function MyRunsPage() {
-  const { data, error, refetch } = useQuery(myRunsQuery);
+type MyRunsPageProps = { page: number; onPageChange: (page: number) => void };
+
+function PagedRuns({
+  data,
+  isTurning,
+  onPageChange,
+}: {
+  data: RunPage;
+  isTurning: boolean;
+  onPageChange: (page: number) => void;
+}) {
+  const from = (data.page - 1) * data.pageSize;
+  return (
+    <>
+      <div aria-busy={isTurning} data-turning={isTurning} className="runs-paged">
+        <RunsTable runs={data.runs} />
+      </div>
+      <div className="runs-pager">
+        <p className="runs-range">{pager.range(from + 1, from + data.runs.length, data.total)}</p>
+        <Pager page={data.page} pageCount={data.pageCount} onChange={onPageChange} />
+      </div>
+    </>
+  );
+}
+
+export function MyRunsPage({ page, onPageChange }: MyRunsPageProps) {
+  const { data, error, refetch, isPlaceholderData } = useQuery(myRunsQuery(Math.max(1, page)));
   return (
     <div className="runs-page">
-      <LocationPlate name={hu.signs.runs} meta={hu.runs.meta} />
+      <LocationPlate name={hu.signs.runs} meta={hu.runs.meta(data?.total ?? null)} />
       {error ? (
         <LoadFailed error={error} fallback={hu.runs.loadFailed} onRetry={() => void refetch()} />
       ) : null}
-      {!data && !error ? <Loading /> : null}
-      {data?.runs.length === 0 ? (
+      {data?.total === 0 ? (
         <div className="runs-empty">
           <EmptyState
             text={hu.runs.empty}
@@ -102,7 +127,9 @@ export function MyRunsPage() {
           />
         </div>
       ) : null}
-      {data && data.runs.length > 0 ? <RunsTable runs={data.runs} /> : null}
+      {data && data.total > 0 ? (
+        <PagedRuns data={data} isTurning={isPlaceholderData} onPageChange={onPageChange} />
+      ) : null}
     </div>
   );
 }

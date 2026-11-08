@@ -7,7 +7,6 @@ import { hu } from "../i18n/hu.ts";
 import type { BoardInteraction } from "../mine/board-input.ts";
 import { MineBoard, type RulerMarks } from "../mine/MineBoard.tsx";
 import { PixelIcon } from "../pixel/PixelIcon.tsx";
-import { KeysPopover } from "../play/stage/KeysPopover.tsx";
 import { MAX_SIZE, MIN_SIZE } from "./editor-state.ts";
 
 type SizeProps = {
@@ -84,7 +83,6 @@ function CanvasStrip(props: StripProps) {
         <PixelIcon name="eye" />
         {hu.mapEditor.reach}
       </ToggleButton>
-      <KeysPopover rows={hu.mapEditor.shortcuts} />
     </div>
   );
 }

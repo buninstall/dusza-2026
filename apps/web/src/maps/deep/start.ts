@@ -1,4 +1,5 @@
-import { buildMine, type Level, type LevelInput } from "./build.ts";
+import { viewportWidth } from "../../lib/scrollbar-gap.ts";
+import { buildMine, type ChapterInput, type Level, type LevelInput } from "./build.ts";
 import { readDeepPalette } from "./palette.ts";
 import { runScene } from "./scene.ts";
 import { createView } from "./view.ts";
@@ -58,10 +59,21 @@ function readLevels(
   return { inputs, elements };
 }
 
+function readChapters(root: HTMLElement, scale: number): ChapterInput[] {
+  const marks = root.querySelectorAll<HTMLElement>(
+    `[${MINE_ATTR}="chapter"], [${MINE_ATTR}="counter"]`,
+  );
+  return [...marks].map((element) => ({
+    box: measureBox(element, scale),
+    stratum: Number(element.dataset.stratum ?? 1),
+    isFramed: element.dataset.mine === "chapter",
+  }));
+}
+
 export function startDeepScene(host: DeepHost): (() => void) | null {
   const plate = host.root.querySelector(`[${MINE_ATTR}="plate"]`);
-  const front = host.root.querySelector(`[${MINE_ATTR}="front"]`);
-  const viewWidth = document.documentElement.clientWidth;
+  const front = host.root.querySelector(`[${MINE_ATTR}="front"]`) ?? plate;
+  const viewWidth = viewportWidth();
   if (!plate || !front || viewWidth < MIN_WIDTH) return null;
   const isNarrow = viewWidth < NARROW_WIDTH;
   const scale = isNarrow ? 2 : 3;
@@ -78,6 +90,8 @@ export function startDeepScene(host: DeepHost): (() => void) | null {
     plate: measureBox(plate, scale),
     front: measureBox(front, scale),
     levels: inputs,
+    chapters: readChapters(host.root, scale),
+    hasDepthSigns: host.root.dataset.mode !== "sandbox",
     palette: readDeepPalette(host.paletteSource),
     digId: host.digId,
   });
@@ -97,6 +111,7 @@ export function startDeepScene(host: DeepHost): (() => void) | null {
     isStatic: host.isStatic,
     isFresh: host.isFresh,
     roofY,
+    isSilent: front instanceof HTMLElement && front.dataset.silent === "true",
     target: host.target,
     onDigDone: (level) => {
       const element = elementOf(level);

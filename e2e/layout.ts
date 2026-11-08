@@ -185,7 +185,20 @@ export async function auditLayout(page: Page, options: AuditOptions): Promise<La
         }
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
-        if (centerX > 0 && centerX < viewportWidth && centerY > 0 && centerY < viewportHeight) {
+        const scrollBox = scroller?.element.getBoundingClientRect();
+        const isInScroller =
+          !scrollBox ||
+          (centerX >= scrollBox.left &&
+            centerX <= scrollBox.right &&
+            centerY >= scrollBox.top &&
+            centerY <= scrollBox.bottom);
+        if (
+          isInScroller &&
+          centerX > 0 &&
+          centerX < viewportWidth &&
+          centerY > 0 &&
+          centerY < viewportHeight
+        ) {
           const top = document.elementFromPoint(centerX, centerY);
           if (top && !element.contains(top) && !top.contains(element) && !isExcluded(top)) {
             issues.push({ kind: "covered", target: name(element), detail: `by ${name(top)}` });

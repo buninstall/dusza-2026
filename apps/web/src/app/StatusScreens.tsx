@@ -7,30 +7,11 @@ import { hu } from "../i18n/hu.ts";
 import { errorMessage } from "../lib/api.ts";
 import { isServerTrouble, RECOVER_MS } from "../lib/query.ts";
 import { HazardStripe } from "../pixel/HazardStripe.tsx";
-import { LogoMark } from "../pixel/Logo.tsx";
 import { PixelText } from "../pixel/PixelText.tsx";
 import { PixelSprite } from "../pixel/SpriteLayers.tsx";
 import { SPRITE_ID, TILE_SIZE, TILE_SPRITES } from "../pixel/tiles.ts";
 import { useIsInShell } from "./AppShell.tsx";
 import "./StatusScreens.css";
-
-export function Loading({ label = hu.common.loading }: { label?: string }) {
-  return (
-    <output className="status-loading">
-      <span aria-hidden="true" className="status-loading-lamp" />
-      {label}
-    </output>
-  );
-}
-
-export function EngineLoading() {
-  return (
-    <output className="status-engine">
-      <LogoMark scale={4} lamp="pulse" />
-      <span className="status-engine-text">{hu.app.engineLoading}</span>
-    </output>
-  );
-}
 
 const RUBBLE_COLUMNS = new Set([2, 3]);
 const SCENE_COLUMNS = 7;

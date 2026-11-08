@@ -1,7 +1,9 @@
+import type { MineMap } from "@minescript/engine";
 import { useMemo } from "react";
 import type { RuntimeMark } from "../editor/exec-line.ts";
-import { runtimeErrors } from "../i18n/hu.ts";
+import { runtimeErrorText } from "../i18n/hu.ts";
 import { deriveFrame, type Frame } from "./derive.ts";
+import { isOffMapHit } from "./fault.ts";
 import {
   type Blocked,
   errorLinesOf,
@@ -25,7 +27,7 @@ export type PlayView = {
   runtimeMark: RuntimeMark | null;
 };
 
-export function usePlayView(editorSource: string, blocked: Blocked | null): PlayView {
+export function usePlayView(editorSource: string, blocked: Blocked | null, map: MineMap): PlayView {
   const result = usePlayback((state) => state.result);
   const runStart = usePlayback((state) => state.start);
   const runSource = usePlayback((state) => state.source);
@@ -50,12 +52,16 @@ export function usePlayView(editorSource: string, blocked: Blocked | null): Play
     [blocked],
   );
   const runtimeCode = outcome?.kind === "runtimeError" ? outcome.code : null;
+  const isOffMap = isOffMapHit(result, map);
   const runtimeMark = useMemo<RuntimeMark | null>(
     () =>
       runtimeLine !== null && runtimeCode !== null
-        ? { line: runtimeLine, text: `${runtimeErrors[runtimeCode].title} · ${runtimeCode}` }
+        ? {
+            line: runtimeLine,
+            text: `${runtimeErrorText(runtimeCode, isOffMap).title} · ${runtimeCode}`,
+          }
         : null,
-    [runtimeLine, runtimeCode],
+    [runtimeLine, runtimeCode, isOffMap],
   );
 
   return {

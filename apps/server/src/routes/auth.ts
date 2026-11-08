@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { requireUser } from "../auth/middleware.ts";
-import { verifyPassword } from "../auth/password.ts";
+import { hashPassword, verifyPassword } from "../auth/password.ts";
 import {
   clearSessionCookie,
   createSession,
@@ -17,6 +17,21 @@ import { clientAddress } from "../lib/request.ts";
 import { validationHook } from "../lib/validation.ts";
 import { createAccount } from "../services/accounts.ts";
 import { credentialsSchema } from "./schemas.ts";
+
+let decoyHash: Promise<string> | null = null;
+
+function decoy(): Promise<string> {
+  decoyHash ??= hashPassword(crypto.randomUUID());
+  return decoyHash;
+}
+
+async function checkPassword(password: string, hash: string | undefined): Promise<boolean> {
+  if (hash === undefined) {
+    await verifyPassword(password, await decoy());
+    return false;
+  }
+  return verifyPassword(password, hash);
+}
 
 function publicUser(user: SessionUser) {
   return { id: user.id, username: user.username, role: user.role, createdAt: user.createdAt };
@@ -46,7 +61,7 @@ export function authRoutes(deps: Deps) {
       }
       deps.limiter.record(limiterKey);
       const [user] = await deps.db.select().from(users).where(eq(users.username, username));
-      if (!user || !(await verifyPassword(password, user.passwordHash))) {
+      if (!(await checkPassword(password, user?.passwordHash)) || !user) {
         return apiError(c, 401, "INVALID_CREDENTIALS", "Hibás felhasználónév vagy jelszó.");
       }
       deps.limiter.reset(limiterKey);

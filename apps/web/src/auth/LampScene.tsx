@@ -17,13 +17,17 @@ export function LampScene({ panelRef }: LampSceneProps) {
     if (!canvas || !panel || !root || typeof ResizeObserver === "undefined") {
       return;
     }
-    let stop = startLampScene({ root, canvas, panel, isStatic });
+    const host = { root, canvas, panel, isStatic };
+    let scene = startLampScene(host);
     let timer = 0;
     const observer = new ResizeObserver(() => {
       window.clearTimeout(timer);
+      if (scene.relayout()) {
+        return;
+      }
       timer = window.setTimeout(() => {
-        stop();
-        stop = startLampScene({ root, canvas, panel, isStatic });
+        scene.stop();
+        scene = startLampScene(host);
       }, RESTART_DELAY_MS);
     });
     observer.observe(root);
@@ -31,7 +35,7 @@ export function LampScene({ panelRef }: LampSceneProps) {
     return () => {
       observer.disconnect();
       window.clearTimeout(timer);
-      stop();
+      scene.stop();
     };
   }, [panelRef, isStatic]);
 

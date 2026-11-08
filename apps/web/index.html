@@ -8,70 +8,37 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="MineScript" />
     <meta property="og:locale" content="hu_HU" />
-    <meta property="og:url" content="https://csapat13.dusza.cloudsyso.com/" />
+    <meta property="og:url" content="https://minescript.hu/" />
     <meta property="og:title" content="MineScript – a robot azt teszi, amit leírsz" />
     <meta property="og:description" content="Saját programnyelv, nyolc bánya, ranglista. Sorról sorra látod, mit csinál a kódod a föld alatt. Dusza Árpád Emlékverseny 2026/27, webes forduló." />
-    <meta property="og:image" content="https://csapat13.dusza.cloudsyso.com/brand/og-image.png" />
+    <meta property="og:image" content="https://minescript.hu/brand/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="MineScript: egy bányarobot halad a félig felfedezett bányában, mellette a programja: step forward 4, mine here, turn by 3." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="MineScript – a robot azt teszi, amit leírsz" />
     <meta name="twitter:description" content="Saját programnyelv, nyolc bánya, ranglista. Sorról sorra látod, mit csinál a kódod a föld alatt." />
-    <meta name="twitter:image" content="https://csapat13.dusza.cloudsyso.com/brand/og-image.png" />
+    <meta name="twitter:image" content="https://minescript.hu/brand/og-image.png" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>MineScript</title>
     <style>
-      #boot-splash {
+      .curtain {
         position: fixed;
         inset: 0;
-        z-index: 1001;
-        display: grid;
-        place-items: center;
-        background: #070605;
-        color: #bcae98;
-        font: 600 0.8rem / 1 ui-monospace, monospace;
-        letter-spacing: 0.12em;
-      }
-
-      #boot-splash span {
-        display: block;
-        width: 12rem;
-        height: 6px;
-        margin-bottom: 1.2rem;
+        z-index: 1000;
         overflow: hidden;
-        background: #2f2822;
+        background: var(--px-void, #070605);
       }
 
-      #boot-splash span::after {
-        content: "";
-        display: block;
-        width: 2.5rem;
-        height: 6px;
-        background: #f2b53a;
-        animation: boot-roll 1s steps(12, end) infinite;
-      }
-
-      @keyframes boot-roll {
-        from {
-          transform: translateX(-2.5rem);
-        }
-        to {
-          transform: translateX(12rem);
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        #boot-splash span::after {
-          animation: none;
-          transform: translateX(4.75rem);
-        }
+      :where(.curtain-box) {
+        visibility: hidden;
       }
     </style>
+    <noscript><style>.curtain { display: none; }</style></noscript>
   </head>
   <body>
     <noscript>A MineScript futtatásához engedélyezd a JavaScriptet a böngésződben.</noscript>
-    <div id="boot-splash" role="status"><div><span></span>Betöltés…</div></div>
+    <div id="curtain" class="curtain" data-phase="shown"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

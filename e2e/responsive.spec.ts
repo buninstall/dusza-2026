@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
-import { editor, login, openPlay, replaceProgram } from "./helpers.ts";
+import { editor, gotoLeaderboard, login, openPlay, replaceProgram } from "./helpers.ts";
 
 const WIDTHS = [320, 768, 1024, 1440] as const;
 const HEIGHT = 900;
@@ -44,6 +44,8 @@ for (const width of WIDTHS) {
     test("térképlista: nincs túlcsordulás, a navigáció használható", async ({ page }) => {
       await login(page);
       await noHorizontalOverflow(page);
+      await page.goto("/maps?mode=story");
+      await noHorizontalOverflow(page);
       await reachable(page, page.getByRole("link", { name: "Játék: 1. Egyenes folyosó" }));
     });
 
@@ -72,7 +74,7 @@ for (const width of WIDTHS) {
 
     test("ranglista: nincs túlcsordulás", async ({ page }) => {
       await login(page);
-      await page.getByRole("link", { name: "Ranglista: 1. Egyenes folyosó" }).click();
+      await gotoLeaderboard(page, "1. Egyenes folyosó");
       await expect(page.getByRole("heading", { level: 1, name: /Ranglista/ })).toBeVisible();
       await noHorizontalOverflow(page);
     });

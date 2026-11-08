@@ -7,6 +7,8 @@
 
 Webes játék a Dusza Árpád Országos Programozói Emlékverseny 2026/27 I. fordulójára. Egy elhagyott bányában a kincskereső robotot egy saját programnyelven, MineScriptben írt program vezérli: a játékos megírja a programot, a robot végrehajtja, a felület lassítva mutatja a mozgását, a felfedezett területet és a kibányászott aranyat, a ranglista pedig térképenként rangsorolja a játékosokat. Saját térképek is készíthetők.
 
+Élőben: <https://minescript.hu>
+
 A feladatleírás: [docs/feladat.md](docs/feladat.md).
 
 ## Gyorsindítás a kész programmal
@@ -23,7 +25,7 @@ A feladatleírás: [docs/feladat.md](docs/feladat.md).
 | `admin`                   | `dusza2026` | adminisztrátor |
 | `demo1`, `demo2`, `demo3` | `demo2026`  | játékos        |
 
-A program internet nélkül működik, az adatokat a MySQL-ben tárolja. Alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` címre kapcsolódik; más szerverhez a `DATABASE_URL` környezeti változót vagy a `--database-url` kapcsolót add meg (minta: `.env.example`). Első indításkor létrehozza a táblákat, és feltölti az adatbázist 8 oktató térképpel. Ha a MySQL nem érhető el, a program magyarul kiírja, mit kell tenni. Kapcsolók: `--port`, `--host`, `--database-url`, `--no-open`, `--reset-demo`.
+A program internet nélkül működik, az adatokat a MySQL-ben tárolja. Alapból a `mysql://minescript:minescript@127.0.0.1:3306/minescript` címre kapcsolódik; más szerverhez a `DATABASE_URL` környezeti változót vagy a `--database-url` kapcsolót add meg (minta: `.env.example`). Első indításkor létrehozza a táblákat, és kész játékkörnyezetet tölt fel: a Történet mód 30 pályáját, a Homokozó bemutató pályáit, a demó-fiókokat receptekkel és mintafutásokkal, valamint egy népes homokozót (100 játékos, 300 pálya; a `--no-crowd` kapcsolóval kihagyható). Ha a MySQL nem érhető el, a program magyarul kiírja, mit kell tenni. Kapcsolók: `--port`, `--host`, `--database-url`, `--no-open`, `--no-crowd`, `--reset-demo`.
 
 ## Fejlesztői gyorsindítás
 
@@ -74,6 +76,18 @@ A `just setup` a többit maga telepíti: a `wasm32-unknown-unknown` célt, a `Ca
 | `just ci`          | lint, test, build, e2e                                           |
 | `just clean`       | buildtermékek törlése                                            |
 
+## Lámpafény-mód: sötét bánya a nehezebb pályákon
+
+A bánya a kiírás szerint sötét, és a robot „tapogatózva halad előre”. A Lámpafény-mód ezt játékszabállyá teszi a nehezebb pályákon:
+
+- **Sötét bánya:** a pálya mérete látszik, a labirintus nem. Csak az látszik, amit a robot felfedezett vagy a lámpája megvilágított.
+- **Arany = fény:** minden kibányászott rög feltölti a robot akkumulátorát, és a lámpa fénykörének sugara eggyel nő, legfeljebb négyig.
+- **Vázlat:** ami egyszer kiderült, a következő futás előtt is látszik, így a játék ritmusa felderítés, tervezés, jobb program.
+- **Fal = sötétség:** ha a robot falnak megy, összetörik a lámpa, a vázlat elvész, és a játékos újra vaksötétben áll. Aki lépés előtt `isThere 1`-gyel tapogat, az soha nem veszíti el.
+- **Kiérdemelt térkép:** három rög után feloldódik a Teljes térkép, és jöhet a lépésszám csiszolása a ranglistáért.
+
+A kampány 1–4. pályája nyitott, ott a játékos az utasításokat tanulja; az 5–6. pálya Lámpafény, a 7–8. Vaksötét (a lámpa üres akkuval indul). Saját pályán a térképszerkesztőben választható a fokozat. A mód a nyelv viselkedését, a lépésszámlálást és a ranglista rendezését nem változtatja, a motorhoz nem nyúl. Az ötlet a felkészítő tanárunktól származik; a szabályok, a kiírással való összevetés és a megvalósítás állapota: [docs/jatekelmeny.md](docs/jatekelmeny.md).
+
 ## Fejlesztési ötletek és megvalósításuk
 
 A kötelező funkciók után a többi versenymegoldás nyilvános felületét is átnéztük, és azt kerestük, mitől lesz a MineScript valódi játék, nem csak egy programfuttató. Az ötleteket hatás szerint rangsoroltuk, majd egy takarítási körben mindent kivettünk, ami csak helyet foglalt. Az alábbi táblázat mutatja, mi valósult meg, és hol érhető el.
@@ -98,6 +112,7 @@ A kötelező funkciók után a többi versenymegoldás nyilvános felületét is
 | A robot nyomvonala          | kivettük    | A felfedezett mezők jelölése mellett fölösleges vizuális zaj volt.                                                                                                                                                |
 | Két futás összevetése       | elvetettük  | A ranglista, a saját futások és a visszajátszás együtt már megmutatja a különbséget.                                                                                                                              |
 | Fokozatos tipp-gomb         | elvetettük  | A receptek és a Kézikönyv próbapadjai ezt lefedik; egy félmegoldást adó gomb a verseny jellegét rontaná.                                                                                                          |
+| Lámpafény-mód               | megvalósult | Sötét bánya az 5–8. pályán, arannyal növő fénykör, falnál elvesző vázlat, három rög után Teljes térkép; a szerkesztőben választható. Lásd fent és a [docs/jatekelmeny.md](docs/jatekelmeny.md).                   |
 | Golf-mód, VS Code-bővítmény | később      | Lásd a beadandó továbbfejlesztési javaslatait ([docs/beadando.md](docs/beadando.md)).                                                                                                                             |
 
 ## Dokumentáció
@@ -111,6 +126,7 @@ A kötelező funkciók után a többi versenymegoldás nyilvános felületét is
 | [docs/tesztterv.md](docs/tesztterv.md)         | spec-mátrix és tesztlefedettség            |
 | [docs/a11y.md](docs/a11y.md)                   | WCAG 2.2 AA ellenőrzőlista                 |
 | [docs/beadando.md](docs/beadando.md)           | a beadandó leírás                          |
+| [docs/jatekelmeny.md](docs/jatekelmeny.md)     | a Lámpafény-mód terve                      |
 | [conformance/README.md](conformance/README.md) | a conformance-esetek formátuma             |
 
 ## Csapat

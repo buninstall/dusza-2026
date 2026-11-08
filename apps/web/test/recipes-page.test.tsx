@@ -1,10 +1,10 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
-import { recipeText } from "../src/recipes/catalog.ts";
-import { respond } from "./support/api.ts";
+import { MAP_RECIPES, normaliseMap, recipeText } from "../src/recipes/catalog.ts";
+import { onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { mapDetail, mapSummary } from "./support/fixtures.ts";
+import { mapDetail } from "./support/fixtures.ts";
 
 const CORRIDOR = recipeText("palyak/01-egyenes-folyoso.txt");
 const RECIPE = recipeText("01-egyenes-folyoso.ms");
@@ -21,7 +21,16 @@ function openCorridor(search: string) {
 
 describe("receptek oldal", () => {
   test("a pályához illesztett recept megnyitható, a hiányzó pályáé letiltva, minden letölthető", async () => {
-    respond("GET", "/maps", { maps: [mapSummary(1, "1. Egyenes folyosó", CORRIDOR)] });
+    onApi("POST", "/maps/match", (request) => {
+      const { contents } = request.body as { contents: string[] };
+      return {
+        body: {
+          ids: contents.map((content) =>
+            normaliseMap(content) === normaliseMap(CORRIDOR) ? 1 : null,
+          ),
+        },
+      };
+    });
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, "click")
       .mockImplementation(() => undefined);
@@ -30,7 +39,11 @@ describe("receptek oldal", () => {
     const { user } = renderApp("/manual/receptek");
     const open = await screen.findByRole("link", { name: "Megnyitás: 01-egyenes-folyoso.ms" });
     expect(open.getAttribute("href")).toBe("/play/1?recept=01-egyenes-folyoso");
-    expect(screen.getAllByText("Ez a pálya nincs az adatbázisban.").length).toBe(7);
+    const missing = MAP_RECIPES.filter(
+      (recipe) => normaliseMap(recipeText(recipe.mapFile)) !== normaliseMap(CORRIDOR),
+    );
+    expect(screen.getAllByText("Ez a pálya nincs az adatbázisban.").length).toBe(missing.length);
+    expect(screen.getByRole("heading", { level: 2, name: "Homokozó bemutatók" })).toBeTruthy();
     expect(screen.getByRole("heading", { level: 2, name: "Hibapróbák" })).toBeTruthy();
     const errors = screen.getByRole("table", { name: "Hibapróbák" });
     expect(within(errors).getByText("E_INT_OVERFLOW")).toBeTruthy();
@@ -95,10 +108,12 @@ describe("kézikönyv", () => {
     expect(within(pager).getByRole("link", { name: /^Előző\s*Az első program$/ })).toBeTruthy();
     const user = userEvent.setup();
     await user.click(
-      within(pager).getByRole("link", { name: /^Következő\s*A program szabályai$/ }),
+      within(pager).getByRole("link", {
+        name: /^Következő\s*Sötét bányák: Lámpafény és Vaksötét$/,
+      }),
     );
-    await waitFor(() => expect(router.state.location.hash).toBe("felepites"));
-    const heading = await screen.findByRole("heading", { level: 2, name: /A program szabályai/ });
+    await waitFor(() => expect(router.state.location.hash).toBe("lampafeny"));
+    const heading = await screen.findByRole("heading", { level: 2, name: /Sötét bányák/ });
     await waitFor(() => expect(document.activeElement).toBe(heading));
   });
 
@@ -106,7 +121,9 @@ describe("kézikönyv", () => {
     renderApp("/manual");
     const pager = await screen.findByRole("navigation", { name: "Lapozás a fejezetek között" });
     expect(within(pager).getAllByRole("link")).toHaveLength(1);
-    expect(within(pager).getByRole("link", { name: /^Következő\s*Az első program$/ })).toBeTruthy();
+    expect(
+      within(pager).getByRole("link", { name: /^Következő\s*Homokozó és Történet$/ }),
+    ).toBeTruthy();
   });
 
   test("a fejezet próbapadja lejátssza a példát a mini pályán", async () => {

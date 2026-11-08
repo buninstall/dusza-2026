@@ -1,8 +1,12 @@
+import type { CSSProperties } from "react";
 import { Link } from "../components/ui/Link.tsx";
 import { NuggetRow } from "../game/NuggetRow.tsx";
 import { hu } from "../i18n/hu.ts";
+import { story } from "../i18n/hu-story.ts";
 import { MapPreview, type PreviewBox } from "../mine/MapPreview.tsx";
+import { PixelIcon } from "../pixel/PixelIcon.tsx";
 import { PixelText } from "../pixel/PixelText.tsx";
+import { FavoriteButton } from "./FavoriteButton.tsx";
 import type { MapSummary } from "./queries.ts";
 
 type LevelTileProps = {
@@ -10,12 +14,17 @@ type LevelTileProps = {
   depth: number;
   box: PreviewBox;
   canEdit: boolean;
+  headingLevel?: 2 | 3;
+  isLocked?: boolean;
+  hasDepth?: boolean;
+  hasFavorite?: boolean;
+  style?: CSSProperties | undefined;
 };
 
 export function MapFacts({ map }: { map: MapSummary }) {
   return (
     <p className="lv-facts">
-      <span className="lv-author">{hu.maps.by(map.ownerName)}</span>
+      {map.isStory ? null : <span className="lv-author">{hu.maps.by(map.ownerName)}</span>}
       {map.difficulty ? (
         <span className="lv-difficulty" data-level={map.difficulty}>
           {hu.maps.difficulty[map.difficulty]}
@@ -39,38 +48,78 @@ export function Progress({ map }: { map: MapSummary }) {
   );
 }
 
-export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
+function PlayAction({ map, isLocked }: { map: MapSummary; isLocked: boolean }) {
+  if (isLocked) {
+    return (
+      <p className="lv-locked">
+        <PixelIcon name="lock" />
+        <span>{story.lockedTile}</span>
+      </p>
+    );
+  }
+  return (
+    <Link
+      to="/play/$mapId"
+      params={{ mapId: String(map.id) }}
+      variant="primary"
+      icon="play"
+      className="lv-play"
+      aria-label={hu.maps.actionFor(hu.maps.play, map.title)}
+    >
+      {hu.maps.play}
+    </Link>
+  );
+}
+
+export function LevelTile({
+  map,
+  depth,
+  box,
+  canEdit,
+  headingLevel = 2,
+  isLocked = false,
+  hasDepth = true,
+  hasFavorite = false,
+  style,
+}: LevelTileProps) {
   const mapId = String(map.id);
   const level = hu.signs.level(depth);
+  const Title = headingLevel === 3 ? "h3" : "h2";
   return (
-    <li className="lv-tile" data-mine="level" data-map-id={mapId} data-stars={map.stars ?? -1}>
+    <li
+      className="lv-tile"
+      data-mine="level"
+      data-map-id={mapId}
+      data-stars={isLocked ? -1 : (map.stars ?? -1)}
+      data-locked={isLocked}
+      style={style}
+    >
       <div className="lv-window" data-mine-pit="">
         <MapPreview content={map.content} box={box} className="lv-preview" isFitted />
+        {isLocked ? (
+          <span className="lv-padlock">
+            <PixelIcon name="lock" size="lg" />
+          </span>
+        ) : null}
       </div>
       <div className="lv-body">
         <div className="lv-head">
-          <p className="lv-depth">
-            <PixelText text={level} scale={2} />
-            <span className="visually-hidden">{level}</span>
-          </p>
-          <h2 className="lv-title">{map.title}</h2>
+          {hasDepth ? (
+            <p className="lv-depth">
+              <PixelText text={level} scale={2} />
+              <span className="visually-hidden">{level}</span>
+            </p>
+          ) : null}
+          <Title className="lv-title">{map.title}</Title>
         </div>
         <div className="lv-meta">
           <MapFacts map={map} />
-          <Progress map={map} />
+          {hasFavorite ? <FavoriteButton map={map} /> : null}
+          {isLocked ? null : <Progress map={map} />}
         </div>
       </div>
       <div className="lv-actions">
-        <Link
-          to="/play/$mapId"
-          params={{ mapId }}
-          variant="primary"
-          icon="play"
-          className="lv-play"
-          aria-label={hu.maps.actionFor(hu.maps.play, map.title)}
-        >
-          {hu.maps.play}
-        </Link>
+        <PlayAction map={map} isLocked={isLocked} />
         <Link
           to="/leaderboard/$mapId"
           params={{ mapId }}
@@ -93,7 +142,9 @@ export function LevelTile({ map, depth, box, canEdit }: LevelTileProps) {
           >
             <span className="visually-hidden">{hu.maps.edit}</span>
           </Link>
-        ) : null}
+        ) : (
+          <span className="lv-action-slot" aria-hidden="true" />
+        )}
       </div>
     </li>
   );

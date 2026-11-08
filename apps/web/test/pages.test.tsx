@@ -1,21 +1,34 @@
 import { act, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
 import { toast } from "../src/components/ui/Toast.tsx";
+import { CHAPTERS } from "../src/i18n/hu-story.ts";
 import { apiError, callsTo, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { CORRIDOR, demoUser, LABYRINTH, mapDetail, mapSummary } from "./support/fixtures.ts";
+import {
+  CORRIDOR,
+  demoUser,
+  LABYRINTH,
+  mapDetail,
+  mapPage,
+  mapSummary,
+  respondMaps,
+  respondRuns,
+  respondUsers,
+} from "./support/fixtures.ts";
 
 const MAPS = [mapSummary(1, "Folyosó", CORRIDOR), mapSummary(2, "Labirintus", LABYRINTH, 2)];
 
 describe("térképlista", () => {
-  test("szintenként mutatja a térképeket, a szerkesztés csak a sajátnál látszik", async () => {
-    respond("GET", "/maps", { maps: MAPS });
+  test("a homokozó szintszám nélkül, a legújabbal kezdve listáz; szerkeszteni csak a sajátot lehet", async () => {
+    respondMaps(MAPS);
     renderApp("/maps");
     const list = await screen.findByRole("list", { name: "Pályák listája" });
     const levels = within(list).getAllByRole("listitem");
     expect(levels).toHaveLength(2);
-    expect(within(levels[0] as HTMLElement).getByText("Szint 01")).toBeTruthy();
-    expect(within(levels[0] as HTMLElement).getByText("Készítette: admin")).toBeTruthy();
+    expect(within(list).queryByText(/^Szint \d+$/)).toBeNull();
+    expect(within(list).getByText("Készítette: admin")).toBeTruthy();
+    expect(screen.getByText("1–2 / 2 pálya")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Játék: Folyosó" }).getAttribute("href")).toBe(
       "/play/1",
     );
@@ -24,21 +37,50 @@ describe("térképlista", () => {
     expect(screen.getByRole("link", { name: "Szerkesztés: Labirintus" })).toBeTruthy();
   });
 
+  test("a történet mód szintenként mutatja a kampányt, a zárt fejezet pályáin lakat van", async () => {
+    const story = CHAPTERS.flatMap((chapter, c) =>
+      chapter.levels.map((title, k) => ({
+        ...mapSummary(c * 5 + k + 1, title, CORRIDOR),
+        isStory: true,
+      })),
+    );
+    respondMaps(story);
+    renderApp("/maps?mode=story");
+    const first = await screen.findByRole("list", { name: "I. fejezet pályái" });
+    expect(within(first).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(first).getByText("Szint 01")).toBeTruthy();
+    expect(screen.queryByText(/^Készítette:/)).toBeNull();
+    const second = screen.getByRole("list", { name: "II. fejezet pályái" });
+    expect(within(second).getAllByText("Zárva")).toHaveLength(5);
+    expect(within(second).queryByRole("link", { name: /^Játék:/ })).toBeNull();
+    expect(screen.getAllByText("Zárva")).toHaveLength(25);
+    expect(
+      screen.getByText(
+        "Még 5 pályán kell minden aranyat kibányászni, hogy kinyíljon a II. fejezet.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Még 20 pályán kell minden aranyat kibányászni, hogy kinyíljon az V. fejezet.",
+      ),
+    ).toBeTruthy();
+  });
+
   test("a Sajátjaim fül a scope=mine lekérdezést használja, üresen tippet ad", async () => {
+    respondMaps(MAPS);
     onApi("GET", "/maps", (request) => ({
-      body: { maps: request.search.get("scope") === "mine" ? [] : MAPS },
+      body: mapPage(request.search.get("scope") === "mine" ? [] : MAPS, request.search),
     }));
     const { user } = renderApp("/maps");
     await screen.findByRole("list", { name: "Pályák listája" });
     await user.click(screen.getByRole("tab", { name: "Sajátjaim" }));
     expect(await screen.findByText(/Még nincs saját pályád/)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Fúrófront" })).toBeTruthy();
     expect(callsTo("GET", "/maps").some((call) => call.search.get("scope") === "mine")).toBe(true);
   });
 
   test("az admin minden térképet szerkeszthet", async () => {
-    respond("GET", "/maps", {
-      maps: [{ ...mapSummary(3, "Titkos", CORRIDOR, 2), visibility: "private" }],
-    });
+    respondMaps([{ ...mapSummary(3, "Titkos", CORRIDOR, 2), visibility: "private" }]);
     renderApp("/maps", "admin");
     expect(await screen.findByRole("link", { name: "Szerkesztés: Titkos" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Felhasználók" })).toBeTruthy();
@@ -46,11 +88,12 @@ describe("térképlista", () => {
 
   test("betöltési hiba magyar üzenettel és újrapróbálással", async () => {
     let attempts = 0;
-    onApi("GET", "/maps", () => {
+    respondMaps([]);
+    onApi("GET", "/maps", (request) => {
       attempts += 1;
       return attempts < 2
         ? apiError(500, "INTERNAL", "Belső hiba történt.")
-        : { body: { maps: [] } };
+        : { body: mapPage([], request.search) };
     });
     const { user } = renderApp("/maps");
     expect((await screen.findByRole("alert", undefined, { timeout: 4000 })).textContent).toContain(
@@ -203,36 +246,34 @@ describe("ranglista részletei", () => {
 
 describe("futásaim", () => {
   test("a kimenet hibakóddal és sorral", async () => {
-    respond("GET", "/me/runs", {
-      runs: [
-        {
-          id: 1,
-          mapId: 2,
-          mapTitle: "Labirintus",
-          mapVersionId: 22,
-          version: 2,
-          gold: 1,
-          steps: 9,
-          outcomeKind: "runtimeError",
-          errorCode: "E_NO_GOLD",
-          errorLine: 4,
-          createdAt: 1,
-        },
-        {
-          id: 2,
-          mapId: 1,
-          mapTitle: "Folyosó",
-          mapVersionId: 11,
-          version: 1,
-          gold: 2,
-          steps: 8,
-          outcomeKind: "ok",
-          errorCode: null,
-          errorLine: null,
-          createdAt: 2,
-        },
-      ],
-    });
+    respondRuns([
+      {
+        id: 1,
+        mapId: 2,
+        mapTitle: "Labirintus",
+        mapVersionId: 22,
+        version: 2,
+        gold: 1,
+        steps: 9,
+        outcomeKind: "runtimeError",
+        errorCode: "E_NO_GOLD",
+        errorLine: 4,
+        createdAt: 1,
+      },
+      {
+        id: 2,
+        mapId: 1,
+        mapTitle: "Folyosó",
+        mapVersionId: 11,
+        version: 1,
+        gold: 2,
+        steps: 8,
+        outcomeKind: "ok",
+        errorCode: null,
+        errorLine: null,
+        createdAt: 2,
+      },
+    ]);
     renderApp("/runs");
     expect(await screen.findByText("E_NO_GOLD, 4. sor")).toBeTruthy();
     expect(screen.getByText("hiba nélkül")).toBeTruthy();
@@ -241,10 +282,89 @@ describe("futásaim", () => {
     );
   });
 
+  test("kilencesével lapoz, számokkal és előre-hátra gombbal", async () => {
+    const runs = Array.from({ length: 20 }, (_, index) => ({
+      id: index + 1,
+      mapId: 1,
+      mapTitle: `Pálya ${index + 1}`,
+      mapVersionId: 11,
+      version: 1,
+      gold: 1,
+      steps: 5,
+      outcomeKind: "ok",
+      errorCode: null,
+      errorLine: null,
+      createdAt: index + 1,
+    }));
+    respondRuns(runs);
+    const { router } = renderApp("/runs");
+    const user = userEvent.setup();
+    expect(await screen.findByRole("link", { name: "Pálya 1" })).toBeTruthy();
+    expect(screen.getAllByRole("row")).toHaveLength(10);
+    expect(screen.getByText("1–9 / 20")).toBeTruthy();
+    const pager = screen.getByRole("navigation", { name: "Lapozás" });
+    expect(within(pager).getByRole("button", { name: "Előző" }).hasAttribute("disabled")).toBe(
+      true,
+    );
+    await user.click(within(pager).getByRole("button", { name: "3. oldal" }));
+    await waitFor(() => expect(router.state.location.search).toEqual({ page: 3 }));
+    expect(await screen.findByRole("link", { name: "Pálya 19" })).toBeTruthy();
+    expect(screen.getByText("19–20 / 20")).toBeTruthy();
+    await user.click(within(pager).getByRole("button", { name: "Előző" }));
+    expect(await screen.findByRole("link", { name: "Pálya 10" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Pálya 1" })).toBeNull();
+  });
+
   test("üres napló", async () => {
-    respond("GET", "/me/runs", { runs: [] });
+    respondRuns([]);
     renderApp("/runs");
     expect(await screen.findByText(/Még nincs rögzített futásod/)).toBeTruthy();
+  });
+});
+
+describe("adminisztráció lapozva", () => {
+  test("kilencesével lapoz, és név szerint keres", async () => {
+    const accounts = Array.from({ length: 20 }, (_, index) => ({
+      id: index + 1,
+      username: index === 0 ? "admin" : `banyasz${String(index).padStart(2, "0")}`,
+      role: index === 0 ? "admin" : "user",
+      createdAt: index,
+    }));
+    respondUsers(accounts);
+    const { user, router } = renderApp("/admin", "admin");
+    const table = await screen.findByRole("table", { name: "Felhasználók" });
+    expect(within(table).getAllByRole("row")).toHaveLength(10);
+    expect(screen.getByText("1–9 / 20")).toBeTruthy();
+    expect(screen.getByText("20 fiók · 1 adminisztrátor")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "3. oldal" }));
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ page: 3 }));
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table", { name: "Felhasználók" })).getAllByRole("row"),
+      ).toHaveLength(3),
+    );
+    await user.type(
+      screen.getByRole("searchbox", { name: "Keresés a felhasználók között" }),
+      "sz1",
+    );
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "sz1", page: 1 }));
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table", { name: "Felhasználók" }))
+          .getAllByRole("rowheader")
+          .map((cell) => cell.textContent),
+      ).toEqual([
+        "banyasz10",
+        "banyasz11",
+        "banyasz12",
+        "banyasz13",
+        "banyasz14",
+        "banyasz15",
+        "banyasz16",
+        "banyasz17",
+        "banyasz18",
+      ]),
+    );
   });
 });
 
@@ -255,7 +375,7 @@ describe("adminisztráció", () => {
   ];
 
   test("szerepkör váltása és fiók törlése megerősítéssel, saját sor érinthetetlen", async () => {
-    respond("GET", "/admin/users", { users: USERS });
+    respondUsers(USERS);
     respond("PATCH", "/admin/users/2", { user: { ...USERS[1], role: "admin" } });
     respond("DELETE", "/admin/users/2", { ok: true });
     const { user } = renderApp("/admin", "admin");
@@ -273,7 +393,7 @@ describe("adminisztráció", () => {
   });
 
   test("új felhasználó létrehozása szerepkörrel, foglalt névre hibaüzenet", async () => {
-    respond("GET", "/admin/users", { users: USERS });
+    respondUsers(USERS);
     onApi("POST", "/admin/users", () =>
       apiError(409, "USERNAME_TAKEN", "Ez a felhasználónév már foglalt."),
     );
@@ -308,7 +428,7 @@ describe("adminisztráció", () => {
   });
 
   test("hibás művelet hibaüzenetet ad, a nem admin visszakerül a térképekhez", async () => {
-    respond("GET", "/admin/users", { users: USERS });
+    respondUsers(USERS);
     onApi("PATCH", "/admin/users/2", () => apiError(409, "SELF_CHANGE", "Nem módosítható."));
     const { user } = renderApp("/admin", "admin");
     await user.click(await screen.findByRole("button", { name: "Adminná tétel: demo1" }));
@@ -316,7 +436,7 @@ describe("adminisztráció", () => {
   });
 
   test("játékos nem éri el", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { router } = renderApp("/admin");
     await screen.findByRole("heading", { level: 1, name: "Pályák" });
     expect(router.state.location.pathname).toBe("/maps");
@@ -324,6 +444,17 @@ describe("adminisztráció", () => {
 });
 
 describe("keret, kézikönyv és hibaképernyők", () => {
+  test("a kézikönyv a hangerő mellett, csukott könyv ikonnal nyílik", async () => {
+    respondMaps([]);
+    renderApp("/maps");
+    const help = await screen.findByRole("navigation", { name: "Kézikönyv" });
+    expect(within(help).getByRole("link", { name: "Kézikönyv" }).getAttribute("href")).toBe(
+      "/manual",
+    );
+    const main = screen.getByRole("navigation", { name: "Fő navigáció" });
+    expect(within(main).queryByRole("link", { name: /Kézikönyv/ })).toBeNull();
+  });
+
   test("a kézikönyv fejezetei választhatók, a kód kiemelt", async () => {
     renderApp("/manual#lepesek");
     const chapters = await screen.findByRole("navigation", { name: "Tartalom" });
@@ -336,7 +467,7 @@ describe("keret, kézikönyv és hibaképernyők", () => {
   });
 
   test("kijelentkezés a felhasználói menüből", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     respond("POST", "/auth/logout", { ok: true });
     const { user, router } = renderApp("/maps");
     await user.click(
@@ -348,7 +479,7 @@ describe("keret, kézikönyv és hibaképernyők", () => {
   });
 
   test("kijelentkezéskor az előző felhasználó értesítései eltűnnek", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     respond("POST", "/auth/logout", { ok: true });
     const { user, router } = renderApp("/maps");
     act(() => {
@@ -370,7 +501,7 @@ describe("keret, kézikönyv és hibaképernyők", () => {
   });
 
   test("a gyökér a térképekhez irányít", async () => {
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { router } = renderApp("/");
     await screen.findByRole("heading", { level: 1, name: "Pályák" });
     expect(router.state.location.pathname).toBe("/maps");

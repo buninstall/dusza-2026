@@ -254,3 +254,10 @@
   white-space: nowrap;
   text-align: right;
 }
+
+.lb-story-lead {
+  max-width: var(--prose-max);
+  margin: 0;
+  font: var(--type-body);
+  color: var(--c-text-muted);
+}

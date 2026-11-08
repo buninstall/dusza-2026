@@ -8,6 +8,7 @@ import {
   mediumtext,
   mysqlEnum,
   mysqlTable,
+  primaryKey,
   text,
   uniqueIndex,
   varchar,
@@ -16,10 +17,14 @@ import {
 export const ROLES = ["admin", "user"] as const;
 export const VISIBILITIES = ["public", "private"] as const;
 export const OUTCOME_KINDS = ["ok", "runtimeError"] as const;
+export const LAMP_MODES = ["open", "lamp", "dark"] as const;
+export const DIFFICULTY_MARKS = ["easy", "medium", "hard", "none"] as const;
 
 export type Role = (typeof ROLES)[number];
 export type Visibility = (typeof VISIBILITIES)[number];
 export type RecordedOutcome = (typeof OUTCOME_KINDS)[number];
+export type LampMode = (typeof LAMP_MODES)[number];
+export type DifficultyMark = (typeof DIFFICULTY_MARKS)[number];
 
 export const COLLATION = "utf8mb4_0900_ai_ci";
 
@@ -73,13 +78,18 @@ export const maps = mysqlTable(
     visibility: mysqlEnum("visibility", VISIBILITIES).notNull().default("public"),
     currentVersionId: int("current_version_id"),
     parSteps: int("par_steps"),
+    lampMode: mysqlEnum("lamp_mode", LAMP_MODES).notNull().default("open"),
     dailyDate: char("daily_date", { length: DAY_KEY_LENGTH }),
+    favoriteCount: int("favorite_count").notNull().default(0),
     createdAt: millis("created_at").notNull(),
     updatedAt: millis("updated_at").notNull(),
   },
   (table) => [
     index("maps_owner_idx").on(table.ownerId),
     uniqueIndex("maps_daily_date_idx").on(table.dailyDate),
+    index("maps_created_idx").on(table.createdAt, table.id),
+    index("maps_updated_idx").on(table.updatedAt, table.id),
+    index("maps_favorite_idx").on(table.favoriteCount, table.id),
   ],
 );
 
@@ -97,9 +107,31 @@ export const mapVersions = mysqlTable(
     cols: int("cols").notNull(),
     goldTotal: int("gold_total").notNull(),
     reachableGold: int("reachable_gold").notNull(),
+    difficulty: mysqlEnum("difficulty", DIFFICULTY_MARKS),
     createdAt: millis("created_at").notNull(),
   },
-  (table) => [uniqueIndex("map_versions_map_version_idx").on(table.mapId, table.version)],
+  (table) => [
+    uniqueIndex("map_versions_map_version_idx").on(table.mapId, table.version),
+    index("map_versions_hash_idx").on(table.contentHash),
+  ],
+);
+
+export const mapFavorites = mysqlTable(
+  "map_favorites",
+  {
+    userId: int("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    mapId: int("map_id")
+      .notNull()
+      .references(() => maps.id, { onDelete: "cascade" }),
+    createdAt: millis("created_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.mapId] }),
+    index("map_favorites_map_idx").on(table.mapId),
+    index("map_favorites_user_created_idx").on(table.userId, table.createdAt),
+  ],
 );
 
 export const programs = mysqlTable(
@@ -113,7 +145,7 @@ export const programs = mysqlTable(
     source: mediumtext("source").notNull(),
     updatedAt: millis("updated_at").notNull(),
   },
-  (table) => [index("programs_owner_idx").on(table.ownerId)],
+  (table) => [index("programs_owner_updated_idx").on(table.ownerId, table.updatedAt)],
 );
 
 export const runs = mysqlTable(
@@ -142,7 +174,8 @@ export const runs = mysqlTable(
       table.steps,
       table.createdAt,
     ),
-    index("runs_user_idx").on(table.userId),
+    index("runs_user_created_idx").on(table.userId, table.createdAt),
+    index("runs_user_version_idx").on(table.userId, table.mapVersionId),
   ],
 );
 
@@ -151,3 +184,4 @@ export type MapRow = typeof maps.$inferSelect;
 export type MapVersionRow = typeof mapVersions.$inferSelect;
 export type ProgramRow = typeof programs.$inferSelect;
 export type RunRow = typeof runs.$inferSelect;
+export type MapFavoriteRow = typeof mapFavorites.$inferSelect;

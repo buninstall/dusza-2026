@@ -1,8 +1,8 @@
 import { useIsFetching } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { hu } from "../i18n/hu.ts";
-import { LogoMark } from "../pixel/Logo.tsx";
+import "../pixel/pixel.css";
+import { CURTAIN_ID } from "./curtain-html.ts";
 import { useReadyHolds } from "./readiness.ts";
 import "./LoadingCurtain.css";
 
@@ -34,7 +34,9 @@ export function LoadingCurtain() {
   const path = useRouterState({ select: (state) => state.location.pathname });
   const lastPath = useRef(path);
   const waiting = useIsFetching({
-    predicate: (query) => query.state.data === undefined && query.getObserversCount() > 0,
+    predicate: (query) =>
+      query.state.data === undefined &&
+      query.observers.some((observer) => !observer.getCurrentResult().isPlaceholderData),
   });
   const holds = useReadyHolds();
   const isFontsReady = useFontsReady();
@@ -47,9 +49,16 @@ export function LoadingCurtain() {
     if (!isWorking) setGivenUp(false);
   }, [isWorking]);
 
-  useEffect(() => {
-    document.getElementById("boot-splash")?.remove();
-  }, []);
+  useLayoutEffect(() => {
+    const curtain = document.getElementById(CURTAIN_ID);
+    if (!curtain) return;
+    curtain.dataset.phase = phase;
+    if (phase === "shown") {
+      curtain.removeAttribute("aria-hidden");
+    } else {
+      curtain.setAttribute("aria-hidden", "true");
+    }
+  }, [phase]);
 
   useLayoutEffect(() => {
     const from = lastPath.current;
@@ -92,16 +101,5 @@ export function LoadingCurtain() {
     return () => window.clearTimeout(done);
   }, [phase]);
 
-  if (phase === "hidden") return null;
-  return (
-    <div className="curtain" data-phase={phase} aria-hidden={phase === "leaving"}>
-      <output className="curtain-box">
-        <LogoMark scale={4} lamp="pulse" />
-        <span className="curtain-track" aria-hidden="true">
-          <span className="curtain-cart" />
-        </span>
-        <span className="curtain-text">{hu.common.loading}</span>
-      </output>
-    </div>
-  );
+  return null;
 }

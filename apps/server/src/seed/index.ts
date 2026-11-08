@@ -1,15 +1,27 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { hashPassword } from "../auth/password.ts";
 import { firstRow } from "../db/rows.ts";
-import { type MapRow, maps, mapVersions, programs, runs, sessions, users } from "../db/schema.ts";
+import {
+  type MapRow,
+  mapFavorites,
+  maps,
+  mapVersions,
+  programs,
+  runs,
+  sessions,
+  users,
+} from "../db/schema.ts";
 import type { Deps } from "../env.ts";
 import {
+  backfillDifficulty,
   createMapWithVersion,
   currentVersion,
   validateMapContent,
   versionValues,
 } from "../services/maps.ts";
 import { executeAndRecord } from "../services/runs.ts";
+import { campaignOwner, ensureCampaign, ensureSandbox } from "./campaign.ts";
+import { type CrowdReport, ensureCrowd } from "./crowd.ts";
 import { TUTORIAL_MAPS } from "./maps.ts";
 import { SAMPLE_PROGRAMS } from "./programs.ts";
 import { RECIPES } from "./recipes.ts";
@@ -29,11 +41,16 @@ export type SeedReport = {
   recipes: number;
   runs: number;
   skippedRuns: number;
+  crowd: CrowdReport;
 };
+
+export type SeedOptions = { reset: boolean; crowd?: boolean };
+
+const NO_CROWD: CrowdReport = { players: 0, maps: 0, favorites: 0, runs: 0 };
 
 async function wipe(deps: Deps): Promise<void> {
   await deps.db.transaction(async (tx) => {
-    for (const table of [runs, programs, mapVersions, maps, sessions, users]) {
+    for (const table of [mapFavorites, runs, programs, mapVersions, maps, sessions, users]) {
       await tx.delete(table);
     }
   });
@@ -60,7 +77,10 @@ async function createUsers(deps: Deps, now: number): Promise<Map<string, number>
 
 export function tutorialPar(mapIndex: number): number | null {
   const recipe = RECIPES.find(
-    (candidate) => candidate.mapIndex === mapIndex && candidate.expected.kind === "ok",
+    (candidate) =>
+      candidate.world === undefined &&
+      candidate.mapIndex === mapIndex &&
+      candidate.expected.kind === "ok",
   );
   return recipe && recipe.expected.kind === "ok" ? recipe.expected.steps : null;
 }
@@ -103,6 +123,7 @@ async function createMaps(deps: Deps, ownerId: number, now: number): Promise<Map
         description: tutorial.description,
         visibility: "public",
         parSteps: tutorialPar(index),
+        lampMode: tutorial.lampMode,
         valid,
         now: now + index,
       }),
@@ -130,13 +151,26 @@ async function addRecipesToLibraries(
   return rows.length;
 }
 
-export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise<SeedReport> {
+async function topUpCrowd(deps: Deps, options: SeedOptions): Promise<CrowdReport> {
+  if (!options.crowd) {
+    return NO_CROWD;
+  }
+  const owner = await campaignOwner(deps);
+  return ensureCrowd(deps, owner?.base ?? deps.now());
+}
+
+export async function seedDemo(deps: Deps, options: SeedOptions): Promise<SeedReport> {
   if (options.reset) {
     await wipe(deps);
   }
+  await backfillDifficulty(deps.db, deps.engine);
   const [existing] = await deps.db.select({ id: users.id }).from(users).limit(1);
   if (existing) {
     await ensureTutorialPars(deps);
+    await ensureCampaign(
+      deps,
+      DEMO_ACCOUNTS.map((account) => account.username),
+    );
     return {
       seeded: false,
       users: 0,
@@ -145,12 +179,14 @@ export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise
       recipes: 0,
       runs: 0,
       skippedRuns: 0,
+      crowd: await topUpCrowd(deps, options),
     };
   }
   const now = deps.now();
   const userIds = await createUsers(deps, now);
   const adminId = userIds.get("admin") ?? 0;
   const createdMaps = await createMaps(deps, adminId, now);
+  await ensureSandbox(deps, now);
   let recordedRuns = 0;
   let skippedRuns = 0;
   for (const [index, sample] of SAMPLE_PROGRAMS.entries()) {
@@ -187,5 +223,6 @@ export async function seedDemo(deps: Deps, options: { reset: boolean }): Promise
     recipes: recipePrograms,
     runs: recordedRuns,
     skippedRuns,
+    crowd: options.crowd ? await ensureCrowd(deps, now) : NO_CROWD,
   };
 }

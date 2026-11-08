@@ -7,6 +7,7 @@ import { type EditorHandle, MineScriptEditor } from "../../editor/MineScriptEdit
 import { useEngine } from "../../engine/useEngine.ts";
 import { formatCount, hu } from "../../i18n/hu.ts";
 import { downloadText, safeFilename } from "../../lib/files.ts";
+import { useStableCallback } from "../../lib/stable-callback.ts";
 import { usePlayUi } from "../play-ui-store.ts";
 import { usePlayback } from "../playback-store.ts";
 import type { ProgramDraft } from "../program-draft.ts";
@@ -16,6 +17,7 @@ import type { Block } from "./blocks.ts";
 import { FaultBar } from "./FaultBar.tsx";
 import { reportFormat } from "./format-report.ts";
 import { ImportConfirm, type PendingImport } from "./ImportConfirm.tsx";
+import { ImportRejected, type RejectedImport } from "./ImportRejected.tsx";
 import { ProgramLibraryDialog } from "./ProgramLibraryDialog.tsx";
 import { SheetToolbar } from "./SheetToolbar.tsx";
 import "./Sheet.css";
@@ -55,6 +57,7 @@ export function ProgramSheet(props: ProgramSheetProps) {
   const lint = useSheetDiagnostics();
   const [announcement, setAnnouncement] = useState("");
   const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
+  const [rejectedImport, setRejectedImport] = useState<RejectedImport | null>(null);
   const ui = usePlayUi();
   const engine = useEngine();
   useEffect(() => {
@@ -62,20 +65,22 @@ export function ProgramSheet(props: ProgramSheetProps) {
     return () => usePlayback.getState().setBreakpoints([]);
   }, []);
 
-  const reportImportErrors = (source: string) => {
-    const errors = engine
-      .analyze(source)
-      .diagnostics.filter((diagnostic) => diagnostic.severity === "error");
-    const first = errors[0];
-    if (first) {
-      toast.error(hu.play.importHasErrors(errors.length, first.span.line));
-    }
-  };
+  const syntaxErrorsOf = (source: string) =>
+    engine.analyze(source).diagnostics.filter((diagnostic) => diagnostic.severity === "error");
 
   const importFile = async (file: File) => {
     const decoded = decodeProgramFile(await file.arrayBuffer());
     if (!decoded.ok) {
-      toast.error(decoded.message);
+      setRejectedImport({ name: file.name, message: decoded.message, diagnostics: [] });
+      return;
+    }
+    const errors = syntaxErrorsOf(decoded.text);
+    if (errors.length > 0) {
+      setRejectedImport({
+        name: file.name,
+        message: hu.play.importRejectedSyntax,
+        diagnostics: errors,
+      });
       return;
     }
     const next = { name: file.name, text: decoded.text };
@@ -90,7 +95,6 @@ export function ProgramSheet(props: ProgramSheetProps) {
     setPendingImport(null);
     onDraftChange({ source: text, linked: null });
     toast.success(hu.play.imported(name));
-    reportImportErrors(text);
   };
 
   const insert = (block: Block) => {
@@ -101,19 +105,29 @@ export function ProgramSheet(props: ProgramSheetProps) {
     }
   };
 
+  const onInsert = useStableCallback(insert);
+  const onImport = useStableCallback((file: File) => void importFile(file));
+  const onExport = useStableCallback(() =>
+    downloadText(`${safeFilename(props.mapTitle)}.ms`, draft.source),
+  );
+  const onSaveAs = useStableCallback(() => persistence.setPanel("saveAs"));
+  const onOpenLibrary = useStableCallback(() => persistence.setPanel("library"));
+  const onFormat = useStableCallback(() => reportFormat(editorRef.current?.format() ?? null));
+  const onSave = useStableCallback(() => persistence.saveCurrent());
+
   return (
     <section id="program" ref={props.ref} aria-label={hu.play.programHeading} className="sheet">
       <SheetToolbar
         isLocked={isLocked}
         isSaving={persistence.isSaving}
-        onImport={(file) => void importFile(file)}
-        onExport={() => downloadText(`${safeFilename(props.mapTitle)}.ms`, draft.source)}
-        onSaveAs={() => persistence.setPanel("saveAs")}
-        onOpenLibrary={() => persistence.setPanel("library")}
-        onFormat={() => reportFormat(editorRef.current?.format() ?? null)}
-        onSave={persistence.saveCurrent}
+        onImport={onImport}
+        onExport={onExport}
+        onSaveAs={onSaveAs}
+        onOpenLibrary={onOpenLibrary}
+        onFormat={onFormat}
+        onSave={onSave}
       />
-      <BlockDrawers isDisabled={isLocked} onInsert={insert} />
+      <BlockDrawers isDisabled={isLocked} onInsert={onInsert} />
       <div className="sheet-editor">
         <MineScriptEditor
           ref={editorRef}
@@ -157,6 +171,7 @@ export function ProgramSheet(props: ProgramSheetProps) {
         }}
       />
       <output className="visually-hidden">{announcement}</output>
+      <ImportRejected rejected={rejectedImport} onClose={() => setRejectedImport(null)} />
       <ImportConfirm
         pending={pendingImport}
         onCancel={() => setPendingImport(null)}

@@ -97,7 +97,7 @@ A szerver közvetlenül egy MySQL-szerverhez kapcsolódik (MySQL 8.0 vagy újabb
 
 ## Éles üzem
 
-A verseny szerveren (`https://csapat13.dusza.cloudsyso.com`) a `just release` szerinti Linux-bináris fut systemd alatt, a helyi MySQL-lel. Előtte egy Apache fordított proxy áll, jelszavas kapuval, a TLS-t a szervezői proxy zárja le. A frissítés `just deploy`: a szerver lefordítja a main-t, atomi cserével élesít, health checket futtat, és hiba esetén visszaáll az előző kiadásra. Részletek: `docs/telepites.md`, eszközök: `scripts/deploy/`.
+Az éles cím `https://minescript.hu` (Cloudflare mögött). A verseny szerverén (`csapat13.dusza.cloudsyso.com`) a `just release` szerinti Linux-bináris fut systemd alatt, a helyi MySQL-lel. A szerver saját címén egy Apache fordított proxy áll, jelszavas kapuval, a TLS-t a szervezői proxy zárja le. A frissítés `just deploy`: a szerver lefordítja a main-t, atomi cserével élesít, health checket futtat, és hiba esetén visszaáll az előző kiadásra. Részletek: `docs/telepites.md`, eszközök: `scripts/deploy/`.
 
 ## Generált fájlok és a .gitignore
 

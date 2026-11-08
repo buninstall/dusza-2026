@@ -9,7 +9,17 @@ import {
 } from "../apps/server/src/db/url.ts";
 import { fail, info, paint, paths } from "./lib.ts";
 
-const PORT = 8099;
+function freePort(): number {
+  const probe = Bun.serve({ port: 0, hostname: "127.0.0.1", fetch: () => new Response() });
+  const port = probe.port;
+  probe.stop(true);
+  if (port === undefined) {
+    throw new Error("nincs szabad port a smoke-teszthez");
+  }
+  return port;
+}
+
+const PORT = freePort();
 const BASE = `http://127.0.0.1:${PORT}`;
 const STARTUP_TIMEOUT_MS = 30_000;
 const POLL_MS = 250;

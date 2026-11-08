@@ -1,6 +1,7 @@
 import type { Pos } from "@minescript/engine";
 import { useId, useMemo, useReducer, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { Button } from "../components/ui/Button.tsx";
 import { Menu, MenuItem } from "../components/ui/Menu.tsx";
 import { toast } from "../components/ui/Toast.tsx";
 import { useEngine } from "../engine/useEngine.ts";
@@ -38,6 +39,7 @@ import {
 } from "./Inspector.tsx";
 import { LeaveGuard } from "./LeaveGuard.tsx";
 import "./MapEditor.css";
+import { KeysPopover } from "../play/stage/KeysPopover.tsx";
 import {
   doomNotes,
   rectTag,
@@ -268,32 +270,49 @@ export function MapEditor({
         onTry={tryOut}
         onSave={() => void save()}
       />
-      <ToolRail
-        tool={tool}
-        mode={mode}
-        dir={draft.dir}
-        hasRobot={draft.robot !== null}
-        onToolChange={setTool}
-        onModeChange={setMode}
-        onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
-        actions={
-          <Menu
-            label={hu.shape.heading}
-            ariaLabel={hu.shape.heading}
-            icon="chevronDown"
-            variant="secondary"
-            placement="bottom start"
-          >
-            <MenuItem onAction={() => commitShape(frameDraft(draft), hu.shape.framed)}>
-              {hu.shape.frame}
-            </MenuItem>
-            <MenuItem onAction={() => commitShape(clearDraft(draft), hu.shape.cleared)}>
-              {hu.shape.clear}
-            </MenuItem>
-            <MenuItem onAction={() => setGenerating(true)}>{hu.generator.menuItem}</MenuItem>
-          </Menu>
-        }
-      />
+      <div className="ed-left">
+        <ToolRail
+          tool={tool}
+          mode={mode}
+          dir={draft.dir}
+          hasRobot={draft.robot !== null}
+          onToolChange={setTool}
+          onModeChange={setMode}
+          onDirChange={(dir) => dispatch({ type: "commit", next: turnRobot(draft, dir) })}
+          actions={
+            <>
+              <Button size="sm" icon="dice" onPress={() => setGenerating(true)}>
+                {hu.generator.menuItem}
+              </Button>
+              <span className="ed-actions-row">
+                <Menu
+                  label={hu.shape.heading}
+                  ariaLabel={hu.shape.heading}
+                  icon="chevronDown"
+                  variant="secondary"
+                  placement="bottom start"
+                >
+                  <MenuItem onAction={() => commitShape(frameDraft(draft), hu.shape.framed)}>
+                    {hu.shape.frame}
+                  </MenuItem>
+                  <MenuItem onAction={() => commitShape(clearDraft(draft), hu.shape.cleared)}>
+                    {hu.shape.clear}
+                  </MenuItem>
+                  <MenuItem onAction={() => setGenerating(true)}>{hu.generator.menuItem}</MenuItem>
+                </Menu>
+                <KeysPopover
+                  rows={hu.mapEditor.shortcuts}
+                  placement="end bottom"
+                  variant="secondary"
+                />
+              </span>
+            </>
+          }
+        />
+        {version && mapId !== null ? (
+          <VersionBlock mapId={mapId} title={details.title} version={version} onDelete={leave} />
+        ) : null}
+      </div>
       <GeneratorDialog
         isOpen={isGenerating}
         onOpenChange={setGenerating}
@@ -356,9 +375,6 @@ export function MapEditor({
           isComputingPar={isComputingPar}
           onComputePar={() => void computePar()}
         />
-        {version && mapId !== null ? (
-          <VersionBlock mapId={mapId} title={details.title} version={version} onDelete={leave} />
-        ) : null}
       </div>
       <output className="visually-hidden">{announcement}</output>
       <LeaveGuard shouldBlock={() => isDirty && !isLeaving.current} />

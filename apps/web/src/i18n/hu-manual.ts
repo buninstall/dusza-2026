@@ -36,16 +36,25 @@ const sections: readonly ManualSection[] = [
         kind: "paragraph",
         text: "A cél: minél több aranyat kibányászni, minél kevesebb programsor végrehajtásával. A ranglistán az áll előrébb, aki több aranyat gyűjtött; azonos aranynál az, akinek ehhez kevesebb lépés kellett.",
       },
+      {
+        kind: "paragraph",
+        text: "Két játékmód van. A **Homokozó** a szabad bánya: a játékosok pályái, a napi kihívás és a MineScriptet bemutató pályák. A **Történet** harminc pályán, hat fejezetben vezet le a hegy szívéig. A `Pályák` oldal tetején, a rozsdás táblán váltasz közöttük.",
+      },
       { kind: "heading", text: "Egy kör menete" },
       {
         kind: "steps",
         items: [
-          "**Válassz pályát.** A `Pályák` oldalon kattints egy térkép `Játék` gombjára.",
+          "**Válassz pályát.** A `Pályák` oldalon kattints egy pálya `Játék` gombjára. A Történetben a tábla `Folytatás` gombja egyenesen a következő befejezetlen pályára visz.",
           "**Írd meg a programot.** A szerkesztő széles képernyőn bal oldalt, telefonon a térkép alatt van. A `Robot`, `Érzékelés`, `Változók`, `Döntés` és `Ciklus` fiókokból kész mintákat szúrhatsz be, vagy `.ms` és `.txt` fájlt importálhatsz.",
           "**Futtasd.** A `Futtatás` gomb előbb ellenőrzi a programot. Hibás programot nem indít el, hanem megjelöli a hibás sorokat.",
           "**Nézd a lejátszást.** A térkép és a robot alaphelyzetbe kerül, és a futás lassítva lejátszódik. A műszersávon az éppen végrehajtott sor, az arany és a lépések látszanak; a konzolt és a változókat a `Konzol` gomb nyitja meg.",
-          "**Eredmény.** A lejátszás végén a szerver a programodból újra kiszámolja az eredményt, és rögzíti a ranglistán.",
+          "**Eredmény.** A lejátszás végén a szerver a programodból újra kiszámolja az eredményt, rögzíti a ranglistán, és megkapod a rögöket.",
         ],
+      },
+      {
+        kind: "tip",
+        title: "Bevezető",
+        text: "Első belépéskor a játék felajánl egy bevezetőt: bemutatja a két módot, és te választod ki, melyikben melegítesz be. A bevezető ennek a kézikönyvnek a tetején, a `Bevezető újrakezdése` gombbal bármikor újraindítható.",
       },
       {
         kind: "tip",
@@ -56,6 +65,47 @@ const sections: readonly ManualSection[] = [
         kind: "tip",
         title: "Kezdd a próbapaddal",
         text: "A kézikönyv példái mellett kis bánya áll. A `Lejátszás` gombbal ott helyben megnézheted, mit csinál a program, mielőtt a saját pályádon kipróbálnád.",
+      },
+    ],
+  },
+  {
+    id: "modok",
+    title: "Homokozó és Történet",
+    blocks: [
+      { kind: "heading", text: "Homokozó" },
+      {
+        kind: "paragraph",
+        text: "A Homokozó a `Pályák` oldal alapnézete. Itt vannak a játékosok pályái, a napi kihívás és hét bemutató pálya, amelyek sorra bemutatják a MineScript minden elemét. Itt nincs zárolás: minden pálya azonnal játszható.",
+      },
+      {
+        kind: "list",
+        items: [
+          "**Összes és Sajátjaim.** Az `Összes` fül minden közzétett pályát mutat, a `Sajátjaim` csak a tieidet, a privátokat is.",
+          "**Szűrés és rendezés.** A tábla alsó sorában szűrhetsz nehézségre (`Könnyű`, `Közepes`, `Nehéz`), és rendezhetsz (`Legújabb`, `Sorrend`, `Méret`, `Arany`). A pályák nyolcasával jelennek meg, a lista alján a `Továbbiak` gomb hozza a következőket.",
+          "**Nehézség.** A nehézséget a szerver számolja a pálya legrövidebb megoldásából: legfeljebb 12 lépés könnyű, legfeljebb 40 közepes, fölötte nehéz. Így minden új pálya magától besorolódik.",
+          "**Új térkép.** A tábla jobb felső gombja és a lista alján a `Fúrófront` a térképszerkesztőbe visz.",
+          "**Napi kihívás.** Minden nap új, géppel generált pálya a lista tetején: mindenki ugyanazt kapja, és saját ranglistája van.",
+        ],
+      },
+      { kind: "heading", text: "Történet" },
+      {
+        kind: "paragraph",
+        text: "A Történet harminc pálya hat fejezetben, fejezetenként öt pályával. Minden fejezet egy-egy kőzetréteg: agyag, mészkő, ametiszt, vasérc, malachit és obszidián, alatta az izzó mag. A háttérben a bánya rétegről rétegre mélyül, és a pályák is nehezednek: tíz könnyű, tíz közepes és tíz nehéz.",
+      },
+      {
+        kind: "list",
+        items: [
+          "**Kész pálya.** Egy pálya akkor kész, ha minden elérhető aranyát kibányásztad, vagyis legalább két rögöd van rajta.",
+          "**Fejezetek nyitása.** Az első fejezet mindig nyitva van. A következő akkor nyílik, ha az összes előző fejezet minden pályája kész.",
+          "**A számláló.** A fejezetek közé vájt felirat (`MÉG 4 PÁLYA`) összesítve mutatja, hány pálya hiányzik még az előző fejezetekből. Ha a fejezet már nyitva van, `NYITVA` áll ott.",
+          "**Zárt pálya.** A zárt fejezet pályái is látszanak, szürke lakattal és `Zárva` jelzéssel. Nem játszhatók, de a ranglistájuk megnézhető.",
+          "**A tábla.** A Történet táblája a rögeid összegét, a kész pályák számát, az aktuális fejezetet és a `Folytatás` gombot mutatja; a `Ranglista` a Történet összesített ranglistájára visz.",
+        ],
+      },
+      {
+        kind: "tip",
+        title: "Tesztelőknek",
+        text: "A Receptek oldal `Megnyitás` gombja a zárt Történet-pályát is megnyitja a kész programmal. Ha a receptet lefuttatod, a pálya kész lesz, és ezzel a fejezetek is sorban kinyithatók.",
       },
     ],
   },
@@ -127,17 +177,187 @@ const sections: readonly ManualSection[] = [
       },
       {
         kind: "paragraph",
-        text: "`Lámpafény` nézetben csak ezek látszanak. A `Teljes térkép` nézet a felderítetlen részt is mutatja, rácsmintával jelölve.",
+        text: "A `Nézet` kapcsolóval (vagy az `L` billentyűvel) a `Lámpafény` és a `Teljes térkép` nézet között válthatsz. `Lámpafény` nézetben csak a felfedezett mezők látszanak, a `Teljes térkép` a felderítetlen részt is mutatja, rácsmintával jelölve. Nyitott pályán ez csak megjelenítés; sötét pályán a teljes térkép zárolt, lásd a következő fejezetet.",
       },
       { kind: "heading", text: "Térképszerkesztő" },
       {
         kind: "list",
         items: [
+          "**Bánya.** A jobb oldali panelen választod ki, milyen sötét legyen a pálya: `Nyitott`, `Lámpafény` vagy `Vaksötét`.",
+          "**Láthatóság.** Nyilvános pályát mindenki látja a Homokozóban, a privátot csak te és az adminisztrátorok.",
           "**Csak szabályos térkép menthető.** Arany nélküli vagy elérhetetlen aranyat tartalmazó térkép is elmenthető, de figyelmeztetést kap.",
           "**Hibás import.** Hibás térképfájlnál a szerkesztő megmondja, melyik sorban mi a gond, és nem tölti be a hibás tartalmat.",
           "**Gyors eszközök.** A `Továbbiak` menüben a `Generálás…` mindig megoldható pályát rajzol a megadott méretben és nehézséggel, a `Falkeret` és a `Mind üres` egy kattintással átrendezi a rácsot.",
           "**Kipróbálás.** A még nem mentett pályát mentés és ranglista nélkül játszatja.",
           "**Célérték.** A `Célérték (lépés)` mezőben adhatod meg, hány lépésből jár a harmadik rög. A `Gépi megoldás` kiszámolja, hány lépésből oldja meg a pályát a beépített útvonaltervező.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "lampafeny",
+    title: "Sötét bányák: Lámpafény és Vaksötét",
+    blocks: [
+      {
+        kind: "paragraph",
+        text: "A pálya szerzője eldöntheti, mennyire legyen sötét a bánya. Sötét pályán a térkép mérete és rácsa látszik, de a mezők tartalma rejtve marad, amíg a robot lámpája rá nem világít: a labirintust a programoddal kell kitapogatnod.",
+      },
+      {
+        kind: "paragraph",
+        text: "A robot érzékelése ettől nem változik: az `isThere` továbbra is csak a közvetlenül előtte lévő mezőt vizsgálja. A lámpa csak neked világít, a program viselkedésén és a lépésszámon semmit sem változtat.",
+      },
+      {
+        kind: "table",
+        caption: "A bánya három fokozata",
+        head: ["Fokozat", "Induló fény", "Teljes térkép", "Falnak ütközés"],
+        rows: [
+          ["`Nyitott`", "minden mező látszik", "mindig elérhető", "csak hibaüzenet"],
+          [
+            "`Lámpafény`",
+            "a robot körüli 1 mező",
+            "három rög után",
+            "összetörik a lámpa, a vázlat törlődik",
+          ],
+          [
+            "`Vaksötét`",
+            "semmi: csak a bejárt és megvizsgált mezők",
+            "három rög után",
+            "összetörik a lámpa, a vázlat törlődik",
+          ],
+        ],
+      },
+      { kind: "heading", text: "Mit látsz" },
+      {
+        kind: "table",
+        caption: "A mezők három állapota sötét pályán",
+        head: ["Állapot", "Mitől lesz ilyen", "Megjelenés"],
+        rows: [
+          ["felfedezett", "a robot járt rajta, vagy `isThere` vizsgálta", "teljes részletesség"],
+          ["megvilágított", "a lámpa fénykörébe esett", "halványabb, rácsmintás"],
+          ["sötét", "egyik sem", "fekete; a képernyőolvasó csak annyit mond: ismeretlen"],
+        ],
+      },
+      { kind: "heading", text: "Az akku" },
+      {
+        kind: "list",
+        items: [
+          "**Fénykör.** A lámpa annyi mezőnyire világít, amennyi az akku töltöttsége: Lámpafényben 1-ről, Vaksötétben 0-ról indul.",
+          "**Arany tölti.** Minden kibányászott rög után eggyel nő, legfeljebb 4-ig. A rög felvételekor a fénykör azonnal kitágul, ezért sötétben érdemes előbb a közeli aranyat felszedni.",
+          "**Fal árnyéka.** A fény nem megy át falon: a fal maga látszik, a mögötte lévő mező nem.",
+          "**Jelző.** Az akku állását a műszersáv `Akku` jelzője mutatja négy cellában; a képernyőolvasó számmal is felolvassa.",
+        ],
+      },
+      { kind: "heading", text: "A vázlat" },
+      {
+        kind: "paragraph",
+        text: "Amit egy futás felfedezett vagy megvilágított, az a futás végén a vázlatodra kerül, és a következő futás előtt is látszik. Így a játék ritmusa: felderítő program, tervezés a vázlaton, aztán jobb program. A vázlat felhasználónként és pályaverziónként külön van, ebben a böngészőben tárolódik, és csak a végigjátszott futás frissíti; a leállított nem.",
+      },
+      { kind: "heading", text: "Falnak ütközés" },
+      {
+        kind: "paragraph",
+        text: "Ha a futás `E_BEDROCK_HIT` hibával ér véget, mert a robot falra vagy a térképről lelépne, összetörik a lámpa: a vázlat törlődik, és a következő futás újra sötétben indul. Az eredmény ettől még felkerül a ranglistára. A többi hiba (`E_NO_GOLD`, a típushibák, a sorlimit) nem töri össze a lámpát.",
+      },
+      {
+        kind: "code",
+        caption: "Óvatos lépés: minden lépés előtt isThere 1, így a robot sosem megy falnak",
+        map: "1 7\n>.@..@#",
+        code: "set fal to isThere 1\nset szabad to not fal\nwhile szabad\n    set arany to isThere 2\n    step forward 1\n    if arany\n        mine here\n    set fal to isThere 1\n    set szabad to not fal",
+      },
+      { kind: "heading", text: "Teljes térkép és spoilervédelem" },
+      {
+        kind: "list",
+        items: [
+          "**Kiérdemelhető.** Ha egy sötét pályán megszerezted a három rögöt, a `Teljes térkép` nézet feloldódik, és onnantól nyitott térképen csiszolhatod a lépésszámot. Addig a `Nézet` kapcsoló zárolva van.",
+          "**Szerző és adminisztrátor.** A pálya szerzője és az adminisztrátor mindig látja a teljes térképet.",
+          "**Export.** Sötét pálya térképét csak a szerzője és az adminisztrátor exportálhatja.",
+          "**Visszajátszás.** Más játékos futását sötét pályán Lámpafény nézetben nézheted vissza, hogy a térkép ne áruljon el semmit.",
+        ],
+      },
+      {
+        kind: "code",
+        caption:
+          "Jobbkéz-szabály: térkép nélkül is bejárja az összefüggő járatot, és felszedi a két aranyat",
+        map: "3 5\n>..#.\n#.@..\n#...@",
+        code: "set talalt to 0\nset kell to 2\nset megy to true\nwhile megy\n    turn by 3\n    set fal to isThere 1\n    while fal\n        turn by 1\n        set fal to isThere 1\n    set arany to isThere 2\n    step forward 1\n    if arany\n        mine here\n        set talalt to talalt + 1\n    set megy to talalt < kell",
+      },
+      {
+        kind: "tip",
+        title: "Vakon is célba érsz",
+        text: "Ha nem látod a térképet, írj általános programot. A jobbkéz-szabály (fordulj jobbra, amíg fal van előtted, fordulj balra, aztán lépj) minden összefüggő járatot bejár; nyílt teremben és körök körül viszont a végtelenségig járhat, ezért mindig legyen kilépési feltétel. A Receptek között három ilyen „vakon” program van.",
+      },
+    ],
+  },
+  {
+    id: "tortenet",
+    title: "A Dusza-tárna története",
+    blocks: [
+      {
+        kind: "paragraph",
+        text: "1926 telén a Dusza-tárna bányászai egyetlen éjszaka alatt felhagytak a munkával. A csillék a síneken maradtak, a lámpák a falakon. Száz év múlva R-07, egy acélból kovácsolt felfedező ereszkedik le a főaknán. Hat robot járt itt előtte. Egyik sem tért vissza.",
+      },
+      {
+        kind: "paragraph",
+        text: "Mélyről egyenletes kopogás hallatszik, és Kelemen Bálint főaknász naplójának lapjai fejezetről fejezetre árulják el, mi elől menekültek a bányászok. A pályaleírások a történet egy-egy mozzanatát mesélik; a végső választ a hegy szívében, az utolsó pályán találod meg. Ha ott az utolsó rög is a csillédbe kerül, a kopogás elhallgat, és a bánya alján dolgozó gép megpihen.",
+      },
+      {
+        kind: "table",
+        caption: "A hat fejezet",
+        head: ["Fejezet", "Mélység", "Kőzet", "Pályák"],
+        rows: [
+          ["I. Az elhagyott tárna", "−12 … −60 m", "agyag", "1–5."],
+          ["II. A visszhangok csarnoka", "−72 … −120 m", "mészkő", "6–10."],
+          ["III. Az ametisztüregek", "−132 … −180 m", "ametiszt", "11–15."],
+          ["IV. A vörös ér", "−192 … −240 m", "vasérc", "16–20."],
+          ["V. A smaragdtó", "−252 … −300 m", "malachit", "21–25."],
+          ["VI. A hegy szíve", "−312 … −360 m", "obszidián, láva", "26–30."],
+        ],
+      },
+      { kind: "heading", text: "Amit a roncsok tanítanak" },
+      {
+        kind: "paragraph",
+        text: "R-07 minden fejezetben egy elődje roncsára bukkan. Mindegyik egy-egy programhiba áldozata lett, ezért mindegyik egy tanulság.",
+      },
+      {
+        kind: "table",
+        caption: "Az elődök sorsa",
+        head: ["Robot", "Mi történt vele", "Hiba", "Tanulság"],
+        rows: [
+          [
+            "R-01",
+            "lépett, mielőtt megnézte, mi van előtte",
+            "`E_BEDROCK_HIT`",
+            "lépés előtt `isThere 1`",
+          ],
+          [
+            "R-02",
+            "körbe-körbe járt, mert a ciklusából nem vezetett kiút",
+            "`INSTRUCTION_COUNT_LIMIT_EXCEEDED`",
+            "minden `while`-nak kell egy feltétel, amely egyszer hamis lesz",
+          ],
+          [
+            "R-03",
+            "üres kőbe vágott, újra és újra",
+            "`E_NO_GOLD`",
+            "előbb `isThere 2`, aztán lépés és `mine here`",
+          ],
+          [
+            "R-04",
+            "egy változója szám volt, aztán igaz-hamis akart lenni",
+            "`E_TYPE_MISMATCH`",
+            "a változó típusa az első `set`-kor rögzül",
+          ],
+          [
+            "R-05",
+            "olyan változót olvasott, amelynek sosem adott értéket",
+            "`E_UNINITIALIZED`",
+            "előbb `set`, aztán használat",
+          ],
+          [
+            "R-06",
+            "olyat kérdezett a kőtől, amire nincs szó: `isThere 3`",
+            "`E_BAD_ARG`",
+            "az `isThere` csak a 0, 1 és 2 értéket ismeri",
+          ],
         ],
       },
     ],
@@ -382,7 +602,7 @@ const sections: readonly ManualSection[] = [
   },
   {
     id: "ranglista",
-    title: "Ranglista és verziók",
+    title: "Ranglisták, futások, programok",
     blocks: [
       {
         kind: "list",
@@ -392,7 +612,28 @@ const sections: readonly ManualSection[] = [
           "**Nem hamisítható.** Az eredményt a szerver a forráskódból maga számolja újra.",
           "**Sorrend.** Játékosonként a legjobb futás számít: több arany előrébb, egyenlőségnél a kevesebb lépés, ha az is egyezik, a korábbi.",
           "**Verziók.** Ha egy térképen már van futás, a tartalma csak új verzióként módosítható. A ranglista verziónként külön van, így a régi eredmények megmaradnak.",
+        ],
+      },
+      { kind: "heading", text: "A Történet ranglistája" },
+      {
+        kind: "paragraph",
+        text: "A Történet táblájának `Ranglista` gombja minden játékos legjobb futásait összesíti a harminc kampánypályán. Előrébb áll, akinek több rögje van; egyenlőségnél akinek több aranya, majd akinek kevesebb lépés kellett. A `Fejezet` oszlop mutatja, ki meddig jutott le.",
+      },
+      { kind: "heading", text: "Futások és visszajátszás" },
+      {
+        kind: "list",
+        items: [
           "**Futásaim.** Ezen az oldalon minden korábbi futásodat visszajátszhatod, és a programját újra betöltheted.",
+          "**Megnézem.** A pályák ranglistáján bármelyik futást megnézheted a programjával együtt. A visszajátszás linkje megosztható.",
+        ],
+      },
+      { kind: "heading", text: "Programok" },
+      {
+        kind: "list",
+        items: [
+          "**Programtár.** A `Ctrl+S` elmenti a programodat a programtárba, a `Ctrl+O` megnyitja a programtárat; a mentett programok bármelyik pályán betölthetők.",
+          "**Fájlok.** A szerkesztő `Fájl` menüjében `.ms` vagy `.txt` fájlt importálhatsz, és a programot fájlba exportálhatod.",
+          "**Vázlat.** A szerkesztő tartalma pályánként megmarad a böngészőben, akkor is, ha elnavigálsz.",
         ],
       },
     ],
@@ -422,9 +663,60 @@ const sections: readonly ManualSection[] = [
         kind: "list",
         items: [
           "A célérték a pálya adatai között látszik. Ha egy pályának nincs célértéke, ott legfeljebb 2 rög jár.",
+          "A Történet pályáin a célérték a pálya legrövidebb lehetséges megoldása: a harmadik röghöz tényleg a legjobb programot kell megtalálnod.",
+          "A Történetben a két rög jelenti a kész pályát, ez nyitja a fejezeteket.",
           "A futás végén a vezérlőpult alatt megjelennek a megszerzett rögök és a következő rög feltétele, innen a következő pályára is továbbléphetsz.",
-          "A `Napi kihívás` minden nap új, géppel generált pálya: mindenki ugyanazt kapja, és saját ranglistája van.",
+          "A `Napi kihívás` a Homokozó tetején minden nap új, géppel generált pálya: mindenki ugyanazt kapja, és saját ranglistája van.",
           "A ranglistán bármelyik futást megnézheted a `Megnézem` gombbal, a programjával együtt. A visszajátszás linkje megosztható.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "strategia",
+    title: "Stratégia: kevesebb lépés",
+    blocks: [
+      {
+        kind: "paragraph",
+        text: "A harmadik rög a legrövidebb programé. A Történet pályáit úgy terveztük, hogy a kézenfekvő megoldás, amely mindig a legközelebbi rög felé indul, jóval hosszabb legyen a legjobbnál: az Obszidiánkapun például 73 sor helyett 50 is elég. Ezek a szabályok segítenek megtalálni a rövidebbet.",
+      },
+      {
+        kind: "steps",
+        items: [
+          "**A távolság ingyen van, a kanyar nem.** A `step forward 9` kilenc mezőt lép, mégis egy sor. A rövidebb, de kanyargós út gyakran több sor, mint a hosszú egyenes.",
+          "**Minden rög legalább két sor.** Odalépés és `mine here`: ez az alsó korlát, ennél kevesebből egy rög sem jön ki.",
+          "**Fordulj ott, ahol úgyis megállsz.** Egy rögön tett kanyar egy sor; máshol kettő, mert előbb oda kell lépni.",
+          "**A hátraarc is egy sor.** A `turn by 2` ugyanannyiba kerül, mint a `turn by 1`.",
+          "**A program bárhol véget érhet.** A legmélyebb zsákutcát hagyd a végére, onnan már nem kell visszajönni.",
+          "**A közeli rög nem mindig az első.** Ami visszafelé egy egyenesbe esik, azt útközben olcsóbb felvenni.",
+          "**Kevesebb átkelés, kevesebb kanyar.** Kapuknál, hidaknál, átjáróknál az a jó sorrend, amelyik ritkábban megy át.",
+          "**Nem minden arany érhető el.** Ami körbe van falazva, azért kár sorokat égetni.",
+        ],
+      },
+      {
+        kind: "tip",
+        title: "Ciklus vagy egyenes program?",
+        text: "A ciklus kényelmes, de minden körben a feltétel is sornak számít, ezért a ranglistán az egyenes program nyer. Sötét pályán viszont a ciklus visz el a térképig: előbb felderítesz, aztán a vázlat alapján megírod a rövid programot.",
+      },
+    ],
+  },
+  {
+    id: "receptek",
+    title: "Receptek",
+    blocks: [
+      {
+        kind: "paragraph",
+        text: "A kézikönyv tartalomjegyzékének alján a `Receptek` bejárat kész programokhoz vezet. Minden recept mellett `Megnyitás` gomb van: a pályát a programmal együtt nyitja meg. A programok és a térképek le is tölthetők.",
+      },
+      {
+        kind: "list",
+        items: [
+          "**Történet.** Mind a 30 pályához a legrövidebb program, vagyis a háromrögös megoldás, egy-két mondattal arról, mi a csapda és mi a trükk.",
+          "**Vakon.** Három falkövető program (13., 17. és 24. pálya), amely a térkép ismerete nélkül jut célba.",
+          "**Homokozó bemutatók.** Hét program, amely a nyelv egy-egy részét mutatja be: lépés, fordulás, `isThere`, `if`/`else`, `while`, számok, összehasonlítás, logika és `print`. Ezek a nyelvet tanítják, nem a legrövidebbek.",
+          "**Hibapróbák.** Minden futásidejű hibához és a szintaktikai hibákhoz egy-egy program, amely pontosan azt a hibát váltja ki.",
+          "**Hibás térképek.** Importhibás térképfájlok a térképszerkesztő kipróbálásához.",
+          "**Programtár.** A demó-fiókok programtárában minden recept megvan `Recept – …` néven.",
         ],
       },
     ],
@@ -474,10 +766,11 @@ const sections: readonly ManualSection[] = [
 ];
 
 const parts: readonly { readonly title: string; readonly ids: readonly string[] }[] = [
-  { title: "Kezdés", ids: ["alapok", "elso-program", "terkep"] },
+  { title: "Kezdés", ids: ["alapok", "modok", "elso-program"] },
+  { title: "A bánya", ids: ["terkep", "lampafeny", "tortenet"] },
   { title: "A nyelv", ids: ["felepites", "utasitasok", "isthere", "kifejezesek", "vezerles"] },
-  { title: "Futás és eredmény", ids: ["lepesek", "hibak", "ranglista", "rogok"] },
-  { title: "Referencia", ids: ["billentyuk"] },
+  { title: "Futás és eredmény", ids: ["lepesek", "hibak", "ranglista", "rogok", "strategia"] },
+  { title: "Referencia", ids: ["receptek", "billentyuk"] },
 ];
 
 export const manual = {

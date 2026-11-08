@@ -29,8 +29,13 @@
 @media (max-height: 48rem) {
   .stage[data-layout="cab"] {
     --well-min: 8rem;
+    --log-h: clamp(7rem, 16vh, 14rem);
 
     min-height: 0;
+  }
+
+  .stage[data-layout="cab"] .board[data-size="play"] {
+    --tile-min: 12px;
   }
 }
 
@@ -46,15 +51,12 @@
 }
 
 .stage-status {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  position: relative;
   z-index: 7;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  max-height: 70%;
+  min-height: 0;
   overflow-y: auto;
   box-shadow: 0 calc(var(--shadow-offset) * -1) 0 var(--c-shadow);
   animation: status-rise var(--motion-enter) var(--ease-px3);
@@ -117,7 +119,7 @@
   position: relative;
   grid-area: well;
   display: grid;
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) fit-content(55%);
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -260,6 +262,17 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1) var(--space-3);
+}
+
+.play-dark-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border: var(--border-thin) solid var(--c-line-strong);
+  background: var(--c-screen);
+  color: var(--c-reward);
+  font: var(--type-label);
 }
 
 .well-view[data-zoomed="true"] {

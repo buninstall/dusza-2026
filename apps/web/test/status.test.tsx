@@ -2,12 +2,12 @@ import { screen } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
 import { apiError, onApi, respond } from "./support/api.ts";
 import { renderApp } from "./support/app.tsx";
-import { CORRIDOR, mapDetail } from "./support/fixtures.ts";
+import { CORRIDOR, mapDetail, respondMaps } from "./support/fixtures.ts";
 
 describe("hibaképernyők", () => {
   test("a munkamenet hibája üzemzavart mutat, az újrapróbálás betölti az oldalt", async () => {
     let attempts = 0;
-    respond("GET", "/maps", { maps: [] });
+    respondMaps([]);
     const { user } = renderApp("/maps", "none");
     onApi("GET", "/auth/me", () => {
       attempts += 1;

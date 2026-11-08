@@ -14,6 +14,17 @@ import {
 } from "../../pixel/tiles.ts";
 import { type Palette, readPalette, spriteCanvas, toneColor } from "./canvas-art.ts";
 import { type Box, LANTERN_ART, LANTERN_DIM_TONES, LANTERN_TONES, paintFrame } from "./frame.ts";
+import {
+  allocate,
+  fitsLive,
+  lanternSpots,
+  type Metrics,
+  type Placement,
+  place,
+  type Rect,
+  repaintRect,
+  TILE,
+} from "./layout.ts";
 import { createLighting, type Light } from "./lighting.ts";
 import {
   type Cell,
@@ -36,7 +47,7 @@ export type SceneHost = {
   isStatic: boolean;
 };
 
-const T = 16;
+const T = TILE;
 const STEP = 1 / 60;
 const MAX_FRAME = 0.1;
 const STATIC_WARMUP = 14;
@@ -65,23 +76,24 @@ function readScale(root: HTMLElement): number {
   return Number.isFinite(value) && value > 0 ? value : 3;
 }
 
-function measure(host: SceneHost, scale: number) {
-  const width = host.root.clientWidth;
-  const height = host.root.clientHeight;
-  const left = host.panel.offsetLeft;
-  const top = host.panel.offsetTop;
-  const offsetX = (((left % scale) + scale) % scale) - scale;
-  const offsetY = (((top % scale) + scale) % scale) - scale;
-  const W = Math.ceil((width - offsetX) / scale);
-  const H = Math.ceil((height - offsetY) / scale);
-  const box: Box = {
-    x: (left - offsetX) / scale,
-    y: (top - offsetY) / scale,
-    w: Math.ceil(host.panel.offsetWidth / scale),
-    h: Math.ceil(host.panel.offsetHeight / scale),
+function readMetrics(host: SceneHost): Metrics {
+  return {
+    width: host.root.clientWidth,
+    height: host.root.clientHeight,
+    left: host.panel.offsetLeft,
+    top: host.panel.offsetTop,
+    panelWidth: host.panel.offsetWidth,
+    panelHeight: host.panel.offsetHeight,
   };
-  return { W, H, offsetX, offsetY, box };
 }
+
+function isSameBox(a: Box, b: Box): boolean {
+  return a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
+}
+
+export type LampScene = { stop: () => void; relayout: () => boolean };
+
+const IDLE_SCENE: LampScene = { stop: () => undefined, relayout: () => false };
 
 function chooseStart(mine: Mine, hole: { c0: number; c1: number; r0: number; r1: number }): Cell {
   const midRow = Math.floor((hole.r0 + hole.r1) / 2);
@@ -95,24 +107,31 @@ function chooseStart(mine: Mine, hole: { c0: number; c1: number; r0: number; r1:
   return candidates.find(([c, r]) => isOpen(mine.at(c, r))) ?? candidates[1] ?? [1, 1];
 }
 
-export function startLampScene(host: SceneHost): () => void {
+export function startLampScene(host: SceneHost): LampScene {
   const ctx = host.canvas.getContext("2d", { willReadFrequently: true });
   const paint = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
   if (!ctx || !paint) {
-    return () => undefined;
+    return IDLE_SCENE;
   }
   const scale = readScale(host.root);
-  const { W, H, offsetX, offsetY, box } = measure(host, scale);
-  if (W < 8 || H < 8 || box.w < 8) {
-    return () => undefined;
+  let placement: Placement = place(readMetrics(host), scale);
+  const origin = placement.box;
+  const area = placement.view;
+  if (area.w < 8 || area.h < 8 || origin.w < 8) {
+    return IDLE_SCENE;
   }
+  const { w: W, h: H } = allocate(area);
+  let box = origin;
   const palette: Palette = readPalette(host.canvas);
-  Object.assign(host.canvas.style, {
-    left: `${offsetX}px`,
-    top: `${offsetY}px`,
-    width: `${W * scale}px`,
-    height: `${H * scale}px`,
-  });
+  const positionCanvas = () => {
+    Object.assign(host.canvas.style, {
+      left: `${placement.offsetX}px`,
+      top: `${placement.offsetY}px`,
+      width: `${W * scale}px`,
+      height: `${H * scale}px`,
+    });
+  };
+  positionCanvas();
   host.canvas.width = W;
   host.canvas.height = H;
   paint.canvas.width = W;
@@ -121,24 +140,25 @@ export function startLampScene(host: SceneHost): () => void {
 
   const cols = Math.ceil(W / T);
   const rows = Math.ceil(H / T);
-  const isNarrow = box.x < T * 2 || W - (box.x + box.w) < T * 2;
+  const isNarrow = origin.x < T * 2 || area.w - (origin.x + origin.w) < T * 2;
   const hole = {
-    c0: Math.floor(box.x / T),
-    c1: Math.floor((box.x + box.w - 1) / T),
-    r0: Math.floor(box.y / T),
-    r1: Math.floor((box.y + box.h - 1) / T),
+    c0: Math.floor(origin.x / T),
+    c1: Math.floor((origin.x + origin.w - 1) / T),
+    r0: Math.floor(origin.y / T),
+    r1: Math.floor((origin.y + origin.h - 1) / T),
   };
   const mine = generateMine({
-    cols,
-    rows,
+    cols: Math.ceil(area.w / T),
+    rows: Math.ceil(area.h / T),
     hole,
     seed: isNarrow ? 21 : 7,
     branchEvery: isNarrow ? 4 : 6,
     upward: isNarrow,
   });
+  const mineIndex = (c: number, r: number) => r * mine.cols + c;
   const start = chooseStart(mine, hole);
   if (!isOpen(mine.at(start[0], start[1])) && start[0] > 0 && start[1] > 0) {
-    mine.grid[start[1] * cols + start[0]] = FLOOR;
+    mine.grid[mineIndex(start[0], start[1])] = FLOOR;
   }
   const legs = planTour(mine, start, [(hole.c0 + hole.c1) / 2, (hole.r0 + hole.r1) / 2]);
   const tileAt = (c: number, r: number) => mine.at(c, r);
@@ -188,18 +208,40 @@ export function startLampScene(host: SceneHost): () => void {
   paintFrame(paint, palette, box);
   const albedo = paint.getImageData(0, 0, W, H).data;
 
+  const copyToAlbedo = (rect: Rect) => {
+    const width = rect.x1 - rect.x0;
+    const height = rect.y1 - rect.y0;
+    if (width <= 0 || height <= 0) return;
+    const patch = paint.getImageData(rect.x0, rect.y0, width, height).data;
+    for (let y = 0; y < height; y += 1) {
+      const from = y * width * 4;
+      albedo.set(patch.subarray(from, from + width * 4), ((rect.y0 + y) * W + rect.x0) * 4);
+    }
+  };
+
+  const touchesFrame = (rect: Rect) =>
+    rect.x0 <= box.x + box.w &&
+    rect.x1 >= box.x - 1 &&
+    rect.y0 <= box.y + box.h &&
+    rect.y1 >= box.y - 1;
+
   const refreshTile = (c: number, r: number) => {
     paintTile(c, r);
-    const patch = paint.getImageData(c * T, r * T, T, T).data;
-    for (let y = 0; y < T && r * T + y < H; y += 1) {
-      for (let x = 0; x < T && c * T + x < W; x += 1) {
-        const si = (y * T + x) * 4;
-        const di = ((r * T + y) * W + c * T + x) * 4;
-        albedo[di] = patch[si] ?? 0;
-        albedo[di + 1] = patch[si + 1] ?? 0;
-        albedo[di + 2] = patch[si + 2] ?? 0;
+    const rect = { x0: c * T, y0: r * T, x1: Math.min(W, c * T + T), y1: Math.min(H, r * T + T) };
+    if (touchesFrame(rect)) paintFrame(paint, palette, box);
+    copyToAlbedo(rect);
+  };
+
+  const repaintFrame = (previous: Box) => {
+    const rect = repaintRect(previous, box, { w: W, h: H });
+    for (let r = rect.y0 / T; r * T < rect.y1; r += 1) {
+      for (let c = rect.x0 / T; c * T < rect.x1; c += 1) {
+        paintTile(c, r);
+        paintEdges(c, r);
       }
     }
+    paintFrame(paint, palette, box);
+    copyToAlbedo(rect);
   };
 
   const inBox = (x: number, y: number) =>
@@ -213,21 +255,14 @@ export function startLampScene(host: SceneHost): () => void {
   const memory = new Float32Array(cols * rows);
   const reveal = new Float32Array(cols * rows);
   const revealAt = new Float32Array(cols * rows).fill(Number.POSITIVE_INFINITY);
+  const shadeTiles = { size: T, cols, memory, reveal };
 
-  const lanterns = isNarrow
-    ? [
-        [box.x + 8, box.y - 10],
-        [box.x + box.w - 15, box.y - 10],
-      ]
-    : [
-        [box.x - 10, box.y + 18],
-        [box.x + box.w + 3, box.y + 18],
-      ];
+  let lanterns = lanternSpots(box, isNarrow);
   const rand = seeded(99);
   const twinkle = mine.golds.map(() => ({ phase: rand() * 4, period: 2.6 + rand() * 2.2 }));
-  const motes = Array.from({ length: Math.round((W * H) / 1300) }, () => ({
-    x: rand() * W,
-    y: rand() * H,
+  const motes = Array.from({ length: Math.round((area.w * area.h) / 1300) }, () => ({
+    x: rand() * area.w,
+    y: rand() * area.h,
     vx: (rand() - 0.5) * 3,
     vy: -0.6 - rand() * 2.2,
     seed: rand() * 9,
@@ -248,17 +283,19 @@ export function startLampScene(host: SceneHost): () => void {
         [0, -1],
       ].filter(([dc = 0, dr = 0]) => isOpen(tileAt(c + dc, r + dr))).length >= 3,
     onMine: (c, r) => {
-      mine.grid[r * cols + c] = FLOOR;
+      mine.grid[mineIndex(c, r)] = FLOOR;
       dug.add(r * cols + c);
       refreshTile(c, r);
+      lighting.invalidate();
       bursts.push({ c, r, t: 0 });
     },
     onLoop: () => {
       for (const [c, r] of mine.golds) {
-        mine.grid[r * cols + c] = GOLD;
+        mine.grid[mineIndex(c, r)] = GOLD;
         dug.delete(r * cols + c);
         refreshTile(c, r);
       }
+      lighting.invalidate();
     },
   });
   const robot = walker.state;
@@ -346,9 +383,9 @@ export function startLampScene(host: SceneHost): () => void {
     for (const mote of motes) {
       mote.x += (mote.vx + Math.sin(time * 0.7 + mote.seed) * 1.2) * dt;
       mote.y += mote.vy * dt;
-      if (mote.y < -2) mote.y = H + 2;
-      if (mote.x < -2) mote.x = W + 2;
-      if (mote.x > W + 2) mote.x = -2;
+      if (mote.y < -2) mote.y = area.h + 2;
+      if (mote.x < -2) mote.x = area.w + 2;
+      if (mote.x > area.w + 2) mote.x = -2;
     }
     if (steps % 5 === 0) {
       lighting.compute(lights());
@@ -356,7 +393,6 @@ export function startLampScene(host: SceneHost): () => void {
     }
   };
 
-  const tileIndex = (x: number, y: number) => Math.floor(y / T) * cols + Math.floor(x / T);
   const frame = ctx.createImageData(W, H);
   const base = [7, 6, 5] as const;
 
@@ -432,31 +468,61 @@ export function startLampScene(host: SceneHost): () => void {
     }
   };
 
+  const behindFrame = (draw: () => void) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, W, H);
+    ctx.rect(box.x - 1, box.y - 1, box.w + 2, box.h + 2);
+    ctx.clip("evenodd");
+    draw();
+    ctx.restore();
+  };
+
   const render = () => {
     lighting.compute(lights());
     notice();
     lighting.shade(albedo, frame.data, {
       levels: 5,
-      memory: (x, y) => Math.min(memory[tileIndex(x, y)] ?? 0, reveal[tileIndex(x, y)] ?? 0),
+      tiles: shadeTiles,
+      box,
+      ambient: 0.3,
       memoryTint: [0.42, 0.46, 0.62],
       memoryLevel: 0.36,
       memoryDensity: 0.5,
-      ambient: (x, y) =>
-        x >= box.x - 1 && x <= box.x + box.w && y >= box.y - 1 && y <= box.y + box.h ? 0.3 : 0,
-      reveal: (x, y) => (inBox(x, y) ? 1 : (reveal[tileIndex(x, y)] ?? 0)),
       base,
+      bounds: { width: placement.view.w, height: placement.view.h },
     });
     ctx.putImageData(frame, 0, 0);
-    drawTwinkles();
+    behindFrame(drawTwinkles);
     drawMotes();
     drawLanterns();
-    drawRobot();
+    behindFrame(drawRobot);
+  };
+
+  const relayout = (): boolean => {
+    if (readScale(host.root) !== scale) return false;
+    const next = place(readMetrics(host), scale);
+    if (!fitsLive({ w: W, h: H }, origin, next)) return false;
+    const previous = placement;
+    placement = next;
+    box = next.box;
+    const isShifted = next.offsetX !== previous.offsetX || next.offsetY !== previous.offsetY;
+    const isResized = next.view.w !== previous.view.w || next.view.h !== previous.view.h;
+    const isMoved = !isSameBox(previous.box, box);
+    if (isShifted) positionCanvas();
+    if (isMoved) {
+      lighting.invalidate();
+      repaintFrame(previous.box);
+      lanterns = lanternSpots(box, isNarrow);
+    }
+    if (isShifted || isResized || isMoved) render();
+    return true;
   };
 
   if (host.isStatic) {
     for (let t = 0; t < STATIC_WARMUP; t += STEP) sim(STEP);
     render();
-    return () => undefined;
+    return { stop: () => undefined, relayout };
   }
 
   let handle = 0;
@@ -473,5 +539,5 @@ export function startLampScene(host: SceneHost): () => void {
     handle = requestAnimationFrame(loop);
   };
   handle = requestAnimationFrame(loop);
-  return () => cancelAnimationFrame(handle);
+  return { stop: () => cancelAnimationFrame(handle), relayout };
 }

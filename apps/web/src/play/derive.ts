@@ -38,59 +38,99 @@ function eventTiles(event: Event): Pos[] {
   return [...event.path, ...event.discovered, event.robot.pos];
 }
 
+type Cursor = {
+  result: RunResult;
+  start: RobotState;
+  index: number;
+  discovered: Set<string>;
+  mined: Set<string>;
+  console: ConsoleEntry[];
+  variables: Map<string, Value>;
+  fresh: Set<string>;
+  robot: RobotState;
+  gold: number;
+  steps: number;
+  line: number | null;
+  lastMined: Pos | null;
+};
+
+let cursor: Cursor | null = null;
+
+function openCursor(result: RunResult, start: RobotState): Cursor {
+  return {
+    result,
+    start,
+    index: 0,
+    discovered: new Set<string>([posKey(start.pos)]),
+    mined: new Set<string>(),
+    console: [],
+    variables: new Map<string, Value>(),
+    fresh: new Set<string>(),
+    robot: start,
+    gold: 0,
+    steps: 0,
+    line: null,
+    lastMined: null,
+  };
+}
+
+function applyEvent(state: Cursor, event: Event, position: number): void {
+  state.robot = event.robot;
+  state.gold = event.gold;
+  state.steps = event.steps;
+  state.line = event.line;
+  state.lastMined = event.mined;
+  const keys = eventTiles(event).map(posKey);
+  state.fresh = new Set(keys.filter((key) => !state.discovered.has(key)));
+  for (const key of keys) {
+    state.discovered.add(key);
+  }
+  if (event.mined) {
+    state.mined.add(posKey(event.mined));
+  }
+  if (event.print !== null) {
+    state.console.push({ index: position + 1, step: event.steps, text: event.print });
+  }
+  if (event.assigned) {
+    state.variables.set(event.assigned.name, event.assigned.value);
+  }
+}
+
+function cursorAt(result: RunResult, start: RobotState, index: number): Cursor {
+  const reusable =
+    cursor !== null && cursor.result === result && cursor.start === start && cursor.index <= index;
+  const state = reusable && cursor ? cursor : openCursor(result, start);
+  for (let position = state.index; position < index; position += 1) {
+    const event = result.events[position];
+    if (event) {
+      applyEvent(state, event, position);
+    }
+  }
+  state.index = index;
+  cursor = state;
+  return state;
+}
+
 export function deriveFrame(result: RunResult, start: RobotState, requestedIndex: number): Frame {
   const index = clampIndex(result, requestedIndex);
-  const discovered = new Set<string>([posKey(start.pos)]);
-  const mined = new Set<string>();
-  const consoleLines: ConsoleEntry[] = [];
-  const variables = new Map<string, Value>();
-  const applied = result.events.slice(0, index);
-  let fresh = new Set<string>();
-  let robot = start;
-  let gold = 0;
-  let steps = 0;
-  let line: number | null = null;
-  let lastMined: Pos | null = null;
-
-  applied.forEach((event, position) => {
-    robot = event.robot;
-    gold = event.gold;
-    steps = event.steps;
-    line = event.line;
-    lastMined = event.mined;
-    const keys = eventTiles(event).map(posKey);
-    fresh = new Set(keys.filter((key) => !discovered.has(key)));
-    for (const key of keys) {
-      discovered.add(key);
-    }
-    if (event.mined) {
-      mined.add(posKey(event.mined));
-    }
-    if (event.print !== null) {
-      consoleLines.push({ index: position + 1, step: event.steps, text: event.print });
-    }
-    if (event.assigned) {
-      variables.set(event.assigned.name, event.assigned.value);
-    }
-  });
-
-  const event = applied.at(-1) ?? null;
+  const state = cursorAt(result, start, index);
+  const event = index > 0 ? (result.events[index - 1] ?? null) : null;
   return {
     index,
     total: result.events.length,
-    robot,
+    robot: state.robot,
     event,
-    discovered,
-    fresh,
-    mined,
+    discovered: new Set(state.discovered),
+    fresh: new Set(state.fresh),
+    mined: new Set(state.mined),
     scan: event ? scannedTile(event) : null,
-    gold,
-    steps,
-    console: consoleLines,
-    variables,
+    gold: state.gold,
+    steps: state.steps,
+    console: [...state.console],
+    variables: new Map(state.variables),
     changedVar: event?.assigned?.name ?? null,
-    line,
-    lastMined,
+    line: state.line,
+    lastMined: state.lastMined,
     atStart: index === 0,
     atEnd: index === result.events.length,
   };

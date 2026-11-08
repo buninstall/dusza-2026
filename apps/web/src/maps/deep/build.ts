@@ -1,4 +1,14 @@
 import { billboard } from "./billboard.ts";
+import {
+  AMETHYST,
+  CORE,
+  EMERALD,
+  IRON,
+  isMolten,
+  LIMESTONE,
+  STRATUM_COUNT,
+  TOPSOIL_DEPTH,
+} from "./palette.ts";
 import type { LanternState } from "./sprites.ts";
 import {
   carve,
@@ -6,7 +16,9 @@ import {
   cave,
   ceilingAt,
   crystal,
+  crystalKindAt,
   edges,
+  moltenCracks,
   paintRock,
   paintSky,
   rails,
@@ -43,6 +55,8 @@ export type LevelInput = {
   id: number;
 };
 
+export type ChapterInput = { box: Box; stratum: number; isFramed?: boolean };
+
 export type LayoutInput = {
   W: number;
   H: number;
@@ -50,13 +64,19 @@ export type LayoutInput = {
   plate: Box;
   front: Box;
   levels: readonly LevelInput[];
+  chapters?: readonly ChapterInput[];
+  hasDepthSigns?: boolean;
   palette: Readonly<Record<string, string>>;
   digId: number | null;
 };
 
+const LEVELS_PER_STRATUM = 5;
+const CHAPTER_LEAD = 8;
+
 export type Cart = { x: number; y: number; fill: number };
 
 export type Level = LevelInput & {
+  hasDepthSign: boolean;
   y0: number;
   y1: number;
   rail: number;
@@ -101,6 +121,77 @@ export type Mine = {
   dig: Dig | null;
   signLamp: Point;
 };
+
+function boundaryBetween(upper: Level | undefined, lower: Level | undefined): number | null {
+  if (!upper || !lower) return null;
+  return Math.round((upper.y1 + lower.box.y) / 2);
+}
+
+export function strataFor(
+  levels: readonly Level[],
+  chapters: readonly ChapterInput[],
+  front: Box,
+  groundY: number,
+): number[] {
+  const bounds: number[] = Array.from({ length: STRATUM_COUNT }, () => Number.POSITIVE_INFINITY);
+  bounds[0] = TOPSOIL_DEPTH;
+  const plain = levels.filter((l) => !l.isDaily);
+  for (let k = 1; k < CORE; k += 1) {
+    const plaque = chapters.find((c) => c.stratum === k + 1);
+    const y = plaque
+      ? plaque.box.y - CHAPTER_LEAD
+      : boundaryBetween(plain[k * LEVELS_PER_STRATUM - 1], plain[k * LEVELS_PER_STRATUM]);
+    if (y !== null) bounds[k] = Math.max((bounds[k - 1] ?? 0) + 4, y - groundY);
+  }
+  const deepest = bounds[CORE - 1] ?? Number.POSITIVE_INFINITY;
+  if (Number.isFinite(deepest)) {
+    bounds[CORE - 1] = Math.min(deepest, front.y - groundY - 40);
+    bounds[CORE - 1] = Math.max(bounds[CORE - 1] ?? 0, (bounds[CORE - 2] ?? 0) + 4);
+  }
+  return bounds;
+}
+
+function decorateChapter(
+  world: World,
+  chapter: ChapterInput,
+  rand: () => number,
+  lanterns: Lantern[],
+  level: Level,
+): void {
+  const b = chapter.box;
+  if (chapter.isFramed === false) {
+    for (let x = b.x - 3; x < b.x + b.w + 3; x += 1) {
+      if (world.maskAt(x, b.y + b.h + 2) === ROCK) world.put(x, b.y + b.h + 2, "rubble-hi");
+    }
+    return;
+  }
+  wood(world, b.x - 7, b.y - 9, b.w + 14, 3, false);
+  wood(world, b.x - 7, b.y - 6, 3, b.h + 10, true);
+  wood(world, b.x + b.w + 4, b.y - 6, 3, b.h + 10, true);
+  lanterns.push({ x: b.x - 4, y: b.y - 4, state: "on", seed: rand() * 9, level, isSmall: true });
+  lanterns.push({
+    x: b.x + b.w - 1,
+    y: b.y - 4,
+    state: "on",
+    seed: rand() * 9,
+    level,
+    isSmall: true,
+  });
+  const k = chapter.stratum;
+  const kind = k === AMETHYST ? "amethyst" : k === EMERALD ? "emerald" : null;
+  for (let i = 0; i < 7; i += 1) {
+    const x = b.x + 6 + Math.floor(rand() * Math.max(1, b.w - 12));
+    if (kind) {
+      crystal(world, x, b.y + b.h + 4, rand, true, kind);
+    } else if (k === IRON) {
+      for (let d = 0; d < 3 + Math.floor(rand() * 4); d += 1) world.put(x, b.y - 10 - d, "rust-hi");
+    } else if (isMolten(k)) {
+      world.put(x, b.y + b.h + 4, "lava-top");
+      world.put(x, b.y + b.h + 5, "lava");
+      world.glows.push({ x, y: b.y + b.h + 3, phase: rand() * 6, kind: "lava" });
+    }
+  }
+}
 
 function lanternState(level: LevelInput, isFront: boolean): LanternState {
   if (isFront || level.isDaily || level.stars >= 3) return "on";
@@ -239,8 +330,11 @@ function caves(
   world: World,
   mine: { shaftX: number; bottomY: number; groundY: number },
   all: Level[],
+  chapters: readonly ChapterInput[],
   rand: () => number,
 ): void {
+  const isPlaque = (y0: number, y1: number) =>
+    chapters.some((c) => c.box.y + c.box.h + 6 > y0 && c.box.y - 6 < y1);
   if (mine.shaftX > 34) {
     for (let y = mine.groundY + 40; y < mine.bottomY - 24; y += 96 + Math.floor(rand() * 40)) {
       const rx = Math.min((mine.shaftX - 14) / 2.6, 10 + rand() * 12);
@@ -254,6 +348,7 @@ function caves(
     const top = level.y1 + 3;
     const gap = next.box.y - 8 - top;
     if (gap < 16 || rand() < 0.2 || level.isDigging || next.isDigging) return;
+    if (isPlaque(top, next.box.y)) return;
     const ry = Math.min(8, (gap - 4) / 3.4);
     const rx = 12 + rand() * 16;
     const cx = level.box.x + rx * 1.4 + rand() * Math.max(1, level.box.w - rx * 3);
@@ -261,13 +356,7 @@ function caves(
   });
 }
 
-function decorateRoom(
-  world: World,
-  level: Level,
-  groundY: number,
-  rand: () => number,
-  lanterns: Lantern[],
-): void {
+function decorateRoom(world: World, level: Level, rand: () => number, lanterns: Lantern[]): void {
   const room = level.room;
   if (!room) {
     const rx = level.x0 + 8 + Math.floor(rand() * 6);
@@ -276,9 +365,9 @@ function decorateRoom(
       world.roosts.push({ x: rx, y: ry });
     return;
   }
-  const depth = stratumAt(level.y0 - groundY, level.box.x, level.y0);
+  const depth = stratumAt(world, level.box.x, level.y0);
   const cx = Math.round((room.x0 + room.x1) / 2);
-  if (!level.isDaily)
+  if (!level.isDaily && level.hasDepthSign)
     sign(
       world,
       `-${String((level.index + 1) * 12).padStart(2, "0")} M`,
@@ -322,22 +411,17 @@ function decorateRoom(
       floor: level.rail - 1,
     });
   }
-  if (depth >= 3) {
-    for (let k = 0; k < 3; k += 1) {
+  const kind = crystalKindAt(depth);
+  if (kind && depth > LIMESTONE) {
+    for (let k = 0; k < (kind === "amethyst" ? 5 : 3); k += 1) {
       const gx = room.x0 + 6 + Math.floor(rand() * Math.max(1, room.x1 - room.x0 - 10));
-      crystal(world, gx, ceilingAt(world, gx, level.rail - 2), rand, false);
+      crystal(world, gx, ceilingAt(world, gx, level.rail - 2), rand, false, kind);
     }
-    crystal(world, level.x1 - 2, level.rail - 1, rand, true);
+    crystal(world, level.x1 - 2, level.rail - 1, rand, true, kind);
   }
 }
 
-function decorateLevel(
-  world: World,
-  level: Level,
-  groundY: number,
-  rand: () => number,
-  lanterns: Lantern[],
-): void {
+function decorateLevel(world: World, level: Level, rand: () => number, lanterns: Lantern[]): void {
   const b = level.box;
   rails(world, level.x0, level.x1, level.rail);
   for (
@@ -393,7 +477,7 @@ function decorateLevel(
       : level.x1 - 10;
     vein(world, vx, level.y1 + 3 + Math.floor(rand() * 4), 3, rand, 3);
   }
-  decorateRoom(world, level, groundY, rand, lanterns);
+  decorateRoom(world, level, rand, lanterns);
 }
 
 function toLevel(
@@ -406,6 +490,7 @@ function toLevel(
   const b = input.box;
   const rail = b.y + b.h + 19;
   return {
+    hasDepthSign: true,
     ...input,
     y0: b.y + b.h + 3,
     rail,
@@ -478,11 +563,19 @@ type Ground = {
 const GROUND_CHUNK = 256;
 let groundCache: Ground | null = null;
 
-function paintGround(world: World, groundY: number, moonX: number, isNarrow: boolean): void {
-  const key = `${world.W}:${groundY}:${moonX}:${Object.keys(world.palette).length}`;
+function paintGround(
+  world: World,
+  groundY: number,
+  moonX: number,
+  isNarrow: boolean,
+  strata: readonly number[],
+): void {
+  const key = `${world.W}:${groundY}:${moonX}:${Object.keys(world.palette).length}:${strata.join(",")}`;
+  world.strata = [...strata];
   if (!groundCache || groundCache.key !== key || groundCache.H < world.H) {
     const H = Math.ceil(world.H / GROUND_CHUNK) * GROUND_CHUNK + GROUND_CHUNK;
     const scratch = createWorld(world.W, H, world.palette);
+    scratch.strata = [...strata];
     const rand = seeded(isNarrow ? 21 : 7);
     paintSky(scratch, groundY, rand, moonX);
     paintRock(scratch, groundY, rand);
@@ -511,7 +604,10 @@ export function buildMine(input: LayoutInput): Mine {
   const shaftX = Math.max(3, firstX - (isNarrow ? 22 : 44));
   const xEnd = W - (isNarrow ? 4 : 7);
   const bottomY = input.front.y + input.front.h + 18;
-  const levels = input.levels.map((l) => toLevel(l, shaftX, xEnd, false, input.digId));
+  const levels = input.levels.map((l) => ({
+    ...toLevel(l, shaftX, xEnd, false, input.digId),
+    hasDepthSign: input.hasDepthSigns ?? true,
+  }));
   const front = toLevel(
     { box: input.front, pit: null, stars: -1, isDaily: false, index: -1, id: -1 },
     shaftX,
@@ -521,7 +617,14 @@ export function buildMine(input: LayoutInput): Mine {
   );
   const all = [...levels, front];
 
-  paintGround(world, groundY, isNarrow ? W - 24 : W - 70, isNarrow);
+  const chapters = input.chapters ?? [];
+  paintGround(
+    world,
+    groundY,
+    isNarrow ? W - 24 : W - 70,
+    isNarrow,
+    strataFor(levels, chapters, input.front, groundY),
+  );
   const rock = levels.some((l) => l.isDigging)
     ? { data: world.data.slice(), mask: world.mask.slice() }
     : null;
@@ -530,14 +633,20 @@ export function buildMine(input: LayoutInput): Mine {
     if (level.pit) carvePit(world, level.pit, i * 13 + 2);
     carveLevel(world, level, i * 31, xEnd, isNarrow);
   });
+  chapters.forEach((chapter, i) => {
+    carveNiche(world, chapter.box, i * 23 + 11);
+  });
   carve(world, shaftX, bottomY - 4, shaftX + SHAFT_W, bottomY + 6);
-  caves(world, { shaftX, bottomY, groundY }, all, seeded(isNarrow ? 41 : 43));
+  caves(world, { shaftX, bottomY, groundY }, all, chapters, seeded(isNarrow ? 41 : 43));
+  moltenCracks(world, seeded(isNarrow ? 61 : 67));
   edges(world, groundY, H);
   paintShaft(world, shaftX, groundY - 1, bottomY + 6);
   const frame = headframe(world, shaftX, groundY);
   const lanterns: Lantern[] = [];
-  for (const level of all) decorateLevel(world, level, groundY, rand, lanterns);
+  for (const level of all) decorateLevel(world, level, rand, lanterns);
+  for (const chapter of chapters) decorateChapter(world, chapter, rand, lanterns, front);
   for (const level of all) world.setMask(level.box.x, level.box.y, level.box.w, level.box.h, NICHE);
+  for (const { box } of chapters) world.setMask(box.x, box.y, box.w, box.h, NICHE);
   const signLamp = billboard(world, input.plate, groundY);
   const dig = rock ? setupDig(world, levels, shaftX, rock) : null;
   const carts = levels.flatMap((l) => (l.cart ? [l.cart] : []));

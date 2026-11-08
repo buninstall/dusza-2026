@@ -13,6 +13,7 @@ import {
   type Sprites,
 } from "./sprites.ts";
 import { mineVein } from "./terrain.ts";
+import { createVakond } from "./vakond.ts";
 import type { View } from "./view.ts";
 import { seeded, type Vein } from "./world.ts";
 
@@ -29,6 +30,8 @@ const BEACON = [1, 0.25, 0.15] as const;
 const SHAFT_DIG_SPEED = 38;
 const GALLERY_DIG_SPEED = 110;
 const FLIGHT_TIME = 0.9;
+const EMBER_RATE = 7;
+const EMBER_TRIES = 6;
 
 type Flight = {
   x0: number;
@@ -48,6 +51,7 @@ export type SceneOptions = {
   isStatic: boolean;
   isFresh: boolean;
   roofY: number;
+  isSilent: boolean;
   target: () => number | null;
   onDigDone: (level: Level) => void;
 };
@@ -61,6 +65,7 @@ export function runScene(options: SceneOptions): () => void {
   const drips = createDrips(world, seeded(4));
   const motes = createMotes(world, view.W, view.H, seeded(5));
   const sparks = createSparks(world);
+  const vakond = createVakond(world, front, sparks, options.isSilent);
   const flights: Flight[] = [];
   const smoke: { x: number; y: number; t: number; vx: number }[] = [];
   let dig: DigRun | null = mine.dig
@@ -159,8 +164,26 @@ export function runScene(options: SceneOptions): () => void {
     }
   };
 
+  const stepEmbers = (dt: number) => {
+    if (world.lavas.length === 0 || fx() > dt * EMBER_RATE) return;
+    for (let k = 0; k < EMBER_TRIES; k += 1) {
+      const p = world.lavas[Math.floor(fx() * world.lavas.length)];
+      if (!p || !view.isVisible(p.y, 30)) continue;
+      sparks.emit(p.x, p.y - 1, 1, fx, {
+        angle: -Math.PI / 2,
+        spread: 0.8,
+        speed: 12,
+        gravity: -16,
+        life: 1.5,
+      });
+      return;
+    }
+  };
+
   const stepEffects = (dt: number) => {
     wheelAngle += (robot.cageSpeed * dt) / 7;
+    vakond.update(time, fx);
+    stepEmbers(dt);
     bats.update(dt, view, robot.x);
     drips.update(dt);
     motes.update(dt, time);
@@ -316,6 +339,7 @@ export function runScene(options: SceneOptions): () => void {
       const y = f.y0 + (f.y1 - f.y0) * f.t - Math.sin(f.t * Math.PI) * 16;
       list.push({ x, y, radius: 12, intensity: 0.7, color: GOLD, falloff: 1.4, hasShadow: false });
     }
+    if (view.isVisible(front.rail, 40)) list.push(...vakond.lights(time));
     return list;
   };
 
@@ -424,6 +448,7 @@ export function runScene(options: SceneOptions): () => void {
     view.render(lastLights, canRelight);
     const { ctx } = view;
     drawScenery();
+    vakond.draw(view, sprites, time);
     drawRobot(
       view,
       sprites,
@@ -479,6 +504,17 @@ export function runScene(options: SceneOptions): () => void {
     };
   }
 
+  const onPointer = (event: PointerEvent) => {
+    const rect = view.ctx.canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+    bats.scare(
+      ((event.clientX - rect.left) * view.W) / rect.width,
+      view.camY + ((event.clientY - rect.top) * view.H) / rect.height,
+    );
+  };
+  window.addEventListener("pointermove", onPointer, { passive: true });
+  window.addEventListener("pointerdown", onPointer, { passive: true });
+
   let handle = 0;
   let last = performance.now();
   let acc = 0;
@@ -493,5 +529,9 @@ export function runScene(options: SceneOptions): () => void {
     handle = requestAnimationFrame(loop);
   };
   handle = requestAnimationFrame(loop);
-  return () => cancelAnimationFrame(handle);
+  return () => {
+    window.removeEventListener("pointermove", onPointer);
+    window.removeEventListener("pointerdown", onPointer);
+    cancelAnimationFrame(handle);
+  };
 }

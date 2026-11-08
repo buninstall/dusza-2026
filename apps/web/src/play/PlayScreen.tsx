@@ -1,13 +1,26 @@
 import type { MineMap, RobotState } from "@minescript/engine";
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef } from "react";
+import { Notice } from "../components/Notice.tsx";
 import { RegionBoundary } from "../components/RegionBoundary.tsx";
 import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
+import { useStableCallback } from "../lib/stable-callback.ts";
 import { MineBoard } from "../mine/MineBoard.tsx";
+import type { Exploration, FogMode } from "../mine/tiles-model.ts";
 import { usePlaybackSounds } from "../sound/usePlaybackSounds.ts";
-import { deriveFault } from "./fault.ts";
+import { deriveFault, isOffMapHit } from "./fault.ts";
 import { GoldFlight } from "./GoldFlight.tsx";
 import { LiveAnnouncer } from "./LiveAnnouncer.tsx";
+import {
+  isDarkMine,
+  isLampBroken,
+  LAMP_MAX_RADIUS,
+  type LampMode,
+  type LampView,
+  lampTrack,
+  lampView,
+  type Sketch,
+} from "./lamp-mode.ts";
 import { type Blocked, moodFor } from "./phase.ts";
 import { usePlayUi } from "./play-ui-store.ts";
 import { isScrubbable, usePlayback } from "./playback-store.ts";
@@ -38,6 +51,8 @@ import { lineTextOf, type PlayView } from "./usePlayView.ts";
 
 export const SHEET_ID = "program";
 
+export type LampSetup = { mode: LampMode; sketch: Sketch; canSeeAll: boolean };
+
 export type MapFacts = {
   title: string;
   goldTotal: number;
@@ -59,6 +74,7 @@ type PlayScreenProps = {
   sheet: ReactNode;
   reportFooter: ReactNode;
   wellOverlay?: ReactNode;
+  lamp?: LampSetup | undefined;
   onRun: () => boolean;
   onInsertGuard?: ((line: number) => void) | undefined;
   revealLine: (line: number) => void;
@@ -70,7 +86,7 @@ function isFocusLost(): boolean {
   return document.activeElement === null || document.activeElement === document.body;
 }
 
-function finalAnnouncement(view: PlayView): string | undefined {
+function finalAnnouncement(view: PlayView, map: MineMap): string | undefined {
   const result = usePlayback.getState().result;
   if (view.report === "stopped") {
     return hu.play.stoppedBody;
@@ -79,16 +95,69 @@ function finalAnnouncement(view: PlayView): string | undefined {
     return undefined;
   }
   return result.outcome.kind === "runtimeError"
-    ? hu.play.runtimeErrorSpoken(result.outcome.code, result.outcome.line)
+    ? hu.play.runtimeErrorSpoken(result.outcome.code, result.outcome.line, isOffMapHit(result, map))
     : hu.play.finishedBody(result.gold, result.steps);
 }
 
-function useStageMotion(map: MineMap, view: PlayView, start: RobotState) {
+export function isFullViewLocked(lamp: LampSetup | undefined): boolean {
+  return lamp !== undefined && isDarkMine(lamp.mode) && !lamp.canSeeAll;
+}
+
+type MineSight = { exploration: Exploration | null; lamp: LampView | null };
+
+function useMineSight(
+  map: MineMap,
+  start: RobotState,
+  frame: PlayView["frame"],
+  fogMode: FogMode,
+  lamp: LampSetup | undefined,
+): MineSight {
+  const result = usePlayback((state) => state.result);
+  const mode = lamp?.mode ?? "open";
+  const track = useMemo(
+    () => (result && isDarkMine(mode) ? lampTrack(map, start, result, mode) : null),
+    [result, map, start, mode],
+  );
+  if (!lamp || !isDarkMine(mode) || fogMode !== "lamp") {
+    return {
+      exploration: frame
+        ? { discovered: frame.discovered, mined: frame.mined, mode: fogMode }
+        : null,
+      lamp: null,
+    };
+  }
+  const sight = lampView({
+    map,
+    start,
+    mode,
+    sketch: lamp.sketch,
+    frame,
+    track: frame ? track : null,
+    isBroken: result !== null && isLampBroken(result),
+  });
+  return {
+    exploration: {
+      discovered: sight.discovered,
+      lit: sight.lit,
+      mined: frame?.mined ?? new Set(),
+      mode: "lamp",
+    },
+    lamp: sight,
+  };
+}
+
+function useStageMotion(
+  map: MineMap,
+  view: PlayView,
+  start: RobotState,
+  lamp: LampSetup | undefined,
+) {
   const index = usePlayback((state) => state.index);
   const speed = usePlayback((state) => state.speed);
   const runId = usePlayback((state) => state.runId);
   const result = usePlayback((state) => state.result);
-  const fogMode = usePlayUi((state) => state.fogMode);
+  const chosenFog = usePlayUi((state) => state.fogMode);
+  const fogMode: FogMode = isFullViewLocked(lamp) ? "lamp" : chosenFog;
   const previousIndex = usePrevious(index);
   const isReduced = usePrefersReducedMotion();
   const frame = view.frame;
@@ -103,6 +172,7 @@ function useStageMotion(map: MineMap, view: PlayView, start: RobotState) {
   const stepMs = isAdvancing ? plannedMs : 0;
   const turbo = isTurbo(speed);
   const robot = frame?.robot ?? start;
+  const sight = useMineSight(map, start, frame, fogMode, lamp);
   const fault = useMemo(() => (result ? deriveFault(result, map) : null), [result, map]);
   const segmentMs = segmentDuration(frame?.event?.path.length ?? 0, stepMs);
   const dressing = boardDressing(
@@ -129,7 +199,7 @@ function useStageMotion(map: MineMap, view: PlayView, start: RobotState) {
     robot,
     dressing,
     stepMs,
-    fogMode,
+    sight,
     flight,
     sparkle,
     isRolling: isAdvancing && !isReduced,
@@ -149,7 +219,8 @@ export function PlayScreen(props: PlayScreenProps) {
   const result = usePlayback((state) => state.result);
   const runId = usePlayback((state) => state.runId);
   const ui = usePlayUi();
-  const motion = useStageMotion(map, view, start);
+  const motion = useStageMotion(map, view, start, props.lamp);
+  const lampSight = motion.sight.lamp;
   usePlaybackTimer();
   usePlaybackSounds();
   useWellZoom(wellRef, motion.robot.pos, layout === "cab");
@@ -177,6 +248,7 @@ export function PlayScreen(props: PlayScreenProps) {
   };
 
   const run = (isFromLever: boolean) => afterRun(props.onRun(), isFromLever);
+  const runFromLever = useStableCallback(() => run(true));
 
   usePlayShortcuts(rootRef, stageRef, { ...props.commands, run: () => run(false) });
 
@@ -184,7 +256,7 @@ export function PlayScreen(props: PlayScreenProps) {
   const outcome = result?.outcome;
   const urgent =
     frame?.atEnd && outcome?.kind === "runtimeError" && view.report !== null
-      ? hu.play.runtimeErrorSpoken(outcome.code, outcome.line)
+      ? hu.play.runtimeErrorSpoken(outcome.code, outcome.line, isOffMapHit(result, map))
       : undefined;
 
   const report =
@@ -194,6 +266,7 @@ export function PlayScreen(props: PlayScreenProps) {
         kind={view.report}
         result={result}
         blocked={blocked}
+        isOffMap={isOffMapHit(result, map)}
         onShowLine={props.revealLine}
       />
     );
@@ -219,6 +292,11 @@ export function PlayScreen(props: PlayScreenProps) {
           robot={motion.robot}
           isRolling={motion.isRolling}
           isLimit={view.phase === "limit"}
+          battery={
+            lampSight
+              ? { radius: lampSight.radius, max: LAMP_MAX_RADIUS, isBroken: lampSight.isBroken }
+              : null
+          }
           onRevealLine={props.revealLine}
         />
         <div
@@ -241,11 +319,8 @@ export function PlayScreen(props: PlayScreenProps) {
               robot={motion.robot}
               label={hu.play.mapLabel(facts.title)}
               describedBy={facts.description ? facts.descriptionId : undefined}
-              exploration={
-                frame
-                  ? { discovered: frame.discovered, mined: frame.mined, mode: motion.fogMode }
-                  : null
-              }
+              exploration={motion.sight.exploration}
+              shade={lampSight ? { radius: lampSight.radius, isBroken: lampSight.isBroken } : null}
               sparkle={motion.sparkle}
               stepMs={motion.stepMs}
               fit="both"
@@ -258,6 +333,11 @@ export function PlayScreen(props: PlayScreenProps) {
           <span aria-hidden="true" key={`flash-${runId}-${view.phase}`} className="stage-flash" />
           <div className="stage-status">
             <LongRunNotice />
+            {lampSight?.isBroken ? (
+              <Notice tone="warning" title={hu.play.lampBrokenTitle} live="status">
+                {hu.play.lampBrokenBody}
+              </Notice>
+            ) : null}
             {report}
             {view.report === "stopped" || blocked ? null : props.reportFooter}
             {props.wellOverlay}
@@ -269,7 +349,7 @@ export function PlayScreen(props: PlayScreenProps) {
           leverRef={leverRef}
           centerRef={centerRef}
           shakeKey={blocked ? props.attempt : null}
-          onRun={() => run(true)}
+          onRun={runFromLever}
           extra={<LogToggle count={consoleCount} isOpen={ui.isLogOpen} onToggle={ui.toggleLog} />}
         />
         {ui.isLogOpen ? (
@@ -317,7 +397,7 @@ export function PlayScreen(props: PlayScreenProps) {
     <div ref={rootRef} className="play" data-layout={layout} data-mode={mode} style={share}>
       {panes}
       <GoldFlight flight={motion.flight} rootRef={rootRef} />
-      <LiveAnnouncer frame={frame} final={finalAnnouncement(view)} urgent={urgent} />
+      <LiveAnnouncer frame={frame} final={finalAnnouncement(view, map)} urgent={urgent} />
     </div>
   );
 }

@@ -83,3 +83,12 @@
   letter-spacing: 0;
   color: inherit;
 }
+
+.seg-segment[data-disabled] {
+  cursor: not-allowed;
+}
+
+.seg-segment[data-disabled]:not([data-selected]) {
+  color: var(--c-text-muted);
+  text-decoration: line-through;
+}

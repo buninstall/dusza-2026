@@ -158,3 +158,10 @@
     justify-content: start;
   }
 }
+
+.rc-insight {
+  margin: 0;
+  max-width: var(--prose-max);
+  font: var(--type-help);
+  color: var(--c-text);
+}

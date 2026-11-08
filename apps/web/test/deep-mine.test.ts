@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { buildMine, type LevelInput } from "../src/maps/deep/build.ts";
+import { buildMine, type LevelInput, strataFor } from "../src/maps/deep/build.ts";
+import { CORE, TOPSOIL_DEPTH } from "../src/maps/deep/palette.ts";
 import { NICHE, OPEN, PANEL, SKY } from "../src/maps/deep/world.ts";
 
 const W = 300;
@@ -7,7 +8,9 @@ const PALETTE = Object.fromEntries([
   ["shaft", "#100c0a"],
   ["shaft-hi", "#17120e"],
   ["shade", "#0e0b09"],
-  ...[0, 1, 2, 3, 4].flatMap((k) => ["a", "b", "c"].map((v) => [`cavity-${k}-${v}`, "#3b3024"])),
+  ...[0, 1, 2, 3, 4, 5, 6, 7].flatMap((k) =>
+    ["a", "b", "c"].map((v) => [`cavity-${k}-${v}`, "#3b3024"]),
+  ),
 ]);
 
 function levels(count: number): LevelInput[] {
@@ -96,5 +99,18 @@ describe("akna háttér", () => {
     const m = mine(2, 1);
     expect(m.dig).toBeNull();
     expect(m.levels[0]?.isDigging).toBe(false);
+  });
+
+  test("a kőzetrétegek ötösével váltanak, a fejezettábla maga jelöli ki a határt", () => {
+    const m = mine(12);
+    const plain = strataFor(m.levels, [], { x: 80, y: 1400, w: 160, h: 40 }, m.groundY);
+    expect(plain[0]).toBe(TOPSOIL_DEPTH);
+    expect(plain[1]).toBeGreaterThan(0);
+    expect(plain[2]).toBeGreaterThan(plain[1] ?? 0);
+    expect(plain[3]).toBe(Number.POSITIVE_INFINITY);
+    const plaque = { box: { x: 80, y: 300, w: 160, h: 40 }, stratum: 2 };
+    const marked = strataFor(m.levels, [plaque], { x: 80, y: 1400, w: 160, h: 40 }, m.groundY);
+    expect(marked[1]).toBe(300 - 8 - m.groundY);
+    expect(marked[CORE]).toBe(Number.POSITIVE_INFINITY);
   });
 });

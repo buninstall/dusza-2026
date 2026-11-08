@@ -1,43 +1,42 @@
-export type DesktopPlatform =
-  | "mac"
-  | "windows"
-  | "windows-msi"
-  | "linux"
-  | "linux-deb"
-  | "linux-rpm";
+export type DesktopPlatform = "macos" | "windows" | "linux";
 
-export const DESKTOP_PLATFORM_ORDER: readonly DesktopPlatform[] = [
-  "mac",
-  "windows",
-  "windows-msi",
-  "linux",
-  "linux-deb",
-  "linux-rpm",
-];
+export type NavigatorLike = {
+  userAgent: string;
+  platform?: string | undefined;
+  maxTouchPoints?: number | undefined;
+  userAgentData?: { platform?: string | undefined; mobile?: boolean | undefined } | undefined;
+};
 
-type NavigatorLike = { userAgent?: string; userAgentData?: { platform?: string } };
+const NOT_DESKTOP = /android|iphone|ipad|ipod|mobile|cros|chrome os/i;
+const TOUCH_MAC_POINTS = 1;
 
-export function detectFamily(nav: NavigatorLike | undefined): "mac" | "windows" | "linux" | null {
-  const hint = `${nav?.userAgentData?.platform ?? ""} ${nav?.userAgent ?? ""}`.toLowerCase();
-  if (/iphone|ipad|android/.test(hint)) return null;
-  if (/mac/.test(hint)) return "mac";
-  if (/win/.test(hint)) return "windows";
-  if (/linux|x11|cros/.test(hint)) return "linux";
-  return null;
-}
-
-export function orderForFamily(
-  available: readonly DesktopPlatform[],
-  family: ReturnType<typeof detectFamily>,
-): DesktopPlatform[] {
-  const own = family ? available.filter((platform) => platform.startsWith(family)) : [];
-  return [...own, ...available.filter((platform) => !own.includes(platform))];
-}
-
-export function isDesktopShell(root: { dataset: DOMStringMap } | undefined): boolean {
+export function isDesktopShell(root: { dataset: DOMStringMap } | null): boolean {
   return root?.dataset.shell === "desktop";
 }
 
-export function downloadHref(platform: DesktopPlatform): string {
-  return `/api/desktop/download/${platform}`;
+export function detectPlatform(nav: NavigatorLike): DesktopPlatform | null {
+  if (nav.userAgentData?.mobile) {
+    return null;
+  }
+  const source = [nav.userAgentData?.platform, nav.platform, nav.userAgent].join(" ");
+  if (NOT_DESKTOP.test(source)) {
+    return null;
+  }
+  if (/windows|win32|win64/i.test(source)) {
+    return "windows";
+  }
+  if (/mac/i.test(source)) {
+    return (nav.maxTouchPoints ?? 0) > TOUCH_MAC_POINTS ? null : "macos";
+  }
+  if (/linux|x11/i.test(source)) {
+    return "linux";
+  }
+  return null;
+}
+
+export function currentPlatform(): DesktopPlatform | null {
+  if (typeof document === "undefined" || typeof navigator === "undefined") {
+    return null;
+  }
+  return isDesktopShell(document.documentElement) ? null : detectPlatform(navigator);
 }

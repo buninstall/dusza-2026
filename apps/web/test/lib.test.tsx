@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { renderHook } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 import { diagnosticTitles, formatCount, formatTime, hu, runtimeErrors } from "../src/i18n/hu.ts";
+import { manual } from "../src/i18n/hu-manual.ts";
 import { ApiError, call, errorMessage } from "../src/lib/api.ts";
 import { initialCursor } from "../src/lib/cursor.ts";
 import { usePrefersReducedMotion } from "../src/lib/motion.ts";
@@ -42,10 +43,10 @@ describe("i18n teljesség", () => {
   });
 
   test("a kézikönyv fejezetei egyedi horgonyt kapnak", () => {
-    const ids = hu.manual.sections.map((section) => section.id);
+    const ids = manual.sections.map((section) => section.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(hu.manual.sections.every((section) => section.blocks.length > 0)).toBe(true);
-    expect(hu.manual.parts.flatMap((part) => part.ids)).toEqual(ids);
+    expect(manual.sections.every((section) => section.blocks.length > 0)).toBe(true);
+    expect(manual.parts.flatMap((part) => part.ids)).toEqual(ids);
   });
 
   test("formázók", () => {

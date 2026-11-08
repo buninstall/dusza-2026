@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import {
+  articleFor,
   cell,
   editor,
   executedLine,
@@ -32,6 +33,7 @@ import {
   LOOP_RECIPE,
   OPTIMAL_RECIPES,
   recipePath,
+  recipeText,
   SYNTAX_RECIPE,
 } from "./recipes.ts";
 
@@ -243,7 +245,9 @@ test.describe("3.4 futtatás a bemutató fiókkal", () => {
       await run(page);
       await expectRuntimeError(page, recipe.code, recipe.line, recipe.steps);
       await expectReadings(page, { steps: recipe.steps, status: "Hiba" });
-      await page.getByRole("button", { name: `Mutasd a(z) ${recipe.line}. sort` }).click();
+      await page
+        .getByRole("button", { name: `Mutasd ${articleFor(recipe.line)} ${recipe.line}. sort` })
+        .click();
       await expect(editor(page)).toBeFocused();
     }
   });
@@ -271,7 +275,7 @@ test.describe("3.4 futtatás új fiókkal", () => {
   }) => {
     await register(page, "szintaxis");
     await gotoPlay(page, CORRIDOR);
-    await importProgramFile(page, recipePath(SYNTAX_RECIPE.file));
+    await replaceProgram(page, recipeText(SYNTAX_RECIPE.file));
     await run(page);
     const report = syntaxReport(page);
     await expect(report).toContainText("Hibás sorok: 1, 2, 3, 4.");
@@ -285,7 +289,7 @@ test.describe("3.4 futtatás új fiókkal", () => {
       ).toBeVisible();
     }
     await expectReadings(page, { steps: 0, line: null, status: "Hibás program" });
-    await report.getByRole("button", { name: "Mutasd a(z) 1. sort" }).click();
+    await report.getByRole("button", { name: "Mutasd az 1. sort" }).click();
     await expect(editor(page)).toBeFocused();
     await page.getByRole("link", { name: "Futásaim" }).click();
     await expect(page.getByText("Még nincs rögzített futásod.", { exact: false })).toBeVisible();

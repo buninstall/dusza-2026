@@ -1,3 +1,4 @@
+import { article, capitalArticle } from "../lib/article.ts";
 import type { MysqlServer } from "./url.ts";
 
 export class DatabaseError extends Error {
@@ -82,14 +83,14 @@ export function toDatabaseError(
   }
   if (code === "ER_ACCESS_DENIED_ERROR") {
     return new DatabaseError(
-      `A MySQL (${address}) elutasította a(z) „${target.user}” felhasználó belépését.`,
+      `A MySQL (${address}) elutasította ${article(target.user)} „${target.user}” felhasználó belépését.`,
       ACCOUNT_HINT,
       { cause: error },
     );
   }
   if (code === "ER_DBACCESS_DENIED_ERROR" || code === "ER_BAD_DB_ERROR") {
     return new DatabaseError(
-      `A(z) „${target.database}” adatbázis nem létezik, vagy a(z) „${target.user}” felhasználónak nincs hozzá joga.`,
+      `${capitalArticle(target.database ?? "")} „${target.database}” adatbázis nem létezik, vagy ${article(target.user)} „${target.user}” felhasználónak nincs hozzá joga.`,
       ACCOUNT_HINT,
       { cause: error },
     );
