@@ -27,9 +27,14 @@ export type MineSceneProps = Omit<ComponentProps<typeof MineBoard>, "fit" | "siz
   onZoomChange: (zoom: number) => void;
   panButton?: PanButton;
   isWheelZoom?: boolean;
-  reserve?: number;
+  reserve?: SceneReserve;
   ghost?: GhostPath | null;
 };
+
+export type SceneReserve = { share: number; minRem: number; maxShare: number };
+
+const NO_RESERVE: SceneReserve = { share: 0, minRem: 0, maxShare: 0 };
+const FALLBACK_REM = 16;
 
 const CART_MOUTH = { x: 4, y: 0, w: 18, h: 6 };
 
@@ -51,6 +56,16 @@ function snap(value: number): number {
   return Math.round(value * ratio) / ratio;
 }
 
+function rootRem(): number {
+  const size = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return Number.isFinite(size) && size > 0 ? size : FALLBACK_REM;
+}
+
+function reservedHeight(height: number, reserve: SceneReserve): number {
+  const wanted = Math.max(height * reserve.share, reserve.minRem * rootRem());
+  return Math.min(wanted, height * reserve.maxShare);
+}
+
 type Anchor = { world: Point; clientX: number; clientY: number };
 
 export function MineScene({
@@ -59,7 +74,7 @@ export function MineScene({
   onZoomChange,
   panButton = "primary",
   isWheelZoom = true,
-  reserve = 0,
+  reserve = NO_RESERVE,
   ghost = null,
   ...board
 }: MineSceneProps) {
@@ -87,7 +102,7 @@ export function MineScene({
     const resting = frameCenter(fitBox(layout));
     const center = centerRef.current ?? {
       x: resting.x,
-      y: resting.y + (viewport.height * reserve) / scale / 2,
+      y: resting.y + reservedHeight(viewport.height, reserve) / scale / 2,
     };
     const view = placeView(center, viewport, scale, { width: layout.W, height: layout.H });
     centerRef.current = viewCenter(view);
@@ -115,7 +130,10 @@ export function MineScene({
   const scaleNow = () => {
     const layout = layoutOf();
     const quantum = pixelQuantum();
-    const room = { width: viewport.width, height: viewport.height * (1 - reserve) };
+    const room = {
+      width: viewport.width,
+      height: viewport.height - reservedHeight(viewport.height, reserve),
+    };
     if (!layout) {
       return 1;
     }
@@ -181,7 +199,8 @@ export function MineScene({
     if (zoom <= 1 && layout) {
       const fits =
         (fitBox(layout).x1 - fitBox(layout).x0) * scale <= viewport.width &&
-        (fitBox(layout).y1 - fitBox(layout).y0) * scale <= viewport.height * (1 - reserve);
+        (fitBox(layout).y1 - fitBox(layout).y0) * scale <=
+          viewport.height - reservedHeight(viewport.height, reserve);
       if (fits) {
         centerRef.current = null;
       }

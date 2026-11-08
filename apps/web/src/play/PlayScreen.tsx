@@ -6,7 +6,7 @@ import { hu } from "../i18n/hu.ts";
 import { usePrefersReducedMotion } from "../lib/motion.ts";
 import { addRunWear, useRustWear } from "../lib/rust-wear.ts";
 import { useStableCallback } from "../lib/stable-callback.ts";
-import { MineScene } from "../mine/scene/MineScene.tsx";
+import { MineScene, type SceneReserve } from "../mine/scene/MineScene.tsx";
 import type { Exploration, FogMode } from "../mine/tiles-model.ts";
 import { usePlaybackSounds } from "../sound/usePlaybackSounds.ts";
 import { deriveFault, isOffMapHit } from "./fault.ts";
@@ -52,7 +52,7 @@ import { lineTextOf, type PlayView } from "./usePlayView.ts";
 
 export const SHEET_ID = "program";
 
-const SCENE_RESERVE = 0.2;
+const SCENE_RESERVE: SceneReserve = { share: 0.2, minRem: 8, maxShare: 0.4 };
 
 export type LampSetup = { mode: LampMode; sketch: Sketch; canSeeAll: boolean };
 
@@ -323,7 +323,7 @@ export function PlayScreen(props: PlayScreenProps) {
             lighting={props.lamp?.mode ?? "open"}
             zoom={ui.zoom}
             onZoomChange={ui.setZoom}
-            reserve={layout === "cab" ? SCENE_RESERVE : 0}
+            {...(layout === "cab" ? { reserve: SCENE_RESERVE } : {})}
             ghost={ghost}
             isWheelZoom={layout === "cab"}
             map={map}
