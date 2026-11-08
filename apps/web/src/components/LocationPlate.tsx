@@ -8,7 +8,6 @@ type LocationPlateProps = {
   name: string;
   detail?: string | undefined;
   headingPrefix?: string;
-  documentTitle?: string;
   meta?: ReactNode;
   lead?: ReactNode;
   actions?: ReactNode;
@@ -19,10 +18,10 @@ type LocationPlateProps = {
   isTitleHidden?: boolean;
 };
 
-export function useDocumentTitle(title: string): void {
+export function useDocumentTitle(): void {
   useEffect(() => {
-    document.title = `${title} – ${hu.app.name}`;
-  }, [title]);
+    document.title = hu.app.name;
+  }, []);
 }
 
 export function PlateSign({ name }: { name: string }) {
@@ -37,7 +36,6 @@ export function LocationPlate({
   name,
   detail,
   headingPrefix,
-  documentTitle,
   meta,
   lead,
   actions,
@@ -47,7 +45,7 @@ export function LocationPlate({
   hasSign = true,
   isTitleHidden = false,
 }: LocationPlateProps) {
-  useDocumentTitle(documentTitle ?? detail ?? name);
+  useDocumentTitle();
   return (
     <header className={clsx("plate", className)} data-docked={isDocked}>
       <span aria-hidden="true" className="plate-rivets" />

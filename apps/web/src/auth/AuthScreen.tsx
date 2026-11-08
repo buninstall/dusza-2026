@@ -9,7 +9,7 @@ import "./AuthScreen.css";
 type AuthScreenProps = { title: string; children: ReactNode; footer: ReactNode };
 
 export function AuthScreen({ title, children, footer }: AuthScreenProps) {
-  useDocumentTitle(title);
+  useDocumentTitle();
   const panelRef = useRef<HTMLElement>(null);
   return (
     <main id="main" tabIndex={-1} className="auth" data-theme="tarna">

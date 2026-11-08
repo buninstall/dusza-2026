@@ -23,7 +23,8 @@ export function RouteFocus() {
       if (isFocusLost()) {
         document.getElementById("main")?.focus({ preventScroll: true });
       }
-      setMessage(hu.app.pageChanged(document.title));
+      const heading = document.querySelector("h1")?.textContent?.trim() ?? "";
+      setMessage(hu.app.pageChanged(heading || hu.app.name));
     }, TITLE_SETTLE_MS);
     return () => window.clearTimeout(timer);
   }, [pathname]);

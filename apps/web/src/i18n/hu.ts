@@ -298,8 +298,6 @@ export const hu = {
     newTitle: "Új térkép",
     editTitle: "Térkép szerkesztése",
     back: "Pályák",
-    documentNew: "Új térkép",
-    documentEdit: (title: string) => `Szerkesztés: ${title}`,
     detailsHeading: "Adatlap",
     titleField: "Cím",
     titlePlaceholder: "Cím nélkül",
@@ -796,7 +794,6 @@ export const hu = {
     openInEditor: "Megnyitás a szerkesztőben",
     oldVersion: "régi verzió",
     result: (gold: number, steps: number) => `${gold} arany · ${steps} lépés`,
-    documentTitle: (map: string) => `Visszajátszás: ${map}`,
     loadFailed: "A futás nem tölthető be.",
   },
   admin: {

@@ -72,7 +72,7 @@ type SignBoardProps = {
 
 function SignBoard({ heading, plate, code, isAlert = false, children }: SignBoardProps) {
   const isInShell = useIsInShell();
-  useDocumentTitle(heading);
+  useDocumentTitle();
   const board = (
     <div className="status" data-in-shell={isInShell} {...(isAlert ? { role: "alert" } : {})}>
       <HazardStripe />

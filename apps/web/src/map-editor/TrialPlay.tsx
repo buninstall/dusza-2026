@@ -55,7 +55,6 @@ export function TrialPlay({ map, text, title, onBack }: TrialPlayProps) {
           name={hu.trial.sign}
           title={shownTitle}
           meta={hu.trial.note}
-          documentTitle={hu.trial.title(title)}
           actions={
             <Button size="sm" icon="arrowLeft" onPress={onBack}>
               {hu.trial.back}

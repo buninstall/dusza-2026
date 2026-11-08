@@ -10,7 +10,6 @@ type BezelProps = {
   name: string;
   title: string;
   meta?: ReactNode | undefined;
-  documentTitle?: string;
   actions: ReactNode;
   isFullLocked?: boolean;
 };
@@ -33,15 +32,8 @@ export function ViewSwitch({ isLocked = false }: { isLocked?: boolean }) {
   );
 }
 
-export function Bezel({
-  name,
-  title,
-  meta,
-  documentTitle,
-  actions,
-  isFullLocked = false,
-}: BezelProps) {
-  useDocumentTitle(documentTitle ?? title);
+export function Bezel({ name, title, meta, actions, isFullLocked = false }: BezelProps) {
+  useDocumentTitle();
   return (
     <header className="bezel k-panel">
       <div className="bezel-id">

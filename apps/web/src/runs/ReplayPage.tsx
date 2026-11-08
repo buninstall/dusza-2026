@@ -104,7 +104,6 @@ export function ReplayPage({ detail, map }: ReplayPageProps) {
       title={run.mapTitle}
       meta={meta}
       isFullLocked={isDarkMine(detail.map.lampMode) && !run.isOwn}
-      documentTitle={hu.replay.documentTitle(run.mapTitle)}
       actions={
         <>
           <Button size="sm" icon="pickaxe" onPress={requestOpen}>

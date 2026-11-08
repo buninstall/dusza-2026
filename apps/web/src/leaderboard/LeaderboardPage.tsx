@@ -97,7 +97,6 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
         name={hu.signs.leaderboard}
         detail={data?.title}
         headingPrefix={hu.leaderboard.headingPrefix}
-        documentTitle={data ? `${hu.signs.leaderboard} – ${data.title}` : hu.signs.leaderboard}
         lead={
           <Link to="/maps" variant="ghost" size="sm" icon="arrowLeft">
             {hu.leaderboard.back}
