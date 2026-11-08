@@ -12,7 +12,7 @@
   border: var(--border-thin) solid var(--c-line-strong);
   background: var(--c-surface);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
-  animation: enter-drop var(--motion-enter) var(--ease-px3);
+  animation: enter-drop var(--motion-enter) var(--ease-out);
 }
 
 .status[data-in-shell="true"] {

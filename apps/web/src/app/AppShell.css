@@ -140,7 +140,7 @@
   margin: 0 auto;
   padding: var(--main-pad-top) var(--main-pad-x) var(--space-8);
   outline: none;
-  animation: enter-fade 120ms var(--ease-px2);
+  animation: enter-fade 120ms var(--ease-out);
 }
 
 .shell[data-layout="cab"] .shell-main,

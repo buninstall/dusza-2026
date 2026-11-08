@@ -30,8 +30,8 @@
   cursor: pointer;
   user-select: none;
   transition:
-    translate var(--motion-press) var(--ease-px2),
-    box-shadow var(--motion-press) var(--ease-px2);
+    translate var(--motion-press) var(--ease-out),
+    box-shadow var(--motion-press) var(--ease-out);
 }
 
 .btn[data-size="sm"] {

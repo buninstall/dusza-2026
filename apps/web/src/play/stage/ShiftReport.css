@@ -8,7 +8,7 @@
   background: var(--px-iron-dk);
   outline: none;
   font: var(--type-help);
-  animation: report-enter var(--motion-enter) var(--ease-px3);
+  animation: report-enter var(--motion-enter) var(--ease-out);
 }
 
 .report[data-tone="error"] {

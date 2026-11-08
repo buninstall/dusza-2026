@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
-  transition: opacity var(--motion-enter) var(--ease-px2);
+  transition: opacity var(--motion-enter) var(--ease-out);
 }
 
 .lb-layout[data-turning="true"] {
@@ -162,7 +162,7 @@
 .lb-segment[data-lit="true"] {
   border-color: var(--c-line-strong);
   background: var(--c-reward);
-  animation: lb-segment-in var(--motion-flash) steps(2) both;
+  animation: lb-segment-in var(--motion-flash) var(--ease-out) both;
 }
 
 @keyframes lb-segment-in {
@@ -187,7 +187,7 @@
   border-left: 4px solid var(--c-gold);
   background: var(--c-surface-raised);
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--c-shadow);
-  animation: enter-fade var(--motion-enter) var(--ease-px3);
+  animation: enter-fade var(--motion-enter) var(--ease-out);
 }
 
 .lb-my-place p {

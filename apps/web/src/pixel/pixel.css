@@ -61,12 +61,12 @@
 }
 
 .px-counter-glyph[data-roll="in"] {
-  animation: px-roll-in var(--motion-tick) var(--ease-px3);
+  animation: px-roll-in var(--motion-tick) var(--ease-out);
 }
 
 .px-counter-glyph[data-roll="out"] {
   translate: 0 -100%;
-  animation: px-roll-out var(--motion-tick) var(--ease-px3);
+  animation: px-roll-out var(--motion-tick) var(--ease-out);
 }
 
 @keyframes px-roll-in {

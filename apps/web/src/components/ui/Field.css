@@ -164,7 +164,7 @@
 }
 
 .field-popover[data-entering] {
-  animation: field-drop var(--motion-enter) var(--ease-px3);
+  animation: field-drop var(--motion-enter) var(--ease-out);
 }
 
 .field-list-box {

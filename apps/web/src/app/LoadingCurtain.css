@@ -7,7 +7,7 @@
   background: var(--px-void);
   pointer-events: none;
   opacity: 1;
-  transition: opacity var(--motion-reveal) var(--ease-px2);
+  transition: opacity var(--motion-reveal) var(--ease-out);
 }
 
 .curtain[data-phase="leaving"] {

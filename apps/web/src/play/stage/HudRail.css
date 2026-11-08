@@ -68,7 +68,7 @@
 }
 
 .hud-odo .k-odo-digit[data-roll="in"] {
-  animation: hud-odo-roll var(--motion-tick) var(--ease-px3);
+  animation: hud-odo-roll var(--motion-tick) var(--ease-out);
 }
 
 @keyframes hud-odo-roll {

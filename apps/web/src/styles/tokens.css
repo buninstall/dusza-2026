@@ -68,6 +68,7 @@
   --ease-px6: steps(6, end);
   --ease-px8: steps(8, end);
   --ease-snap: steps(1, end);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
   --hazard-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23f2c21b'/%3E%3Cpath d='M0 8L8 0h8L0 16zM8 16L16 8v8z' fill='%2315120f'/%3E%3C/svg%3E");
   --hazard-size: 16px;

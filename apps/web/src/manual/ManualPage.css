@@ -38,7 +38,7 @@
 
 .manual-toc-toggle .px-icon:last-child {
   margin-left: auto;
-  transition: rotate var(--motion-press) var(--ease-px2);
+  transition: rotate var(--motion-press) var(--ease-out);
 }
 
 .manual-toc[data-open] .manual-toc-toggle .px-icon:last-child {
@@ -137,7 +137,7 @@
 .manual-seam {
   display: inline-flex;
   border: var(--border-thin) solid var(--c-line);
-  transition: border-color var(--motion-press) var(--ease-px2);
+  transition: border-color var(--motion-press) var(--ease-out);
 }
 
 .manual-seam-tile {
@@ -549,8 +549,8 @@
   background: var(--c-surface);
   box-shadow: var(--shadow-offset-sm) var(--shadow-offset-sm) 0 var(--c-shadow);
   transition:
-    translate var(--motion-press) var(--ease-px2),
-    box-shadow var(--motion-press) var(--ease-px2);
+    translate var(--motion-press) var(--ease-out),
+    box-shadow var(--motion-press) var(--ease-out);
 }
 
 .manual-pager-link[data-direction="next"] {

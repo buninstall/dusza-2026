@@ -27,19 +27,19 @@
 }
 
 .sb-shaft .lv-tile {
-  animation: sb-surface var(--motion-reveal) var(--ease-px4) both;
+  animation: sb-surface var(--motion-reveal) var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * var(--sb-stagger));
 }
 
 .sb-shaft .lv-tile > .lv-body,
 .sb-shaft .lv-tile > .lv-actions {
-  animation: sb-rise var(--motion-burst) var(--ease-px6) both;
+  animation: sb-rise var(--motion-burst) var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * var(--sb-stagger));
 }
 
 .sb-shaft[data-turning="true"] .lv-tile {
   opacity: 0.35;
-  transition: opacity var(--motion-enter) var(--ease-px2);
+  transition: opacity var(--motion-enter) var(--ease-out);
 }
 
 .lv-more.sb-pager {

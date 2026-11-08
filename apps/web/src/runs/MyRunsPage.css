@@ -44,5 +44,5 @@
 
 .runs-paged[data-turning="true"] {
   opacity: 0.55;
-  transition: opacity var(--motion-enter) var(--ease-px2);
+  transition: opacity var(--motion-enter) var(--ease-out);
 }

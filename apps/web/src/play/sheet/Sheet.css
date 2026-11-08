@@ -327,7 +327,7 @@
   list-style: none;
   background: var(--px-iron-dk);
   box-shadow: var(--k-outline);
-  animation: sheet-rise var(--motion-tick) var(--ease-px2);
+  animation: sheet-rise var(--motion-tick) var(--ease-out);
 }
 
 .faults-item {
@@ -481,7 +481,7 @@
 
 .library-list[data-turning="true"] {
   opacity: 0.55;
-  transition: opacity var(--motion-enter) var(--ease-px2);
+  transition: opacity var(--motion-enter) var(--ease-out);
 }
 
 @media (max-width: 40rem) {

@@ -29,7 +29,7 @@
 }
 
 .nuggets[data-animated="true"] .nuggets-slot[data-earned="true"] {
-  animation: nugget-drop var(--motion-burst) var(--ease-px4) backwards;
+  animation: nugget-drop var(--motion-burst) var(--ease-out) backwards;
   animation-delay: calc(var(--nugget-order) * 220ms + 200ms);
 }
 

@@ -251,7 +251,7 @@
   overflow-y: auto;
   background: var(--px-iron-dk);
   box-shadow: var(--k-outline);
-  animation: status-rise var(--motion-enter) var(--ease-px3);
+  animation: status-rise var(--motion-enter) var(--ease-out);
 }
 
 .stage-status:empty {

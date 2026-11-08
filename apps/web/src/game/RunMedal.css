@@ -7,7 +7,7 @@
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
   border-top: var(--border-thick) solid var(--c-reward);
   background: var(--c-surface);
-  animation: medal-enter var(--motion-enter) var(--ease-px3) 300ms backwards;
+  animation: medal-enter var(--motion-enter) var(--ease-out) 300ms backwards;
 }
 
 .medal-stars {
@@ -24,7 +24,7 @@
   font: var(--type-micro);
   letter-spacing: var(--track-micro);
   text-transform: uppercase;
-  animation: medal-stamp var(--motion-burst) var(--ease-px3) 1100ms backwards;
+  animation: medal-stamp var(--motion-burst) var(--ease-out) 1100ms backwards;
 }
 
 .medal-text {

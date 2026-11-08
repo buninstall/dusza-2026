@@ -1237,11 +1237,11 @@ textarea.k-field {
   .k-switch-opt,
   .k-tab,
   .k-rack-art {
-    transition: transform 60ms steps(1, end);
+    transition: transform var(--motion-press) var(--ease-out);
   }
 
   .k-rack-slot .k-rack-art {
-    transition: transform 120ms steps(2, end);
+    transition: transform var(--motion-tick) var(--ease-out);
   }
 }
 

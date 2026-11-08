@@ -29,7 +29,7 @@
   width: min(100%, 27rem);
   padding: calc(var(--lamp-scale) * 12px) calc(var(--lamp-scale) * 7px)
     calc(var(--lamp-scale) * 7px);
-  animation: enter-drop var(--motion-enter) var(--ease-px3);
+  animation: enter-drop var(--motion-enter) var(--ease-out);
 }
 
 .auth-console-body {

@@ -69,7 +69,7 @@
 }
 
 .overlay-modal[data-entering] {
-  animation: overlay-drop var(--motion-enter) var(--ease-px3);
+  animation: overlay-drop var(--motion-enter) var(--ease-out);
 }
 
 .overlay-dialog {
@@ -185,7 +185,7 @@
 
 .overlay-menu-popover[data-entering],
 .overlay-popover[data-entering] {
-  animation: overlay-drop var(--motion-enter) var(--ease-px3);
+  animation: overlay-drop var(--motion-enter) var(--ease-out);
 }
 
 .overlay-menu {
@@ -281,7 +281,7 @@
 }
 
 .overlay-tooltip[data-entering] {
-  animation: overlay-fade var(--motion-press) var(--ease-px2);
+  animation: overlay-fade var(--motion-press) var(--ease-out);
 }
 
 .overlay-toast-region {
@@ -315,7 +315,7 @@
     var(--k-drop);
   image-rendering: pixelated;
   outline: none;
-  animation: overlay-toast-in var(--motion-enter) var(--ease-px3);
+  animation: overlay-toast-in var(--motion-enter) var(--ease-out);
 }
 
 .overlay-toast[data-tone="success"] {
