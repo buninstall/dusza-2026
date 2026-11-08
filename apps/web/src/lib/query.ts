@@ -18,7 +18,8 @@ export const RECOVER_MS = 4000;
 export const INLINE_META = { isInline: true } as const;
 
 export function isInlineQuery(meta: Record<string, unknown> | undefined): boolean {
-  return meta?.["isInline"] === true;
+  const { isInline } = meta ?? {};
+  return isInline === true;
 }
 
 const SERVER_ERROR = 500;
