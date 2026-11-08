@@ -1,6 +1,6 @@
 import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { eq, isNull } from "drizzle-orm";
-import { maps, mapVersions, programs, users } from "../src/db/schema.ts";
+import { maps, mapVersions, programs, runs, users } from "../src/db/schema.ts";
 import { CROWD_MAPS_PER_PLAYER, crowdPlayers, crowdTitle, ensureCrowd } from "../src/seed/crowd.ts";
 import { seedDemo } from "../src/seed/index.ts";
 import { TUTORIAL_MAPS } from "../src/seed/maps.ts";
@@ -368,6 +368,15 @@ describe("homokozó-tömeg a seedben", () => {
       favorites: 0,
       runs: 0,
     });
+    for (const tutorial of TUTORIAL_MAPS) {
+      const board = await context.deps.db
+        .select({ userId: runs.userId })
+        .from(runs)
+        .innerJoin(mapVersions, eq(mapVersions.id, runs.mapVersionId))
+        .innerJoin(maps, eq(maps.id, mapVersions.mapId))
+        .where(eq(maps.title, tutorial.title));
+      expect(board.length, tutorial.title).toBeGreaterThan(0);
+    }
     const [first] = players;
     const login = await context
       .client()

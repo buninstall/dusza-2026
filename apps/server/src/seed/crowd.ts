@@ -17,6 +17,7 @@ import {
 import { createMapWithVersion, validateMapContent } from "../services/maps.ts";
 import { solveRoute } from "../services/route-solver.ts";
 import { executeAndRecord } from "../services/runs.ts";
+import { partialRoute, recordStoryRuns } from "./crowd-story.ts";
 
 const CRAFTS = [
   "vajar",
@@ -157,12 +158,6 @@ function planMaps(deps: Deps, player: CrowdPlayer): PlannedMap[] {
       parSteps: generated.parSteps,
     };
   });
-}
-
-function partialRoute(route: string, random: () => number): string {
-  const lines = route.split("\n").filter((line) => line.length > 0);
-  const keep = Math.max(1, Math.ceil(lines.length * (0.4 + random() * 0.6)));
-  return lines.slice(0, keep).join("\n");
 }
 
 type CrowdMap = { mapId: number; versionId: number; serial: number; isPublic: boolean };
@@ -349,6 +344,7 @@ export async function ensureCrowd(deps: Deps, base: number): Promise<CrowdReport
       base + CROWD_OFFSET_MS + crowdMap.serial,
     );
   }
+  runs += await recordStoryRuns(deps, playerIds, base + CROWD_OFFSET_MS);
   const favorites = await addFavorites(
     deps,
     playerIds,

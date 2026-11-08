@@ -25,7 +25,7 @@ Első indításkor létrehozza a táblákat, és kész játékkörnyezetet tölt
 - a négy demó-fiókot, mindegyik programtárában a pályák kész megoldásaival (receptek) és hibapróbákkal;
 - a Történet mód 30 pályáját hat fejezetben, és a Homokozó 7 bemutató pályáját (demo2 és demo3 készítette);
 - hat mintafutást a demó-fiókokkal a Történet mód 1., 2. és 5. pályáján, így ezek ranglistája és a Történet összesített ranglistája sem üres;
-- egy népes homokozót: 100 kitalált játékost 300 generált pályával (ebből 27 privát, így a Homokozóban a bemutató pályákkal együtt 280 nyilvános pálya látszik 102 készítőtől), kedvencekkel és a nyilvános pályákon közel 400 futással. Ez a `--no-crowd` kapcsolóval vagy a `MINESCRIPT_CROWD=0` változóval kihagyható.
+- egy népes homokozót: 100 kitalált játékost 300 generált pályával (ebből 27 privát, így a Homokozóban a bemutató pályákkal együtt 280 nyilvános pálya látszik 102 készítőtől), kedvencekkel és a nyilvános pályákon közel 400 futással. Ugyanezek a játékosok a Történet módban is haladtak: sokan az első fejezetekben, néhányan egészen a 30. pályáig, így mind a 30 pálya ranglistája él (összesen közel 1200 futás, mind a szerver motorjával számolva). Ez a `--no-crowd` kapcsolóval vagy a `MINESCRIPT_CROWD=0` változóval kihagyható.
 
 A demó-adatok a `--reset-demo` kapcsolóval állíthatók vissza.
 
