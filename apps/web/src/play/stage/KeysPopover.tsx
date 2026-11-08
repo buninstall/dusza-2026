@@ -18,7 +18,7 @@ export function KeysPopover({
 }: KeysPopoverProps) {
   return (
     <DialogTrigger>
-      <IconButton icon="key" label={hu.play.keys} variant={variant} />
+      <IconButton icon="keyboard" label={hu.play.keys} variant={variant} />
       <Popover placement={placement} className="overlay-popover">
         <Dialog className="overlay-popover-dialog">
           <Heading slot="title" className="overlay-title">
