@@ -1,6 +1,8 @@
 import type { Box, Point } from "./layout.ts";
 
 export const MAX_SCALE = 16;
+export const SMALL_MAP = 8;
+export const SMALL_MAP_SHRINK = 0.7;
 
 export type Viewport = { width: number; height: number };
 
@@ -25,6 +27,14 @@ export function fitScale(frame: Box, viewport: Viewport, quantum = 1): number {
   const ratio = Math.min(viewport.width / width, viewport.height / height);
   const scale = Math.floor(ratio / quantum) * quantum;
   return Math.min(Math.max(scale, 1), MAX_SCALE);
+}
+
+export function restingScale(fit: number, longest: number, quantum = 1): number {
+  if (longest > SMALL_MAP) {
+    return fit;
+  }
+  const shrunk = Math.floor((fit * SMALL_MAP_SHRINK) / quantum) * quantum;
+  return Math.min(Math.max(shrunk, 1), fit);
 }
 
 export function zoomScale(fit: number, zoom: number, quantum = 1): number {

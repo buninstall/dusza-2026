@@ -5,6 +5,7 @@ import {
   anchorCenter,
   fitScale,
   placeView,
+  restingScale,
   windowSize,
   zoomScale,
 } from "../src/mine/scene/camera.ts";
@@ -35,6 +36,13 @@ describe("bányajelenet kamerája", () => {
     expect(fitScale(frame, { width: 700, height: 400 })).toBe(3);
     expect(fitScale(frame, { width: 700, height: 400 }, 0.5)).toBe(3.5);
     expect(fitScale(frame, { width: 50, height: 20 })).toBe(1);
+  });
+
+  test("a kis pályák alapnagyítása 30%-kal kisebb, a nagyoké nem változik", () => {
+    expect(restingScale(5, 8)).toBe(3);
+    expect(restingScale(5, 8, 0.5)).toBe(3.5);
+    expect(restingScale(5, 9)).toBe(5);
+    expect(restingScale(1, 3)).toBe(1);
   });
 
   test("a nagyítás a szorzót kerekíti, és sosem megy egy alá", () => {

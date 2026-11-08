@@ -6,6 +6,7 @@ import {
   fitScale,
   frameCenter,
   placeView,
+  restingScale,
   type View,
   type Viewport,
   viewCenter,
@@ -102,7 +103,12 @@ export function MineScene({
     const layout = layoutOf();
     const quantum = pixelQuantum();
     const room = { width: viewport.width, height: viewport.height * (1 - reserve) };
-    return layout ? zoomScale(fitScale(fitBox(layout), room, quantum), zoom, quantum) : 1;
+    if (!layout) {
+      return 1;
+    }
+    const fit = fitScale(fitBox(layout), room, quantum);
+    const resting = restingScale(fit, Math.max(map.cols, map.rows), quantum);
+    return zoomScale(resting, zoom, quantum);
   };
 
   useLayoutEffect(() => {
