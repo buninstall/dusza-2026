@@ -16,7 +16,9 @@ function contentBox(main: HTMLElement): { x0: number; x1: number } {
   };
 }
 
-export function PageBackdrop({ routeKey, isCalm }: { routeKey: string; isCalm: boolean }) {
+type PageBackdropProps = { routeKey: string; isCalm: boolean };
+
+export function PageBackdrop({ routeKey, isCalm }: PageBackdropProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const midRef = useRef<HTMLCanvasElement>(null);

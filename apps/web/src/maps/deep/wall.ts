@@ -12,7 +12,6 @@ const MAX_FRAME = 0.1;
 const LANTERN = [1, 0.68, 0.36] as const;
 const LANTERN_GAP = 150;
 const CAVE_GAP = 110;
-const FIREFLY_AREA = 14000;
 const WALL_AMBIENT = [0.2, 0.12, 1, 0.24, 0.18, 0.22, 0.24];
 
 const WEB_ART = [
@@ -41,7 +40,6 @@ export type WallHost = {
   isStatic: boolean;
 };
 
-type Firefly = { x: number; y: number; phase: number; speed: number; drift: number };
 type Spider = { x: number; top: number; phase: number; span: number };
 type WallLamp = { x: number; y: number };
 
@@ -96,16 +94,6 @@ function buildWall(
   return { world, lamps, spiders };
 }
 
-function fireflies(W: number, H: number, rand: () => number): Firefly[] {
-  return Array.from({ length: Math.max(6, Math.round((W * H) / FIREFLY_AREA)) }, () => ({
-    x: rand() * W,
-    y: rand() * H,
-    phase: rand() * 6,
-    speed: 0.3 + rand() * 0.5,
-    drift: 4 + rand() * 6,
-  }));
-}
-
 function staticLights(world: World, lamps: readonly WallLamp[]): Light[] {
   return [
     ...lamps.map(
@@ -120,31 +108,6 @@ function staticLights(world: World, lamps: readonly WallLamp[]): Light[] {
     ),
     ...glowLights(world, 0),
   ];
-}
-
-function drawFireflies(
-  view: View,
-  sprites: Sprites,
-  flies: readonly Firefly[],
-  time: number,
-): void {
-  const ctx = view.front;
-  if (!ctx) return;
-  const bright = sprites.tone("ore-hi");
-  const soft = sprites.tone("ore-lo");
-  for (const f of flies) {
-    const glow = Math.sin(time * 2.2 + f.phase);
-    if (glow < -0.2) continue;
-    const x = view.snap(f.x + Math.sin(time * f.speed + f.phase) * f.drift);
-    const y = view.snap(f.y + Math.cos(time * f.speed * 0.8 + f.phase) * f.drift) - view.camY;
-    ctx.globalAlpha = Math.min(1, 0.4 + glow);
-    ctx.fillStyle = soft;
-    ctx.fillRect(x - 1, y, 3, 1);
-    ctx.fillRect(x, y - 1, 1, 3);
-    ctx.fillStyle = bright;
-    ctx.fillRect(x, y, 1, 1);
-  }
-  ctx.globalAlpha = 1;
 }
 
 function drawSpiders(
@@ -204,7 +167,6 @@ export function startWall(host: WallHost): (() => void) | null {
     });
   }
   const drips = createDrips(world, seeded(32));
-  const flies = fireflies(W, H - roof, seeded(33)).map((f) => ({ ...f, y: f.y + roof }));
   let time = performance.now() / 1000;
 
   const sim = (dt: number) => {
@@ -220,7 +182,6 @@ export function startWall(host: WallHost): (() => void) | null {
     }
     if (!host.isCalm) drawSpiders(view, sprites, spiders, time, spiderArt);
     drips.draw(view);
-    if (view.front && !host.isCalm) drawFireflies(view, sprites, flies, time);
   };
 
   if (host.isStatic) {
