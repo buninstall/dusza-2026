@@ -27,6 +27,7 @@ export type DressingInput = {
   fault: Fault | null;
   phase: StagePhase;
   fogMode: FogMode;
+  isShaded: boolean;
   runId: number;
   isAdvancing: boolean;
   isTurbo: boolean;
@@ -44,24 +45,29 @@ function isInside(map: MineMap, pos: Pos): boolean {
   return pos.row >= 0 && pos.row < map.rows && pos.col >= 0 && pos.col < map.cols;
 }
 
+type Veil = "dark" | "shroud";
+
 function Fx({
   kind,
   pos,
   style,
   children,
   isScan,
+  veil,
 }: {
   kind: string;
   pos: Pos;
   style?: CSSProperties;
   children: ReactNode;
   isScan?: boolean;
+  veil?: Veil;
 }) {
   return (
     <div
       className="board-fx"
       data-fx={kind}
       data-scan={isScan ?? false}
+      data-veil={veil}
       style={{ ...placement(pos), ...style }}
     >
       {children}
@@ -82,22 +88,53 @@ function headlamp(input: DressingInput): RobotBeam | null {
   return { isScan, key: isScan ? `cone-${frame?.index ?? 0}` : "cone" };
 }
 
+function veilFor(input: DressingInput): Veil | null {
+  if (input.fogMode === "full") {
+    return "shroud";
+  }
+  return input.isShaded ? null : "dark";
+}
+
+function VeilArt({ veil }: { veil: Veil }) {
+  return veil === "shroud" ? (
+    <SpriteUse id={SPRITE_ID.shroud} className="board-fx-art" />
+  ) : (
+    <span className="board-fx-art" />
+  );
+}
+
+function veils(input: DressingInput, frame: Frame, path: readonly string[]): ReactNode[] {
+  const veil = veilFor(input);
+  if (veil === null) {
+    return [];
+  }
+  return [...frame.fresh].flatMap((key) => {
+    const order = Math.max(path.indexOf(key), 0);
+    if (veil === "dark" && order === 0) {
+      return [];
+    }
+    const [row = 0, col = 0] = key.split(":").map(Number);
+    const delay = { "--reveal-delay": `${order * input.segmentMs}ms` } as CSSProperties;
+    return [
+      <Fx
+        key={`reveal-${frame.index}-${key}`}
+        kind="reveal"
+        pos={{ row, col }}
+        style={delay}
+        veil={veil}
+      >
+        <VeilArt veil={veil} />
+      </Fx>,
+    ];
+  });
+}
+
 function reveals(input: DressingInput): ReactNode[] {
-  const { frame, isAdvancing, isTurbo, segmentMs } = input;
+  const { frame, isAdvancing, isTurbo } = input;
   if (!frame?.event || !isAdvancing || isTurbo) {
     return [];
   }
-  const path = frame.event.path.map(posKey);
-  const nodes = [...frame.fresh].map((key) => {
-    const [row = 0, col = 0] = key.split(":").map(Number);
-    const order = path.indexOf(key);
-    const delay = { "--reveal-delay": `${Math.max(order, 0) * segmentMs}ms` } as CSSProperties;
-    return (
-      <Fx key={`reveal-${frame.index}-${key}`} kind="reveal" pos={{ row, col }} style={delay}>
-        <span className="board-fx-art" />
-      </Fx>
-    );
-  });
+  const nodes = veils(input, frame, frame.event.path.map(posKey));
   if (frame.scan) {
     nodes.push(
       <Fx key={`frame-${frame.index}`} kind="scan-frame" pos={frame.scan}>

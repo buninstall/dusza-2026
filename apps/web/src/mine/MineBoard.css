@@ -22,6 +22,8 @@
   --tile-fit: calc((100cqi - var(--ruler) - 2 * var(--border-thin)) / var(--cols));
   --tile: clamp(var(--tile-min), var(--tile-fit), var(--tile-max));
   --art-px: calc(var(--tile) / 16);
+  --glow-alpha: 0.45;
+  --shroud-alpha: 0.45;
 
   display: grid;
   grid-template-columns: var(--ruler) max-content;
@@ -248,7 +250,7 @@
 }
 
 .board-void[data-light="glow"] {
-  opacity: 0.45;
+  opacity: var(--glow-alpha);
 }
 
 .board-lamp-shade {
@@ -279,7 +281,7 @@
 }
 
 .board-shroud {
-  opacity: 0.45;
+  opacity: var(--shroud-alpha);
 }
 
 .board-cell:focus-visible {
@@ -704,7 +706,6 @@
 }
 
 .board-fx[data-fx="reveal"] .board-fx-art {
-  background: var(--px-void);
   opacity: 0;
   animation: fx-reveal var(--motion-reveal) var(--ease-px3) backwards;
   animation-delay: var(--reveal-delay, 0ms);
@@ -756,6 +757,16 @@
   --px-beam: var(--c-discovery);
 
   animation: fx-scan var(--motion-reveal) var(--ease-px3);
+}
+
+.board-fx[data-fx="reveal"][data-veil="dark"] .board-fx-art {
+  --reveal-from: var(--glow-alpha);
+
+  background: var(--px-void);
+}
+
+.board-fx[data-fx="reveal"][data-veil="shroud"] .board-fx-art {
+  --reveal-from: var(--shroud-alpha);
 }
 
 .board-edge {
@@ -816,7 +827,7 @@
 
 @keyframes fx-reveal {
   from {
-    opacity: 1;
+    opacity: var(--reveal-from, 0);
   }
 }
 

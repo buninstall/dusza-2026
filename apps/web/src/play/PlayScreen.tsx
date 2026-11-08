@@ -183,6 +183,7 @@ function useStageMotion(
       fault,
       phase: view.phase,
       fogMode,
+      isShaded: sight.lamp !== null,
       runId,
       isAdvancing,
       isTurbo: turbo,
