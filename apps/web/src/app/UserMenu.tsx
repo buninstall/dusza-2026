@@ -59,6 +59,10 @@ export function UserMenu({ user }: { user: SessionUser }) {
       ) : null}
       <MenuSeparator />
       <MenuItem onAction={() => void logout()}>{hu.nav.logout}</MenuItem>
+      <MenuSeparator />
+      <MenuItem isDisabled textValue={hu.nav.creditLabel} aria-label={hu.nav.creditLabel}>
+        <span className="overlay-menu-credit">{hu.nav.credit}</span>
+      </MenuItem>
     </Menu>
   );
 }
