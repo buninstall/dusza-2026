@@ -72,3 +72,8 @@
 .mine-scene[data-pan="primary"][data-zoomed="true"] .board-grid {
   cursor: inherit;
 }
+
+.mine-scene-cart {
+  position: absolute;
+  pointer-events: none;
+}

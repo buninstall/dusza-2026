@@ -29,6 +29,8 @@ export type MineSceneProps = Omit<ComponentProps<typeof MineBoard>, "fit" | "siz
   reserve?: number;
 };
 
+const CART_MOUTH = { x: 4, y: 0, w: 18, h: 6 };
+
 function fitBox(layout: SceneLayout): Box {
   return { ...layout.frame, y0: layout.beamY - 2, y1: layout.sillY + SILL_H };
 }
@@ -62,6 +64,7 @@ export function MineScene({
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+  const cartRef = useRef<HTMLSpanElement>(null);
   const engineRef = useRef<SceneEngine | null>(null);
   const centerRef = useRef<Point | null>(null);
   const viewRef = useRef<View | null>(null);
@@ -96,6 +99,13 @@ export function MineScene({
     holder.style.left = `${snap((layout.bx - view.x - view.fx) * scale) - shiftX}px`;
     holder.style.top = `${snap((layout.by - view.y - view.fy) * scale) - shiftY}px`;
     holder.style.setProperty("--scene-tile", `${snap(T * scale)}px`);
+    const cart = cartRef.current;
+    if (cart) {
+      cart.style.left = `${snap((layout.cart.x + CART_MOUTH.x - view.x - view.fx) * scale) - shiftX}px`;
+      cart.style.top = `${snap((layout.cart.y + CART_MOUTH.y - view.y - view.fy) * scale) - shiftY}px`;
+      cart.style.width = `${snap(CART_MOUTH.w * scale)}px`;
+      cart.style.height = `${snap(CART_MOUTH.h * scale)}px`;
+    }
     engineRef.current?.setView(view);
   };
 
@@ -233,6 +243,7 @@ export function MineScene({
       <div className="mine-scene-backdrop" aria-hidden="true">
         <canvas ref={canvasRef} className="mine-scene-canvas" />
       </div>
+      <span ref={cartRef} className="mine-scene-cart" data-scene-cart aria-hidden="true" />
       <div ref={boardRef} className="mine-scene-board">
         <MineBoard {...board} shade={null} size="scene" fit="both" />
       </div>

@@ -171,9 +171,12 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
       return;
     }
     const cell = root.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-    const target = root.querySelector("[data-gold-target] .hud-cart-art");
+    const hud = root.querySelector("[data-gold-target] .hud-cart-art");
+    const scene = root.querySelector("[data-scene-cart]");
+    const sceneBox = scene ? visibleBox(scene) : null;
+    const target = sceneBox ? scene : hud;
     const from = cell ? visibleBox(cell) : null;
-    const to = target ? visibleBox(target) : null;
+    const to = sceneBox ?? (hud ? visibleBox(hud) : null);
     if (!from || !to || !target) {
       return;
     }
@@ -185,7 +188,9 @@ export function GoldFlight({ flight, rootRef }: GoldFlightProps) {
       live.current,
     );
     window.setTimeout(() => {
-      playOnce(target, PULSE, { duration: PULSE_MS, easing: "ease-out" });
+      if (hud) {
+        playOnce(hud, PULSE, { duration: PULSE_MS, easing: "ease-out" });
+      }
       launch(
         plusRef.current,
         plusFrames(cart),

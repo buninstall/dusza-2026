@@ -40,6 +40,7 @@ export type SceneEngine = {
 const IDLE_FRAME_MS = 45;
 const RUST_CHECK_MS = 2000;
 const SEEN_LIGHT = 0.2;
+const CART_DROP_MS = 1170;
 const BURST_S = 0.6;
 const GLINT_S = 0.5;
 const GLINT_RATE = 0.6;
@@ -90,6 +91,8 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
   let mined = new Set<number>();
   let painted = "";
   let seen = new Uint8Array(0);
+  let shownMined = 0;
+  let cartDue = 0;
   let discoveredSize = 0;
   let seenLighting = "";
   let rustLevel = 0;
@@ -151,7 +154,7 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     staticCtx.drawImage(w.rock, 0, 0);
     paintBoard(staticCtx, w.layout, colors, w.kinds, w.face);
     paintRulers(staticCtx, w.layout, colors, next.flags);
-    const minedCount = w.kinds.filter((kind) => kind === "mined").length;
+    const minedCount = shownMined;
     const goldCount = minedCount + w.kinds.filter((kind) => kind === "gold").length;
     paintFixtures(staticCtx, w.layout, colors, preset, cartLevel(minedCount, goldCount));
     w.albedo = staticCtx.getImageData(0, 0, w.layout.W, w.layout.H).data;
@@ -176,6 +179,13 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
     const w = ensureWorld(next.map);
     const kinds = kindsOf(next.map, next.exploration);
     w.kinds.splice(0, w.kinds.length, ...kinds);
+    const actualMined = kinds.filter((kind) => kind === "mined").length;
+    if (input !== null && actualMined > shownMined && !isStill) {
+      cartDue = performance.now() + CART_DROP_MS;
+    } else {
+      shownMined = actualMined;
+      cartDue = 0;
+    }
     const nextPreset = PRESETS[next.lighting];
     const isNewLook = nextPreset !== preset || w.ambient.length === 0;
     preset = nextPreset;
@@ -325,6 +335,12 @@ export function createSceneEngine(canvas: HTMLCanvasElement, host: HTMLElement):
         repaint(w, input);
         isDirty = true;
       }
+    }
+    if (cartDue > 0 && now >= cartDue && input) {
+      cartDue = 0;
+      shownMined = w.kinds.filter((kind) => kind === "mined").length;
+      repaint(w, input);
+      isDirty = true;
     }
     const nextRobot = readRobot(host, canvas, v);
     const hasMoved =
