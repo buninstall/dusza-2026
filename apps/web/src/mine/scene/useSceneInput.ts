@@ -7,6 +7,7 @@ const PINCH_CAP = 25;
 const WHEEL_SCALE = 400;
 const WHEEL_CAP = 100;
 const MIDDLE = 1;
+const GESTURES = ["gesturestart", "gesturechange", "gestureend"] as const;
 
 export type PanButton = "primary" | "secondary";
 
@@ -40,6 +41,12 @@ function isPanStart(event: PointerEvent, mode: PanButton, isSpace: boolean): boo
   return event.button === MIDDLE || (event.button === 0 && isSpace);
 }
 
+type GestureLike = Event & { scale: number; clientX: number; clientY: number };
+
+function isGesture(event: Event): event is GestureLike {
+  return "scale" in event && typeof event.scale === "number" && "clientX" in event;
+}
+
 function suppressClick(element: HTMLElement): void {
   const stop = (event: MouseEvent) => {
     event.stopPropagation();
@@ -66,6 +73,21 @@ export function useSceneInput(
     let isSpace = false;
     const touches = new Map<number, { x: number; y: number }>();
     let pinch: number | null = null;
+    let gestureScale: number | null = null;
+
+    const onGesture = (event: Event) => {
+      event.preventDefault();
+      if (event.type === "gestureend" || touches.size > 0 || !isGesture(event)) {
+        gestureScale = null;
+        return;
+      }
+      if (event.type === "gesturestart" || gestureScale === null) {
+        gestureScale = event.scale;
+        return;
+      }
+      latest.current.zoomAt(event.scale / gestureScale, event.clientX, event.clientY);
+      gestureScale = event.scale;
+    };
 
     const onWheel = (event: WheelEvent) => {
       const delta = wheelDelta(event, element.clientHeight);
@@ -161,6 +183,9 @@ export function useSceneInput(
     };
 
     element.addEventListener("wheel", onWheel, { passive: false });
+    for (const type of GESTURES) {
+      element.addEventListener(type, onGesture, { passive: false });
+    }
     element.addEventListener("pointerdown", onDown, { capture: true });
     element.addEventListener("pointermove", onMove);
     element.addEventListener("pointerup", onUp);
@@ -171,6 +196,9 @@ export function useSceneInput(
     }
     return () => {
       element.removeEventListener("wheel", onWheel);
+      for (const type of GESTURES) {
+        element.removeEventListener(type, onGesture);
+      }
       element.removeEventListener("pointerdown", onDown, { capture: true });
       element.removeEventListener("pointermove", onMove);
       element.removeEventListener("pointerup", onUp);
