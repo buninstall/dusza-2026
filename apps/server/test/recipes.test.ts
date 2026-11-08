@@ -131,18 +131,15 @@ describe("receptek (docs/receptek)", () => {
     }
   });
 
-  test("a seed minden demó-fiók programtárába beteszi a recepteket", async () => {
+  test("a seed nem tesz programot a programtárakba", async () => {
     await using context = await createTestContext();
-    const report = await seedDemo(context.deps, { reset: false });
-    expect(report.recipes).toBe(RECIPES.length * 4);
+    await seedDemo(context.deps, { reset: false });
+    await seedDemo(context.deps, { reset: false });
     const demo = context.client();
     await demo.post("/api/auth/login", { username: "demo1", password: "demo2026" });
     const library = await json<{ programs: { title: string }[] }>(
       await demo.get("/api/programs?pageSize=100"),
     );
-    const titles = library.programs.map((program) => program.title);
-    for (const recipe of RECIPES) {
-      expect(titles).toContain(recipe.title);
-    }
+    expect(library.programs).toHaveLength(0);
   });
 });

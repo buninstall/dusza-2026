@@ -38,7 +38,6 @@ export type SeedReport = {
   users: number;
   maps: number;
   programs: number;
-  recipes: number;
   runs: number;
   skippedRuns: number;
   crowd: CrowdReport;
@@ -132,25 +131,6 @@ async function createMaps(deps: Deps, ownerId: number, now: number): Promise<Map
   return created;
 }
 
-async function addRecipesToLibraries(
-  deps: Deps,
-  userIds: ReadonlyMap<string, number>,
-  now: number,
-): Promise<number> {
-  const rows = [...userIds.values()].flatMap((ownerId) =>
-    RECIPES.map((recipe, index) => ({
-      ownerId,
-      title: recipe.title,
-      source: recipe.source,
-      updatedAt: now - index - 1,
-    })),
-  );
-  if (rows.length > 0) {
-    await deps.db.insert(programs).values(rows);
-  }
-  return rows.length;
-}
-
 async function topUpCrowd(deps: Deps, options: SeedOptions): Promise<CrowdReport> {
   if (!options.crowd) {
     return NO_CROWD;
@@ -167,16 +147,12 @@ export async function seedDemo(deps: Deps, options: SeedOptions): Promise<SeedRe
   const [existing] = await deps.db.select({ id: users.id }).from(users).limit(1);
   if (existing) {
     await ensureTutorialPars(deps);
-    await ensureCampaign(
-      deps,
-      DEMO_ACCOUNTS.map((account) => account.username),
-    );
+    await ensureCampaign(deps);
     return {
       seeded: false,
       users: 0,
       maps: 0,
       programs: 0,
-      recipes: 0,
       runs: 0,
       skippedRuns: 0,
       crowd: await topUpCrowd(deps, options),
@@ -195,9 +171,6 @@ export async function seedDemo(deps: Deps, options: SeedOptions): Promise<SeedRe
     if (ownerId === undefined || !map) {
       throw new Error(`Hibás mintaprogram a seedben: ${sample.title}`);
     }
-    await deps.db
-      .insert(programs)
-      .values({ ownerId, title: sample.title, source: sample.source, updatedAt: now + index });
     const version = await currentVersion(deps.db, map);
     if (!version) {
       continue;
@@ -214,13 +187,11 @@ export async function seedDemo(deps: Deps, options: SeedOptions): Promise<SeedRe
       skippedRuns += 1;
     }
   }
-  const recipePrograms = await addRecipesToLibraries(deps, userIds, now);
   return {
     seeded: true,
     users: userIds.size,
     maps: createdMaps.length,
     programs: SAMPLE_PROGRAMS.length,
-    recipes: recipePrograms,
     runs: recordedRuns,
     skippedRuns,
     crowd: options.crowd ? await ensureCrowd(deps, now) : NO_CROWD,

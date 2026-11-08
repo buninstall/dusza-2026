@@ -117,7 +117,7 @@ describe("demó-seed", () => {
       .select({ value: count() })
       .from(programs)
       .where(eq(programs.ownerId, demo?.id ?? 0));
-    expect(library[0]?.value).toBeGreaterThan(30);
+    expect(library[0]?.value).toBe(0);
 
     const third = await seedDemo(context.deps, { reset: false });
     expect(third.seeded).toBe(false);

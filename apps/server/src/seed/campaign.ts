@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
-import { maps, programs, users } from "../db/schema.ts";
+import { maps, users } from "../db/schema.ts";
 import type { Deps } from "../env.ts";
 import { createMapWithVersion, validateMapContent } from "../services/maps.ts";
 import { TUTORIAL_MAPS } from "./maps.ts";
@@ -21,7 +21,6 @@ const LEGACY_DESCRIPTIONS: Readonly<Record<string, string>> = {
 export type CampaignReport = {
   created: number;
   retold: number;
-  recipes: number;
   sandbox: number;
 };
 
@@ -143,46 +142,12 @@ async function ensureMaps(deps: Deps, ownerId: number, base: number) {
   return { created, retold };
 }
 
-async function ensureRecipePrograms(deps: Deps, usernames: readonly string[]): Promise<number> {
-  const accounts = await deps.db
-    .select({ id: users.id })
-    .from(users)
-    .where(inArray(users.username, [...usernames]));
-  let added = 0;
-  for (const account of accounts) {
-    const owned = await deps.db
-      .select({ title: programs.title })
-      .from(programs)
-      .where(eq(programs.ownerId, account.id));
-    const titles = new Set(owned.map((program) => program.title));
-    const missing = RECIPES.filter((recipe) => !titles.has(recipe.title));
-    if (missing.length === 0) {
-      continue;
-    }
-    const now = deps.now();
-    await deps.db.insert(programs).values(
-      missing.map((recipe, index) => ({
-        ownerId: account.id,
-        title: recipe.title,
-        source: recipe.source,
-        updatedAt: now - index - 1,
-      })),
-    );
-    added += missing.length;
-  }
-  return added;
-}
-
-export async function ensureCampaign(
-  deps: Deps,
-  usernames: readonly string[],
-): Promise<CampaignReport> {
+export async function ensureCampaign(deps: Deps): Promise<CampaignReport> {
   const owner = await campaignOwner(deps);
   if (!owner) {
-    return { created: 0, retold: 0, recipes: 0, sandbox: 0 };
+    return { created: 0, retold: 0, sandbox: 0 };
   }
   const { created, retold } = await ensureMaps(deps, owner.ownerId, owner.base);
   const sandbox = await ensureSandbox(deps, owner.base);
-  const recipes = await ensureRecipePrograms(deps, usernames);
-  return { created, retold, recipes, sandbox };
+  return { created, retold, sandbox };
 }

@@ -87,7 +87,7 @@ function printSeedReport(report: SeedReport): void {
       ? ` (${report.skippedRuns} mintaprogram szintaktikailag hibás, nem futott)`
       : "";
   console.log(
-    `Demó-adatok létrehozva: ${report.users} felhasználó, ${report.maps} térkép, ${report.runs} futás, ${report.recipes} recept a programtárakban${skipped}`,
+    `Demó-adatok létrehozva: ${report.users} felhasználó, ${report.maps} térkép, ${report.runs} futás (a programtárak üresek)${skipped}`,
   );
 }
 
