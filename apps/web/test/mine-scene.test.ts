@@ -6,6 +6,7 @@ import {
   fitScale,
   placeView,
   restingScale,
+  targetScale,
   windowSize,
   zoomScale,
 } from "../src/mine/scene/camera.ts";
@@ -50,6 +51,11 @@ describe("bányajelenet kamerája", () => {
     expect(zoomScale(3, 1.25, 0.5)).toBe(4);
     expect(zoomScale(2, 1.5, 0.5)).toBe(3);
     expect(zoomScale(1, 0.2)).toBe(1);
+    expect(zoomScale(1, 1.2)).toBe(2);
+    expect(zoomScale(4, 0.9)).toBe(3);
+    expect(zoomScale(2, 1)).toBe(2);
+    expect(targetScale(16)).toBe(2);
+    expect(targetScale(16, 0.5)).toBe(1.5);
   });
 
   test("a nézet a világon belül marad, a kisebb világot középre teszi", () => {

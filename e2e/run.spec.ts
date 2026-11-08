@@ -193,10 +193,7 @@ test.describe("3.4 futtatás a bemutató fiókkal", () => {
     await expectReadings(page, { gold: 0, steps: 0, line: null, row: 1, col: 1, dir: "kelet" });
     await expect(cell(page, 1, 1)).toHaveAccessibleName("1. sor, 1. oszlop: robot, kelet felé");
     await expect(cell(page, 1, 4)).toHaveAccessibleName("1. sor, 4. oszlop: felderítetlen");
-    await pickView(page, "Teljes térkép");
-    await expect(cell(page, 1, 4)).toHaveAccessibleName(
-      "1. sor, 4. oszlop: arany, még nem felfedezett",
-    );
+    await expect(page.getByRole("radiogroup", { name: "Nézet" })).toBeHidden();
     await transport(page, "Ugrás a végére").click();
     await expectFinished(page, 2, 4);
   });
@@ -224,14 +221,7 @@ test.describe("3.4 futtatás a bemutató fiókkal", () => {
     for (const [index, name] of expected.entries()) {
       await expect(cells.nth(index)).toHaveAccessibleName(name);
     }
-    await pickView(page, "Teljes térkép");
-    await expect(cell(page, 1, 4)).toHaveAccessibleName("1. sor, 4. oszlop: arany");
-    await expect(cell(page, 1, 6)).toHaveAccessibleName(
-      "1. sor, 6. oszlop: üres kamra, még nem felfedezett",
-    );
-    await expect(cell(page, 1, 7)).toHaveAccessibleName(
-      "1. sor, 7. oszlop: arany, még nem felfedezett",
-    );
+    await expect(page.getByRole("radiogroup", { name: "Nézet" })).toBeHidden();
   });
 
   test("minden futásidejű hibapróba a helyes hibakódot, sort és lépésszámot mutatja", async ({
@@ -321,4 +311,13 @@ test.describe("3.4 futtatás új fiókkal", () => {
     await page.getByRole("link", { name: "Futásaim" }).click();
     await expect(page.getByText("Még nincs rögzített futásod.", { exact: false })).toBeVisible();
   });
+});
+
+test("lámpa-módú pályán a nézetváltó látszik és átkapcsol", async ({ page }) => {
+  await login(page);
+  await gotoPlay(page, "5. Kígyó");
+  await pickView(page, "Teljes térkép");
+  await expect(page.getByRole("radio", { name: "Teljes térkép" })).toBeChecked();
+  await pickView(page, "Lámpafény");
+  await expect(page.getByRole("radio", { name: "Lámpafény" })).toBeChecked();
 });

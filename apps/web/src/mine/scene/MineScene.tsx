@@ -7,6 +7,7 @@ import {
   frameCenter,
   placeView,
   restingScale,
+  targetScale,
   type View,
   type Viewport,
   viewCenter,
@@ -139,7 +140,8 @@ export function MineScene({
     }
     const fit = fitScale(fitBox(layout), room, quantum);
     const resting = restingScale(fit, Math.max(map.cols, map.rows), quantum);
-    return zoomScale(resting, zoom, quantum);
+    const floor = board.interaction === undefined ? 1 : targetScale(T, quantum);
+    return zoomScale(Math.max(resting, floor), zoom, quantum);
   };
 
   useLayoutEffect(() => {

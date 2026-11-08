@@ -37,8 +37,20 @@ export function restingScale(fit: number, longest: number, quantum = 1): number 
   return Math.min(Math.max(shrunk, 1), fit);
 }
 
+export const TARGET_MIN_PX = 24;
+
+export function targetScale(tile: number, quantum = 1): number {
+  return Math.ceil(TARGET_MIN_PX / tile / quantum) * quantum;
+}
+
 export function zoomScale(fit: number, zoom: number, quantum = 1): number {
-  const scale = Math.round((fit * zoom) / quantum) * quantum;
+  const rounded = Math.round((fit * zoom) / quantum) * quantum;
+  const scale =
+    zoom > 1
+      ? Math.max(rounded, fit + quantum)
+      : zoom < 1
+        ? Math.min(rounded, fit - quantum)
+        : rounded;
   return Math.min(Math.max(scale, 1), MAX_SCALE);
 }
 

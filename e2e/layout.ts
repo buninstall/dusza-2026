@@ -45,6 +45,7 @@ export async function auditLayout(page: Page, options: AuditOptions): Promise<La
         "[contenteditable='true']",
       ].join(", ");
       const TWO_DIMENSIONAL = "[role='grid'], table, pre, [contenteditable='true']";
+      const PANNABLE = ".mine-scene";
       const TOLERANCE = 1;
       const issues: LayoutIssue[] = [];
       const root = document.documentElement;
@@ -146,10 +147,12 @@ export async function auditLayout(page: Page, options: AuditOptions): Promise<La
 
       for (const element of targets) {
         const rect = element.getBoundingClientRect();
-        const scroller = ancestorWith(
-          element,
-          (style) => isScrollable(style.overflowX) || isScrollable(style.overflowY),
-        );
+        const pannable = element.closest(PANNABLE);
+        const scroller =
+          ancestorWith(
+            element,
+            (style) => isScrollable(style.overflowX) || isScrollable(style.overflowY),
+          ) ?? (pannable ? { element: pannable, style: getComputedStyle(pannable) } : null);
         if (!scroller && (rect.left < -TOLERANCE || rect.right > viewportWidth + TOLERANCE)) {
           issues.push({
             kind: "offscreen",
@@ -161,7 +164,12 @@ export async function auditLayout(page: Page, options: AuditOptions): Promise<La
           element,
           (style) => style.overflowX !== "visible" || style.overflowY !== "visible",
         );
-        if (clip && !isScrollable(clip.style.overflowX) && !isScrollable(clip.style.overflowY)) {
+        if (
+          clip &&
+          !pannable &&
+          !isScrollable(clip.style.overflowX) &&
+          !isScrollable(clip.style.overflowY)
+        ) {
           const box = clip.element.getBoundingClientRect();
           if (
             rect.left < box.left - TOLERANCE ||

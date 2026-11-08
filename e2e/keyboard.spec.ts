@@ -206,10 +206,10 @@ test("a játék billentyűparancsai: Ctrl+Enter, Szóköz, nyilak, L és Shift+F
   await page.keyboard.press("Home");
   await expect(timeline).toHaveValue("0");
 
-  const fullView = page.getByRole("radio", { name: "Teljes térkép" });
-  const wasFull = await fullView.isChecked();
+  const viewSwitch = page.getByRole("radiogroup", { name: "Nézet" });
+  await expect(viewSwitch).toBeHidden();
   await page.keyboard.press("l");
-  await expect(fullView).toBeChecked({ checked: !wasFull });
+  await expect(viewSwitch).toBeHidden();
 
   await page.keyboard.press("Shift+F5");
   await expectReadings(page, { status: "Leállítva" });
