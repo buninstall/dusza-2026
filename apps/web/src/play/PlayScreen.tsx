@@ -265,11 +265,6 @@ export function PlayScreen(props: PlayScreenProps) {
   usePlayShortcuts(rootRef, stageRef, { ...props.commands, run: () => run(false) });
 
   const frame = view.frame;
-  const outcome = result?.outcome;
-  const urgent =
-    frame?.atEnd && outcome?.kind === "runtimeError" && view.report !== null
-      ? hu.play.runtimeErrorSpoken(outcome.code, outcome.line, isOffMapHit(result, map))
-      : undefined;
 
   const report =
     view.report === null || view.report === "ok" ? null : (
@@ -422,7 +417,7 @@ export function PlayScreen(props: PlayScreenProps) {
     >
       {panes}
       <GoldFlight flight={motion.flight} rootRef={rootRef} />
-      <LiveAnnouncer frame={frame} final={finalAnnouncement(view, map)} urgent={urgent} />
+      <LiveAnnouncer frame={frame} final={finalAnnouncement(view, map)} />
     </div>
   );
 }

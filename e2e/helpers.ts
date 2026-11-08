@@ -252,7 +252,7 @@ export function finishedReport(page: Page): Locator {
 export function stoppedReport(page: Page): Locator {
   return page
     .getByRole("region", { name: "Bánya" })
-    .getByRole("status")
+    .getByRole("group")
     .filter({ hasText: "A leállított futás nem kerül a ranglistára" });
 }
 
@@ -270,7 +270,7 @@ export async function openLeaderboardFromPlay(page: Page): Promise<void> {
 }
 
 export function runtimeErrorReport(page: Page, line: number): Locator {
-  return page.getByRole("status").filter({
+  return page.getByRole("group").filter({
     has: page.getByRole("button", { name: `Mutasd ${articleFor(line)} ${line}. sort` }),
   });
 }

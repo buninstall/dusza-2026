@@ -21,11 +21,10 @@ export function announcementFor(frame: Frame | null): string {
 type LiveAnnouncerProps = {
   frame: Frame | null;
   final?: string | undefined;
-  urgent?: string | undefined;
   note?: string | undefined;
 };
 
-export function LiveAnnouncer({ frame, final, urgent, note }: LiveAnnouncerProps) {
+export function LiveAnnouncer({ frame, final, note }: LiveAnnouncerProps) {
   const [message, setMessage] = useState("");
   const lastAnnounced = useRef(0);
   const text = note ?? final ?? announcementFor(frame);
@@ -44,15 +43,8 @@ export function LiveAnnouncer({ frame, final, urgent, note }: LiveAnnouncerProps
   }, [text, final, note]);
 
   return (
-    <>
-      <output aria-live="polite" className="visually-hidden">
-        {message}
-      </output>
-      {urgent ? (
-        <div role="alert" className="visually-hidden">
-          {urgent}
-        </div>
-      ) : null}
-    </>
+    <output aria-live="polite" className="visually-hidden">
+      {message}
+    </output>
   );
 }

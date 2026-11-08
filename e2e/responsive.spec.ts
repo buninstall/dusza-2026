@@ -67,7 +67,7 @@ for (const width of WIDTHS) {
       await openPlay(page, "1. Egyenes folyosó");
       await replaceProgram(page, "print x\n");
       await page.getByRole("button", { name: "Futtatás" }).click();
-      const status = page.getByRole("status").filter({ hasText: "E_UNINITIALIZED · 1. sor" });
+      const status = page.getByRole("group").filter({ hasText: "E_UNINITIALIZED · 1. sor" });
       await expect(status.first()).toBeVisible();
       await noHorizontalOverflow(page);
     });

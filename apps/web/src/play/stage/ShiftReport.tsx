@@ -1,5 +1,5 @@
 import type { RunResult } from "@minescript/engine";
-import type { Ref } from "react";
+import { type Ref, useId } from "react";
 import { Led } from "../../components/Led.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { formatCount, hu, runtimeErrorText } from "../../i18n/hu.ts";
@@ -72,6 +72,7 @@ function reportContent({
 }
 
 export function ShiftReport(props: ShiftReportProps) {
+  const titleId = useId();
   const content = reportContent(props);
   if (!content) {
     return null;
@@ -82,7 +83,7 @@ export function ShiftReport(props: ShiftReportProps) {
     <div
       ref={props.ref}
       tabIndex={-1}
-      role={isUrgent ? "alert" : "status"}
+      {...(isUrgent ? { role: "alert" } : { role: "group", "aria-labelledby": titleId })}
       className="report"
       data-tone={tone}
       data-kind={props.kind}
@@ -92,7 +93,9 @@ export function ShiftReport(props: ShiftReportProps) {
       </span>
       <div className="report-body">
         <p className="report-head">
-          <span className="report-text">{content.text}</span>
+          <span className="report-text" id={titleId}>
+            {content.text}
+          </span>
           {content.meta ? (
             <span className="report-meta">
               <span className="visually-hidden">{`${hu.play.errorCodeLabel}: `}</span>
