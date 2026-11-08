@@ -12,6 +12,14 @@ function healthUrl() {
 }
 
 async function probe() {
+  const invoke = window.__MINESCRIPT__ ? window.__TAURI_INTERNALS__?.invoke : undefined;
+  if (invoke) {
+    try {
+      return await invoke("probe");
+    } catch {
+      return "offline";
+    }
+  }
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
   try {
