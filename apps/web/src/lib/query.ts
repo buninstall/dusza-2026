@@ -15,6 +15,12 @@ const CACHE_KEY = "minescript.query-cache.v1";
 const CACHE_AGE_MS = 10 * 60_000;
 const PERSISTED = new Set(["maps", "map", "leaderboard", "programs", "my-runs"]);
 export const RECOVER_MS = 4000;
+export const INLINE_META = { isInline: true } as const;
+
+export function isInlineQuery(meta: Record<string, unknown> | undefined): boolean {
+  return meta?.["isInline"] === true;
+}
+
 const SERVER_ERROR = 500;
 
 export function isServerTrouble(error: unknown): boolean {

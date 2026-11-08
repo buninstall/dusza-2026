@@ -5,7 +5,7 @@ export type ApiRequest = { method: string; path: string; body: unknown; search: 
 
 export type ApiReply = { status?: number; body: unknown };
 
-type Handler = (request: ApiRequest) => ApiReply;
+type Handler = (request: ApiRequest) => ApiReply | Promise<ApiReply>;
 
 const routes = new Map<string, Handler>();
 export const calls: ApiRequest[] = [];
@@ -51,7 +51,7 @@ async function fakeFetch(input: RequestInfo | URL, init?: RequestInit): Promise<
   if (!handler) {
     return json(404, { error: { code: "NOT_FOUND", message: `${method} ${path}` } });
   }
-  const reply = handler(request);
+  const reply = await handler(request);
   return json(reply.status ?? 200, reply.body);
 }
 

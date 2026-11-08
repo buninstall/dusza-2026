@@ -5,6 +5,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { NotFound, RouteError } from "./app/StatusScreens.tsx";
 import { sessionQuery } from "./auth/session.ts";
+import { adoptDesktopShell } from "./desktop/shell.ts";
 import { preloadEngine } from "./engine/EngineProvider.tsx";
 import { applyCursor, initialCursor } from "./lib/cursor.ts";
 import { clearPersistedQueries, createQueryClient, persistQueries } from "./lib/query.ts";
@@ -45,6 +46,7 @@ startPixelClock();
 persistQueries(queryClient);
 applyCursor(initialCursor());
 keepScrollbarGap();
+adoptDesktopShell();
 
 const container = document.getElementById("root");
 if (container) {

@@ -8,6 +8,7 @@ import {
 import { toast } from "../components/ui/Toast.tsx";
 import { browse } from "../i18n/hu-browse.ts";
 import { api, call, errorMessage } from "../lib/api.ts";
+import { INLINE_META } from "../lib/query.ts";
 import { msUntilNextDay } from "./daily-clock.ts";
 import type { DifficultyFilter } from "./mode.ts";
 import type { MapSort } from "./sort.ts";
@@ -80,6 +81,7 @@ export const firstSandboxMapQuery = () =>
     queryKey: [...SANDBOX_KEY, "first"],
     queryFn: () =>
       fetchSandboxPage({ scope: "all", q: "", sort: "order", level: "all", page: 1 }, 1),
+    meta: INLINE_META,
   });
 
 export const storyMapsQuery = () =>
@@ -99,6 +101,8 @@ export const leaderboardQuery = (mapId: number, versionId?: number) =>
   queryOptions({
     queryKey: ["leaderboard", mapId, versionId ?? "current"],
     queryFn: () => fetchLeaderboard(mapId, versionId),
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[1] === mapId ? previous : undefined,
   });
 
 export const dailyQuery = () =>

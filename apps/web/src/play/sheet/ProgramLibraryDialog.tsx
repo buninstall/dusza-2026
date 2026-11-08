@@ -176,7 +176,11 @@ function LibraryBody({ programs, params, draft, persistence, onPageChange }: Lib
     return <Notice tone="error" title={errorMessage(programs.error, hu.programs.loadFailed)} />;
   }
   if (!programs.data) {
-    return null;
+    return (
+      <p className="library-meta" role="status">
+        {hu.common.loading}
+      </p>
+    );
   }
   const page = programs.data;
   if (page.total === 0) {

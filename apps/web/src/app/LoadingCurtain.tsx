@@ -2,6 +2,7 @@ import { useIsFetching } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "../pixel/pixel.css";
+import { isInlineQuery } from "../lib/query.ts";
 import { CURTAIN_ID } from "./curtain-html.ts";
 import { useReadyHolds } from "./readiness.ts";
 import "./LoadingCurtain.css";
@@ -36,6 +37,7 @@ export function LoadingCurtain() {
   const waiting = useIsFetching({
     predicate: (query) =>
       query.state.data === undefined &&
+      !isInlineQuery(query.meta) &&
       query.observers.some((observer) => !observer.getCurrentResult().isPlaceholderData),
   });
   const holds = useReadyHolds();

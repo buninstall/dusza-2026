@@ -6,6 +6,7 @@ import {
   CORRIDOR,
   LABYRINTH,
   mapDetail,
+  mapPage,
   mapSummary,
   respondMaps,
   respondPrograms,
@@ -33,6 +34,30 @@ function titlesIn(list: HTMLElement): string[] {
 }
 
 describe("lapozott homokozó", () => {
+  test("fülváltáskor a régi lista halványítva marad, amíg az új meg nem jön", async () => {
+    respondMaps(MANY);
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    onApi("GET", "/maps", async (request) => {
+      if (request.search.get("scope") === "favorites") {
+        await gate;
+      }
+      return {
+        body: mapPage(request.search.get("scope") === "favorites" ? [] : MANY, request.search),
+      };
+    });
+    const { user } = renderApp("/maps?sort=order");
+    await screen.findByRole("list", { name: "Pályák listája" });
+    await user.click(screen.getByRole("tab", { name: "Kedvencek" }));
+    const held = await screen.findByRole("list", { name: "Pályák listája" });
+    expect(held.getAttribute("aria-busy")).toBe("true");
+    expect(titlesIn(held)[0]).toBe("Pálya 01");
+    release();
+    await waitFor(() => expect(screen.queryByRole("list", { name: "Pályák listája" })).toBeNull());
+  });
+
   test("nyolcasával lapoz, a következő oldalt előre betölti, felgörget és a listára fókuszál", async () => {
     respondMaps(MANY);
     const { user, router } = renderApp("/maps?sort=order");

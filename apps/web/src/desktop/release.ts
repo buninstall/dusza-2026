@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "../components/ui/Toast.tsx";
 import { hu } from "../i18n/hu.ts";
 import { api, call } from "../lib/api.ts";
+import { INLINE_META } from "../lib/query.ts";
 import { currentPlatform, type DesktopPlatform } from "./platform.ts";
 
 const STALE_MS = 10 * 60_000;
@@ -33,6 +34,7 @@ export const desktopReleaseQuery = queryOptions({
   queryFn: fetchDesktopRelease,
   staleTime: STALE_MS,
   retry: false,
+  meta: INLINE_META,
 });
 
 export function pickOffer(release: DesktopRelease, platform: DesktopPlatform): DesktopOffer | null {

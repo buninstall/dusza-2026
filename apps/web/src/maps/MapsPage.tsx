@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { Fragment, type ReactNode, type RefObject, useRef } from "react";
+import { type UseQueryResult, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Fragment, type ReactNode, type RefObject, useEffect, useRef } from "react";
 import type { SessionUser } from "../auth/session.ts";
 import { EmptyState } from "../components/EmptyState.tsx";
 import { LoadFailed } from "../components/LoadFailed.tsx";
@@ -30,8 +30,10 @@ import {
 } from "./mode.ts";
 import {
   dailyQuery,
+  type MapPage,
   type MapScope,
   type MapSummary,
+  prefetchSandboxPage,
   type SandboxParams,
   sandboxQuery,
   sandboxStatsQuery,
@@ -148,17 +150,19 @@ function useStorySilence(): boolean {
 
 type SandboxPanelProps = {
   params: SandboxParams;
+  result: UseQueryResult<MapPage>;
   user: SessionUser;
   onPageChange: (page: number) => void;
   onSearch: (q: string) => void;
 };
 
-function SandboxPanel({ params, user, onPageChange, onSearch }: SandboxPanelProps) {
+function SandboxPanel({ params, result, user, onPageChange, onSearch }: SandboxPanelProps) {
   const isSilent = useStorySilence();
   return (
     <>
       <SandboxBrowser
         params={params}
+        result={result}
         user={user}
         onPageChange={onPageChange}
         onClearSearch={() => onSearch("")}
@@ -407,19 +411,26 @@ function SandboxPlate({
   onSortChange,
   onDifficultyChange,
   onSearch,
+  onScopeIntent,
 }: Pick<
   MapsPageProps,
   "sort" | "difficulty" | "q" | "onModeChange" | "onSortChange" | "onDifficultyChange" | "onSearch"
->) {
+> & { onScopeIntent: (scope: MapScope) => void }) {
   return (
     <div className="maps-plate-grid">
       <ModeSwitch mode="sandbox" onChange={onModeChange} />
       <SandboxStats />
       <NewMapLink isCompact />
       <TabList aria-label={hu.maps.scopeLabel}>
-        <Tab id="all">{hu.maps.scopeAll}</Tab>
-        <Tab id="mine">{hu.maps.scopeMine}</Tab>
-        <Tab id="favorites">{browse.scopeFavorites}</Tab>
+        <Tab id="all" onHoverStart={() => onScopeIntent("all")}>
+          {hu.maps.scopeAll}
+        </Tab>
+        <Tab id="mine" onHoverStart={() => onScopeIntent("mine")}>
+          {hu.maps.scopeMine}
+        </Tab>
+        <Tab id="favorites" onHoverStart={() => onScopeIntent("favorites")}>
+          {browse.scopeFavorites}
+        </Tab>
       </TabList>
       <Select
         label={story.difficultyLabel}
@@ -450,6 +461,7 @@ function SandboxPlate({
 }
 
 const SCOPES: readonly MapScope[] = ["all", "mine", "favorites"];
+const IDLE_PREFETCH_MS = 600;
 
 export function MapsPage({
   mode,
@@ -467,8 +479,26 @@ export function MapsPage({
   onSearch,
 }: MapsPageProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
   const params: SandboxParams = { scope, q, sort, level: difficulty, page };
-  if (mode === "story") {
+  const isStory = mode === "story";
+  const sandbox = useQuery({ ...sandboxQuery(params), enabled: !isStory });
+  const sandboxKey = JSON.stringify(params);
+
+  useEffect(() => {
+    if (!isStory) {
+      return;
+    }
+    const prefetch = () => {
+      prefetchSandboxPage(queryClient, JSON.parse(sandboxKey) as SandboxParams);
+      void queryClient.prefetchQuery(sandboxStatsQuery());
+      void queryClient.prefetchQuery(dailyQuery());
+    };
+    const timer = window.setTimeout(prefetch, IDLE_PREFETCH_MS);
+    return () => window.clearTimeout(timer);
+  }, [isStory, sandboxKey, queryClient]);
+
+  if (isStory) {
     return (
       <>
         <StoryPage user={user} onModeChange={onModeChange} rootRef={rootRef} />
@@ -495,6 +525,11 @@ export function MapsPage({
                 onSortChange={onSortChange}
                 onDifficultyChange={onDifficultyChange}
                 onSearch={onSearch}
+                onScopeIntent={(next) => {
+                  if (next !== scope) {
+                    prefetchSandboxPage(queryClient, { ...params, scope: next, page: 1 });
+                  }
+                }}
               />
             }
           />
@@ -511,6 +546,7 @@ export function MapsPage({
                 ) : null}
                 <SandboxPanel
                   params={params}
+                  result={sandbox}
                   user={user}
                   onPageChange={onPageChange}
                   onSearch={onSearch}

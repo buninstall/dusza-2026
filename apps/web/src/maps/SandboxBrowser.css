@@ -10,7 +10,7 @@
 
 .sb-shaft {
   --sb-rise: 1.5rem;
-  --sb-stagger: 55ms;
+  --sb-stagger: 35ms;
 }
 
 .sb-shaft:focus {

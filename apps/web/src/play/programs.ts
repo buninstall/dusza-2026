@@ -1,5 +1,6 @@
 import { keepPreviousData, queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, call } from "../lib/api.ts";
+import { INLINE_META } from "../lib/query.ts";
 
 export const PROGRAM_SORTS = ["recent", "title"] as const;
 
@@ -32,6 +33,7 @@ export const programsQuery = (params: ProgramParams) =>
     queryKey: [...PROGRAMS_KEY, params],
     queryFn: () => fetchPrograms(params),
     placeholderData: keepPreviousData,
+    meta: INLINE_META,
   });
 
 export function fetchProgram(id: number) {

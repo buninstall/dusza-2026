@@ -1,0 +1,25 @@
+html[data-shell="desktop"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-shell="desktop"]
+  :is(
+    input,
+    textarea,
+    [contenteditable="true"],
+    .cm-editor,
+    pre,
+    code,
+    .manual-article,
+    .notice,
+    [role="alert"]
+  ) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+html[data-shell="desktop"] :is(a, img, svg) {
+  -webkit-user-drag: none;
+}

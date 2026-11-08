@@ -26,9 +26,15 @@ function LeaderboardRoute() {
 export const Route = createFileRoute("/_app/leaderboard/$mapId")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({ version: search.version }),
-  loader: ({ context, params, deps }) =>
-    orNotFound(
+  loader: ({ context, params, deps, cause }) => {
+    const pending = orNotFound(
       context.queryClient.ensureQueryData(leaderboardQuery(routeId(params.mapId), deps.version)),
-    ),
+    );
+    if (cause === "stay") {
+      void pending.catch(() => undefined);
+      return;
+    }
+    return pending;
+  },
   component: LeaderboardRoute,
 });

@@ -81,7 +81,8 @@ function PlayLink({ mapId }: { mapId: number }) {
 }
 
 export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: LeaderboardPageProps) {
-  const { data, error, refetch } = useQuery(leaderboardQuery(mapId, versionId));
+  const { data, error, refetch, isPlaceholderData } = useQuery(leaderboardQuery(mapId, versionId));
+  const shownVersion = isPlaceholderData && versionId !== undefined ? versionId : data?.versionId;
   const versionOptions =
     data?.versions.map((item) => ({
       id: String(item.id),
@@ -108,7 +109,7 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
               <Select
                 label={hu.leaderboard.version}
                 isLabelHidden
-                value={String(data.versionId)}
+                value={String(shownVersion ?? data.versionId)}
                 options={versionOptions}
                 onChange={(next) => onVersionChange(Number(next))}
               />
@@ -121,7 +122,7 @@ export function LeaderboardPage({ mapId, versionId, user, onVersionChange }: Lea
         <LoadFailed error={error} fallback={hu.app.unexpected} onRetry={() => void refetch()} />
       ) : null}
       {data ? (
-        <div className="lb-layout">
+        <div className="lb-layout" aria-busy={isPlaceholderData} data-turning={isPlaceholderData}>
           <SideColumn mapId={mapId} data={data} user={user} />
           <div className="lb-main">
             {data.versionId === data.currentVersionId ? null : (
