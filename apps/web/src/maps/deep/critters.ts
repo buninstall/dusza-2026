@@ -152,8 +152,8 @@ export function createBats(world: World, rand: () => number, roofY: number): Bat
       if (!view.isVisible(b.y, 8)) continue;
       const l = view.lightAt(b.x, b.y + 1);
       const set = l > 0.6 ? lit : l > 0.25 ? dim : dark;
-      const x = Math.round(b.x);
-      const y = Math.round(b.y) - view.camY;
+      const x = view.snap(b.x);
+      const y = view.snap(b.y) - view.camY;
       if (b.isHanging) ctx.drawImage(set.hang, x - 1, y);
       else ctx.drawImage(Math.floor(b.flap) % 2 ? set.up : set.down, x - 4, y - 2);
     }
@@ -268,7 +268,7 @@ export function createMotes(world: World, W: number, H: number, rand: () => numb
       if (l <= 0.45) continue;
       ctx.globalAlpha = Math.min(1, (l - 0.42) * 1.4);
       ctx.fillStyle = l > 0.85 ? hot : warm;
-      ctx.fillRect(Math.floor(m.x), Math.floor(m.y), 1, 1);
+      ctx.fillRect(view.snap(m.x), view.snap(m.y), 1, 1);
     }
     ctx.globalAlpha = 1;
   };
@@ -348,7 +348,7 @@ export function createSparks(world: World): Sparks {
           ? tones[3]
           : tones[4];
       view.ctx.fillStyle = tone ?? "";
-      view.ctx.fillRect(Math.round(p.x), Math.round(p.y) - view.camY, 1, 1);
+      view.ctx.fillRect(view.snap(p.x), view.snap(p.y) - view.camY, 1, 1);
     }
   };
   return { emit, update, draw };

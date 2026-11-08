@@ -18,6 +18,7 @@ export type View = {
   W: number;
   H: number;
   camY: number;
+  snap: (value: number) => number;
   lightAt: (x: number, y: number) => number;
   isVisible: (y: number, pad: number) => boolean;
   bake: (lights: readonly Light[]) => void;
@@ -29,6 +30,7 @@ const AMBIENT = [0.44, 0.3, 1, 0.45, 0.36, 0.5, 0.5, 1.45];
 const PAD_RATIO = 0.25;
 const PENETRATION = 5;
 const POOL = 4;
+const MAX_DENSITY = 2;
 
 function overlaps(a: Region, b: Region): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
@@ -73,11 +75,26 @@ function signature(lights: readonly Light[]): string {
   return out;
 }
 
-function sizeLayer(layer: HTMLCanvasElement, W: number, H: number, scale: number): void {
-  layer.width = W;
-  layer.height = H;
+function sizeLayer(layer: HTMLCanvasElement, W: number, H: number, scale: number, density = 1): void {
+  layer.width = Math.round(W * density);
+  layer.height = Math.round(H * density);
   layer.style.width = `${W * scale}px`;
   layer.style.height = `${H * scale}px`;
+}
+
+function fineContext(
+  layer: HTMLCanvasElement,
+  W: number,
+  H: number,
+  scale: number,
+  density: number,
+): CanvasRenderingContext2D | null {
+  const context = layer.getContext("2d");
+  if (!context) return null;
+  sizeLayer(layer, W, H, scale, density);
+  context.setTransform(density, 0, 0, density, 0, 0);
+  context.imageSmoothingEnabled = false;
+  return context;
 }
 
 export function createView(
@@ -92,22 +109,17 @@ export function createView(
   const { W } = world;
   const pad = Math.ceil((viewHeight / scale) * PAD_RATIO);
   const H = Math.min(world.H, Math.ceil(viewHeight / scale) + pad * 2 + 2);
+  const density = scale * Math.min(MAX_DENSITY, Math.max(1, window.devicePixelRatio || 1));
   const main = canvas.getContext("2d");
-  const ctx = spriteCanvas.getContext("2d");
+  const ctx = fineContext(spriteCanvas, W, H, scale, density);
   const base = document.createElement("canvas");
   base.width = W;
   base.height = world.H;
   const baseCtx = base.getContext("2d");
   if (!main || !ctx || !baseCtx) return null;
   sizeLayer(canvas, W, H, scale);
-  sizeLayer(spriteCanvas, W, H, scale);
   main.imageSmoothingEnabled = false;
-  ctx.imageSmoothingEnabled = false;
-  const front = frontCanvas?.getContext("2d") ?? null;
-  if (frontCanvas && front) {
-    sizeLayer(frontCanvas, W, H, scale);
-    front.imageSmoothingEnabled = false;
-  }
+  const front = frontCanvas ? fineContext(frontCanvas, W, H, scale, density) : null;
   const layers = [canvas, spriteCanvas, frontCanvas].filter(
     (layer): layer is HTMLCanvasElement => layer !== null,
   );
@@ -146,6 +158,7 @@ export function createView(
     W,
     H,
     camY,
+    snap: (value) => Math.round(value * density) / density,
     lightAt: (x, y) => {
       const px = Math.floor(x);
       const py = Math.floor(y);

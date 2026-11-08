@@ -233,7 +233,11 @@ export async function auditLayout(page: Page, options: AuditOptions): Promise<La
         let { left, top, right, bottom } = rect;
         for (let node = element.parentElement; node; node = node.parentElement) {
           const style = getComputedStyle(node);
-          if (isScrollable(style.overflowX) || isScrollable(style.overflowY)) {
+          if (
+            isScrollable(style.overflowX) ||
+            isScrollable(style.overflowY) ||
+            node.matches(PANNABLE)
+          ) {
             const box = node.getBoundingClientRect();
             left = Math.max(left, box.left);
             top = Math.max(top, box.top);

@@ -135,8 +135,8 @@ function drawFireflies(
   for (const f of flies) {
     const glow = Math.sin(time * 2.2 + f.phase);
     if (glow < -0.2) continue;
-    const x = Math.round(f.x + Math.sin(time * f.speed + f.phase) * f.drift);
-    const y = Math.round(f.y + Math.cos(time * f.speed * 0.8 + f.phase) * f.drift) - view.camY;
+    const x = view.snap(f.x + Math.sin(time * f.speed + f.phase) * f.drift);
+    const y = view.snap(f.y + Math.cos(time * f.speed * 0.8 + f.phase) * f.drift) - view.camY;
     ctx.globalAlpha = Math.min(1, 0.4 + glow);
     ctx.fillStyle = soft;
     ctx.fillRect(x - 1, y, 3, 1);
@@ -250,15 +250,9 @@ export function startWall(host: WallHost): (() => void) | null {
       sim(STEP);
       acc -= STEP;
     }
-    frame += 1;
-    if ((frame & 1) === 0 || window.scrollY !== lastScroll) {
-      lastScroll = window.scrollY;
-      render();
-    }
+    render();
     handle = requestAnimationFrame(loop);
   };
-  let frame = 0;
-  let lastScroll = -1;
   handle = requestAnimationFrame(loop);
   return () => cancelAnimationFrame(handle);
 }

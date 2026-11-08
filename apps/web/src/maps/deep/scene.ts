@@ -372,7 +372,7 @@ export function runScene(options: SceneOptions): () => void {
 
   const drawCage = () => {
     const { ctx } = view;
-    const top = Math.round(robot.cageY) - 6 - view.camY;
+    const top = view.snap(robot.cageY) - 6 - view.camY;
     const wy = mine.wheel.y + 7 - view.camY;
     ctx.fillStyle = sprites.tone("cable");
     if (top > wy) ctx.fillRect(shaftX + 7, Math.max(0, wy), 1, top - Math.max(0, wy));

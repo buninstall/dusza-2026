@@ -82,8 +82,8 @@ export function drawRobot(view: View, sprites: Sprites, pose: RobotPose, time: n
   const frame = Math.floor(pose.travel / 3) % 2;
   const sprite = sprites.robot[pose.face][frame];
   const bob = pose.isMining && Math.floor(time * 16) % 2 ? 1 : 0;
-  const x = Math.round(pose.x);
-  const y = Math.round(pose.y) - view.camY + bob;
+  const x = view.snap(pose.x);
+  const y = view.snap(pose.y) - view.camY + bob;
   if (sprite) ctx.drawImage(sprite, x, y);
   ctx.fillStyle = sprites.tone("glint");
   ctx.fillRect(x + (pose.face === "left" ? 2 : 13), y + 4, 1, 1);
