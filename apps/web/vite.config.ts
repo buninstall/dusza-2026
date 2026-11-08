@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import type { ServerResponse } from "node:http";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
@@ -32,6 +34,22 @@ function loadingCurtain(): Plugin {
   return {
     name: "minescript-loading-curtain",
     transformIndexHtml: (html) => fillCurtainSlot(html),
+  };
+}
+
+const SHARE_IMAGE = /(\/brand\/og-image\.png)(?=")/g;
+
+// Crawlers (Discord, Facebook, X) and Cloudflare cache the share image by URL, so a new image under the
+// same URL keeps showing the old one. The content hash in the query string gives every new image a new URL.
+function shareImageVersion(): Plugin {
+  return {
+    name: "minescript-share-image-version",
+    apply: "build",
+    transformIndexHtml: (html) => {
+      const image = readFileSync(new URL("./public/brand/og-image.png", import.meta.url));
+      const version = createHash("sha256").update(image).digest("hex").slice(0, 10);
+      return html.replace(SHARE_IMAGE, `$1?v=${version}`);
+    },
   };
 }
 
@@ -73,6 +91,7 @@ export default defineConfig({
     react(),
     loadingCurtain(),
     preloadFonts(),
+    shareImageVersion(),
   ],
   server: {
     port: 5173,
