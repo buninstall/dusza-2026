@@ -52,25 +52,25 @@ MineScript: webes játék, amelyben egy saját nyelven (MineScript) írt program
 
 ## 7. Parancsok
 
-| Parancs            | Mit csinál                                                                                                                    |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Parancs            | Mit csinál                                                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `just setup`       | eszközök (wasm32 target, a lockfájl szerinti wasm-bindgen-cli), `bun i`, wasm, típusok; `--with-e2e`, `--with-wasm-opt` |
-| `just db-up`       | MySQL Dockerben (`docker compose`); `just db-down` leállítja                                                                  |
-| `just db-setup`    | fejlesztői adatbázis és fiók egy helyi MySQL-szerveren (`--admin-url`, `--check`)                                             |
-| `just dev`         | szerver (8080, MySQL: `DATABASE_URL`) + Vite (5173), a `crates/` változására wasm- és típus-újraépítés                        |
-| `just wasm`        | a WASM-motor fordítása a `packages/engine/pkg`-be                                                                             |
-| `just types`       | ts-rs típusok újragenerálása a `packages/engine/src/generated`-be                                                             |
-| `just test`        | `cargo test --workspace` és minden workspace `test` scriptje                                                                  |
-| `just conformance` | conformance-esetek Rustban és WASM-on                                                                                         |
-| `just lint`        | rustfmt, clippy `-D warnings`, Biome, typecheck                                                                               |
-| `just fmt`         | rustfmt és Biome javítás                                                                                                      |
-| `just build`       | wasm, web build, statikus manifest, migrációk                                                                                 |
-| `just e2e`         | build, majd Playwright (chromium) egy ideiglenes MySQL-adatbázissal                                                           |
-| `just release`     | három bináris a `release/`-be                                                                                                 |
-| `just smoke`       | a saját platform binárisának füstpróbája egy ideiglenes MySQL-adatbázissal                                                    |
-| `just ci`          | lint, test, build, e2e                                                                                                        |
-| `just deploy`      | éles frissítés a verseny szerveren SSH-n át (`--ref <ág>`, `--force`), lásd `docs/telepites.md`                               |
-| `just remote …`    | `minescriptctl` parancs a szerveren: `status`, `rollback`, `logs`, `gate on/off`, `backup`, `autodeploy on/off`               |
+| `just db-up`       | MySQL Dockerben (`docker compose`); `just db-down` leállítja                                                            |
+| `just db-setup`    | fejlesztői adatbázis és fiók egy helyi MySQL-szerveren (`--admin-url`, `--check`)                                       |
+| `just dev`         | szerver (8080, MySQL: `DATABASE_URL`) + Vite (5173), a `crates/` változására wasm- és típus-újraépítés                  |
+| `just wasm`        | a WASM-motor fordítása a `packages/engine/pkg`-be                                                                       |
+| `just types`       | ts-rs típusok újragenerálása a `packages/engine/src/generated`-be                                                       |
+| `just test`        | `cargo test --workspace` és minden workspace `test` scriptje                                                            |
+| `just conformance` | conformance-esetek Rustban és WASM-on                                                                                   |
+| `just lint`        | rustfmt, clippy `-D warnings`, Biome, typecheck                                                                         |
+| `just fmt`         | rustfmt és Biome javítás                                                                                                |
+| `just build`       | wasm, web build, statikus manifest, migrációk                                                                           |
+| `just e2e`         | build, majd Playwright (chromium) egy ideiglenes MySQL-adatbázissal                                                     |
+| `just release`     | három bináris a `release/`-be                                                                                           |
+| `just smoke`       | a saját platform binárisának füstpróbája egy ideiglenes MySQL-adatbázissal                                              |
+| `just ci`          | lint, test, build, e2e                                                                                                  |
+| `just deploy`      | éles frissítés a verseny szerveren SSH-n át (`--ref <ág>`, `--force`), lásd `docs/telepites.md`                         |
+| `just remote …`    | `minescriptctl` parancs a szerveren: `status`, `rollback`, `logs`, `gate on/off`, `backup`, `autodeploy on/off`         |
 
 ## 8. Hol mi van
 
