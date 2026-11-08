@@ -314,6 +314,7 @@ export function PlayScreen(props: PlayScreenProps) {
             zoom={ui.zoom}
             onZoomChange={ui.setZoom}
             follow={motion.robot.pos}
+            followKey={runId}
             isWheelZoom={layout === "cab"}
             map={map}
             robot={motion.robot}

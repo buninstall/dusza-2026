@@ -26,6 +26,7 @@ export type MineSceneProps = Omit<ComponentProps<typeof MineBoard>, "fit" | "siz
   zoom: number;
   onZoomChange: (zoom: number) => void;
   follow?: Pos | null;
+  followKey?: number | string;
   panButton?: PanButton;
   isWheelZoom?: boolean;
 };
@@ -53,6 +54,7 @@ export function MineScene({
   zoom,
   onZoomChange,
   follow = null,
+  followKey = 0,
   panButton = "primary",
   isWheelZoom = true,
   ...board
@@ -161,24 +163,36 @@ export function MineScene({
     apply(scale);
   });
 
-  useEffect(() => {
+  const pendingZoom = useRef<number | null>(null);
+  pendingZoom.current = null;
+  const isFreeRef = useRef(false);
+  const followKeyRef = useRef(followKey);
+  if (followKeyRef.current !== followKey) {
+    followKeyRef.current = followKey;
+    isFreeRef.current = false;
+  }
+  if (zoom <= 1) {
+    isFreeRef.current = false;
+  }
+  const followRow = follow?.row ?? -1;
+  const followCol = follow?.col ?? -1;
+  const followStep = useRef<(row: number, col: number) => void>(() => undefined);
+  followStep.current = (row, col) => {
     const view = viewRef.current;
     const center = centerRef.current;
-    if (!follow || !view || !center || zoom <= 1 || isPanning) {
-      return;
-    }
     const layout = layoutOf();
-    if (!layout) {
+    if (row < 0 || !view || !center || !layout || zoom <= 1 || isFreeRef.current) {
       return;
     }
-    const x0 = layout.bx + follow.col * T;
-    const y0 = layout.by + follow.row * T;
+    const x0 = layout.bx + col * T;
+    const y0 = layout.by + row * T;
     const next = followCenter(center, view, { x0, y0, x1: x0 + T, y1: y0 + T }, FOLLOW_MARGIN);
     if (next.x !== center.x || next.y !== center.y) {
       centerRef.current = next;
       apply(view.scale);
     }
-  });
+  };
+  useEffect(() => followStep.current(followRow, followCol), [followRow, followCol]);
 
   useSceneInput(rootRef, panButton, {
     isWheelZoom: () => isWheelZoom,
@@ -200,6 +214,7 @@ export function MineScene({
       if (!view || !center) {
         return;
       }
+      isFreeRef.current = true;
       centerRef.current = { x: center.x - dx / view.scale, y: center.y - dy / view.scale };
       apply(view.scale);
     },
@@ -218,7 +233,9 @@ export function MineScene({
         clientX,
         clientY,
       };
-      onZoomChange(zoom * factor);
+      const nextZoom = (pendingZoom.current ?? zoom) * factor;
+      pendingZoom.current = nextZoom;
+      onZoomChange(nextZoom);
     },
     onPanning: setPanning,
   });
