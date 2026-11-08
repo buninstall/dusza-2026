@@ -438,3 +438,13 @@
     animation: none;
   }
 }
+
+.overlay-menu-credit {
+  display: block;
+  width: 100%;
+  font: var(--type-mono-sm);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-align: right;
+  color: var(--c-text-faint);
+}

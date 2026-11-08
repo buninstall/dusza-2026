@@ -197,6 +197,8 @@ export const hu = {
     userMenuFor: (username: string) => `Felhasználói menü: ${username}`,
     signedInAs: (username: string) => `Bejelentkezve: ${username}`,
     logout: "Kijelentkezés",
+    credit: "bun install",
+    creditLabel: "Készítette: bun install csapat",
   },
   auth: {
     loginTitle: "Bejelentkezés",
