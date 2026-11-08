@@ -86,7 +86,7 @@ export function ToolRail({
         onChange={(value) => onToolChange(TOOLS.find((item) => item === value) ?? "wall")}
         className="ed-rack-group"
       >
-        <Label className="visually-hidden">{hu.mapEditor.toolsLabel}</Label>
+        <Label className="ed-label ed-group-label">{hu.mapEditor.toolsLabel}</Label>
         <div className="k-rack ed-rack" data-kind="tools">
           {TOOLS.map((item) => (
             <RackSlot key={item} value={item} art={TOOL_ART[item]} label={TOOL_LABEL[item]}>
@@ -101,33 +101,33 @@ export function ToolRail({
         </div>
       </RadioGroup>
       <RadioGroup
-        value={dir}
-        onChange={(value) => onDirChange(COMPASS.find((item) => item.dir === value)?.dir ?? "east")}
-        orientation="horizontal"
-        className="k-panel k-panel--inset ed-dirs"
-        data-active={tool === "robot"}
-      >
-        <Label className="ed-label">{hu.mapEditor.robotDir}</Label>
-        <div className="ed-compass">
-          {COMPASS.map((item) => (
-            <Radio key={item.dir} value={item.dir} className="k-btn k-btn--icon ed-dir">
-              <PixelIcon name={item.icon} />
-              <span className="visually-hidden">{dirNames[item.dir]}</span>
-            </Radio>
-          ))}
-        </div>
-      </RadioGroup>
-      <RadioGroup
         value={mode}
         onChange={(value) => onModeChange(MODES.find((item) => item === value) ?? "brush")}
         orientation="horizontal"
         className="ed-rack-group"
         data-inactive={tool === "robot"}
       >
-        <Label className="visually-hidden">{hu.mapEditor.modeLabel}</Label>
+        <Label className="ed-label ed-group-label">{hu.mapEditor.modeLabel}</Label>
         <div className="k-rack ed-rack" data-kind="modes">
           {MODES.map((item) => (
             <RackSlot key={item} value={item} art={MODE_ART[item]} label={MODE_LABEL[item]} />
+          ))}
+        </div>
+      </RadioGroup>
+      <RadioGroup
+        value={dir}
+        onChange={(value) => onDirChange(COMPASS.find((item) => item.dir === value)?.dir ?? "east")}
+        orientation="horizontal"
+        className="ed-rack-group ed-dirs"
+        data-active={tool === "robot"}
+      >
+        <Label className="ed-label ed-group-label">{hu.mapEditor.robotDir}</Label>
+        <div className="k-panel k-panel--inset ed-compass">
+          {COMPASS.map((item) => (
+            <Radio key={item.dir} value={item.dir} className="k-btn k-btn--icon ed-dir">
+              <PixelIcon name={item.icon} />
+              <span className="visually-hidden">{dirNames[item.dir]}</span>
+            </Radio>
           ))}
         </div>
       </RadioGroup>

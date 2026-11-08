@@ -368,6 +368,19 @@ const KEY: PixelRows = [
   "..........",
 ];
 
+const KEYBOARD: PixelRows = [
+  "..........",
+  "##########",
+  "#.#.#.#.##",
+  "##########",
+  "##.#.#.#.#",
+  "##########",
+  "##......##",
+  "##########",
+  "..........",
+  "..........",
+];
+
 const ARROW_UP: PixelRows = [
   "....##....",
   "...####...",
@@ -685,6 +698,7 @@ const ART = {
   grid: GRID,
   list: LIST,
   key: KEY,
+  keyboard: KEYBOARD,
   arrowUp: ARROW_UP,
   arrowRight: rotateTimes(ARROW_UP, 1),
   arrowDown: rotateTimes(ARROW_UP, 2),
