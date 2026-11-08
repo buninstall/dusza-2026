@@ -79,18 +79,21 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - id: tag
         run: |
-          version=$(jq -r .version "$DESKTOP_DIR/tauri.conf.json")
-          tag="desktop-v${version}-${GITHUB_SHA::7}"
+          base=$(jq -r .version "$DESKTOP_DIR/tauri.conf.json")
+          version="${base%.*}.${GITHUB_RUN_NUMBER}"
+          tag="desktop-v${version}"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           subject=$(git log -1 --format=%s)
           printf 'MineScript Desktop %s\n\nCommit: %s (%s)\n\nmacOS: .dmg (Apple Silicon és Intel), Windows: .msi vagy -setup.exe, Linux: .AppImage, .deb vagy .rpm.\n' "$version" "$subject" "${GITHUB_SHA::7}" > notes.md
-          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --draft --target "$GITHUB_SHA" --title "MineScript Desktop $version (${GITHUB_SHA::7})" --notes-file notes.md
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --draft --target "$GITHUB_SHA" --title "MineScript Desktop $version" --notes-file notes.md
 
   desktop-build:
     needs: [desktop-check, desktop-prepare]
@@ -114,6 +117,9 @@ jobs:
     env:
       MINESCRIPT_BASE_URL: ${{ vars.MINESCRIPT_BASE_URL }}
       GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.desktop-prepare.outputs.version }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ needs.desktop-prepare.result == 'success' && secrets.TAURI_SIGNING_PRIVATE_KEY || '' }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - if: runner.os == 'Linux'
@@ -130,13 +136,24 @@ jobs:
           bun-version-file: package.json
       - working-directory: ${{ env.DESKTOP_DIR }}
         shell: bash
-        run: bunx @tauri-apps/cli@2.12.4 build --ci ${{ matrix.args }}
+        run: |
+          if [ -n "$VERSION" ]; then
+            config=$(jq -nc --arg v "$VERSION" '{version: $v, bundle: {createUpdaterArtifacts: true}}')
+            bunx @tauri-apps/cli@2.12.4 build --ci ${{ matrix.args }} --config "$config"
+          else
+            bunx @tauri-apps/cli@2.12.4 build --ci ${{ matrix.args }}
+          fi
       - shell: bash
         run: |
           mkdir -p dist
           find "$DESKTOP_DIR/target" -path '*/release/bundle/*' -type f \
-            \( -name '*.dmg' -o -name '*.msi' -o -name '*-setup.exe' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' \) \
+            \( -name '*.dmg' -o -name '*.msi' -o -name '*-setup.exe' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' \
+               -o -name '*.app.tar.gz' -o -name '*.sig' \) \
             -exec cp {} dist/ \;
+          for file in dist/*' '*; do [ -e "$file" ] && mv "$file" "${file// /-}"; done
+          for file in dist/*.app.tar.gz dist/*.app.tar.gz.sig; do
+            [ -e "$file" ] && mv "$file" "${file/.app.tar.gz/_${VERSION}_universal.app.tar.gz}"
+          done
           ls -la dist
           test -n "$(ls -A dist)"
       - if: needs.desktop-prepare.result == 'success'
@@ -154,5 +171,34 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     env:
       GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.desktop-prepare.outputs.tag }}
+      VERSION: ${{ needs.desktop-prepare.outputs.version }}
     steps:
+      - name: latest.json
+        run: |
+          mkdir sigs && cd sigs
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.sig'
+          entry() {
+            local sig; sig=$(ls *"$2".sig 2>/dev/null | head -1)
+            if [ -n "$sig" ]; then
+              jq -n --arg k "$1" --arg u "${sig%.sig}" --rawfile s "$sig" '{($k): {url: $u, signature: $s}}'
+            fi
+          }
+          {
+            for arch in aarch64 x86_64; do
+              entry "darwin-$arch-app" .app.tar.gz
+              entry "darwin-$arch" .app.tar.gz
+            done
+            entry windows-x86_64-nsis -setup.exe
+            entry windows-x86_64-msi .msi
+            entry windows-x86_64 -setup.exe
+            entry linux-x86_64-appimage .AppImage
+            entry linux-x86_64-deb .deb
+            entry linux-x86_64-rpm .rpm
+            entry linux-x86_64 .AppImage
+          } | jq -s --arg v "$VERSION" --arg d "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{version: $v, pub_date: $d, notes: "MineScript Desktop \($v)", platforms: add}' > ../latest.json
+          test "$(jq '.platforms | length' ../latest.json)" -gt 0
+          cd .. && cat latest.json
+          gh release upload "$TAG" latest.json --repo "$GITHUB_REPOSITORY" --clobber
       - run: gh release edit "${{ needs.desktop-prepare.outputs.tag }}" --repo "$GITHUB_REPOSITORY" --draft=false --latest=false
