@@ -86,6 +86,37 @@ describe("adminisztráció", () => {
     expect((await json<{ user: { role: string } }>(plain)).user.role).toBe("user");
   });
 
+  test("a Történet pályáinak gazdája nem törölhető és nem fokozható le, a kampány megmarad", async () => {
+    await using context = await createTestContext();
+    const owner = context.client();
+    const { user: ownerUser } = await owner.register("kampanygazda");
+    const other = context.client();
+    const { user: otherUser } = await other.register("masikadmin");
+    await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, ownerUser.id));
+    await context.deps.db.update(users).set({ role: "admin" }).where(eq(users.id, otherUser.id));
+    const story = await owner.post("/api/maps", {
+      title: "1. Egyenes folyosó",
+      content: "1 4\n>..@\n",
+    });
+    expect(story.status).toBe(201);
+
+    const demote = await other.request("PATCH", `/api/admin/users/${ownerUser.id}`, {
+      role: "user",
+    });
+    expect(demote.status).toBe(409);
+    expect(await json<{ error: { code: string } }>(demote)).toMatchObject({
+      error: { code: "STORY_OWNER" },
+    });
+    const removed = await other.delete(`/api/admin/users/${ownerUser.id}`);
+    expect(removed.status).toBe(409);
+    const [kept] = await context.deps.db.select().from(users).where(eq(users.id, ownerUser.id));
+    expect(kept?.role).toBe("admin");
+
+    const plain = context.client();
+    const { user: plainUser } = await plain.register("simajatekos");
+    expect((await other.delete(`/api/admin/users/${plainUser.id}`)).status).toBe(200);
+  });
+
   test("nem létező felhasználó módosítása és törlése 404", async () => {
     await using context = await createTestContext();
     const admin = context.client();

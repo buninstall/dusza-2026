@@ -8,7 +8,11 @@ import { apiError, messages } from "../lib/errors.ts";
 import { containsPattern, offsetOf, pageMeta } from "../lib/paging.ts";
 import { validationHook } from "../lib/validation.ts";
 import { createAccount } from "../services/accounts.ts";
+import { ownsStoryMaps } from "../services/map-list.ts";
 import { adminUsersQuery, idParam, newAccountSchema, roleSchema } from "./schemas.ts";
+
+const STORY_OWNER_MESSAGE =
+  "Ez a fiók a Történet mód pályáinak gazdája, ezért nem törölhető és nem fokozható le: a kampány vele együtt eltűnne.";
 
 export function adminRoutes(deps: Deps) {
   const userColumns = {
@@ -59,6 +63,9 @@ export function adminRoutes(deps: Deps) {
         if (id === c.var.user.id) {
           return apiError(c, 409, "SELF_CHANGE", "A saját szerepköröd nem módosíthatod.");
         }
+        if (c.req.valid("json").role !== "admin" && (await ownsStoryMaps(deps.db, id))) {
+          return apiError(c, 409, "STORY_OWNER", STORY_OWNER_MESSAGE);
+        }
         await deps.db
           .update(users)
           .set({ role: c.req.valid("json").role })
@@ -74,6 +81,9 @@ export function adminRoutes(deps: Deps) {
       const { id } = c.req.valid("param");
       if (id === c.var.user.id) {
         return apiError(c, 409, "SELF_CHANGE", "A saját fiókodat nem törölheted.");
+      }
+      if (await ownsStoryMaps(deps.db, id)) {
+        return apiError(c, 409, "STORY_OWNER", STORY_OWNER_MESSAGE);
       }
       const [result] = await deps.db.delete(users).where(eq(users.id, id));
       if (result.affectedRows === 0) {

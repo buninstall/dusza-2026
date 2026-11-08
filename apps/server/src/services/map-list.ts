@@ -57,6 +57,15 @@ function storyCondition(): SQL {
   return sql`(${eq(users.role, "admin")} and ${inArray(maps.title, STORY_TITLE_LIST)})`;
 }
 
+export async function ownsStoryMaps(db: Db, userId: number): Promise<boolean> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(maps)
+    .innerJoin(users, eq(users.id, maps.ownerId))
+    .where(and(eq(maps.ownerId, userId), storyCondition()));
+  return (row?.value ?? 0) > 0;
+}
+
 function worldCondition(world: MapWorld): SQL | undefined {
   if (world === "story") {
     return storyCondition();
